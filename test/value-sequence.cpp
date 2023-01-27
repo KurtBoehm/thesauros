@@ -31,4 +31,12 @@ int main() {
     using Seq2 = Seq1::ExceptSequence<thes::AutoValueSequence<2>>;
     static_assert(std::same_as<Seq2, thes::ValueSequence<int>>);
   }
+  {
+    using Seq1 = thes::AutoValueSequence<1, 3, 5>;
+    static_assert(Seq1::all_different);
+  }
+  {
+    using Seq1 = thes::AutoValueSequence<1, 3, 1>;
+    static_assert(!Seq1::all_different);
+  }
 }

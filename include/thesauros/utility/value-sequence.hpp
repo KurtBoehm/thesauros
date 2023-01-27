@@ -6,6 +6,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "thesauros/meta/static-value.hpp"
 #include "thesauros/utility/type-sequence.hpp"
 
 namespace thes {
@@ -30,6 +31,21 @@ struct ValueSequence : public value_seq_impl::UniqueTrait<T, tValues...> {
 
   template<std::size_t tIndex>
   static constexpr Value get_at = std::get<tIndex>(std::tuple<decltype(tValues)...>{tValues...});
+
+  template<typename TIdxSeq>
+  using SubSequence =
+    decltype([]<std::size_t... tIdxs>(ValueSequence<std::size_t, tIdxs...> /*seq*/) {
+      return ValueSequence<T, get_at<tIdxs>...>{};
+    }(TIdxSeq{}));
+
+  static constexpr bool all_different = []<std::size_t... tIdxs1>(std::index_sequence<tIdxs1...>) {
+    auto inner = []<std::size_t... tIdxs2, std::size_t tIdx>(std::index_sequence<tIdxs2...>,
+                                                             StaticValue<tIdx>) {
+      return (... && (get_at<tIdx> != get_at<tIdx + tIdxs2 + 1>));
+    };
+    return (... && inner(std::make_index_sequence<size - tIdxs1 - 1>{}, static_value<tIdxs1>));
+  }
+  (std::make_index_sequence<size>{});
 
 private:
   template<std::size_t tIdx, typename TExclSeq>

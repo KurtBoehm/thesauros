@@ -12,6 +12,7 @@
 #include "thesauros/ranges.hpp"
 #include "thesauros/utility.hpp"
 #include "thesauros/utility/multi-size.hpp"
+#include "thesauros/utility/static-map.hpp"
 #include "thesauros/utility/static-ranges/ranges/postfix-product-inclusive.hpp"
 
 int main() {
@@ -281,6 +282,37 @@ int main() {
                               [&value](auto v1, auto v2, auto v3) { value += v1 * v2 * v3; });
       return value;
     }() == 18);
+  }
+  {
+    static constexpr std::array ranges{thes::range(1, 3), thes::range(1, 2), thes::range(1, 4)};
+    static_assert([] {
+      int value = 0;
+      thes::multidim_for_each(ranges, thes::StaticMap{thes::static_key<2> = 2},
+                              [&value](auto v1, auto v2, auto v3) { value += v1 * v2 * v3; });
+      return value;
+    }() == 6);
+  }
+  {
+    using namespace thes::literals;
+
+    static constexpr std::array sizes{3_uz, 2_uz, 4_uz};
+    static_assert([] {
+      auto value = 0_uz;
+      thes::multidim_for_each_size(sizes,
+                                   [&value](auto v1, auto v2, auto v3) { value += v1 * v2 * v3; });
+      return value;
+    }() == 18);
+  }
+  {
+    using namespace thes::literals;
+
+    static constexpr std::array sizes{3_uz, 2_uz, 4_uz};
+    static_assert([] {
+      auto value = 0_uz;
+      thes::multidim_for_each_size(sizes, thes::StaticMap{thes::static_key<2> = 2_uz},
+                                   [&value](auto v1, auto v2, auto v3) { value += v1 * v2 * v3; });
+      return value;
+    }() == 6);
   }
 
   // index_to_position

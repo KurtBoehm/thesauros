@@ -5,7 +5,9 @@ args = options_sub.get_variable('all_args')
 foreach name, info : {
   'Primitives': [['primitives.cpp'], []],
   'Ranges': [['ranges.cpp'], []],
+  'StaticMap': [['static-map.cpp'], []],
   'StaticRanges': [['static-ranges.cpp'], []],
+  'Tiling': [['tiling.cpp'], []],
   'ValueSequence': [['value-sequence.cpp'], []],
 }
   sources = info[0]
