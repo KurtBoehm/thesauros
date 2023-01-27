@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 
 #include "thesauros/utility/type-sequence.hpp"
@@ -27,13 +28,31 @@ struct ValueSequence : public value_seq_impl::UniqueTrait<T, tValues...> {
   using Value = T;
   static constexpr std::size_t size = sizeof...(tValues);
 
+  template<std::size_t tIndex>
+  static constexpr Value get_at = std::get<tIndex>(std::tuple<decltype(tValues)...>{tValues...});
+
+private:
+  template<std::size_t tIdx, typename TExclSeq>
+  struct ExceptTrait {
+    static constexpr T element = get_at<tIdx>;
+    static constexpr bool exclude = TExclSeq::template contains<element>;
+    using Suffix = typename ExceptTrait<tIdx + 1, TExclSeq>::Seq;
+    using Seq = std::conditional_t<exclude, Suffix, typename Suffix::template Prepend<element>>;
+  };
+  template<typename TExclSeq>
+  struct ExceptTrait<size, TExclSeq> {
+    using Seq = ValueSequence<T>;
+  };
+
+public:
   template<Value tNew>
   using Prepend = ValueSequence<T, tNew, tValues...>;
   template<Value tNew>
   using Append = ValueSequence<T, tValues..., tNew>;
-
-  template<std::size_t tIndex>
-  static constexpr Value get_at = std::get<tIndex>(std::tuple<decltype(tValues)...>{tValues...});
+  template<typename TExclSeq>
+  using ExceptSequence = typename ExceptTrait<0, TExclSeq>::Seq;
+  template<Value... tExcl>
+  using ExceptValues = typename ExceptTrait<0, ValueSequence<T, tExcl...>>::Seq;
 
   template<T tValue>
   static constexpr bool contains = (... || (tValues == tValue));

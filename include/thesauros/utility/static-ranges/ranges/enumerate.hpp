@@ -32,7 +32,7 @@ template<typename TSize>
 struct RangeGeneratorTrait<EnumerateGenerator<TSize>> : public std::true_type {};
 
 template<typename TSize>
-inline constexpr EnumerateGenerator<TSize> enumerate;
+inline constexpr EnumerateGenerator<TSize> enumerate{};
 } // namespace thes::star
 
 #endif // INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_RANGES_ENUMERATE_HPP

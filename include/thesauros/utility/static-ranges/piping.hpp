@@ -8,14 +8,14 @@
 #include "definitions/concepts.hpp"
 
 namespace thes::star {
-template<typename TRange, typename TRangeGenerator>
-requires(IsStaticRange<std::decay_t<TRange>> && IsRangeGenerator<std::decay_t<TRangeGenerator>>)
-inline constexpr auto operator|(TRange&& range, TRangeGenerator&& gen) {
+template<typename TRange, typename TRangeGen>
+requires(IsStaticRange<TRange> && IsPipeSink<TRangeGen>)
+inline constexpr auto operator|(TRange&& range, TRangeGen&& gen) {
   return gen(std::forward<TRange>(range));
 }
 
 template<typename TRangeGen1, typename TRangeGen2>
-requires(IsRangeGenerator<std::decay_t<TRangeGen1>> && IsRangeGenerator<std::decay_t<TRangeGen2>>)
+requires(IsRangeGenerator<TRangeGen1> && IsPipeSink<TRangeGen2>)
 inline constexpr auto operator|(TRangeGen1&& gen1, TRangeGen2&& gen2) {
   return CombinedGenerator<TRangeGen1, TRangeGen2>{std::forward<TRangeGen1>(gen1),
                                                    std::forward<TRangeGen2>(gen2)};

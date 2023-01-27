@@ -28,8 +28,8 @@ struct SizeTrait<TRange> {
 };
 
 template<typename TRange>
-requires(requires { sizeof(SizeTrait<TRange>); })
-inline constexpr std::size_t size = SizeTrait<TRange>::value;
+requires(requires { sizeof(SizeTrait<std::decay_t<TRange>>); })
+inline constexpr std::size_t size = SizeTrait<std::decay_t<TRange>>::value;
 } // namespace thes::star
 
 #endif // INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_DEFINITIONS_SIZE_HPP

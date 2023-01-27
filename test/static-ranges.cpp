@@ -1,11 +1,17 @@
 #include <array>
 #include <concepts>
+#include <functional>
+#include <iostream>
 #include <tuple>
 #include <type_traits>
 #include <vector>
 
 #include "thesauros/utility/static-ranges.hpp"
+#include "thesauros/utility/static-ranges/ranges/filter.hpp"
 #include "thesauros/utility/static-ranges/ranges/map-values.hpp"
+#include "thesauros/utility/static-ranges/sinks/reduce.hpp"
+#include "thesauros/utility/static-ranges/sinks/to-array.hpp"
+#include "thesauros/utility/value-sequence.hpp"
 
 int main() {
   namespace star = thes::star;
@@ -52,18 +58,28 @@ int main() {
   // constant
   {
     static constexpr auto con = star::constant<5>(1);
-    using Range = std::decay_t<decltype(con)>;
+    using Range = decltype(con);
 
     static_assert(star::IsStaticRange<Range>);
     static_assert(star::size<Range> == 5);
     static_assert(star::get_at<4>(con) == 1);
   }
 
+  // iota
+  {
+    static constexpr auto con = star::iota<0, 5>;
+    using Range = decltype(con);
+
+    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::size<Range> == 5);
+    static_assert(star::get_at<4>(con) == 4);
+  }
+
   // enumerate
   {
     static constexpr std::array arr{0, 4, 3, 1};
     static constexpr auto enu = arr | star::enumerate<std::size_t>;
-    using Range = std::decay_t<decltype(enu)>;
+    using Range = decltype(enu);
 
     static_assert(star::IsStaticRange<Range>);
     static_assert(star::size<Range> == 4);
@@ -73,7 +89,7 @@ int main() {
   {
     static constexpr std::tuple<int, float, double> tup{1, 2.0F, 3.0};
     static constexpr auto enu = tup | star::enumerate<int>;
-    using Range = std::decay_t<decltype(enu)>;
+    using Range = decltype(enu);
 
     static_assert(star::IsStaticRange<Range>);
     static_assert(star::size<Range> == 3);
@@ -83,7 +99,7 @@ int main() {
   {
     static constexpr auto con = star::constant<5>(1);
     static constexpr auto enu = con | star::enumerate<int>;
-    using Range = std::decay_t<decltype(enu)>;
+    using Range = decltype(enu);
 
     static_assert(star::IsStaticRange<Range>);
     static_assert(star::size<Range> == 5);
@@ -92,20 +108,19 @@ int main() {
 
   // map_values
   {
-    static constexpr std::array arr{0, 4, 3, 1};
-    static constexpr auto map = arr | star::map_values([](auto v) { return 2 * v; });
-    using Range = std::decay_t<decltype(map)>;
+    static constexpr auto map = star::iota<0, 4> | star::map_values([](auto v) { return 2 * v; });
+    using Range = decltype(map);
 
     static_assert(star::IsStaticRange<Range>);
     static_assert(star::size<Range> == 4);
-    static_assert(star::get_at<3>(map) == 2);
+    static_assert(star::get_at<3>(map) == 6);
     static_assert(star::HasSingleElementType<Range>);
   }
   {
     static constexpr std::array arr{0, 4, 3, 1};
     static constexpr auto map =
       arr | star::map_values([](auto v) { return 2 * v; }) | star::enumerate<int>;
-    using Range = std::decay_t<decltype(map)>;
+    using Range = decltype(map);
 
     static_assert(star::IsStaticRange<Range>);
     static_assert(star::size<Range> == 4);
@@ -115,7 +130,7 @@ int main() {
   {
     static constexpr std::tuple<int, float, double> tup{1, 2.0F, 3.0};
     static constexpr auto map = tup | star::map_values([](auto v) { return 2 * v; });
-    using Range = std::decay_t<decltype(map)>;
+    using Range = decltype(map);
 
     static_assert(star::IsStaticRange<Range>);
     static_assert(star::size<Range> == 3);
@@ -127,7 +142,7 @@ int main() {
     static constexpr std::tuple<int, float, double, unsigned> tup{1, 2.0F, 3.0, 4U};
     static constexpr auto map =
       star::map_values([](auto v1, auto v2) { return v1 * int(v2); })(arr, tup);
-    using Range = std::decay_t<decltype(map)>;
+    using Range = decltype(map);
 
     static_assert(star::IsStaticRange<Range>);
     static_assert(star::size<Range> == 4);
@@ -138,11 +153,121 @@ int main() {
     static constexpr std::array arr{0, 4, 3, 1};
     static constexpr auto map =
       arr | (star::map_values([](auto v) { return 2 * v; }) | star::enumerate<int>);
-    using Range = std::decay_t<decltype(map)>;
+    using Range = decltype(map);
 
     static_assert(star::IsStaticRange<Range>);
     static_assert(star::size<Range> == 4);
     static_assert(star::get_at<3>(map) == std::make_pair(thes::static_value<3>, 2));
     static_assert(!star::HasSingleElementType<Range>);
+  }
+
+  // filter
+  {
+    static constexpr std::array arr{0, 4, 3, 1};
+    static constexpr auto map = arr | star::only_idxs<0, 2>;
+    using Range = decltype(map);
+
+    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::size<Range> == 2);
+    static_assert(star::get_at<1>(map) == 3);
+    static_assert(star::HasSingleElementType<Range>);
+  }
+  {
+    static constexpr std::array arr{0, 4, 3, 1};
+    static constexpr auto map =
+      arr | star::only_idxs<0, 2> | star::map_values([](auto v) { return 2 * v; });
+    using Range = decltype(map);
+
+    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::size<Range> == 2);
+    static_assert(star::get_at<1>(map) == 6);
+    static_assert(star::HasSingleElementType<Range>);
+  }
+  {
+    static constexpr std::array arr{0, 4, 3, 1};
+    static constexpr auto map = arr | star::only_idxseq<thes::AutoValueSequence<2>>;
+    using Range = decltype(map);
+
+    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::size<Range> == 1);
+    static_assert(star::get_at<0>(map) == 3);
+    static_assert(star::HasSingleElementType<Range>);
+  }
+  {
+    static constexpr std::array arr{0, 4, 3, 1};
+    static constexpr auto map = arr | star::all_except_idxs<2>;
+    using Range = decltype(map);
+
+    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::size<Range> == 3);
+    static_assert(star::get_at<2>(map) == 1);
+    static_assert(star::HasSingleElementType<Range>);
+  }
+  {
+    static constexpr std::array arr{0, 4, 3, 1};
+    static constexpr auto map = arr | star::all_except_idxseq<thes::AutoValueSequence<2>>;
+    using Range = decltype(map);
+
+    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::size<Range> == 3);
+    static_assert(star::get_at<2>(map) == 1);
+    static_assert(star::HasSingleElementType<Range>);
+  }
+
+  // left_reduce
+  {
+    static constexpr std::array arr{0, 4, 3, 1};
+    static constexpr auto red =
+      arr | star::map_values([](auto v) { return 2 * v; }) | star::left_reduce(std::plus<>{}, 0);
+    static_assert(red == 16);
+  }
+  {
+    static constexpr std::array arr{0, 4, 3, 1};
+    static constexpr auto red =
+      arr | (star::map_values([](auto v) { return 2 * v; }) | star::left_reduce(std::plus<>{}, 0));
+    static_assert(red == 16);
+  }
+
+  // right_reduce
+  {
+    static constexpr std::array arr{0, 4, 3, 1};
+    static constexpr auto red =
+      arr | star::map_values([](auto v) { return 2 * v; }) | star::right_reduce(std::plus<>{}, 0);
+    static_assert(red == 16);
+  }
+  {
+    static constexpr std::array arr{0, 4, 3, 1};
+    static constexpr auto red =
+      arr | (star::map_values([](auto v) { return 2 * v; }) | star::right_reduce(std::plus<>{}, 0));
+    static_assert(red == 16);
+  }
+
+  // to_array
+  {
+    static constexpr std::array arr{0, 4, 3, 1};
+    static constexpr auto red =
+      star::to_array(arr | star::map_values([](auto v) { return 2 * v; }));
+    static_assert(red == std::array{0, 8, 6, 2});
+  }
+  {
+    static constexpr std::array arr{0, 4, 3, 1};
+    static constexpr auto red =
+      arr | star::map_values([](auto v) { return 2 * v; }) | star::to_array;
+    static_assert(red == std::array{0, 8, 6, 2});
+  }
+
+  // to_tuple
+  {
+    static constexpr std::array arr{0, 4, 3, 1};
+    static constexpr auto red =
+      arr | star::map_values([](auto v) { return 2 * v; }) | star::to_tuple;
+    static_assert(red == std::tuple{0, 8, 6, 2});
+  }
+
+  // for_each
+  {
+    static constexpr std::array arr{0, 4, 3, 1};
+    arr | star::map_values([](auto v) { return 2 * v; }) |
+      star::for_each([](auto v) { std::cout << v << std::endl; });
   }
 }

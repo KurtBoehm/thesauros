@@ -20,10 +20,17 @@ concept IsStaticRange =
     (std::declval<const TRange&>(), MakeIntegerSequence<std::size_t, 0, size<TRange>>{});
   };
 
-template<typename TRangeGenerator>
+template<typename TGen>
 struct RangeGeneratorTrait : std::false_type {};
-template<typename TRangeGenerator>
-concept IsRangeGenerator = RangeGeneratorTrait<TRangeGenerator>::value;
+template<typename TGen>
+struct ConsumerGeneratorTrait : std::false_type {};
+
+template<typename TGen>
+concept IsRangeGenerator = RangeGeneratorTrait<std::decay_t<TGen>>::value;
+template<typename TGen>
+concept IsConsumerGenerator = ConsumerGeneratorTrait<std::decay_t<TGen>>::value;
+template<typename TGen>
+concept IsPipeSink = IsRangeGenerator<TGen> || IsConsumerGenerator<TGen>;
 } // namespace thes::star
 
 #endif // INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_DEFINITIONS_CONCEPTS_HPP

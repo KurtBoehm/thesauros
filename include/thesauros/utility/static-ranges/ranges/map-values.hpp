@@ -10,13 +10,12 @@
 
 namespace thes::star {
 template<typename TOp, typename... TInners>
-requires(AutoValueSequence<size<std::decay_t<TInners>>...>::is_unique)
+requires(AutoValueSequence<size<TInners>...>::is_unique)
 struct ValueMapView {
   TOp op;
   std::tuple<TInners...> inners;
 
-  static constexpr std::size_t size =
-    AutoValueSequence<::thes::star::size<std::decay_t<TInners>>...>::unique;
+  static constexpr std::size_t size = AutoValueSequence<::thes::star::size<TInners>...>::unique;
 
   template<std::size_t tIndex>
   constexpr decltype(auto) get() const {
