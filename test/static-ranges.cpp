@@ -6,12 +6,13 @@
 #include <type_traits>
 #include <vector>
 
-#include "thesauros/utility/static-ranges.hpp"
-#include "thesauros/utility/static-ranges/ranges/filter.hpp"
-#include "thesauros/utility/static-ranges/ranges/map-values.hpp"
-#include "thesauros/utility/static-ranges/sinks/reduce.hpp"
-#include "thesauros/utility/static-ranges/sinks/to-array.hpp"
-#include "thesauros/utility/value-sequence.hpp"
+#include "thesauros/algorithms.hpp"
+#include "thesauros/algorithms/static-ranges/index-to-position.hpp"
+#include "thesauros/algorithms/static-ranges/position-to-index.hpp"
+#include "thesauros/ranges.hpp"
+#include "thesauros/utility.hpp"
+#include "thesauros/utility/multi-size.hpp"
+#include "thesauros/utility/static-ranges/ranges/postfix-product-inclusive.hpp"
 
 int main() {
   namespace star = thes::star;
@@ -269,5 +270,59 @@ int main() {
     static constexpr std::array arr{0, 4, 3, 1};
     arr | star::map_values([](auto v) { return 2 * v; }) |
       star::for_each([](auto v) { std::cout << v << std::endl; });
+  }
+
+  // multidim_for_each
+  {
+    static constexpr std::array ranges{thes::range(1, 3), thes::range(1, 2), thes::range(1, 4)};
+    static_assert([] {
+      int value = 0;
+      thes::multidim_for_each(ranges,
+                              [&value](auto v1, auto v2, auto v3) { value += v1 * v2 * v3; });
+      return value;
+    }() == 18);
+  }
+
+  // index_to_position
+  {
+    using namespace thes::literals;
+
+    static constexpr std::array sizes{3_uz, 2_uz, 4_uz};
+    static_assert(star::index_to_position(1_uz, sizes) == std::array{0_uz, 0_uz, 1_uz});
+    static_assert(star::index_to_position(6_uz, sizes) == std::array{0_uz, 1_uz, 2_uz});
+  }
+
+  // position_to_index and postfix_product_inclusive
+  {
+    using namespace thes::literals;
+
+    static constexpr std::array sizes{3_uz, 2_uz, 4_uz};
+    static constexpr auto prods = star::postfix_product_inclusive(sizes) | star::to_array;
+    static_assert(prods == std::array{24_uz, 8_uz, 4_uz, 1_uz});
+
+    static_assert(star::position_to_index(std::array{1_uz, 0_uz, 1_uz}, prods) == 9);
+    static_assert(star::position_to_index(std::array{2_uz, 1_uz, 3_uz}, prods) == 23);
+  }
+
+  // BasicMultiSize
+  {
+    using namespace thes::literals;
+
+    static constexpr thes::BasicMultiSize<std::size_t, 3> ms{{3_uz, 2_uz, 4_uz}};
+    static_assert(ms.pos_to_index(std::array{1_uz, 0_uz, 1_uz}) == 9);
+    static_assert(ms.pos_to_index(std::array{2_uz, 1_uz, 3_uz}) == 23);
+  }
+
+  // MultiSize
+  {
+    using namespace thes::literals;
+    static constexpr thes::MultiSize<std::size_t, 3> ms{{3_uz, 2_uz, 4_uz}};
+
+    static_assert(ms.index_to_pos(1_uz) == std::array{0_uz, 0_uz, 1_uz});
+    static_assert(ms.index_to_axis_index<1>(1_uz) == 0);
+    static_assert(ms.index_to_pos(6_uz) == std::array{0_uz, 1_uz, 2_uz});
+    static_assert(ms.index_to_axis_index<1>(6_uz) == 1);
+    static_assert(ms.pos_to_index(std::array{1_uz, 0_uz, 1_uz}) == 9);
+    static_assert(ms.pos_to_index(std::array{2_uz, 1_uz, 3_uz}) == 23);
   }
 }

@@ -6,5 +6,6 @@
 #include "ranges/filter.hpp"
 #include "ranges/iota.hpp"
 #include "ranges/map-values.hpp"
+#include "ranges/postfix-product-inclusive.hpp"
 
 #endif // INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_RANGES_HPP

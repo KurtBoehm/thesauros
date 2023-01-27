@@ -3,6 +3,7 @@
 
 #include <cstddef>
 
+#include "thesauros/utility/static-ranges/definitions/get-at.hpp"
 #include "thesauros/utility/type-sequence.hpp"
 #include "thesauros/utility/value-sequence.hpp"
 
