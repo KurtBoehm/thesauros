@@ -4,6 +4,8 @@ args = options_sub.get_variable('all_args')
 
 foreach name, info : {
   'Primitives': [['primitives.cpp'], []],
+  'StaticRanges': [['static-ranges.cpp'], []],
+  'ValueSequence': [['value-sequence.cpp'], []],
 }
   sources = info[0]
   deps = info[1]

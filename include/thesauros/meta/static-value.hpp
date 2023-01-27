@@ -4,14 +4,14 @@
 namespace thes {
 template<auto tValue>
 struct StaticValue {
-  using value_type = decltype(tValue);
-  using type = StaticValue;
-  static constexpr value_type value = tValue;
+  using Value = decltype(tValue);
+  using Self = StaticValue;
+  static constexpr Value value = tValue;
 
-  constexpr operator value_type() const noexcept {
+  constexpr operator Value() const noexcept {
     return value;
   }
-  constexpr value_type operator()() const noexcept {
+  constexpr Value operator()() const noexcept {
     return value;
   }
 };

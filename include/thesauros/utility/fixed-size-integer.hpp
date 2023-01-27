@@ -9,37 +9,38 @@ namespace thes {
 namespace utility_impl {
 template<std::size_t tByteNum>
 struct FixedInt : public FixedInt<std::bit_ceil(tByteNum)> {};
+
 template<>
 struct FixedInt<1> {
-  using utype = u8;
-  using itype = i8;
+  using UnsignedInt = U8;
+  using SignedInt = I8;
 };
 template<>
 struct FixedInt<2> {
-  using utype = u16;
-  using itype = i16;
+  using UnsignedInt = U16;
+  using SignedInt = I16;
 };
 template<>
 struct FixedInt<4> {
-  using utype = u32;
-  using itype = i32;
+  using UnsignedInt = U32;
+  using SignedInt = I32;
 };
 template<>
 struct FixedInt<8> {
-  using utype = u64;
-  using itype = i64;
+  using UnsignedInt = U64;
+  using SignedInt = I64;
 };
 template<>
 struct FixedInt<16> {
-  using utype = u128;
-  using itype = i128;
+  using UnsignedInt = U128;
+  using SignedInt = I128;
 };
 } // namespace utility_impl
 
 template<std::size_t tByteNum>
-using FixedUnsignedInt = typename utility_impl::FixedInt<tByteNum>::utype;
+using FixedUnsignedInt = typename utility_impl::FixedInt<tByteNum>::UnsignedInt;
 template<std::size_t tByteNum>
-using FixedSignedInt = typename utility_impl::FixedInt<tByteNum>::itype;
+using FixedSignedInt = typename utility_impl::FixedInt<tByteNum>::SignedInt;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_UTILITY_FIXED_SIZE_INTEGER_HPP

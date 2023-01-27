@@ -30,7 +30,8 @@ CheckOptions:
   - { key: readability-identifier-naming.PrivateMemberSuffix, value: _ }
   - { key: readability-identifier-naming.TemplateParameterCase, value: CamelCase }
   - { key: readability-identifier-naming.TemplateParameterPrefix, value: T }
-  - { key: readability-identifier-naming.TemplateParameterIgnoredRegexp, value: T }
+  - { key: readability-identifier-naming.TemplateParameterIgnoredRegexp, value: "^(T|Ts)$" }
+  - { key: readability-identifier-naming.TypeAliasCase, value: CamelCase }
   - { key: readability-identifier-naming.ValueTemplateParameterCase, value: CamelCase }
   - { key: readability-identifier-naming.ValueTemplateParameterPrefix, value: t }
   - { key: readability-identifier-naming.VariableCase, value: lower_case }
