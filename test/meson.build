@@ -8,6 +8,7 @@ foreach name, info : {
   'Ranges': [['ranges.cpp'], []],
   'StaticMap': [['static-map.cpp'], []],
   'StaticRanges': [['static-ranges.cpp'], []],
+  'StaticString': [['static-string.cpp'], []],
   'Tiling': [['tiling.cpp'], []],
   'FancyVisit': [['fancy-visit.cpp'], []],
   'ValueSequence': [['value-sequence.cpp'], []],

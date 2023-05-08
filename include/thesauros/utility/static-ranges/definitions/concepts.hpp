@@ -10,15 +10,14 @@
 #include "thesauros/utility/value-sequence.hpp"
 
 namespace thes::star {
+template<typename TRange, std::size_t tIdx>
+concept SupportsGetAt = requires(const TRange& range) { get_at<tIdx>(range); };
+
 template<typename TRange>
 concept IsStaticRange =
-  requires {
-    size<TRange>;
-    []<std::size_t... tIdxs>(const TRange& range, ValueSequence<std::size_t, tIdxs...>) {
-      (..., get_at<tIdxs>(range));
-    }
-    (std::declval<const TRange&>(), MakeIntegerSequence<std::size_t, 0, size<TRange>>{});
-  };
+  requires { size<TRange>; } && []<std::size_t... tIdxs>(ValueSequence<std::size_t, tIdxs...>) {
+    return (... && SupportsGetAt<TRange, tIdxs>);
+  }(MakeIntegerSequence<std::size_t, 0, size<TRange>>{});
 
 template<typename TGen>
 struct RangeGeneratorTrait : std::false_type {};

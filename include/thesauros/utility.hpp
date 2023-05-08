@@ -14,6 +14,7 @@
 #include "utility/primitives.hpp"
 #include "utility/static-map.hpp"
 #include "utility/static-ranges.hpp"
+#include "utility/static-string.hpp"
 #include "utility/static-value.hpp"
 #include "utility/type-sequence.hpp"
 #include "utility/type-tag.hpp"
