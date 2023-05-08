@@ -74,8 +74,8 @@ public:
 };
 
 template<auto... tValues>
-requires TypeSequence<decltype(tValues)...>::is_unique
-using AutoSequence = ValueSequence<typename TypeSequence<decltype(tValues)...>::Unique, tValues...>;
+requires TypeSeq<decltype(tValues)...>::is_unique
+using AutoSequence = ValueSequence<typename TypeSeq<decltype(tValues)...>::Unique, tValues...>;
 
 template<typename T, T tCurrent, T tEnd>
 struct MakeIntegerSequenceTrait {
@@ -92,10 +92,9 @@ template<typename T, T tBegin, T tEnd>
 using MakeIntegerSequence = typename MakeIntegerSequenceTrait<T, tBegin, tEnd>::Sequence;
 
 template<auto tBegin, auto tEnd>
-requires TypeSequence<decltype(tBegin), decltype(tEnd)>::is_unique
+requires TypeSeq<decltype(tBegin), decltype(tEnd)>::is_unique
 using MakeAutoIntegerSequence =
-  MakeIntegerSequence<typename TypeSequence<decltype(tBegin), decltype(tEnd)>::Unique, tBegin,
-                      tEnd>;
+  MakeIntegerSequence<typename TypeSeq<decltype(tBegin), decltype(tEnd)>::Unique, tBegin, tEnd>;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_UTILITY_VALUE_SEQUENCE_HPP

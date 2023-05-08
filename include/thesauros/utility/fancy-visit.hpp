@@ -1,0 +1,194 @@
+#ifndef INCLUDE_THESAUROS_UTILITY_FANCY_VISIT_HPP
+#define INCLUDE_THESAUROS_UTILITY_FANCY_VISIT_HPP
+
+#include <stdexcept>
+#include <type_traits>
+
+#include "thesauros/utility/type-sequence.hpp"
+#include "thesauros/utility/unwrap.hpp"
+
+namespace thes {
+struct FancyVisitorIgnore {};
+inline constexpr FancyVisitorIgnore fancy_visitor_ignore{};
+
+template<bool tRemoveIgnored, bool tFlatten, bool tWithMaker, typename TVisitor,
+         typename... TVariants>
+struct FancyVisitor {
+  template<typename T>
+  struct VariantHandler {
+    using Tuple = TypeSeq<T>;
+
+    template<typename TValue>
+    requires(std::same_as<std::decay_t<TValue>, T>)
+    static constexpr auto pack(TValue& value) {
+      using RefWrap = std::reference_wrapper<TValue>;
+      return std::variant<RefWrap>{RefWrap(value)};
+    }
+
+    template<typename TValue>
+    requires(std::same_as<std::decay_t<TValue>, T>)
+    static constexpr auto pack(TValue&& value) {
+      return std::variant<T>{std::forward<TValue>(value)};
+    }
+  };
+  template<typename... Ts>
+  struct VariantHandler<std::variant<Ts...>> {
+    using Type = std::variant<Ts...>;
+    using Tuple = TypeSeq<Ts...>;
+
+    template<typename TVar>
+    requires(std::same_as<std::decay_t<TVar>, Type>)
+    static constexpr TVar&& pack(TVar&& value) {
+      return std::forward<TVar>(value);
+    }
+  };
+
+  template<typename TTup>
+  struct BareFunReturnType;
+  template<typename... TArgs>
+  struct BareFunReturnType<TypeSeq<TArgs...>> {
+    using Type = decltype(std::declval<TVisitor>()(unwrap(std::declval<TArgs>())...));
+  };
+
+  template<typename TTup>
+  struct TaggedFunReturnType;
+  template<typename... TArgs>
+  struct TaggedFunReturnType<TypeSeq<TArgs...>> {
+    using Type = decltype(std::declval<TVisitor>()(
+      []<typename T, typename... TInnerArgs>(std::in_place_type_t<T>, TInnerArgs&&... args) {
+        return T{std::forward<TInnerArgs>(args)...};
+      },
+      unwrap(std::declval<TArgs>())...));
+  };
+
+  template<typename TTup>
+  using FunReturnType = typename std::conditional_t<tWithMaker, TaggedFunReturnType<TTup>,
+                                                    BareFunReturnType<TTup>>::Type;
+
+  template<typename TTup>
+  struct MakeReturn;
+  template<typename T>
+  struct MakeReturn<TypeSeq<T>> {
+    using Type = T;
+  };
+  template<typename... Ts>
+  struct MakeReturn<TypeSeq<Ts...>> {
+    using Type = std::variant<Ts...>;
+  };
+
+  template<typename TTup>
+  struct Maker;
+
+  template<typename... Ts>
+  struct Maker<TypeSeq<Ts...>> {
+    using Return = std::variant<Ts...>;
+
+    template<typename T, typename... TArgs>
+    constexpr Return operator()(std::in_place_type_t<T> tag, TArgs&&... args) const {
+      return Return{tag, std::forward<TArgs>(args)...};
+    }
+  };
+
+  template<typename T>
+  struct Maker<TypeSeq<T>> {
+    using Return = T;
+
+    template<typename... TArgs>
+    constexpr Return operator()(std::in_place_type_t<T> /*tag*/, TArgs&&... args) const {
+      return Return{std::forward<TArgs>(args)...};
+    }
+  };
+
+  using Params = ProductTypeSeq<typename VariantHandler<std::decay_t<TVariants>>::Tuple...>;
+
+  using RawReturnTup = MappedTypeSeq<Params, FunReturnType>;
+
+  using BaseReturnTup =
+    std::conditional_t<tFlatten, FlatTypeSeq<ConvertedTypeSeq<RawReturnTup>>, RawReturnTup>;
+
+  template<typename T>
+  struct ReturnFilter : std::bool_constant<!std::is_same_v<T, FancyVisitorIgnore>> {};
+  using ReturnTup = UniqueTypeSeq<FilteredTypeSeq<BaseReturnTup, ReturnFilter>>;
+
+  using Return = typename MakeReturn<ReturnTup>::Type;
+
+  static constexpr Maker<ReturnTup> construct_in_place{};
+
+  template<typename... TArgs>
+  static constexpr auto call(auto maker, TVisitor&& visitor, TArgs&&... args) {
+    if constexpr (tWithMaker) {
+      return visitor(maker, unwrap(std::forward<TArgs>(args))...);
+    } else {
+      return visitor(unwrap(std::forward<TArgs>(args))...);
+    }
+  }
+
+  template<typename TMaker, typename... TArgs>
+  static constexpr bool ignore = requires(TMaker maker, TVisitor&& visitor, TArgs&&... args) {
+    {
+      call(maker, std::forward<TVisitor>(visitor), std::forward<TArgs>(args)...)
+    } -> std::convertible_to<FancyVisitorIgnore>;
+  };
+
+  template<typename TReturn, typename TMaker>
+  static constexpr auto visit_impl(TMaker maker, TVisitor&& visitor, TVariants&&... vars) {
+    return std::visit(
+      [&]<typename... TArgs>(TArgs&&... args) -> TReturn {
+        if constexpr (tRemoveIgnored && ignore<TMaker, TArgs...>) {
+          call(maker, std::forward<TVisitor>(visitor), std::forward<TArgs>(args)...);
+          throw std::invalid_argument("The visitor failed!");
+        } else {
+          return call(maker, std::forward<TVisitor>(visitor), std::forward<TArgs>(args)...);
+        }
+      },
+      VariantHandler<std::decay_t<TVariants>>::pack(std::forward<TVariants>(vars))...);
+  }
+
+  static constexpr auto visit(TVisitor&& visitor, TVariants&&... vars) {
+    return visit_impl<Return>(construct_in_place, std::forward<TVisitor>(visitor),
+                              std::forward<TVariants>(vars)...);
+  }
+
+  template<typename TMaker>
+  static constexpr auto visit_with_maker(TMaker maker, TVisitor&& visitor, TVariants&&... vars) {
+    if constexpr (requires { typename TMaker::Return; }) {
+      return visit_impl<typename TMaker::Return>(maker, std::forward<TVisitor>(visitor),
+                                                 std::forward<TVariants>(vars)...);
+    } else {
+      return visit(std::forward<TVisitor>(visitor), std::forward<TVariants>(vars)...);
+    }
+  }
+};
+
+template<typename TVisitor, typename... TVars>
+inline constexpr auto fancy_visit(TVisitor&& visitor, TVars&&... vars) {
+  return FancyVisitor<false, false, false, TVisitor, TVars...>::visit(
+    std::forward<TVisitor>(visitor), std::forward<TVars>(vars)...);
+}
+
+template<typename TVisitor, typename... TVars>
+inline constexpr auto fancy_filter_visit(TVisitor&& visitor, TVars&&... vars) {
+  return FancyVisitor<true, false, false, TVisitor, TVars...>::visit(
+    std::forward<TVisitor>(visitor), std::forward<TVars>(vars)...);
+}
+
+template<typename TVisitor, typename... TVars>
+inline constexpr auto fancy_maker_visit(TVisitor&& visitor, TVars&&... vars) {
+  return FancyVisitor<true, false, true, TVisitor, TVars...>::visit(std::forward<TVisitor>(visitor),
+                                                                    std::forward<TVars>(vars)...);
+}
+
+template<typename TVisitor, typename... TVars>
+inline constexpr auto fancy_flat_visit(TVisitor&& visitor, TVars&&... vars) {
+  return FancyVisitor<true, true, true, TVisitor, TVars...>::visit(std::forward<TVisitor>(visitor),
+                                                                   std::forward<TVars>(vars)...);
+}
+
+template<typename TMaker, typename TVisitor, typename... TVars>
+inline constexpr auto fancy_visit_with_maker(TMaker maker, TVisitor&& visitor, TVars&&... vars) {
+  return FancyVisitor<true, true, true, TVisitor, TVars...>::visit_with_maker(
+    maker, std::forward<TVisitor>(visitor), std::forward<TVars>(vars)...);
+}
+} // namespace thes
+
+#endif // INCLUDE_THESAUROS_UTILITY_FANCY_VISIT_HPP

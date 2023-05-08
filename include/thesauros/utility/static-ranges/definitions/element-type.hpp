@@ -13,7 +13,7 @@ namespace thes::star {
 template<typename TRange>
 struct ElementTypesTrait {
   using Types = decltype([]<std::size_t... tIdxs>(ValueSequence<std::size_t, tIdxs...> /*idxs*/) {
-    return TypeSequence<std::decay_t<decltype(get_at<tIdxs>(std::declval<const TRange&>()))>...>{};
+    return TypeSeq<std::decay_t<decltype(get_at<tIdxs>(std::declval<const TRange&>()))>...>{};
   }(MakeIntegerSequence<std::size_t, 0, size<TRange>>{}));
 };
 

@@ -5,6 +5,7 @@
 #include "utility/byte-integer.hpp"
 #include "utility/combine-types.hpp"
 #include "utility/empty.hpp"
+#include "utility/fancy-visit.hpp"
 #include "utility/fixed-size-integer.hpp"
 #include "utility/literals.hpp"
 #include "utility/multi-size.hpp"
@@ -13,9 +14,10 @@
 #include "utility/primitives.hpp"
 #include "utility/static-map.hpp"
 #include "utility/static-ranges.hpp"
+#include "utility/static-value.hpp"
 #include "utility/type-sequence.hpp"
 #include "utility/type-tag.hpp"
+#include "utility/unwrap.hpp"
 #include "utility/value-sequence.hpp"
-#include "utility/static-value.hpp"
 
 #endif // INCLUDE_THESAUROS_UTILITY_HPP

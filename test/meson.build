@@ -9,6 +9,7 @@ foreach name, info : {
   'StaticMap': [['static-map.cpp'], []],
   'StaticRanges': [['static-ranges.cpp'], []],
   'Tiling': [['tiling.cpp'], []],
+  'FancyVisit': [['fancy-visit.cpp'], []],
   'ValueSequence': [['value-sequence.cpp'], []],
 }
   sources = info[0]

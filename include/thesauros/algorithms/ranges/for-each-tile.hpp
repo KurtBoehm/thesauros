@@ -74,8 +74,7 @@ inline constexpr void for_each_tile(const TSizes& sizes, const TTileSizes& tile_
 template<IterDirection tDirection, typename TRanges, typename TFun>
 inline constexpr void iterate_tile(const auto& multi_size, const TRanges& ranges, TFun&& fun) {
   using Range = star::ElementType<TRanges>;
-  using Size =
-    typename TypeSequence<typename Range::first_type, typename Range::second_type>::Unique;
+  using Size = typename TypeSeq<typename Range::first_type, typename Range::second_type>::Unique;
   constexpr std::size_t dim_num = star::size<TRanges>;
 
   auto impl = [&fun, &multi_size, &ranges]<std::size_t tDim, typename... TArgs>(

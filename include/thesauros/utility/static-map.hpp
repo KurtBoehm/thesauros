@@ -32,11 +32,10 @@ template<typename... TPairs>
 struct StaticMap;
 
 template<typename... TPairs>
-requires(TypeSequence<typename TPairs::Key...>::is_unique &&
-         AutoSequence<TPairs::key...>::all_different)
+requires(TypeSeq<typename TPairs::Key...>::is_unique && AutoSequence<TPairs::key...>::all_different)
 struct StaticMap<TPairs...> {
   using Tuple = std::tuple<TPairs...>;
-  using Key = typename TypeSequence<typename TPairs::Key...>::Unique;
+  using Key = typename TypeSeq<typename TPairs::Key...>::Unique;
 
   template<Key tKey>
   static constexpr bool contains = [] {
