@@ -31,28 +31,27 @@ template<IterDirection tDirection, typename TSizes, typename TTileSizes, typenam
          typename TFun>
 inline constexpr void for_each_tile(const TSizes& sizes, const TTileSizes& tile_sizes,
                                     const TFixedAxes& fixed_axes, TFun&& fun) {
-  using namespace literals;
   using Size = star::ElementType<TSizes>;
   constexpr std::size_t dim_num = star::size<TSizes>;
 
   if constexpr (dim_num == 0) {
     return;
   } else {
-    auto impl = [&fixed_axes, &fun, &sizes, &tile_sizes ]<std::size_t tDim, typename... TArgs>(
-      StaticValue<tDim>, auto rec, TArgs... args) THES_ALWAYS_INLINE {
+    auto impl = [&fixed_axes, &fun, &sizes, &tile_sizes]<std::size_t tDim, typename... TArgs>(
+                  StaticAuto<tDim>, auto rec, TArgs... args) THES_ALWAYS_INLINE {
       static_assert(tDim <= dim_num);
       static_assert(sizeof...(TArgs) == tDim);
 
       if constexpr (tDim == dim_num) {
         fun(args...);
       } else if constexpr (TFixedAxes::template contains<tDim>) {
-        rec(static_value<tDim + 1>, rec, args..., fixed_axes.template get<tDim>());
+        rec(static_auto<tDim + 1>, rec, args..., fixed_axes.template get<tDim>());
       } else {
         const Size size = star::get_at<tDim>(sizes);
         const Size tile_size = star::get_at<tDim>(tile_sizes);
         if constexpr (tDirection == IterDirection::FORWARD) {
           for (Size i = 0; i < size; i += tile_size) {
-            rec(static_value<tDim + 1>, rec, args...,
+            rec(static_auto<tDim + 1>, rec, args...,
                 std::make_pair(i, std::min(i + tile_size, size)));
           }
         } else {
@@ -61,27 +60,26 @@ inline constexpr void for_each_tile(const TSizes& sizes, const TTileSizes& tile_
           }
           const Size end_tile = div_ceil(size, tile_size) * tile_size;
           for (Size i = end_tile; i > 0; i -= tile_size) {
-            rec(static_value<tDim + 1>, rec, args...,
+            rec(static_auto<tDim + 1>, rec, args...,
                 std::make_pair(i - tile_size, std::min(i, size)));
           }
         }
       }
     };
 
-    impl(static_value<0_uz>, impl);
+    impl(static_value<std::size_t, 0>, impl);
   }
 }
 
 template<IterDirection tDirection, typename TRanges, typename TFun>
 inline constexpr void iterate_tile(const auto& multi_size, const TRanges& ranges, TFun&& fun) {
-  using namespace literals;
   using Range = star::ElementType<TRanges>;
   using Size =
     typename TypeSequence<typename Range::first_type, typename Range::second_type>::Unique;
   constexpr std::size_t dim_num = star::size<TRanges>;
 
-  auto impl = [&fun, &multi_size, &ranges ]<std::size_t tDim, typename... TArgs>(
-    StaticValue<tDim>, auto rec, auto index, TArgs... args) THES_ALWAYS_INLINE {
+  auto impl = [&fun, &multi_size, &ranges]<std::size_t tDim, typename... TArgs>(
+                StaticAuto<tDim>, auto rec, auto index, TArgs... args) THES_ALWAYS_INLINE {
     const auto indices = star::get_at<tDim>(ranges);
     const auto begin = star::get_at<0>(indices);
     const auto end = star::get_at<1>(indices);
@@ -90,11 +88,11 @@ inline constexpr void iterate_tile(const auto& multi_size, const TRanges& ranges
       const auto factor = multi_size.template after_size<tDim>();
       if constexpr (tDirection == IterDirection::FORWARD) {
         for (Size i = begin; i < end; ++i) {
-          rec(static_value<tDim + 1>, rec, index + i * factor, args..., i);
+          rec(static_auto<tDim + 1>, rec, index + i * factor, args..., i);
         }
       } else {
         for (Size i = end; i > begin; --i) {
-          rec(static_value<tDim + 1>, rec, index + (i - 1) * factor, args..., i - 1);
+          rec(static_auto<tDim + 1>, rec, index + (i - 1) * factor, args..., i - 1);
         }
       }
     } else {
@@ -111,7 +109,7 @@ inline constexpr void iterate_tile(const auto& multi_size, const TRanges& ranges
     }
   };
 
-  impl(static_value<0_uz>, impl, Size{0});
+  impl(static_value<std::size_t, 0>, impl, Size{0});
 }
 } // namespace thes
 

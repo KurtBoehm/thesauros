@@ -14,7 +14,7 @@ struct IotaView {
   template<std::size_t tIndex>
   requires(tBegin + tIndex * tStep < tEnd)
   constexpr decltype(auto) get() const {
-    return static_value<tBegin + tIndex * tStep>;
+    return static_auto<tBegin + tIndex * tStep>;
   }
 };
 

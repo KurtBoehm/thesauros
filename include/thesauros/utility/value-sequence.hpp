@@ -40,12 +40,11 @@ struct ValueSequence : public value_seq_impl::UniqueTrait<T, tValues...> {
 
   static constexpr bool all_different = []<std::size_t... tIdxs1>(std::index_sequence<tIdxs1...>) {
     auto inner = []<std::size_t... tIdxs2, std::size_t tIdx>(std::index_sequence<tIdxs2...>,
-                                                             StaticValue<tIdx>) {
+                                                             StaticAuto<tIdx>) {
       return (... && (get_at<tIdx> != get_at<tIdx + tIdxs2 + 1>));
     };
-    return (... && inner(std::make_index_sequence<size - tIdxs1 - 1>{}, static_value<tIdxs1>));
-  }
-  (std::make_index_sequence<size>{});
+    return (... && inner(std::make_index_sequence<size - tIdxs1 - 1>{}, static_auto<tIdxs1>));
+  }(std::make_index_sequence<size>{});
 
 private:
   template<std::size_t tIdx, typename TExclSeq>
@@ -76,8 +75,7 @@ public:
 
 template<auto... tValues>
 requires TypeSequence<decltype(tValues)...>::is_unique
-using AutoValueSequence =
-  ValueSequence<typename TypeSequence<decltype(tValues)...>::Unique, tValues...>;
+using AutoSequence = ValueSequence<typename TypeSequence<decltype(tValues)...>::Unique, tValues...>;
 
 template<typename T, T tCurrent, T tEnd>
 struct MakeIntegerSequenceTrait {
@@ -95,7 +93,7 @@ using MakeIntegerSequence = typename MakeIntegerSequenceTrait<T, tBegin, tEnd>::
 
 template<auto tBegin, auto tEnd>
 requires TypeSequence<decltype(tBegin), decltype(tEnd)>::is_unique
-using AutoMakeIntegerSequence =
+using MakeAutoIntegerSequence =
   MakeIntegerSequence<typename TypeSequence<decltype(tBegin), decltype(tEnd)>::Unique, tBegin,
                       tEnd>;
 } // namespace thes

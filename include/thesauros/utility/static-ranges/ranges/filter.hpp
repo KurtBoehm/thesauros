@@ -51,6 +51,8 @@ template<std::size_t... tIdxs>
 inline constexpr AllExceptGenerator<ValueSequence<std::size_t, tIdxs...>> all_except_idxs{};
 template<typename TIdxs>
 inline constexpr AllExceptGenerator<TIdxs> all_except_idxseq{};
+template<std::size_t tBegin, std::size_t tEnd>
+inline constexpr FilterGenerator<MakeAutoIntegerSequence<tBegin, tEnd>> sub_range{};
 } // namespace thes::star
 
 #endif // INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_RANGES_FILTER_HPP

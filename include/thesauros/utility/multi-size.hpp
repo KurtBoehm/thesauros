@@ -8,8 +8,8 @@
 #include "thesauros/algorithms/static-ranges/index-to-position.hpp"
 #include "thesauros/algorithms/static-ranges/position-to-index.hpp"
 #include "thesauros/numerics/divmod.hpp"
-#include "thesauros/utility/static-ranges/ranges/map-values.hpp"
 #include "thesauros/utility/static-ranges/ranges/postfix-product-inclusive.hpp"
+#include "thesauros/utility/static-ranges/ranges/transform.hpp"
 #include "thesauros/utility/static-ranges/sinks/to-array.hpp"
 #include "thesauros/utility/value-sequence.hpp"
 
@@ -81,9 +81,9 @@ struct MultiSize : public BasicMultiSize<TIndex, tDimNum> {
 
   constexpr explicit MultiSize(std::array<TIndex, tDimNum> sizes)
       : BasicMultiSize<TIndex, tDimNum>(sizes),
-        divs_(this->sizes() | star::map_values([](Size a) { return Div(a); }) | star::to_array),
+        divs_(this->sizes() | star::transform([](Size a) { return Div(a); }) | star::to_array),
         postfix_prod_incl_divs_(this->from_sizes() |
-                                star::map_values([](Size a) { return Div(a); }) | star::to_array) {}
+                                star::transform([](Size a) { return Div(a); }) | star::to_array) {}
 
   [[nodiscard]] constexpr AxisSize index_to_pos(Size index) const {
     return star::index_to_position(index, divs_);

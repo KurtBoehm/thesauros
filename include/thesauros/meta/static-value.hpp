@@ -2,9 +2,9 @@
 #define INCLUDE_THESAUROS_META_STATIC_VALUE_HPP
 
 namespace thes {
-template<auto tValue>
+template<typename T, T tValue>
 struct StaticValue {
-  using Value = decltype(tValue);
+  using Value = T;
   using Self = StaticValue;
   static constexpr Value value = tValue;
 
@@ -15,9 +15,13 @@ struct StaticValue {
     return value;
   }
 };
-
 template<auto tValue>
-inline constexpr StaticValue<tValue> static_value{};
+using StaticAuto = StaticValue<decltype(tValue), tValue>;
+
+template<typename T, T tValue>
+inline constexpr StaticValue<T, tValue> static_value{};
+template<auto tValue>
+inline constexpr StaticAuto<tValue> static_auto{};
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_META_STATIC_VALUE_HPP

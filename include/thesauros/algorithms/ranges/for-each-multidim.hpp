@@ -11,7 +11,7 @@
 #include "thesauros/utility/static-ranges/definitions/element-type.hpp"
 #include "thesauros/utility/static-ranges/definitions/get-at.hpp"
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
-#include "thesauros/utility/static-ranges/ranges/map-values.hpp"
+#include "thesauros/utility/static-ranges/ranges/transform.hpp"
 
 namespace thes {
 template<typename TRanges, typename TFixedAxes>
@@ -43,7 +43,7 @@ THES_ALWAYS_INLINE inline constexpr void multidim_for_each(const TRanges& ranges
 template<typename TSizes, typename TFixedAxes, typename TOp>
 THES_ALWAYS_INLINE inline constexpr void
 multidim_for_each_size(const TSizes& sizes, const TFixedAxes& fixed_axes, TOp&& op) {
-  multidim_for_each(sizes | star::map_values([](auto size) { return range(size); }), fixed_axes,
+  multidim_for_each(sizes | star::transform([](auto size) { return range(size); }), fixed_axes,
                     std::forward<TOp>(op));
 }
 template<typename TSizes, typename TOp>

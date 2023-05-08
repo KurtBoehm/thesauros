@@ -17,7 +17,7 @@ struct EnumerateView {
 
   template<std::size_t tIndex>
   constexpr auto get() const {
-    return std::make_pair(static_value<TSize{tIndex}>, get_at<tIndex>(inner));
+    return std::make_pair(static_value<TSize, tIndex>, get_at<tIndex>(inner));
   }
 };
 

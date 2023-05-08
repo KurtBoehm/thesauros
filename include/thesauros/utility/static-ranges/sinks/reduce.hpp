@@ -20,12 +20,12 @@ struct LeftReduceGenerator {
     constexpr std::size_t size = ::thes::star::size<TRange>;
     auto impl = [this, &range](auto& self, auto idx, auto value) {
       if constexpr (idx < size) {
-        return self(self, static_value<idx + 1>, op(value, get_at<idx>(range)));
+        return self(self, static_auto<idx + 1>, op(value, get_at<idx>(range)));
       } else {
         return value;
       }
     };
-    return impl(impl, static_value<std::size_t{0}>, init);
+    return impl(impl, static_value<std::size_t, 0>, init);
   }
 };
 template<typename TOp, typename TInit>
@@ -46,12 +46,12 @@ struct RightReduceGenerator {
     constexpr std::size_t size = ::thes::star::size<TRange>;
     auto impl = [this, &range](auto& self, auto idx) {
       if constexpr (idx < size) {
-        return op(get_at<idx>(range), self(self, static_value<idx + 1>));
+        return op(get_at<idx>(range), self(self, static_auto<idx + 1>));
       } else {
         return init;
       }
     };
-    return impl(impl, static_value<std::size_t{0}>);
+    return impl(impl, static_value<std::size_t, 0>);
   }
 };
 template<typename TOp, typename TInit>

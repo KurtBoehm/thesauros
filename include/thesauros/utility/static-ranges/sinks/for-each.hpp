@@ -16,9 +16,7 @@ struct ForEachGenerator {
   template<typename TRange>
   constexpr auto operator()(TRange&& range) const {
     constexpr std::size_t size = ::thes::star::size<TRange>;
-    auto impl =
-      [ this, &range ]<std::size_t... tIdxs>(ValueSequence<std::size_t, tIdxs...> /*idxs*/)
-        THES_ALWAYS_INLINE {
+    auto impl = [this, &range]<std::size_t... tIdxs>(AutoSequence<tIdxs...> /*idxs*/) {
       return (op(get_at<tIdxs>(range)), ...);
     };
     return impl(MakeIntegerSequence<std::size_t, 0, size>{});
