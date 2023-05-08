@@ -3,9 +3,9 @@
 
 #include <type_traits>
 
-#include "thesauros/meta/static-value.hpp"
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
+#include "thesauros/utility/static-value.hpp"
 
 namespace thes::star {
 template<typename TSize, typename TInner>

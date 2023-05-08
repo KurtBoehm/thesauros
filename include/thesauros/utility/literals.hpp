@@ -20,30 +20,30 @@ USER_DEFINED_LITERALS(iz, std::make_signed_t<std::size_t>)
 USER_DEFINED_LITERALS(uz, std::size_t)
 USER_DEFINED_LITERALS(imax, std::intmax_t)
 USER_DEFINED_LITERALS(umax, std::uintmax_t)
-USER_DEFINED_LITERALS(i128, I128);
-USER_DEFINED_LITERALS(i16, I16);
-USER_DEFINED_LITERALS(i32, I32);
-USER_DEFINED_LITERALS(i64, I64);
-USER_DEFINED_LITERALS(i8, I8);
-USER_DEFINED_LITERALS(u128, U128);
-USER_DEFINED_LITERALS(u16, U16);
-USER_DEFINED_LITERALS(u32, U32);
-USER_DEFINED_LITERALS(u64, U64);
-USER_DEFINED_LITERALS(u8, U8);
+USER_DEFINED_LITERALS(i128, i128);
+USER_DEFINED_LITERALS(i16, i16);
+USER_DEFINED_LITERALS(i32, i32);
+USER_DEFINED_LITERALS(i64, i64);
+USER_DEFINED_LITERALS(i8, i8);
+USER_DEFINED_LITERALS(u128, u128);
+USER_DEFINED_LITERALS(u16, u16);
+USER_DEFINED_LITERALS(u32, u32);
+USER_DEFINED_LITERALS(u64, u64);
+USER_DEFINED_LITERALS(u8, u8);
 
 #undef USER_DEFINED_LITERALS
 
-consteval F32 operator""_f32(long double v) {
-  return static_cast<F32>(v);
+consteval f32 operator""_f32(long double v) {
+  return static_cast<f32>(v);
 }
-consteval F32 operator""_f32(unsigned long long v) {
-  return static_cast<F32>(v);
+consteval f32 operator""_f32(unsigned long long v) {
+  return static_cast<f32>(v);
 }
-consteval F64 operator""_f64(long double v) {
-  return static_cast<F64>(v);
+consteval f64 operator""_f64(long double v) {
+  return static_cast<f64>(v);
 }
-consteval F64 operator""_f64(unsigned long long v) {
-  return static_cast<F64>(v);
+consteval f64 operator""_f64(unsigned long long v) {
+  return static_cast<f64>(v);
 }
 } // namespace thes::literals
 

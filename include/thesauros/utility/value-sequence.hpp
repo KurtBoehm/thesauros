@@ -6,7 +6,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "thesauros/meta/static-value.hpp"
+#include "thesauros/utility/static-value.hpp"
 #include "thesauros/utility/type-sequence.hpp"
 
 namespace thes {

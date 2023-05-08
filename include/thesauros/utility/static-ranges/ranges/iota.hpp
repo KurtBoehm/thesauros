@@ -3,8 +3,8 @@
 
 #include <cstddef>
 
-#include "thesauros/meta/static-value.hpp"
 #include "thesauros/numerics/arithmetic.hpp"
+#include "thesauros/utility/static-value.hpp"
 
 namespace thes::star {
 template<std::size_t tBegin, std::size_t tEnd, std::size_t tStep>

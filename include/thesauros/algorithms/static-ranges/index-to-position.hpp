@@ -3,9 +3,9 @@
 
 #include <array>
 
-#include "thesauros/meta/static-value.hpp"
 #include "thesauros/numerics/divmod.hpp"
 #include "thesauros/optimization.hpp"
+#include "thesauros/utility/static-value.hpp"
 
 namespace thes::star {
 template<typename TIdx, typename TSize, std::size_t tSize>

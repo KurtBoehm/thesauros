@@ -14,33 +14,33 @@ namespace thes {
 namespace divmod_impl {
 // a: UFixed<0, 16>, b: UFixed<8, 0>
 // result: floor(a * b) -> UFixed<8, 0>
-inline constexpr U8 mul_frac_int(U16 a, U8 b) {
-  return static_cast<U8>((U32{a} * U32{b}) >> U32{16});
+inline constexpr u8 mul_frac_int(u16 a, u8 b) {
+  return static_cast<u8>((u32{a} * u32{b}) >> u32{16});
 }
 
 // a: UFixed<0, 32>, b: UFixed<16, 0>
 // result: floor(a * b) -> UFixed<16, 0>
-inline constexpr U16 mul_frac_int(U32 a, U16 b) {
-  return static_cast<U16>((U64{a} * U64{b}) >> U64{32});
+inline constexpr u16 mul_frac_int(u32 a, u16 b) {
+  return static_cast<u16>((u64{a} * u64{b}) >> u64{32});
 }
 
 // a: UFixed<0, 64>, b: UFixed<32, 0>
 // result: floor(a * b) -> UFixed<32, 0>
-inline constexpr U32 mul_frac_int(U64 a, U32 b) {
-  return static_cast<U32>((U128{a} * U128{b}) >> U128{64});
+inline constexpr u32 mul_frac_int(u64 a, u32 b) {
+  return static_cast<u32>((u128{a} * u128{b}) >> u128{64});
 }
 
 // a: UFixed<0, 128>, b: UFixed<64, 0>
 // result: floor(a * b) -> UFixed<64, 0>
-inline constexpr U64 mul_frac_int(U128 a, U64 b) {
+inline constexpr u64 mul_frac_int(u128 a, u64 b) {
   // compute the upper 64 bits of the 192-bit product in three steps:
   // 1. p1 = a[:64] * b >> 64 (the lower bits cannot contribute carry bits)
   // 2. p2 = a[64:] * b (already effectively shifted down by 64 bits)
   // 3: result = (p1 + p2) >> 64
-  const auto p1 = ((a & std::numeric_limits<U64>::max()) * U128{b}) >> U128{64};
-  const auto p2 = (a >> U128{64}) * b;
-  const auto result = (p1 + p2) >> U128{64};
-  return static_cast<U64>(result);
+  const auto p1 = ((a & std::numeric_limits<u64>::max()) * u128{b}) >> u128{64};
+  const auto p2 = (a >> u128{64}) * b;
+  const auto result = (p1 + p2) >> u128{64};
+  return static_cast<u64>(result);
 }
 } // namespace divmod_impl
 

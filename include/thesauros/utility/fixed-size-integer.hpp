@@ -6,41 +6,39 @@
 #include "primitives.hpp"
 
 namespace thes {
-namespace utility_impl {
 template<std::size_t tByteNum>
-struct FixedInt : public FixedInt<std::bit_ceil(tByteNum)> {};
+struct FixedIntTrait : public FixedIntTrait<std::bit_ceil(tByteNum)> {};
 
 template<>
-struct FixedInt<1> {
-  using UnsignedInt = U8;
-  using SignedInt = I8;
+struct FixedIntTrait<1> {
+  using Unsigned = u8;
+  using Signed = i8;
 };
 template<>
-struct FixedInt<2> {
-  using UnsignedInt = U16;
-  using SignedInt = I16;
+struct FixedIntTrait<2> {
+  using Unsigned = u16;
+  using Signed = i16;
 };
 template<>
-struct FixedInt<4> {
-  using UnsignedInt = U32;
-  using SignedInt = I32;
+struct FixedIntTrait<4> {
+  using Unsigned = u32;
+  using Signed = i32;
 };
 template<>
-struct FixedInt<8> {
-  using UnsignedInt = U64;
-  using SignedInt = I64;
+struct FixedIntTrait<8> {
+  using Unsigned = u64;
+  using Signed = i64;
 };
 template<>
-struct FixedInt<16> {
-  using UnsignedInt = U128;
-  using SignedInt = I128;
+struct FixedIntTrait<16> {
+  using Unsigned = u128;
+  using Signed = i128;
 };
-} // namespace utility_impl
 
 template<std::size_t tByteNum>
-using FixedUnsignedInt = typename utility_impl::FixedInt<tByteNum>::UnsignedInt;
+using FixedUnsignedInt = typename FixedIntTrait<tByteNum>::Unsigned;
 template<std::size_t tByteNum>
-using FixedSignedInt = typename utility_impl::FixedInt<tByteNum>::SignedInt;
+using FixedSignedInt = typename FixedIntTrait<tByteNum>::Signed;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_UTILITY_FIXED_SIZE_INTEGER_HPP

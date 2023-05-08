@@ -3,6 +3,7 @@ opts = options_sub.get_variable('all_opts')
 args = options_sub.get_variable('all_args')
 
 foreach name, info : {
+  'Empty': [['empty.cpp'], []],
   'Primitives': [['primitives.cpp'], []],
   'Ranges': [['ranges.cpp'], []],
   'StaticMap': [['static-map.cpp'], []],

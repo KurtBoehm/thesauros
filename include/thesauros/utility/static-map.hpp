@@ -3,7 +3,7 @@
 
 #include <utility>
 
-#include "thesauros/meta/static-value.hpp"
+#include "thesauros/utility/static-value.hpp"
 #include "thesauros/utility/type-sequence.hpp"
 #include "thesauros/utility/value-sequence.hpp"
 

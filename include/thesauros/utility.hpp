@@ -2,7 +2,9 @@
 #define INCLUDE_THESAUROS_UTILITY_HPP
 
 #include "utility/arrow-proxy.hpp"
+#include "utility/byte-integer.hpp"
 #include "utility/combine-types.hpp"
+#include "utility/empty.hpp"
 #include "utility/fixed-size-integer.hpp"
 #include "utility/literals.hpp"
 #include "utility/multi-size.hpp"
@@ -14,5 +16,6 @@
 #include "utility/type-sequence.hpp"
 #include "utility/type-tag.hpp"
 #include "utility/value-sequence.hpp"
+#include "utility/static-value.hpp"
 
 #endif // INCLUDE_THESAUROS_UTILITY_HPP

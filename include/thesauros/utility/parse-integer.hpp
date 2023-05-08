@@ -4,8 +4,8 @@
 #include <optional>
 #include <string_view>
 
-#include "thesauros/meta/static-value.hpp"
 #include "thesauros/numerics/overflow.hpp"
+#include "thesauros/utility/static-value.hpp"
 
 namespace thes {
 template<typename T, bool tFromString>
