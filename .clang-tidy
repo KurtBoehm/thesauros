@@ -42,7 +42,7 @@ CheckOptions:
   - { key: readability-identifier-naming.TypeAliasCase, value: CamelCase }
   - {
       key: readability-identifier-naming.TypeAliasIgnoredRegexp,
-      value: "^(f|i|u)[0-9]+$",
+      value: "^((f|i|u)[0-9]+|[a-z]{2}bi|[a-z]*(byte|metre|second)|minute|hour|day)$",
     }
   - {
       key: readability-identifier-naming.ValueTemplateParameterCase,
