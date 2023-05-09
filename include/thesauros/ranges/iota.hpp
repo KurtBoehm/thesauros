@@ -12,7 +12,7 @@ private:
   struct IterProv {
     using Value = T;
     using State = T;
-    struct IterTypes : public iterator_provider::ValueTypes<Value, std::ptrdiff_t> {
+    struct IterTypes : public iter_provider::ValueTypes<Value, std::ptrdiff_t> {
       using IterState = State;
     };
 
@@ -34,7 +34,7 @@ public:
   constexpr IotaRange(T begin, T end) : begin_{begin}, end_{end} {}
 
   struct const_iterator
-      : public IteratorFacade<const_iterator, iterator_provider::Map<IterProv, const_iterator>> {
+      : public IteratorFacade<const_iterator, iter_provider::Map<IterProv, const_iterator>> {
     friend IterProv;
     constexpr explicit const_iterator(value_type&& v) : value_(std::move(v)) {}
     constexpr explicit const_iterator(const value_type& v) : value_(v) {}
@@ -46,8 +46,8 @@ public:
   struct const_reverse_iterator
       : public IteratorFacade<
           const_reverse_iterator,
-          iterator_provider::Reverse<iterator_provider::Map<IterProv, const_reverse_iterator>,
-                                     const_reverse_iterator>> {
+          iter_provider::Reverse<iter_provider::Map<IterProv, const_reverse_iterator>,
+                                 const_reverse_iterator>> {
     friend IterProv;
     constexpr explicit const_reverse_iterator(value_type&& v)
         : value_(std::forward<value_type>(v)) {}
@@ -79,7 +79,7 @@ public:
   }
 
   [[nodiscard]] constexpr bool contains(const T& value) const {
-    return begin_ <= value and value < end_;
+    return begin_ <= value && value < end_;
   }
 
   [[nodiscard]] constexpr bool is_empty() const {
@@ -135,7 +135,7 @@ struct ExtendedIotaRange {
   }
 
   bool contains(const T& value) const {
-    return begin_ <= value and value < end_ and ((value - begin_) % step_ == 0);
+    return begin_ <= value && value < end_ && ((value - begin_) % step_ == 0);
   }
 
 private:

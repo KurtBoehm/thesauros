@@ -5,13 +5,11 @@
 #include <concepts>
 
 namespace thes {
-namespace iterator_provider {
+namespace iter_provider {
 template<typename TState, typename TProvider>
 concept Deref = requires(const TState& s) {
-                  {
-                    TProvider::deref(s)
-                    } -> std::convertible_to<typename TProvider::IterTypes::IterRef>;
-                };
+  { TProvider::deref(s) } -> std::convertible_to<typename TProvider::IterTypes::IterRef>;
+};
 
 template<typename TState, typename TProvider>
 concept Incr = requires(TState& s) { TProvider::incr(s); };
@@ -20,14 +18,12 @@ concept Decr = requires(TState& s) { TProvider::decr(s); };
 
 template<typename TState, typename TProvider>
 concept Eq = requires(const TState& s1, const TState& s2) {
-               { TProvider::eq(s1, s2) } -> std::convertible_to<bool>;
-             };
+  { TProvider::eq(s1, s2) } -> std::convertible_to<bool>;
+};
 template<typename TState, typename TProvider>
 concept ThreeWayCmp = requires(const TState& s1, const TState& s2) {
-                        {
-                          TProvider::three_way(s1, s2)
-                          } -> std::convertible_to<std::strong_ordering>;
-                      };
+  { TProvider::three_way(s1, s2) } -> std::convertible_to<std::strong_ordering>;
+};
 
 template<typename TState, typename TProvider>
 concept InPlaceAdd =
@@ -38,17 +34,13 @@ concept InPlaceSub =
 
 template<typename TState, typename TProvider>
 concept Sub = requires(const TState& s1, const TState& s2) {
-                {
-                  TProvider::sub(s1, s2)
-                  } -> std::convertible_to<typename TProvider::IterTypes::IterDiff>;
-              };
+  { TProvider::sub(s1, s2) } -> std::convertible_to<typename TProvider::IterTypes::IterDiff>;
+};
 
 template<typename TState, typename TProvider>
 concept GetItem = requires(const TState& s, typename TProvider::IterTypes::IterDiff d) {
-                    {
-                      TProvider::get_item(s, d)
-                      } -> std::convertible_to<typename TProvider::IterTypes::IterRef>;
-                  };
+  { TProvider::get_item(s, d) } -> std::convertible_to<typename TProvider::IterTypes::IterRef>;
+};
 
 template<typename TState, typename TProvider>
 concept ForwardIterProvider =
@@ -68,13 +60,11 @@ concept TestIfCmp = requires(const TIt1& i1, const TIt2& i2) { TProvider::test_i
 
 template<typename TState, typename TProvider>
 concept RevDeref = requires(const TState& s) {
-                     {
-                       TProvider::rev_deref(s)
-                       } -> std::convertible_to<typename TProvider::IterTypes::IterRef>;
-                   };
-} // namespace iterator_provider
+  { TProvider::rev_deref(s) } -> std::convertible_to<typename TProvider::IterTypes::IterRef>;
+};
+} // namespace iter_provider
 
-namespace iterator {
+namespace iter {
 template<typename TIt>
 concept IncrAny = requires(TIt& v) { ++v; };
 template<typename TIt>
@@ -85,17 +75,17 @@ template<typename TIt, typename TDiff>
 concept InPlaceSub = requires(TIt& v, TDiff d) { v -= d; };
 template<typename TIt>
 concept Eq = requires(const TIt& v1, const TIt& v2) {
-               { v1 == v2 } -> std::convertible_to<bool>;
-             };
+  { v1 == v2 } -> std::convertible_to<bool>;
+};
 template<typename TIt>
 concept ThreeWayCmp = requires(const TIt& v1, const TIt& v2) {
-                        { v1 <=> v2 } -> std::convertible_to<std::strong_ordering>;
-                      };
+  { v1 <=> v2 } -> std::convertible_to<std::strong_ordering>;
+};
 template<typename TIt, typename TDiff>
 concept Sub = std::integral<TDiff> || requires(const TIt& v1, const TIt& v2) {
-                                        { v1 - v2 } -> std::convertible_to<TDiff>;
-                                      };
-} // namespace iterator
+  { v1 - v2 } -> std::convertible_to<TDiff>;
+};
+} // namespace iter
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_ITERATOR_CONCEPTS_HPP

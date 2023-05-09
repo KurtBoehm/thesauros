@@ -22,9 +22,9 @@ using u128 = unsigned __int128;
 #pragma GCC diagnostic pop
 
 using f32 = float;
-static_assert(std::numeric_limits<f32>::is_iec559 and sizeof(f32) == 4);
+static_assert(std::numeric_limits<f32>::is_iec559 && sizeof(f32) == 4);
 using f64 = double;
-static_assert(std::numeric_limits<f64>::is_iec559 and sizeof(f64) == 8);
+static_assert(std::numeric_limits<f64>::is_iec559 && sizeof(f64) == 8);
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_UTILITY_PRIMITIVES_HPP

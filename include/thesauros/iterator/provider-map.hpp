@@ -3,7 +3,7 @@
 
 #include "concepts.hpp"
 
-namespace thes::iterator_provider {
+namespace thes::iter_provider {
 // `StateProvider` needs to provide three static member functions:
 // * deref(const Derived&) -> convertible_to<StateProvider::value_type>
 // * state(Derived&) -> State&
@@ -25,18 +25,18 @@ struct Map {
   }
 
   static constexpr void incr(auto& self)
-  requires iterator::IncrAny<State>
+  requires iter::IncrAny<State>
   {
     ++TStateProvider::state(self);
   }
   static constexpr void decr(auto& self)
-  requires iterator::DecrAny<State>
+  requires iter::DecrAny<State>
   {
     --TStateProvider::state(self);
   }
 
   static constexpr void iadd(auto& self, Diff d)
-  requires iterator::InPlaceAdd<State, Diff>
+  requires iter::InPlaceAdd<State, Diff>
   {
     if constexpr (std::integral<State>) {
       TStateProvider::state(self) += static_cast<State>(d);
@@ -45,7 +45,7 @@ struct Map {
     }
   }
   static constexpr void isub(auto& self, Diff d)
-  requires iterator::InPlaceSub<State, Diff>
+  requires iter::InPlaceSub<State, Diff>
   {
     if constexpr (std::integral<State>) {
       TStateProvider::state(self) -= static_cast<State>(d);
@@ -55,20 +55,20 @@ struct Map {
   }
 
   static constexpr bool eq(const auto& i1, const auto& i2)
-  requires iterator::Eq<State>
+  requires iter::Eq<State>
   {
     test_if_cmp(i1, i2);
     return TStateProvider::state(i1) == TStateProvider::state(i2);
   }
   static constexpr std::strong_ordering three_way(const auto& i1, const auto& i2)
-  requires iterator::ThreeWayCmp<State>
+  requires iter::ThreeWayCmp<State>
   {
     test_if_cmp(i1, i2);
     return TStateProvider::state(i1) <=> TStateProvider::state(i2);
   }
 
   static constexpr Diff sub(const auto& i1, const auto& i2)
-  requires iterator::Sub<State, Diff>
+  requires iter::Sub<State, Diff>
   {
     test_if_cmp(i1, i2);
     if constexpr (std::integral<State>) {
@@ -82,11 +82,11 @@ struct Map {
 private:
   template<typename I1, typename I2>
   static constexpr void test_if_cmp(const I1& i1, const I2& i2) {
-    if constexpr (iterator_provider::TestIfCmp<TStateProvider, I1, I2>) {
+    if constexpr (iter_provider::TestIfCmp<TStateProvider, I1, I2>) {
       TStateProvider::test_if_cmp(i1, i2);
     }
   }
 };
-} // namespace thes::iterator_provider
+} // namespace thes::iter_provider
 
 #endif // INCLUDE_THESAUROS_ITERATOR_PROVIDER_MAP_HPP
