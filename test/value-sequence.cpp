@@ -5,10 +5,10 @@
 int main() {
   {
     using Seq1 = thes::AutoSequence<1, 2>;
-    using Seq2 = Seq1::Prepend<0>;
-    using Seq3 = Seq2::Append<3>;
+    using Seq2 = Seq1::Prepended<0>;
+    using Seq3 = Seq2::Appended<3>;
     static_assert(std::same_as<Seq3, thes::AutoSequence<0, 1, 2, 3>>);
-    constexpr auto val1 = Seq3::get_at<3>;
+    constexpr auto val1 = Seq3::at<3>;
     static_assert(val1 == 3);
   }
   {

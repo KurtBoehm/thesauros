@@ -4,7 +4,7 @@
 #include <array>
 #include <cstddef>
 
-#include "thesauros/numerics/arithmetic.hpp"
+#include "thesauros/math/arithmetic.hpp"
 #include "thesauros/optimization.hpp"
 #include "thesauros/utility/literals.hpp"
 #include "thesauros/utility/static-ranges/definitions/element-type.hpp"

@@ -10,21 +10,23 @@
 
 namespace thes {
 template<typename... Ts>
-struct UniqueTrait {
+struct TypeSeqBase {
   static constexpr bool is_unique = false;
 };
-
 template<typename THead, typename... TTail>
 requires(... && std::same_as<THead, TTail>)
-struct UniqueTrait<THead, TTail...> {
+struct TypeSeqBase<THead, TTail...> {
   static constexpr bool is_unique = true;
   using Unique = THead;
 };
 
 template<typename... Ts>
-struct TypeSeq : public UniqueTrait<Ts...> {
+struct TypeSeq : public TypeSeqBase<Ts...> {
   template<std::size_t tIndex>
   using GetAt = std::tuple_element_t<tIndex, std::tuple<Ts...>>;
+
+  template<typename T>
+  static constexpr bool contains = (... && std::same_as<T, Ts>);
 
   template<typename T>
   using Prepended = TypeSeq<T, Ts...>;
@@ -149,7 +151,7 @@ template<typename T>
 using FlatTypeSeq = typename impl::flat_type_seq::Impl<T>::Type;
 
 namespace impl {
-struct MappedTypeSeq {
+struct TransformedTypeSeq {
   template<typename T, template<typename> typename TMap>
   struct Impl;
   template<typename... Ts, template<typename> typename TMap>
@@ -162,7 +164,7 @@ struct MappedTypeSeq {
 };
 } // namespace impl
 template<typename T, template<typename> typename TMap>
-using MappedTypeSeq = impl::MappedTypeSeq::Type<T, TMap>;
+using TransformedTypeSeq = impl::TransformedTypeSeq::Type<T, TMap>;
 
 namespace impl {
 struct FilteredTypeSeq {

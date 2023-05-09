@@ -4,6 +4,12 @@
 #include <concepts>
 
 namespace thes {
+template<bool tConst, typename T>
+using ConditionalConst = std::conditional_t<tConst, const T, T>;
+
+template<typename TFrom, typename TTo>
+using TransferConst = std::conditional_t<std::is_const_v<TFrom>, const TTo, TTo>;
+
 template<typename T1, typename T2>
 struct UnionTrait;
 

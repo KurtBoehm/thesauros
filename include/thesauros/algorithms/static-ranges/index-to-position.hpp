@@ -3,7 +3,7 @@
 
 #include <array>
 
-#include "thesauros/numerics/divmod.hpp"
+#include "thesauros/math/divmod.hpp"
 #include "thesauros/optimization.hpp"
 #include "thesauros/utility/static-value.hpp"
 

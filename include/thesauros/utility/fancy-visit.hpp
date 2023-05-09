@@ -101,7 +101,7 @@ struct FancyVisitor {
 
   using Params = ProductTypeSeq<typename VariantHandler<std::decay_t<TVariants>>::Tuple...>;
 
-  using RawReturnTup = MappedTypeSeq<Params, FunReturnType>;
+  using RawReturnTup = TransformedTypeSeq<Params, FunReturnType>;
 
   using BaseReturnTup =
     std::conditional_t<tFlatten, FlatTypeSeq<ConvertedTypeSeq<RawReturnTup>>, RawReturnTup>;

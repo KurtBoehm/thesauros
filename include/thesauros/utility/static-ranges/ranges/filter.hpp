@@ -17,7 +17,7 @@ struct FilterView {
 
   template<std::size_t tIndex>
   constexpr decltype(auto) get() const {
-    return get_at<TIndices::template get_at<tIndex>>(inner);
+    return get_at<TIndices::template at<tIndex>>(inner);
   }
 };
 

@@ -4,7 +4,7 @@
 #include <optional>
 #include <string_view>
 
-#include "thesauros/numerics/overflow.hpp"
+#include "thesauros/math/overflow.hpp"
 #include "thesauros/utility/static-value.hpp"
 
 namespace thes {

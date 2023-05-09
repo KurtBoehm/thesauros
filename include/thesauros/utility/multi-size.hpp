@@ -7,7 +7,7 @@
 
 #include "thesauros/algorithms/static-ranges/index-to-position.hpp"
 #include "thesauros/algorithms/static-ranges/position-to-index.hpp"
-#include "thesauros/numerics/divmod.hpp"
+#include "thesauros/math/divmod.hpp"
 #include "thesauros/utility/static-ranges/ranges/postfix-product-inclusive.hpp"
 #include "thesauros/utility/static-ranges/ranges/transform.hpp"
 #include "thesauros/utility/static-ranges/sinks/to-array.hpp"

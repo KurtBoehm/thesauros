@@ -3,7 +3,7 @@
 
 #include <cstddef>
 
-#include "thesauros/numerics/arithmetic.hpp"
+#include "thesauros/math/arithmetic.hpp"
 #include "thesauros/utility/static-value.hpp"
 
 namespace thes::star {
