@@ -1,5 +1,5 @@
-#ifndef INCLUDE_THESAUROS_ALGORITHMS_STATIC_RANGES_multidim_for_each_HPP
-#define INCLUDE_THESAUROS_ALGORITHMS_STATIC_RANGES_multidim_for_each_HPP
+#ifndef INCLUDE_THESAUROS_ALGORITHMS_RANGES_FOR_EACH_MULTIDIM_HPP
+#define INCLUDE_THESAUROS_ALGORITHMS_RANGES_FOR_EACH_MULTIDIM_HPP
 
 #include <iterator>
 #include <utility>
@@ -52,4 +52,4 @@ THES_ALWAYS_INLINE inline constexpr void multidim_for_each_size(const TSizes& si
 }
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_ALGORITHMS_STATIC_RANGES_multidim_for_each_HPP
+#endif // INCLUDE_THESAUROS_ALGORITHMS_RANGES_FOR_EACH_MULTIDIM_HPP

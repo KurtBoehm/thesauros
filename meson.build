@@ -1,11 +1,15 @@
 project(
-  'treasury',
+  'thesauros',
   'cpp',
   default_options: ['cpp_std=c++20', 'warning_level=3']
 )
 
-treasury_dep = declare_dependency(
-  include_directories: include_directories('include')
+boost_preprocessor_dep = dependency('boost-preprocessor')
+expected_dep = dependency('expected')
+
+thesauros_dep = declare_dependency(
+  include_directories: include_directories('include'),
+  dependencies: [boost_preprocessor_dep, expected_dep],
 )
 
 install_subdir(
@@ -15,9 +19,9 @@ install_subdir(
 
 pc = import('pkgconfig')
 pc.generate(
-  name: 'treasury',
+  name: 'thesauros',
   version: meson.project_version(),
-  description: 'The treasury'
+  description: 'Thesauros',
 )
 
 if get_option('test')

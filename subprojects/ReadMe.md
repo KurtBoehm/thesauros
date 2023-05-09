@@ -6,7 +6,7 @@ Sadly, the wrap system does not seem to work with nested git submodules or subtr
 ```sh
 #!/bin/sh
 if [ ! -d "./subprojects/" ]; then
-  git clone https://github.com/Fingolfin1196/tlaxcaltin.git subprojects
+  git clone git@github.com:Fingolfin1196/tlaxcaltin.git subprojects
 fi
 python3 ./subprojects/update_tlaxcaltin.py
 ```

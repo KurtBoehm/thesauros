@@ -1,6 +1,7 @@
 #ifndef INCLUDE_THESAUROS_CONTAINERS_HPP
 #define INCLUDE_THESAUROS_CONTAINERS_HPP
 
+#include "containers/array.hpp"
 #include "containers/dynamic-buffer.hpp"
 
 #endif // INCLUDE_THESAUROS_CONTAINERS_HPP

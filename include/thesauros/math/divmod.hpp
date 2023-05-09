@@ -1,5 +1,5 @@
-#ifndef INCLUDE_THESAUROS_NUMERICS_DIVMOD_HPP
-#define INCLUDE_THESAUROS_NUMERICS_DIVMOD_HPP
+#ifndef INCLUDE_THESAUROS_MATH_DIVMOD_HPP
+#define INCLUDE_THESAUROS_MATH_DIVMOD_HPP
 
 #include <utility>
 
@@ -93,4 +93,4 @@ inline constexpr std::pair<T, T> divmod(T dividend, const Divisor<T>& divisor) {
 }
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_NUMERICS_DIVMOD_HPP
+#endif // INCLUDE_THESAUROS_MATH_DIVMOD_HPP

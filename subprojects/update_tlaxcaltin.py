@@ -3,10 +3,9 @@ from pathlib import Path
 from shutil import move, rmtree
 from subprocess import run
 from tempfile import TemporaryDirectory
-from typing import NamedTuple
-
 
 folder_names = {
+    "boost-preprocessor": "preprocessor-boost",
     "combblas": "CombBLAS",
     "google-benchmark": "benchmark",
     "gtest": "googletest",
@@ -23,7 +22,8 @@ assert Path.cwd() == project_path
 token_path = project_path.joinpath("token.txt")
 if not token_path.exists():
     print("No token file exists.")
-    url = "https://github.com/Fingolfin1196/tlaxcaltin.git"
+    url = "git@github.com:Fingolfin1196/tlaxcaltin.git"
+    token = None
 else:
     with open(token_path, "r") as f:
         token = f.read().strip()
@@ -59,8 +59,20 @@ with TemporaryDirectory() as tmp_dir:
 
         # Remove wraps and direct subfolders
         for p in subprojects_path.iterdir():
-            if p.is_file() and p.suffix == ".wrap" and p.stem not in selection:
-                p.unlink()
+            if p.is_file() and p.suffix == ".wrap":
+                if p.stem not in selection:
+                    p.unlink()
+                    continue
+                if token is None:
+                    continue
+
+                with open(p, "r") as f:
+                    data = f.read().replace(
+                        "git@github.com:Fingolfin1196/",
+                        f"https://Fingolfin1196:{token}@github.com/Fingolfin1196/",
+                    )
+                with open(p, "w") as f:
+                    f.write(data)
             if p.is_dir() and p.name not in fnames | {"packagefiles"}:
                 rmtree(p)
 

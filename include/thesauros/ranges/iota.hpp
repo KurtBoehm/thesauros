@@ -1,5 +1,5 @@
-#ifndef INCLUDE_THESAUROS_UTILITY_RANGES_IOTA_HPP
-#define INCLUDE_THESAUROS_UTILITY_RANGES_IOTA_HPP
+#ifndef INCLUDE_THESAUROS_RANGES_IOTA_HPP
+#define INCLUDE_THESAUROS_RANGES_IOTA_HPP
 
 #include "thesauros/iterator/facades.hpp"
 #include "thesauros/iterator/provider-map.hpp"
@@ -165,4 +165,4 @@ inline constexpr auto iter_range(TIter begin, TIter end) {
 }
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_UTILITY_RANGES_IOTA_HPP
+#endif // INCLUDE_THESAUROS_RANGES_IOTA_HPP

@@ -21,7 +21,7 @@ foreach name, info : {
     executable('Test' + name, sources,
       override_options: opts,
       cpp_args: args,
-      dependencies: [treasury_dep] + deps,
+      dependencies: [thesauros_dep] + deps,
     )
   )
 endforeach

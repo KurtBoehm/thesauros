@@ -2,6 +2,7 @@
 #define INCLUDE_THESAUROS_UTILITY_HPP
 
 #include "utility/arrow-proxy.hpp"
+#include "utility/as-expected.hpp"
 #include "utility/byte-integer.hpp"
 #include "utility/byte-read.hpp"
 #include "utility/check-variant.hpp"
@@ -15,6 +16,7 @@
 #include "utility/parse-integer.hpp"
 #include "utility/primitives.hpp"
 #include "utility/resource-usage.hpp"
+#include "utility/safe-cast.hpp"
 #include "utility/static-map.hpp"
 #include "utility/static-ranges.hpp"
 #include "utility/static-string.hpp"

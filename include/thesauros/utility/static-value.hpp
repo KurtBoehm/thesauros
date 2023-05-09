@@ -1,5 +1,5 @@
-#ifndef INCLUDE_THESAUROS_META_STATIC_VALUE_HPP
-#define INCLUDE_THESAUROS_META_STATIC_VALUE_HPP
+#ifndef INCLUDE_THESAUROS_UTILITY_STATIC_VALUE_HPP
+#define INCLUDE_THESAUROS_UTILITY_STATIC_VALUE_HPP
 
 namespace thes {
 template<typename T, T tValue>
@@ -24,4 +24,4 @@ template<auto tValue>
 inline constexpr StaticAuto<tValue> static_auto{};
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_META_STATIC_VALUE_HPP
+#endif // INCLUDE_THESAUROS_UTILITY_STATIC_VALUE_HPP
