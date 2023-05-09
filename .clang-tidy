@@ -8,6 +8,7 @@ Checks: "
   -google-*,
   -llvm*,
   -zircon-*,
+  -bugprone-easily-swappable-parameters,
   -bugprone-macro-parentheses,
   -bugprone-unchecked-optional-access,
   -cert-dcl21-cpp,

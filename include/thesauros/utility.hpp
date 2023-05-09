@@ -9,6 +9,7 @@
 #include "utility/empty.hpp"
 #include "utility/fancy-visit.hpp"
 #include "utility/fixed-size-integer.hpp"
+#include "utility/index-segmentation.hpp"
 #include "utility/literals.hpp"
 #include "utility/move-detector.hpp"
 #include "utility/multi-size.hpp"

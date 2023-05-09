@@ -1,6 +1,7 @@
 #ifndef INCLUDE_THESAUROS_ALGORITHMS_HPP
 #define INCLUDE_THESAUROS_ALGORITHMS_HPP
 
+#include "algorithms/execution.hpp"
 #include "algorithms/ranges.hpp"
 #include "algorithms/static-ranges.hpp"
 
