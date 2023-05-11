@@ -59,7 +59,8 @@ inline constexpr std::optional<T> parse_integer(std::string_view src) {
         if (c == '\'') {
           continue;
         }
-        v = op(overflow_multiply(v, T{tBase}).value(), parse_char(c).value()).value();
+        v = op(overflow_multiply(v, T{tBase}).value_if_false(), parse_char(c).value())
+              .value_if_false();
       }
       return v;
     };
