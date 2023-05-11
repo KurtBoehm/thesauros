@@ -14,6 +14,7 @@
 #include "utility/inlining.hpp"
 #include "utility/literals.hpp"
 #include "utility/move-detector.hpp"
+#include "utility/multi-bit-reference.hpp"
 #include "utility/multi-size.hpp"
 #include "utility/numeric-info.hpp"
 #include "utility/numeric-string.hpp"

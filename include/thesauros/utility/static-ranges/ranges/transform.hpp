@@ -16,7 +16,7 @@ struct TransformView {
   TOp op;
   std::tuple<TInners...> inners;
 
-  static constexpr std::size_t size = AutoSequence<::thes::star::size<TInners>...>::unique;
+  static constexpr std::size_t size = AutoSequence<thes::star::size<TInners>...>::unique;
 
   template<std::size_t tIndex>
   constexpr decltype(auto) get() const {

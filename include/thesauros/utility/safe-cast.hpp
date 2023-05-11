@@ -8,7 +8,7 @@
 #include "tl/expected.hpp"
 
 namespace thes {
-enum class CastInfo { OKAY, TOO_SMALL, TOO_LARGE };
+enum struct CastInfo { OKAY, TOO_SMALL, TOO_LARGE };
 inline std::ostream& operator<<(std::ostream& s, CastInfo err) {
   using Under = std::underlying_type_t<CastInfo>;
 

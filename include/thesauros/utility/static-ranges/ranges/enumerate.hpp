@@ -13,7 +13,7 @@ struct EnumerateView {
   TInner inner;
 
   using Inner = std::decay_t<TInner>;
-  static constexpr std::size_t size = ::thes::star::size<Inner>;
+  static constexpr std::size_t size = thes::star::size<Inner>;
 
   template<std::size_t tIndex>
   constexpr auto get() const {

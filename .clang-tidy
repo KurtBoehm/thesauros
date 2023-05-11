@@ -17,6 +17,7 @@ Checks: "
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-macro-usage,
   -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
   -cppcoreguidelines-rvalue-reference-param-not-moved,
   -hicpp-avoid-c-arrays,
   -hicpp-no-array-decay,
@@ -49,7 +50,7 @@ CheckOptions:
   - { key: readability-identifier-naming.TypeAliasCase, value: CamelCase }
   - {
       key: readability-identifier-naming.TypeAliasIgnoredRegexp,
-      value: "^((f|i|u)[0-9]+|[a-z]{2}bi|[a-z]*(byte|metre|second)|minute|hour|day|value_type|size_type|allocator_type|[a-z_]*iterator)$",
+      value: "^((f|i|u)[0-9]+|[a-z]{2}bi|[a-z]*(byte|metre|second)|minute|hour|day|value_type|size_type|[a-z_]*iterator)$",
     }
   - {
       key: readability-identifier-naming.ValueTemplateParameterCase,

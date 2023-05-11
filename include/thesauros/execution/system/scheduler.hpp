@@ -11,7 +11,7 @@
 #include "thesauros/utility/as-expected.hpp"
 
 namespace thes {
-enum class Scheduler : int { FIFO = SCHED_FIFO, ROUND_ROBIN = SCHED_RR };
+enum struct Scheduler : int { FIFO = SCHED_FIFO, ROUND_ROBIN = SCHED_RR };
 
 [[nodiscard]] inline tl::expected<void, int> set_scheduler(std::thread& thread,
                                                            const Scheduler scheduler) {

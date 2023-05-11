@@ -17,7 +17,7 @@ struct LeftReduceGenerator {
 
   template<typename TRange>
   constexpr auto operator()(TRange&& range) const {
-    constexpr std::size_t size = ::thes::star::size<TRange>;
+    constexpr std::size_t size = thes::star::size<TRange>;
     auto impl = [this, &range](auto& self, auto idx, auto value) {
       if constexpr (idx < size) {
         return self(self, static_auto<idx + 1>, op(value, get_at<idx>(range)));
@@ -43,7 +43,7 @@ struct RightReduceGenerator {
 
   template<typename TRange>
   constexpr auto operator()(TRange&& range) const {
-    constexpr std::size_t size = ::thes::star::size<TRange>;
+    constexpr std::size_t size = thes::star::size<TRange>;
     auto impl = [this, &range](auto& self, auto idx) {
       if constexpr (idx < size) {
         return op(get_at<idx>(range), self(self, static_auto<idx + 1>));

@@ -10,7 +10,7 @@
 namespace thes {
 struct UnicodeDecoder {
   using CodePoint = std::uint32_t;
-  enum class State : std::uint8_t {
+  enum struct State : std::uint8_t {
     ACCEPTED = 0,
     REJECTED = 12,
   };

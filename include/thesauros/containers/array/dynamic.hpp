@@ -42,7 +42,6 @@ struct DynamicArray {
 
   using value_type = Value;
   using size_type = Size;
-  using allocator_type = Allocator;
 
   using iterator = typename Data::iterator;
   using const_iterator = typename Data::const_iterator;

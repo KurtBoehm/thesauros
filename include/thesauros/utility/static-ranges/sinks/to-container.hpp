@@ -14,8 +14,7 @@ struct ToContainerGenerator {
   constexpr auto operator()(TRange&& range) const {
     return [&range]<std::size_t... tIndices>(ValueSequence<std::size_t, tIndices...> /*idxd*/) {
       return TContainer{get_at<tIndices>(range)...};
-    }
-    (MakeIntegerSequence<std::size_t, 0, size<TRange>>{});
+    }(MakeIntegerSequence<std::size_t, 0, size<TRange>>{});
   }
 };
 template<typename TContainer>

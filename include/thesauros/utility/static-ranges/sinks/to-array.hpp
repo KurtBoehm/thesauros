@@ -14,7 +14,7 @@ struct ToArrayGenerator {
   constexpr auto operator()(TRange&& range) const {
     using Range = std::decay_t<TRange>;
     using Value = ElementType<Range>;
-    constexpr std::size_t size = ::thes::star::size<Range>;
+    constexpr std::size_t size = thes::star::size<Range>;
 
     return to_container<std::array<Value, size>>(std::forward<TRange>(range));
   }

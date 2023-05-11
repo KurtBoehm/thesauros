@@ -12,7 +12,7 @@
 #include "thesauros/utility/type-sequence.hpp"
 
 namespace thes {
-enum class IterDirection { FORWARD, BACKWARD };
+enum struct IterDirection { FORWARD, BACKWARD };
 
 template<typename TSize, std::size_t tDimNum>
 struct IndexPosition {

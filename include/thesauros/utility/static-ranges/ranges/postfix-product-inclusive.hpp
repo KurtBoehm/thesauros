@@ -15,7 +15,7 @@ namespace thes::star {
 template<typename TRange>
 inline constexpr auto postfix_product_inclusive(const TRange& range) {
   using Value = ElementType<TRange>;
-  constexpr std::size_t size = ::thes::star::size<TRange>;
+  constexpr std::size_t size = thes::star::size<TRange>;
 
   return iota<0, size + 1> | transform([&range](auto idx) {
            using Sequence = MakeIntegerSequence<std::size_t, idx, size>;

@@ -15,7 +15,7 @@ struct ForEachGenerator {
 
   template<typename TRange>
   constexpr auto operator()(TRange&& range) const {
-    constexpr std::size_t size = ::thes::star::size<TRange>;
+    constexpr std::size_t size = thes::star::size<TRange>;
     auto impl = [this, &range]<std::size_t... tIdxs>(AutoSequence<tIdxs...> /*idxs*/) {
       return (op(get_at<tIdxs>(range)), ...);
     };
