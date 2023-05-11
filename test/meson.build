@@ -5,6 +5,7 @@ args = options_sub.get_variable('all_args')
 foreach name, info : {
   'Empty': [['empty.cpp'], []],
   'FancyVisit': [['fancy-visit.cpp'], []],
+  'Macropolis': [['macropolis.cpp'], []],
   'Primitives': [['primitives.cpp'], []],
   'Ranges': [['ranges.cpp'], []],
   'StaticMap': [['static-map.cpp'], []],

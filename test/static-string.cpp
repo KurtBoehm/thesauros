@@ -17,4 +17,9 @@ int main() {
   static_assert(msg_arr_2 == std::array{'a', 'b', 'c'});
   static constexpr auto msg_arr_3 = thes::to_snake_case<msg1>() | thes::star::to_array;
   static_assert(msg_arr_3 == std::array{'a', '_', 'b', 'c'});
+
+  static constexpr auto joined0 = "_"_sstr.join();
+  static_assert((joined0 | thes::star::to_array) == std::array<char, 0>{});
+  static constexpr auto joined = "_"_sstr.join("aa"_sstr, "bb"_sstr);
+  static_assert((joined | thes::star::to_array) == std::array{'a', 'a', '_', 'b', 'b'});
 }
