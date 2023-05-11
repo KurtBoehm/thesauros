@@ -4,16 +4,18 @@
 #include <limits>
 #include <ostream>
 
+#include "thesauros/utility/info-result.hpp"
 #include "tl/expected.hpp"
 
 namespace thes {
-enum class CastErrorCode { TOO_SMALL, TOO_LARGE };
-inline std::ostream& operator<<(std::ostream& s, CastErrorCode err) {
-  using Under = std::underlying_type_t<CastErrorCode>;
+enum class CastInfo { OKAY, TOO_SMALL, TOO_LARGE };
+inline std::ostream& operator<<(std::ostream& s, CastInfo err) {
+  using Under = std::underlying_type_t<CastInfo>;
 
   switch (err) {
-  case CastErrorCode::TOO_SMALL: return s << "TOO_SMALL";
-  case CastErrorCode::TOO_LARGE: return s << "TOO_LARGE";
+  case CastInfo::OKAY: return s << "OKAY";
+  case CastInfo::TOO_SMALL: return s << "TOO_SMALL";
+  case CastInfo::TOO_LARGE: return s << "TOO_LARGE";
   default: return s << "CastErrorCode(" << static_cast<Under>(err) << ")";
   }
 }
@@ -23,46 +25,46 @@ struct SafeCast;
 template<typename TIn, typename TOut>
 requires std::unsigned_integral<TOut>
 struct SafeCast<TIn, TOut> {
-  using Ret = tl::expected<TOut, CastErrorCode>;
+  using Ret = InfoResult<TOut, CastInfo>;
 
   static constexpr Ret cast(TIn in) {
-    Ret ret = static_cast<TOut>(in);
+    CastInfo info = CastInfo::OKAY;
     if constexpr (std::signed_integral<TIn>) {
       if (in < 0) {
-        ret = tl::unexpected(CastErrorCode::TOO_SMALL);
+        info = CastInfo::TOO_SMALL;
       }
     }
     if constexpr (std::numeric_limits<TOut>::digits < std::numeric_limits<TIn>::digits) {
       if (in > TIn{std::numeric_limits<TOut>::max()}) {
-        ret = tl::unexpected(CastErrorCode::TOO_LARGE);
+        info = CastInfo::TOO_LARGE;
       }
     }
-    return ret;
+    return {static_cast<TOut>(in), info};
   }
 };
 template<typename TIn, typename TOut>
 requires std::signed_integral<TOut>
 struct SafeCast<TIn, TOut> {
-  using Ret = tl::expected<TOut, CastErrorCode>;
+  using Ret = InfoResult<TOut, CastInfo>;
 
   static constexpr Ret cast(TIn in) {
-    Ret ret = static_cast<TOut>(in);
+    CastInfo info = CastInfo::OKAY;
     if constexpr (std::numeric_limits<TOut>::digits < std::numeric_limits<TIn>::digits) {
       if constexpr (std::signed_integral<TIn>) {
         if (in < TIn{std::numeric_limits<TOut>::min()}) {
-          ret = tl::unexpected(CastErrorCode::TOO_SMALL);
+          info = CastInfo::TOO_SMALL;
         }
       }
       if (in > TIn{std::numeric_limits<TOut>::max()}) {
-        ret = tl::unexpected(CastErrorCode::TOO_LARGE);
+        info = CastInfo::TOO_LARGE;
       }
     }
-    return ret;
+    return {static_cast<TOut>(in), info};
   }
 };
 
 template<typename TOut, typename TIn>
-inline constexpr tl::expected<TOut, CastErrorCode> safe_cast(TIn in) {
+inline constexpr InfoResult<TOut, CastInfo> safe_cast(TIn in) {
   return SafeCast<TIn, TOut>::cast(in);
 }
 } // namespace thes
