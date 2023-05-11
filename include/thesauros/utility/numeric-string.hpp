@@ -1,0 +1,64 @@
+#ifndef INCLUDE_THESAUROS_UTILITY_NUMERIC_STRING_HPP
+#define INCLUDE_THESAUROS_UTILITY_NUMERIC_STRING_HPP
+
+#include <algorithm>
+#include <charconv>
+#include <concepts>
+#include <limits>
+
+#include "tl/expected.hpp"
+
+#include "thesauros/math/arithmetic.hpp"
+#include "thesauros/utility/static-capacity-string.hpp"
+
+namespace thes {
+template<typename T>
+struct MaxCharNumTrait;
+template<typename T>
+requires std::floating_point<T>
+struct MaxCharNumTrait<T> {
+  using Type = T;
+  using Limits = std::numeric_limits<Type>;
+
+  // 4: sign, decimal point, and “e+” or “e-”
+  // max_digits10: significand
+  // max(2, max_exponent10): Exponent, which has at least two digits
+  static constexpr auto char_num =
+    4U + unsigned{Limits::max_digits10} +
+    std::max(2U, abs_log_ceil(10U, unsigned{Limits::max_exponent10}));
+};
+template<typename T>
+requires std::unsigned_integral<T>
+struct MaxCharNumTrait<T> {
+  using Type = T;
+  using Limits = std::numeric_limits<Type>;
+
+  // 1: sign
+  static constexpr auto char_num = abs_log_ceil(Type{10}, Limits::max());
+};
+template<typename T>
+requires std::signed_integral<T>
+struct MaxCharNumTrait<T> {
+  using Type = T;
+  using Limits = std::numeric_limits<Type>;
+
+  // 1: sign
+  static constexpr auto char_num = 1 + abs_log_ceil(Type{10}, Limits::lowest());
+};
+template<typename T>
+inline constexpr unsigned max_char_num = MaxCharNumTrait<T>::char_num;
+
+template<typename T>
+inline constexpr tl::expected<StaticCapacityString<max_char_num<T>>, std::errc>
+numeric_string(const T& value) {
+  StaticCapacityString<max_char_num<T>> out{};
+  auto res = std::to_chars(out.data(), out.data() + max_char_num<T>, value);
+  if (res.ec == std::errc{}) {
+    out.size() = *safe_cast<std::size_t>(res.ptr - out.data());
+    return out;
+  }
+  return tl::unexpected(res.ec);
+}
+} // namespace thes
+
+#endif // INCLUDE_THESAUROS_UTILITY_NUMERIC_STRING_HPP
