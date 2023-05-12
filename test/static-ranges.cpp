@@ -335,6 +335,16 @@ int main() {
       return value;
     }() == 6);
   }
+  {
+    static_assert(std::array{1, 2, 3} | thes::star::all_different);
+    static_assert(!(std::array{1, 2, 2} | thes::star::all_different));
+    static_assert(!(std::array{1, 1, 2} | thes::star::all_different));
+  }
+  {
+    static_assert(std::array{1, 1, 1} | thes::star::has_unique_value);
+    static_assert(!(std::array{1, 2, 2} | thes::star::has_unique_value));
+    static_assert(!(std::array{1, 1, 2} | thes::star::has_unique_value));
+  }
 
   // index_to_position
   {

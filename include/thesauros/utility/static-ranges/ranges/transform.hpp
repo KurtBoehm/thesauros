@@ -7,16 +7,17 @@
 #include "thesauros/utility/static-ranges/definitions/get-at.hpp"
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
 #include "thesauros/utility/static-ranges/ranges/iota.hpp"
-#include "thesauros/utility/value-sequence.hpp"
+#include "thesauros/utility/static-ranges/sinks/unique-value.hpp"
 
 namespace thes::star {
 template<typename TOp, typename... TInners>
-requires(AutoSequence<size<TInners>...>::is_unique)
+requires(sizeof...(TInners) > 0 && (std::array{size<TInners>...} | star::has_unique_value))
 struct TransformView {
   TOp op;
   std::tuple<TInners...> inners;
 
-  static constexpr std::size_t size = AutoSequence<thes::star::size<TInners>...>::unique;
+  static constexpr std::size_t size =
+    (std::array{star::size<TInners>...} | star::unique_value).value();
 
   template<std::size_t tIndex>
   constexpr decltype(auto) get() const {
@@ -50,6 +51,10 @@ inline constexpr TransformView<TOp, TInners...> transform(TOp&& op, TInners&&...
 
 template<std::size_t tSize, typename TOp>
 inline constexpr TransformView<TOp, IotaView<0, tSize, 1>> index_transform(TOp&& op) {
+  return {std::forward<TOp>(op), {}};
+};
+template<std::size_t tBegin, std::size_t tEnd, typename TOp>
+inline constexpr TransformView<TOp, IotaView<tBegin, tEnd, 1>> index_transform(TOp&& op) {
   return {std::forward<TOp>(op), {}};
 };
 } // namespace thes::star

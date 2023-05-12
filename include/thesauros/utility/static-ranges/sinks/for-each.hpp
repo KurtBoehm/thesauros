@@ -2,11 +2,11 @@
 #define INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_SINKS_FOR_EACH_HPP
 
 #include <cstddef>
+#include <utility>
 
 #include "thesauros/optimization.hpp"
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
-#include "thesauros/utility/value-sequence.hpp"
 
 namespace thes::star {
 template<typename TOp>
@@ -16,10 +16,9 @@ struct ForEachGenerator {
   template<typename TRange>
   constexpr auto operator()(TRange&& range) const {
     constexpr std::size_t size = thes::star::size<TRange>;
-    auto impl = [this, &range]<std::size_t... tIdxs>(AutoSequence<tIdxs...> /*idxs*/) {
+    return [this, &range]<std::size_t... tIdxs>(std::index_sequence<tIdxs...> /*idxs*/) {
       return (op(get_at<tIdxs>(range)), ...);
-    };
-    return impl(MakeIntegerSequence<std::size_t, 0, size>{});
+    }(std::make_index_sequence<size>{});
   }
 };
 template<typename TOp>

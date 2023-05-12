@@ -12,7 +12,6 @@
 #include "thesauros/utility/static-ranges/ranges/transform.hpp"
 #include "thesauros/utility/static-ranges/sinks/for-each.hpp"
 #include "thesauros/utility/static-ranges/sinks/to-array.hpp"
-#include "thesauros/utility/value-sequence.hpp"
 
 namespace thes::star {
 template<typename TInner, auto tIdxRange>

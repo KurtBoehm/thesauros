@@ -11,7 +11,6 @@
 #include "thesauros/utility/static-ranges/ranges/postfix-product-inclusive.hpp"
 #include "thesauros/utility/static-ranges/ranges/transform.hpp"
 #include "thesauros/utility/static-ranges/sinks/to-array.hpp"
-#include "thesauros/utility/value-sequence.hpp"
 
 namespace thes {
 template<typename TIndex, std::size_t tDimNum>

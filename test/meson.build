@@ -12,7 +12,6 @@ foreach name, info : {
   'StaticRanges': [['static-ranges.cpp'], []],
   'StaticString': [['static-string.cpp'], []],
   'Tiling': [['tiling.cpp'], []],
-  'ValueSequence': [['value-sequence.cpp'], []],
   'Quantity': [['quantity.cpp'], []],
 }
   sources = info[0]

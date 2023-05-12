@@ -7,8 +7,6 @@
 #include "get-at.hpp"
 #include "size.hpp"
 
-#include "thesauros/utility/value-sequence.hpp"
-
 namespace thes::star {
 template<typename TRange, std::size_t tIdx>
 concept SupportsGetAt = requires(const TRange& range) { get_at<tIdx>(range); };

@@ -3,7 +3,6 @@
 
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
-#include "thesauros/utility/value-sequence.hpp"
 
 namespace thes::star {
 struct ToTupleGenerator {

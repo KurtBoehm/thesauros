@@ -1,11 +1,12 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_STATIC_MAP_HPP
 #define INCLUDE_THESAUROS_UTILITY_STATIC_MAP_HPP
 
+#include <tuple>
 #include <utility>
 
+#include "thesauros/utility/static-ranges.hpp"
 #include "thesauros/utility/static-value.hpp"
 #include "thesauros/utility/type-sequence.hpp"
-#include "thesauros/utility/value-sequence.hpp"
 
 namespace thes {
 template<auto tKey, typename TValue>
@@ -32,7 +33,8 @@ template<typename... TPairs>
 struct StaticMap;
 
 template<typename... TPairs>
-requires(TypeSeq<typename TPairs::Key...>::is_unique && AutoSequence<TPairs::key...>::all_different)
+requires(TypeSeq<typename TPairs::Key...>::is_unique &&
+         std::tuple{TPairs::key...} | star::all_different)
 struct StaticMap<TPairs...> {
   using Tuple = std::tuple<TPairs...>;
   using Key = typename TypeSeq<typename TPairs::Key...>::Unique;

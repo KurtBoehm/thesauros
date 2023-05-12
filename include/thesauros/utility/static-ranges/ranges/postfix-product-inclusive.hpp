@@ -9,7 +9,6 @@
 #include "thesauros/utility/static-ranges/ranges/iota.hpp"
 #include "thesauros/utility/static-ranges/ranges/transform.hpp"
 #include "thesauros/utility/static-ranges/sinks/reduce.hpp"
-#include "thesauros/utility/value-sequence.hpp"
 
 namespace thes::star {
 template<typename TRange>

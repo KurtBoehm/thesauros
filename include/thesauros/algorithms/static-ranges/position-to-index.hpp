@@ -8,7 +8,6 @@
 #include "thesauros/utility/static-ranges/definitions/element-type.hpp"
 #include "thesauros/utility/static-ranges/definitions/get-at.hpp"
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
-#include "thesauros/utility/value-sequence.hpp"
 
 namespace thes::star {
 template<typename TPos, typename TProds>

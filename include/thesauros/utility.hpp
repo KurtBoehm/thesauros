@@ -34,6 +34,5 @@
 #include "utility/type-transformations.hpp"
 #include "utility/unicode.hpp"
 #include "utility/unwrap.hpp"
-#include "utility/value-sequence.hpp"
 
 #endif // INCLUDE_THESAUROS_UTILITY_HPP
