@@ -20,7 +20,7 @@ struct UnicodeDecoder {
   // Modified to be more C++
   std::pair<CodePoint, State> decode(const std::uint8_t byte) noexcept {
     // Map a character to its character class.
-    static const std::array<std::uint8_t, 256> char_type = {
+    static const std::array<std::uint8_t, 256> char_kind = {
       0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0…
       0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 1…
       0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 2…
@@ -53,10 +53,10 @@ struct UnicodeDecoder {
       12, 36, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
     };
 
-    const std::uint8_t type = char_type[byte];
+    const std::uint8_t kind = char_kind[byte];
 
-    codep_ = (state_ != 0) ? (byte & 0x3FU) | (codep_ << 6U) : (0xFFU >> type) & (byte);
-    state_ = trans[state_ + type];
+    codep_ = (state_ != 0) ? (byte & 0x3FU) | (codep_ << 6U) : (0xFFU >> kind) & (byte);
+    state_ = trans[state_ + kind];
 
     return {codep_, State{state_}};
   }

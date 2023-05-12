@@ -17,12 +17,15 @@ struct MultiByteIntegers {
                   std::endian::native == std::endian::big,
                 "Only big and little endian systems are supported!");
 
-  using size_type = std::size_t;
-  using value_type = typename TByteInt::Type;
+  using Value = typename TByteInt::Type;
+  using Size = std::size_t;
+
+  using value_type = Value;
+  using size_type = Size;
 
   static constexpr std::size_t element_bytes = TByteInt::byte_num;
   static constexpr std::size_t padding_bytes = tPaddingBytes;
-  static constexpr value_type int_bytes = sizeof(value_type);
+  static constexpr Value int_bytes = sizeof(Value);
 
   using Byte = std::uint8_t;
   using Allocator = TAllocator<Byte>;
@@ -32,7 +35,7 @@ struct MultiByteIntegers {
   static_assert(padding_bytes >= int_bytes);
 
   static constexpr std::size_t overhead_bits = TByteInt::overhead_bit_num;
-  static constexpr value_type mask = TByteInt::max;
+  static constexpr Value mask = TByteInt::max;
 
   struct IntRef {
     explicit IntRef(Byte* ptr) : ptr_(ptr) {}
@@ -50,29 +53,29 @@ struct MultiByteIntegers {
       store(ptr_, load(ref.ptr_));
       return *this;
     }
-    IntRef& operator=(value_type value) {
+    IntRef& operator=(Value value) {
       store(ptr_, value);
       return *this;
     }
 
-    operator value_type() const {
+    operator Value() const {
       return load(ptr_);
     }
 
     friend void swap(IntRef vw1, IntRef vw2) {
-      value_type v1 = vw1;
-      value_type v2 = vw2;
+      Value v1 = vw1;
+      Value v2 = vw2;
       vw1 = v2;
       vw2 = v1;
     }
 
-    friend void swap(IntRef vw1, value_type& i2) {
-      value_type v1 = vw1;
+    friend void swap(IntRef vw1, Value& i2) {
+      Value v1 = vw1;
       vw1 = i2;
       i2 = v1;
     }
-    friend void swap(value_type& i1, IntRef vw2) {
-      value_type v2 = vw2;
+    friend void swap(Value& i1, IntRef vw2) {
+      Value v2 = vw2;
       vw2 = i1;
       i1 = v2;
     }
@@ -83,12 +86,12 @@ struct MultiByteIntegers {
 
   template<bool tConst>
   struct IterProv {
-    using Ref = std::conditional_t<tConst, value_type, IntRef>;
-    using Ptr = ArrowProxy<value_type>;
+    using Ref = std::conditional_t<tConst, Value, IntRef>;
+    using Ptr = ArrowProxy<Value>;
     using Diff = std::ptrdiff_t;
 
     struct IterTypes {
-      using IterValue = value_type;
+      using IterValue = Value;
       using IterRef = Ref;
       using IterPtr = Ptr;
       using IterDiff = Diff;
@@ -156,7 +159,7 @@ struct MultiByteIntegers {
   using iterator = Iterator<false>;
   using const_iterator = Iterator<true>;
 
-  static MultiByteIntegers all_set(value_type size) {
+  static MultiByteIntegers all_set(Value size) {
     MultiByteIntegers mbi(size);
     std::uninitialized_fill_n(mbi.data_.data(), byte_size(mbi.size_),
                               std::numeric_limits<Byte>::max());
@@ -164,8 +167,8 @@ struct MultiByteIntegers {
   }
 
   MultiByteIntegers() : data_(int_bytes){};
-  explicit MultiByteIntegers(value_type size) : data_(effective_allocation(size)), size_(size) {}
-  MultiByteIntegers(std::initializer_list<value_type> init)
+  explicit MultiByteIntegers(Value size) : data_(effective_allocation(size)), size_(size) {}
+  MultiByteIntegers(std::initializer_list<Value> init)
       : data_(effective_allocation(init.size())), size_(init.size()) {
     std::copy(init.begin(), init.end(), begin());
   };
@@ -183,19 +186,19 @@ struct MultiByteIntegers {
     return const_iterator(data_.data() + byte_size(size_));
   }
 
-  [[nodiscard]] size_type size() const {
+  [[nodiscard]] Size size() const {
     return size_;
   }
 
-  decltype(auto) operator[](size_type i) const {
+  decltype(auto) operator[](Size i) const {
     return load(data_.data() + byte_size(i));
   }
-  decltype(auto) operator[](size_type i) {
+  decltype(auto) operator[](Size i) {
     return IntRef{data_.data() + byte_size(i)};
   }
 
-  void push_back(value_type value) {
-    const size_type size = byte_size(size_);
+  void push_back(Value value) {
+    const Size size = byte_size(size_);
     assert(data_.size() == size + int_bytes);
 
     data_.expand(data_.size() + element_bytes);
@@ -210,20 +213,20 @@ struct MultiByteIntegers {
     data_.shrink(data_.size() - element_bytes);
   }
 
-  void reserve(size_type allocation) {
+  void reserve(Size allocation) {
     data_.reserve(effective_allocation(allocation));
   }
 
 private:
-  static size_type effective_allocation(size_type allocation) {
+  static Size effective_allocation(Size allocation) {
     return byte_size(allocation) + padding_bytes;
   }
-  static size_type byte_size(size_type size) {
+  static Size byte_size(Size size) {
     return size * element_bytes;
   }
 
-  static value_type load(const Byte* ptr) {
-    value_type output;
+  static Value load(const Byte* ptr) {
+    Value output;
     std::memcpy(&output, ptr, int_bytes);
     if constexpr (std::endian::native == std::endian::little) {
       return output & mask;
@@ -234,21 +237,21 @@ private:
     return output;
   }
 
-  static value_type& store_transform(value_type& value) noexcept {
+  static Value& store_transform(Value& value) noexcept {
     if constexpr (std::endian::native == std::endian::big) {
       value <<= overhead_bits;
     }
     return value;
   }
-  static void store(Byte* ptr, value_type value) noexcept {
+  static void store(Byte* ptr, Value value) noexcept {
     std::memcpy(ptr, &store_transform(value), element_bytes);
   }
-  static void store_full(Byte* ptr, value_type value) {
+  static void store_full(Byte* ptr, Value value) {
     std::memcpy(ptr, &store_transform(value), int_bytes);
   }
 
   Data data_{};
-  size_type size_{0};
+  Size size_{0};
 };
 } // namespace thes
 

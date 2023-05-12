@@ -29,18 +29,19 @@ private:
   };
 
 public:
-  using value_type = T;
+  using Value = T;
+  using value_type = Value;
 
   constexpr IotaRange(T begin, T end) : begin_{begin}, end_{end} {}
 
   struct const_iterator
       : public IteratorFacade<const_iterator, iter_provider::Map<IterProv, const_iterator>> {
     friend IterProv;
-    constexpr explicit const_iterator(value_type&& v) : value_(std::move(v)) {}
-    constexpr explicit const_iterator(const value_type& v) : value_(v) {}
+    constexpr explicit const_iterator(Value&& v) : value_(std::move(v)) {}
+    constexpr explicit const_iterator(const Value& v) : value_(v) {}
 
   private:
-    value_type value_;
+    Value value_;
   };
 
   struct const_reverse_iterator
@@ -49,18 +50,17 @@ public:
           iter_provider::Reverse<iter_provider::Map<IterProv, const_reverse_iterator>,
                                  const_reverse_iterator>> {
     friend IterProv;
-    constexpr explicit const_reverse_iterator(value_type&& v)
-        : value_(std::forward<value_type>(v)) {}
-    constexpr explicit const_reverse_iterator(const value_type& v) : value_(v) {}
+    constexpr explicit const_reverse_iterator(Value&& v) : value_(std::forward<Value>(v)) {}
+    constexpr explicit const_reverse_iterator(const Value& v) : value_(v) {}
 
   private:
-    value_type value_;
+    Value value_;
   };
 
-  [[nodiscard]] constexpr value_type begin_value() const {
+  [[nodiscard]] constexpr Value begin_value() const {
     return begin_;
   }
-  [[nodiscard]] constexpr value_type end_value() const {
+  [[nodiscard]] constexpr Value end_value() const {
     return end_;
   }
 
@@ -86,7 +86,7 @@ public:
     return begin_ == end_;
   }
 
-  [[nodiscard]] constexpr value_type size() const {
+  [[nodiscard]] constexpr Value size() const {
     return end_ - begin_;
   }
 
@@ -102,17 +102,18 @@ private:
 
 template<typename T>
 struct ExtendedIotaRange {
-  using value_type = T;
+  using Value = T;
+  using value_type = Value;
 
-  ExtendedIotaRange(T begin, T end, T step) : begin_{begin}, end_{end}, step_{step} {}
+  ExtendedIotaRange(Value begin, Value end, Value step) : begin_{begin}, end_{end}, step_{step} {}
 
   struct Sentinel {
-    const T end;
+    const Value end;
   };
 
   struct const_iterator {
-    T value;
-    const T step;
+    Value value;
+    const Value step;
 
     bool operator==(const Sentinel& other) const {
       return value >= other.end;
@@ -122,7 +123,7 @@ struct ExtendedIotaRange {
       value += step;
       return *this;
     }
-    T operator*() const {
+    Value operator*() const {
       return value;
     }
   };
@@ -134,12 +135,12 @@ struct ExtendedIotaRange {
     return {end_};
   }
 
-  bool contains(const T& value) const {
+  bool contains(const Value& value) const {
     return begin_ <= value && value < end_ && ((value - begin_) % step_ == 0);
   }
 
 private:
-  const T begin_, end_, step_;
+  const Value begin_, end_, step_;
 };
 
 template<typename T>

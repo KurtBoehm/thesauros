@@ -9,10 +9,9 @@ namespace thes::star {
 struct ToTupleGenerator {
   template<typename TRange>
   constexpr auto operator()(TRange&& range) const {
-    return [&range]<std::size_t... tIdxs>(ValueSequence<std::size_t, tIdxs...> /*idxs*/) {
+    return [&]<std::size_t... tIdxs>(std::index_sequence<tIdxs...> /*idxd*/) {
       return std::tuple{get_at<tIdxs>(range)...};
-    }
-    (MakeIntegerSequence<std::size_t, 0, size<TRange>>{});
+    }(std::make_index_sequence<size<TRange>>{});
   }
 };
 template<>

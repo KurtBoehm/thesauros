@@ -15,9 +15,9 @@ concept SupportsGetAt = requires(const TRange& range) { get_at<tIdx>(range); };
 
 template<typename TRange>
 concept IsStaticRange =
-  requires { size<TRange>; } && []<std::size_t... tIdxs>(ValueSequence<std::size_t, tIdxs...>) {
+  requires { size<TRange>; } && []<std::size_t... tIdxs>(std::index_sequence<tIdxs...>) {
     return (... && SupportsGetAt<TRange, tIdxs>);
-  }(MakeIntegerSequence<std::size_t, 0, size<TRange>>{});
+  }(std::make_index_sequence<size<TRange>>{});
 
 template<typename TGen>
 struct RangeGeneratorTrait : std::false_type {};

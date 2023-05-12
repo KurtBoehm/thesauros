@@ -3,8 +3,8 @@
 
 #include <ostream>
 #include <utility>
-#include <vector>
 
+#include "thesauros/containers/array/dynamic.hpp"
 #include "thesauros/containers/set-algorithms.hpp"
 
 namespace thes {
@@ -45,7 +45,7 @@ struct StronglyOrderedMap {
   using KeyEqual = TKeyEqual;
 
   using Value = strong_order::Pair<Key, Mapped>;
-  using Data = std::vector<Value, TAllocator>;
+  using Data = DynamicArrayDefault<Value, TAllocator>;
 
   using value_type = Value;
   using iterator = typename Data::iterator;

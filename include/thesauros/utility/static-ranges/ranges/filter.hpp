@@ -1,58 +1,85 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_RANGES_FILTER_HPP
 #define INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_RANGES_FILTER_HPP
 
+#include <array>
 #include <cstddef>
 #include <type_traits>
+#include <utility>
 
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
+#include "thesauros/utility/static-ranges/ranges/iota.hpp"
+#include "thesauros/utility/static-ranges/ranges/transform.hpp"
+#include "thesauros/utility/static-ranges/sinks/for-each.hpp"
+#include "thesauros/utility/static-ranges/sinks/to-array.hpp"
 #include "thesauros/utility/value-sequence.hpp"
 
 namespace thes::star {
-template<typename TInner, typename TIndices>
+template<typename TInner, auto tIdxRange>
 struct FilterView {
   TInner inner;
 
-  static constexpr std::size_t size = TIndices::size;
+  using IdxRange = std::decay_t<decltype(tIdxRange)>;
+  static constexpr std::size_t size = star::size<IdxRange>;
 
   template<std::size_t tIndex>
   constexpr decltype(auto) get() const {
-    return get_at<TIndices::template at<tIndex>>(inner);
+    return get_at<get_at<tIndex>(tIdxRange)>(inner);
   }
 };
 
-template<typename TIndices>
+template<auto tIdxRange>
 struct FilterGenerator {
   template<typename TRange>
-  constexpr FilterView<TRange, TIndices> operator()(TRange&& range) const {
+  constexpr FilterView<TRange, tIdxRange> operator()(TRange&& range) const {
     return {std::forward<TRange>(range)};
   }
 };
-template<typename TIndices>
-struct RangeGeneratorTrait<FilterGenerator<TIndices>> : public std::true_type {};
+template<auto tIdxRange>
+struct RangeGeneratorTrait<FilterGenerator<tIdxRange>> : public std::true_type {};
 
-template<typename TIndices>
+template<auto tIdxRange>
 struct AllExceptGenerator {
   template<typename TRange>
   constexpr auto operator()(TRange&& range) const {
-    using AllIdxs = MakeIntegerSequence<std::size_t, 0, size<TRange>>;
-    using Return = FilterView<TRange, typename AllIdxs::template ExceptSequence<TIndices>>;
-    return Return{std::forward<TRange>(range)};
+    constexpr std::size_t range_size = star::size<TRange>;
+
+    constexpr auto pair = [&] {
+      std::array<std::size_t, range_size> buffer{};
+      std::size_t count = 0;
+
+      star::iota<0, range_size> | star::for_each([&](auto i) {
+        bool contains = false;
+        tIdxRange | star::for_each([&](auto j) { contains = contains || (i == j); });
+        if (!contains) {
+          buffer[count] = i;
+          ++count;
+        }
+      });
+
+      return std::make_pair(buffer, count);
+    }();
+    constexpr auto idxs =
+      star::index_transform<pair.second>([&](auto idx) { return std::get<idx>(pair.first); }) |
+      star::to_array;
+
+    return FilterView<TRange, idxs>{std::forward<TRange>(range)};
   }
 };
-template<typename TIndices>
-struct RangeGeneratorTrait<AllExceptGenerator<TIndices>> : public std::true_type {};
+template<auto tIdxRange>
+struct RangeGeneratorTrait<AllExceptGenerator<tIdxRange>> : public std::true_type {};
 
 template<std::size_t... tIdxs>
-inline constexpr FilterGenerator<ValueSequence<std::size_t, tIdxs...>> only_idxs{};
-template<typename TIdxs>
-inline constexpr FilterGenerator<TIdxs> only_idxseq{};
+inline constexpr FilterGenerator<std::array<std::size_t, sizeof...(tIdxs)>{tIdxs...}> only_idxs{};
+template<auto tIdxRange>
+inline constexpr FilterGenerator<tIdxRange> only_idxseq{};
 template<std::size_t... tIdxs>
-inline constexpr AllExceptGenerator<ValueSequence<std::size_t, tIdxs...>> all_except_idxs{};
-template<typename TIdxs>
-inline constexpr AllExceptGenerator<TIdxs> all_except_idxseq{};
+inline constexpr AllExceptGenerator<std::array<std::size_t, sizeof...(tIdxs)>{tIdxs...}>
+  all_except_idxs{};
+template<auto tIdxRange>
+inline constexpr AllExceptGenerator<tIdxRange> all_except_idxseq{};
 template<std::size_t tBegin, std::size_t tEnd>
-inline constexpr FilterGenerator<MakeAutoIntegerSequence<tBegin, tEnd>> sub_range{};
+inline constexpr FilterGenerator<star::iota<tBegin, tEnd>> sub_range{};
 } // namespace thes::star
 
 #endif // INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_RANGES_FILTER_HPP

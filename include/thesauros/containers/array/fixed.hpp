@@ -18,7 +18,6 @@ struct FixedArray {
 
   using value_type = Value;
   using size_type = Size;
-  using allocator_type = Allocator;
 
   using iterator = typename Data::iterator;
   using const_iterator = typename Data::const_iterator;
@@ -147,10 +146,10 @@ struct FixedArray {
     return allocation_.back();
   }
 
-  [[nodiscard]] constexpr std::span<value_type> span() {
+  [[nodiscard]] constexpr std::span<Value> span() {
     return {begin(), end()};
   }
-  [[nodiscard]] constexpr std::span<const value_type> span() const {
+  [[nodiscard]] constexpr std::span<const Value> span() const {
     return {begin(), end()};
   }
 
@@ -187,19 +186,19 @@ struct FixedArrayDefault : public FixedArray<TValue, TAlloc, array::DefaultInitP
 template<typename TValue, typename TAlloc = std::allocator<TValue>>
 struct FixedArrayUninit : public FixedArray<TValue, TAlloc, array::NoInitPolicy> {
   using Parent = FixedArray<TValue, TAlloc, array::NoInitPolicy>;
-  using size_type = typename Parent::size_type;
-  using value_type = typename Parent::value_type;
+  using Size = typename Parent::Size;
+  using Value = typename Parent::Value;
 
   using Parent::Parent;
 
   template<typename... TArgs>
-  void initial_emplace(size_type index, TArgs&&... args) {
-    new (this->begin() + index) value_type(std::forward<TArgs>(args)...);
+  void initial_emplace(Size index, TArgs&&... args) {
+    new (this->begin() + index) Value(std::forward<TArgs>(args)...);
   }
-  void initialize(size_type index, value_type&& value) {
-    initial_emplace(index, std::forward<value_type>(value));
+  void initialize(Size index, Value&& value) {
+    initial_emplace(index, std::forward<Value>(value));
   }
-  void initialize(size_type index, const value_type& value) {
+  void initialize(Size index, const Value& value) {
     initial_emplace(index, value);
   }
 };

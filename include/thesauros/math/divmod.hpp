@@ -11,7 +11,7 @@
 // and its implementation on https://github.com/lemire/fastmod.
 
 namespace thes {
-namespace divmod_impl {
+namespace detail {
 // a: UFixed<0, 16>, b: UFixed<8, 0>
 // result: floor(a * b) -> UFixed<8, 0>
 inline constexpr u8 mul_frac_int(u16 a, u8 b) {
@@ -42,12 +42,13 @@ inline constexpr u64 mul_frac_int(u128 a, u64 b) {
   const auto result = (p1 + p2) >> u128{64};
   return static_cast<u64>(result);
 }
-} // namespace divmod_impl
+} // namespace detail
 
 template<std::unsigned_integral T>
 struct Divisor {
+  static constexpr auto byte_num = NumericInfo<T>::byte_num;
   using Value = T;
-  using WideValue = FixedUnsignedInt<2 * NumericInfo<T>::byte_num>;
+  using WideValue = FixedUnsignedInt<2 * byte_num>;
 
   // ceil(4^bit_num / d) for d > 0
   static constexpr WideValue invert(Value d) {
@@ -56,23 +57,23 @@ struct Divisor {
 
   constexpr explicit Divisor(T d) : divisor_(d), inverse_(invert(d)) {}
 
-  [[nodiscard]] inline constexpr friend Value operator%(const Value a, const Divisor& d) {
+  [[nodiscard]] constexpr inline friend Value operator%(const Value a, const Divisor& d) {
     const auto low_bits = d.inverse_ * a;
-    return divmod_impl::mul_frac_int(low_bits, d.divisor_);
+    return detail::mul_frac_int(low_bits, d.divisor_);
   }
 
-  [[nodiscard]] inline constexpr friend Value operator/(const Value a, const Divisor& d) {
-    return divmod_impl::mul_frac_int(d.inverse_, a) + (d.mask_ & a);
+  [[nodiscard]] constexpr inline friend Value operator/(const Value a, const Divisor& d) {
+    return detail::mul_frac_int(d.inverse_, a) + (d.mask_ & a);
   }
 
   // checks whether n % d == 0
-  [[nodiscard]] inline constexpr bool is_divisible(Value n) const {
+  [[nodiscard]] constexpr inline bool is_divisible(Value n) const {
     // This seemingly silly way of writing “<” is necessary for divisor_ == 1,
     // i.e. inverse_ == 0.
     return n * inverse_ <= inverse_ - 1;
   }
 
-  [[nodiscard]] inline constexpr Value get() const {
+  [[nodiscard]] constexpr inline Value get() const {
     return (inverse_ == 0) ? 1 : divisor_;
   }
 

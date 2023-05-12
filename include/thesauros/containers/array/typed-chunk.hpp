@@ -21,6 +21,7 @@ struct TypedChunk : public TAllocator {
   using Size = TSize;
   using Allocator = TAllocator;
 
+  using value_type = Value;
   using iterator = TValue*;
   using const_iterator = const TValue*;
 

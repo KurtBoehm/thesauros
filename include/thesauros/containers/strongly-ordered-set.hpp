@@ -3,8 +3,8 @@
 
 #include <algorithm>
 #include <functional>
-#include <vector>
 
+#include "thesauros/containers/array/dynamic.hpp"
 #include "thesauros/containers/set-algorithms.hpp"
 
 namespace thes {
@@ -12,7 +12,7 @@ template<typename TValue, typename TKeyCompare = std::less<TValue>,
          typename TKeyEqual = std::equal_to<TValue>, typename TAllocator = std::allocator<TValue>>
 struct StronglyOrderedSet {
   using Value = TValue;
-  using Data = std::vector<TValue, TAllocator>;
+  using Data = DynamicArrayDefault<TValue, TAllocator>;
 
   using value_type = Value;
   using iterator = typename Data::const_iterator;

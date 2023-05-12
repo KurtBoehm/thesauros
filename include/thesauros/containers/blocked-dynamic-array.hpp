@@ -43,11 +43,13 @@ struct BlockedDynamicArrayBase {
   ~BlockedDynamicArrayBase() = default;
 
   struct Block {
-    using value_type = TValue;
-    using iterator = value_type*;
-    using const_iterator = const value_type*;
+    using Value = TValue;
 
-    Block(value_type* begin, value_type* end, value_type* end_of_block, Size* size)
+    using value_type = Value;
+    using iterator = Value*;
+    using const_iterator = const Value*;
+
+    Block(Value* begin, Value* end, Value* end_of_block, Size* size)
         : begin_(begin), end_(end), end_of_block_(end_of_block), size_(size) {}
 
     iterator begin() {
@@ -66,25 +68,25 @@ struct BlockedDynamicArrayBase {
     template<typename... TArgs>
     void emplace_back(TArgs&&... args) {
       assert(end_ != end_of_block_);
-      new (end_) value_type(std::forward<TArgs>(args)...);
+      new (end_) Value(std::forward<TArgs>(args)...);
       ++end_;
       ++(*size_);
     }
-    void push_back(value_type&& value) {
-      emplace_back(std::forward<value_type>(value));
+    void push_back(Value&& value) {
+      emplace_back(std::forward<Value>(value));
     }
-    void push_back(const value_type& value) {
+    void push_back(const Value& value) {
       emplace_back(value);
     }
 
-    void erase(const value_type& value) {
-      value_type* remove_begin = std::remove(begin_, end_, value);
+    void erase(const Value& value) {
+      Value* remove_begin = std::remove(begin_, end_, value);
       std::destroy(remove_begin, end_);
       end_ = remove_begin;
       *size_ = static_cast<Size>(end_ - begin_);
     }
 
-    value_type operator[](Size i) const {
+    Value operator[](Size i) const {
       assert(i < size());
       return begin_[i];
     }
@@ -95,11 +97,11 @@ struct BlockedDynamicArrayBase {
       return size;
     }
 
-    std::span<const value_type> span() const {
-      return Span<const value_type>(begin_, end_);
+    std::span<const Value> span() const {
+      return Span<const Value>(begin_, end_);
     }
-    std::span<value_type> span() {
-      return Span<value_type>(begin_, end_);
+    std::span<Value> span() {
+      return Span<Value>(begin_, end_);
     }
 
     friend std::ostream& operator<<(std::ostream& s, const Block& b) {
@@ -107,9 +109,9 @@ struct BlockedDynamicArrayBase {
     }
 
   private:
-    value_type* begin_;
-    value_type* end_;
-    value_type* end_of_block_;
+    Value* begin_;
+    Value* end_;
+    Value* end_of_block_;
     Size* size_;
   };
 
