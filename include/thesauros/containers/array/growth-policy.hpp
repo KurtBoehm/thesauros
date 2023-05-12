@@ -1,10 +1,11 @@
 #ifndef INCLUDE_THESAUROS_CONTAINERS_ARRAY_GROWTH_POLICY_HPP
 #define INCLUDE_THESAUROS_CONTAINERS_ARRAY_GROWTH_POLICY_HPP
 
-#include <bit>
 #include <cassert>
 #include <cstddef>
-#include <limits>
+
+#include "thesauros/math/bit.hpp"
+#include "thesauros/utility/numeric-info.hpp"
 
 namespace thes::array {
 struct DoublingGrowthPolicy {
@@ -15,9 +16,9 @@ struct DoublingGrowthPolicy {
     assert(new_size_lower_bound > old_size);
     constexpr Size one = 1;
 
-    const int logarithm = std::bit_width(new_size_lower_bound);
-    if (logarithm >= std::numeric_limits<Size>::digits) {
-      return std::numeric_limits<Size>::max();
+    const unsigned logarithm = thes::bit_width(new_size_lower_bound);
+    if (logarithm >= NumericInfo<Size>::digits) {
+      return NumericInfo<Size>::max;
     }
     return one << logarithm;
   }

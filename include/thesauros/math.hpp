@@ -2,6 +2,7 @@
 #define INCLUDE_THESAUROS_MATH_HPP
 
 #include "math/arithmetic.hpp"
+#include "math/bit.hpp"
 #include "math/divmod.hpp"
 #include "math/fast.hpp"
 #include "math/overflow.hpp"

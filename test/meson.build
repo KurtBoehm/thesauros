@@ -3,6 +3,7 @@ opts = options_sub.get_variable('all_opts')
 args = options_sub.get_variable('all_args')
 
 foreach name, info : {
+  'Arrays': [['arrays.cpp'], []],
   'Empty': [['empty.cpp'], []],
   'Execution': [['execution.cpp'], []],
   'FancyVisit': [['fancy-visit.cpp'], []],

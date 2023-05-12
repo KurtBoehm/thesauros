@@ -28,14 +28,14 @@ struct NestedDynamicArrayBase {
 private:
   template<bool tConst>
   struct IterProv {
-    using Value = std::span<ConditionalConst<tConst, Value>>;
+    using Val = std::span<ConditionalConst<tConst, Value>>;
     using State = Size;
 
-    struct IterTypes : public iter_provider::ValueTypes<Value, std::ptrdiff_t> {
+    struct IterTypes : public iter_provider::ValueTypes<Val, std::ptrdiff_t> {
       using IterState = State;
     };
 
-    static Value deref(const auto& self) {
+    static Val deref(const auto& self) {
       return span_impl<tConst>(self.value_begin_, self.offset_begin_ + self.index_);
     }
     static State& state(auto& self) {

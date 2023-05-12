@@ -1,5 +1,5 @@
-#ifndef INCLUDE_THESAUROS_IO_MANIPULATION_HPP
-#define INCLUDE_THESAUROS_IO_MANIPULATION_HPP
+#ifndef INCLUDE_THESAUROS_FORMAT_MANIPULATION_HPP
+#define INCLUDE_THESAUROS_FORMAT_MANIPULATION_HPP
 
 #include <iomanip>
 #include <ios>
@@ -7,7 +7,7 @@
 
 #include "thesauros/io/concepts.hpp"
 
-namespace thes {
+namespace thes::fmt {
 template<typename T>
 struct IsIoManipTrait : public std::false_type {};
 template<typename T>
@@ -251,9 +251,9 @@ struct ArgsManipulated {
       : args_(std::forward<TArgs>(args)...), man_(std::forward<TManip>(manip)) {}
 
   template<OStream TStream>
-  friend std::ostream& operator<<(TStream& stream, const ArgsManipulated& args) {
-    ManipStream<TStream, TManip> man_stream(stream, args.man_);
-    std::apply([&man_stream](const auto&... args) { (man_stream << ... << args); }, args.args_);
+  friend std::ostream& operator<<(TStream& stream, const ArgsManipulated& mana) {
+    ManipStream<TStream, TManip> man_stream(stream, mana.man_);
+    std::apply([&man_stream](const auto&... args) { (man_stream << ... << args); }, mana.args_);
     return stream;
   }
 
@@ -267,6 +267,6 @@ inline constexpr ArgsManipulated<TManip, TArgs...> manip_args(TManip&& manip, TA
   return ArgsManipulated<TManip, TArgs...>{std::forward<TManip>(manip),
                                            std::forward<TArgs>(args)...};
 }
-} // namespace thes
+} // namespace thes::fmt
 
-#endif // INCLUDE_THESAUROS_IO_MANIPULATION_HPP
+#endif // INCLUDE_THESAUROS_FORMAT_MANIPULATION_HPP

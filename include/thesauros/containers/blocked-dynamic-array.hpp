@@ -121,7 +121,6 @@ private:
   template<bool tConst>
   struct IterProv {
     using Value = std::conditional_t<tConst, ConstBlock, Block>;
-    using Size = Size;
 
     struct IterTypes : public iter_provider::ValueTypes<Value, std::ptrdiff_t> {
       using IterState = Size;

@@ -1,10 +1,10 @@
-#ifndef INCLUDE_THESAUROS_IO_STYLE_HPP
-#define INCLUDE_THESAUROS_IO_STYLE_HPP
+#ifndef INCLUDE_THESAUROS_FORMAT_STYLE_HPP
+#define INCLUDE_THESAUROS_FORMAT_STYLE_HPP
 
 #include <cstddef>
 #include <ostream>
 
-namespace thes {
+namespace thes::fmt {
 namespace ansi {
 struct EscSeq {
   template<std::size_t tSize>
@@ -237,6 +237,6 @@ template<typename TEsc, typename... TArgs>
 inline constexpr ArgsStyled<TEsc, TArgs...> styled_args(TEsc&& esc, TArgs&&... args) {
   return ArgsStyled<TEsc, TArgs...>{std::forward<TEsc>(esc), std::forward<TArgs>(args)...};
 }
-} // namespace thes
+} // namespace thes::fmt
 
-#endif // INCLUDE_THESAUROS_IO_STYLE_HPP
+#endif // INCLUDE_THESAUROS_FORMAT_STYLE_HPP

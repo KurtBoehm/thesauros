@@ -1,10 +1,10 @@
-#ifndef INCLUDE_THESAUROS_IO_SETTINGS_HPP
-#define INCLUDE_THESAUROS_IO_SETTINGS_HPP
+#ifndef INCLUDE_THESAUROS_FORMAT_SETTINGS_HPP
+#define INCLUDE_THESAUROS_FORMAT_SETTINGS_HPP
 
-#include "thesauros/io/manipulation.hpp"
-#include "thesauros/io/style.hpp"
+#include "thesauros/format/manipulation.hpp"
+#include "thesauros/format/style.hpp"
 
-namespace thes {
+namespace thes::fmt {
 template<typename TEsc, typename TManip>
 struct StreamSettingCombine;
 
@@ -115,6 +115,6 @@ inline constexpr auto set_opt(TOpt&& opt, TArgs&&... args) {
     return ArgsPrinter<TArgs...>{std::forward<TArgs>(args)...};
   }
 }
-} // namespace thes
+} // namespace thes::fmt
 
-#endif // INCLUDE_THESAUROS_IO_SETTINGS_HPP
+#endif // INCLUDE_THESAUROS_FORMAT_SETTINGS_HPP
