@@ -46,8 +46,8 @@ struct FixedThreadPool {
           end_work_.notify_all();
         }
       });
-      { const auto ret = set_affinity(threads_[i], CPUSet::single_set(i)); }
-      { const auto ret = set_scheduler(threads_[i], Scheduler::FIFO); }
+      set_affinity(threads_[i], CPUSet::single_set(i));
+      set_scheduler(threads_[i], Scheduler::FIFO);
     }
   }
 

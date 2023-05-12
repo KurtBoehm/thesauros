@@ -1,6 +1,7 @@
 #ifndef INCLUDE_THESAUROS_CONTAINERS_ARRAY_TYPED_CHUNK_HPP
 #define INCLUDE_THESAUROS_CONTAINERS_ARRAY_TYPED_CHUNK_HPP
 
+#include <cassert>
 #include <memory>
 #include <utility>
 

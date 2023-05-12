@@ -4,8 +4,9 @@
 #include <limits>
 #include <ostream>
 
-#include "thesauros/utility/info-result.hpp"
 #include "tl/expected.hpp"
+
+#include "thesauros/utility/info-result.hpp"
 
 namespace thes {
 enum struct CastInfo { OKAY, TOO_SMALL, TOO_LARGE };
@@ -19,13 +20,15 @@ inline std::ostream& operator<<(std::ostream& s, CastInfo err) {
   default: return s << "CastErrorCode(" << static_cast<Under>(err) << ")";
   }
 }
+template<typename T>
+using CastResult = InfoResult<T, CastInfo, CastInfo::OKAY>;
 
 template<typename TIn, typename TOut>
 struct SafeCast;
 template<typename TIn, typename TOut>
 requires std::unsigned_integral<TOut>
 struct SafeCast<TIn, TOut> {
-  using Ret = InfoResult<TOut, CastInfo>;
+  using Ret = CastResult<TOut>;
 
   static constexpr Ret cast(TIn in) {
     CastInfo info = CastInfo::OKAY;
@@ -45,7 +48,7 @@ struct SafeCast<TIn, TOut> {
 template<typename TIn, typename TOut>
 requires std::signed_integral<TOut>
 struct SafeCast<TIn, TOut> {
-  using Ret = InfoResult<TOut, CastInfo>;
+  using Ret = CastResult<TOut>;
 
   static constexpr Ret cast(TIn in) {
     CastInfo info = CastInfo::OKAY;
@@ -64,7 +67,7 @@ struct SafeCast<TIn, TOut> {
 };
 
 template<typename TOut, typename TIn>
-inline constexpr InfoResult<TOut, CastInfo> safe_cast(TIn in) {
+inline constexpr CastResult<TOut> safe_cast(TIn in) {
   return SafeCast<TIn, TOut>::cast(in);
 }
 } // namespace thes

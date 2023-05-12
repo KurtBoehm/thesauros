@@ -6,34 +6,28 @@
 #include <utility>
 
 namespace thes {
-template<typename TValue, typename TInfo>
+template<typename TValue, typename TInfo, TInfo tValid>
 struct InfoResult {
-  constexpr InfoResult(TValue p_value, TInfo p_info)
-      : value{std::move(p_value)}, info{std::move(p_info)} {}
+  constexpr InfoResult(TValue value, TInfo info)
+      : value_{std::move(value)}, info_{std::move(info)} {}
 
-  TValue operator*() const {
-    return value;
+  [[nodiscard]] constexpr TValue operator*() const {
+    return value_;
   }
 
-  constexpr TValue value_if_true() const
-  requires std::same_as<TInfo, bool>
-  {
-    if (!info) {
-      throw std::runtime_error("The info is false!");
+  [[nodiscard]] constexpr bool is_valid() const {
+    return info_ == tValid;
+  }
+  constexpr TValue valid_value() const {
+    if (!is_valid()) {
+      throw std::runtime_error("The value is invalid!");
     }
-    return value;
-  }
-  constexpr TValue value_if_false() const
-  requires std::same_as<TInfo, bool>
-  {
-    if (info) {
-      throw std::runtime_error("The info is true!");
-    }
-    return value;
+    return value_;
   }
 
-  TValue value;
-  TInfo info;
+private:
+  TValue value_;
+  TInfo info_;
 };
 } // namespace thes
 

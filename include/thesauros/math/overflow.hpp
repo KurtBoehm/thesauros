@@ -5,24 +5,25 @@
 #include <limits>
 
 namespace thes {
-using IsOverflown = bool;
+template<typename T>
+using OverflowResult = InfoResult<T, bool, false>;
 
 template<typename T>
-inline constexpr InfoResult<T, IsOverflown> overflow_add(T arg1, T arg2) {
+inline constexpr OverflowResult<T> overflow_add(T arg1, T arg2) {
   T result;
   const bool overflow = __builtin_add_overflow(arg1, arg2, &result);
   return {result, overflow};
 }
 
 template<typename T>
-inline constexpr InfoResult<T, IsOverflown> overflow_subtract(T arg1, T arg2) {
+inline constexpr OverflowResult<T> overflow_subtract(T arg1, T arg2) {
   T result;
   const bool overflow = __builtin_sub_overflow(arg1, arg2, &result);
   return {result, overflow};
 }
 
 template<typename T>
-inline constexpr InfoResult<T, IsOverflown> overflow_multiply(T arg1, T arg2) {
+inline constexpr OverflowResult<T> overflow_multiply(T arg1, T arg2) {
   T result;
   const bool overflow = __builtin_mul_overflow(arg1, arg2, &result);
   return {result, overflow};
@@ -30,7 +31,7 @@ inline constexpr InfoResult<T, IsOverflown> overflow_multiply(T arg1, T arg2) {
 
 template<typename T = void>
 struct OverflowPlus {
-  constexpr InfoResult<T, IsOverflown> operator()(T t1, T t2) const {
+  constexpr OverflowResult<T> operator()(T t1, T t2) const {
     return overflow_add(t1, t2);
   }
 };
@@ -43,7 +44,7 @@ struct OverflowPlus<void> {
 
 template<typename T = void>
 struct OverflowMinus {
-  constexpr InfoResult<T, IsOverflown> operator()(T t1, T t2) const {
+  constexpr OverflowResult<T> operator()(T t1, T t2) const {
     return overflow_subtract(t1, t2);
   }
 };
@@ -56,7 +57,7 @@ struct OverflowMinus<void> {
 
 template<typename T = void>
 struct OverflowMultiplies {
-  constexpr InfoResult<T, IsOverflown> operator()(T t1, T t2) const {
+  constexpr OverflowResult<T> operator()(T t1, T t2) const {
     return overflow_multiply(t1, t2);
   }
 };

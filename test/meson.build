@@ -4,6 +4,7 @@ args = options_sub.get_variable('all_args')
 
 foreach name, info : {
   'Empty': [['empty.cpp'], []],
+  'Execution': [['execution.cpp'], []],
   'FancyVisit': [['fancy-visit.cpp'], []],
   'Macropolis': [['macropolis.cpp'], []],
   'Primitives': [['primitives.cpp'], []],

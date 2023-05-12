@@ -54,7 +54,7 @@ numeric_string(const T& value) {
   StaticCapacityString<max_char_num<T>> out{};
   auto res = std::to_chars(out.data(), out.data() + max_char_num<T>, value);
   if (res.ec == std::errc{}) {
-    out.size() = *safe_cast<std::size_t>(res.ptr - out.data());
+    out.size() = safe_cast<std::size_t>(res.ptr - out.data()).valid_value();
     return out;
   }
   return tl::unexpected(res.ec);

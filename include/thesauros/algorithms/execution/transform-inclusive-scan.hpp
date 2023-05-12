@@ -1,12 +1,14 @@
 #ifndef INCLUDE_THESAUROS_ALGORITHMS_EXECUTION_TRANSFORM_INCLUSIVE_SCAN_HPP
 #define INCLUDE_THESAUROS_ALGORITHMS_EXECUTION_TRANSFORM_INCLUSIVE_SCAN_HPP
 
+#include <cstddef>
 #include <iterator>
 #include <latch>
 #include <numeric>
 #include <type_traits>
 
 #include "thesauros/containers/array/fixed.hpp"
+#include "thesauros/utility/safe-cast.hpp"
 
 namespace thes {
 template<typename T, typename TExecutionPolicy, typename TForwardIt1, typename TForwardIt2,
@@ -18,7 +20,7 @@ inline void transform_inclusive_scan(TExecutionPolicy&& policy, TForwardIt1 firs
   using Size = std::make_unsigned_t<std::decay_t<decltype(raw_size)>>;
   const auto size = static_cast<Size>(raw_size);
 
-  std::latch barrier{policy.size()};
+  std::latch barrier{safe_cast<std::ptrdiff_t>(policy.size()).valid_value()};
   FixedArrayDefault<T> offsets(policy.size());
   policy.execute_segmented(size, [&, first, d_first, binary_op, unary_op,
                                   neutral](std::size_t thread_idx, Size begin, Size end) {

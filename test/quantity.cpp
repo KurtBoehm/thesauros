@@ -19,7 +19,7 @@ int main() {
     quantity_cast<thes::Quantity<float, thes::unit::kilometre>>(sc1).count();
   static_assert(v == 2e-3F);
 
-  std::vector<double> data(1U << 27U, 1);
+  std::vector<double> data(1U << 26U, 1);
   for (std::size_t i = 0; i < 1; ++i) {
     std::generate(data.begin(), data.end(), std::rand);
   }

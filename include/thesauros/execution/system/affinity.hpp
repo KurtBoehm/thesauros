@@ -41,8 +41,7 @@ private:
   cpu_set_t cpu_set_{};
 };
 
-[[nodiscard]] inline tl::expected<void, int> set_affinity(std::thread& thread,
-                                                          const CPUSet& cpu_set) {
+inline tl::expected<void, int> set_affinity(std::thread& thread, const CPUSet& cpu_set) {
   const auto ret =
     pthread_setaffinity_np(thread.native_handle(), sizeof(cpu_set_t), &cpu_set.base());
   return as_expected(ret);
