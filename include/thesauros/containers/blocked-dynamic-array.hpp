@@ -1,6 +1,7 @@
 #ifndef INCLUDE_THESAUROS_CONTAINERS_BLOCKED_DYNAMIC_ARRAY_HPP
 #define INCLUDE_THESAUROS_CONTAINERS_BLOCKED_DYNAMIC_ARRAY_HPP
 
+#include <algorithm>
 #include <numeric>
 #include <span>
 
@@ -9,6 +10,7 @@
 #include "thesauros/io/printers.hpp"
 #include "thesauros/iterator/facades.hpp"
 #include "thesauros/iterator/provider-map.hpp"
+#include "thesauros/ranges/iota.hpp"
 #include "thesauros/utility/type-transformations.hpp"
 
 namespace thes {
@@ -98,14 +100,14 @@ struct BlockedDynamicArrayBase {
     }
 
     std::span<const Value> span() const {
-      return Span<const Value>(begin_, end_);
+      return std::span<const Value>(begin_, end_);
     }
     std::span<Value> span() {
-      return Span<Value>(begin_, end_);
+      return std::span<Value>(begin_, end_);
     }
 
     friend std::ostream& operator<<(std::ostream& s, const Block& b) {
-      return s << b.span();
+      return s << range_print(b.span());
     }
 
   private:
@@ -120,13 +122,13 @@ struct BlockedDynamicArrayBase {
 private:
   template<bool tConst>
   struct IterProv {
-    using Value = std::conditional_t<tConst, ConstBlock, Block>;
+    using Val = std::conditional_t<tConst, ConstBlock, Block>;
 
-    struct IterTypes : public iter_provider::ValueTypes<Value, std::ptrdiff_t> {
+    struct IterTypes : public iter_provider::ValueTypes<Val, std::ptrdiff_t> {
       using IterState = Size;
     };
 
-    static Value deref(const auto& self) {
+    static Val deref(const auto& self) {
       using CSize = ConditionalConst<tConst, Size>;
       using CValue = ConditionalConst<tConst, Value>;
 
@@ -209,27 +211,26 @@ public:
     // Case distinction: Do we need more memory?
     if (new_block_num >= current_allocation) {
       const Size new_allocation_size = grown_size(new_block_num);
-      Size* old_size_end = sizes_.data() + old_block_num;
-      sizes_.expand(
-        new_allocation_size,
-        [old_block_num, old_size_end](Size* old_begin, [[maybe_unused]] Size* old_end,
-                                      Size* new_begin) {
-          std::uninitialized_move(old_begin, old_size_end, new_begin);
-          new (new_begin + old_block_num) Size(0);
-        },
-        [old_size_end](Size* old_begin, [[maybe_unused]] Size* old_end) {
-          std::destroy(old_begin, old_size_end);
-        });
 
-      Value* old_value_end = elements_.data() + old_block_num * block_size_;
-      elements_.expand(
-        new_allocation_size * block_size_,
-        [old_value_end](Value* old_begin, [[maybe_unused]] Value* old_end, Value* new_begin) {
-          std::uninitialized_move(old_begin, old_value_end, new_begin);
-        },
-        [old_value_end](Value* old_begin, [[maybe_unused]] Value* old_end) {
-          std::destroy(old_begin, old_value_end);
-        });
+      elements_.expand(new_allocation_size * block_size_,
+                       [&](Value* old_begin, Value* /*old_end*/, Value* new_begin) {
+                         for (const auto i : range(old_block_num)) {
+                           const auto offset = i * block_size_;
+
+                           auto b = old_begin + offset;
+                           auto e = b + sizes_[i];
+
+                           std::uninitialized_move(b, e, new_begin + offset);
+                           std::destroy(b, e);
+                         }
+                       });
+
+      Size* old_size_end = sizes_.data() + old_block_num;
+      sizes_.expand(new_allocation_size, [&](Size* old_begin, Size* /*old_end*/, Size* new_begin) {
+        std::uninitialized_move(old_begin, old_size_end, new_begin);
+        new (new_begin + old_block_num) Size(0);
+        std::destroy(old_begin, old_size_end);
+      });
     } else {
       sizes_[old_block_num] = 0;
     }

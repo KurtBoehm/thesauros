@@ -243,12 +243,9 @@ private:
   constexpr void allocation_expand(const Size new_size, TInit&& initializer) {
     allocation_.expand(
       grown_size(new_size),
-      [&initializer, old_data_end = data_end_](
-        iterator old_begin, [[maybe_unused]] iterator old_end, iterator new_begin) {
+      [&, old_data_end = data_end_](iterator old_begin, iterator /*old_end*/, iterator new_begin) {
         std::uninitialized_move(old_begin, old_data_end, new_begin);
         initializer(new_begin);
-      },
-      [old_data_end = data_end_](iterator old_begin, [[maybe_unused]] iterator old_end) {
         std::destroy(old_begin, old_data_end);
       });
   }

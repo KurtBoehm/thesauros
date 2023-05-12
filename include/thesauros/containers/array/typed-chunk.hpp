@@ -164,27 +164,21 @@ struct TypedChunk : public TAllocator {
     end_ = begin_ + size;
   }
   // WARNING Only valid if the data is fully initialized!
-  template<typename TMover, typename TDestructor>
-  constexpr void expand(Size new_size, TMover&& mover, TDestructor&& destructor) {
+  constexpr void expand(Size new_size, auto&& mover) {
     assert(new_size > size());
 
     Value* new_begin = allocate_memory(*this, new_size);
     mover(begin_, end_, new_begin);
-    destructor(begin_, end_);
     deallocate();
 
     begin_ = new_begin;
     end_ = new_begin + new_size;
   }
   constexpr void expand(Size new_size, iterator data_end) {
-    expand(
-      new_size,
-      [data_end](iterator old_begin, [[maybe_unused]] iterator old_end, iterator new_begin) {
-        std::uninitialized_move(old_begin, data_end, new_begin);
-      },
-      [data_end](iterator old_begin, [[maybe_unused]] iterator old_end) {
-        std::destroy(old_begin, data_end);
-      });
+    expand(new_size, [data_end](iterator old_begin, iterator /*old_end*/, iterator new_begin) {
+      std::uninitialized_move(old_begin, data_end, new_begin);
+      std::destroy(old_begin, data_end);
+    });
   }
   // WARNING Only valid if the data is fully initialized!
   constexpr void shrink(Size new_size) {

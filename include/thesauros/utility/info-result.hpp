@@ -1,6 +1,7 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_INFO_RESULT_HPP
 #define INCLUDE_THESAUROS_UTILITY_INFO_RESULT_HPP
 
+#include <cassert>
 #include <concepts>
 #include <stdexcept>
 #include <utility>
@@ -12,6 +13,7 @@ struct InfoResult {
       : value_{std::move(value)}, info_{std::move(info)} {}
 
   [[nodiscard]] constexpr TValue operator*() const {
+    assert(is_valid());
     return value_;
   }
 
@@ -22,6 +24,9 @@ struct InfoResult {
     if (!is_valid()) {
       throw std::runtime_error("The value is invalid!");
     }
+    return value_;
+  }
+  [[nodiscard]] constexpr TValue raw() const {
     return value_;
   }
 
