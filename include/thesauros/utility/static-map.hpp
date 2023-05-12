@@ -41,13 +41,13 @@ struct StaticMap<TPairs...> {
 
   template<Key tKey>
   static constexpr bool contains = [] {
-    auto impl = []<std::size_t tIdx>(StaticAuto<tIdx> /*tag*/, auto rec) {
-      if constexpr (tIdx == sizeof...(TPairs)) {
+    auto impl = [](auto idx, auto rec) {
+      if constexpr (idx == sizeof...(TPairs)) {
         return false;
-      } else if constexpr (std::tuple_element_t<tIdx, Tuple>::key == tKey) {
+      } else if constexpr (std::tuple_element_t<idx, Tuple>::key == tKey) {
         return true;
       } else {
-        return rec(static_auto<tIdx + 1>, rec);
+        return rec(static_auto<idx + 1>, rec);
       }
     };
     return impl(static_value<std::size_t, 0>, impl);
@@ -67,12 +67,12 @@ struct StaticMap<TPairs...> {
 private:
   template<Key tKey>
   static constexpr auto& get_impl(auto& self) {
-    auto impl = [&self]<std::size_t tIdx>(StaticAuto<tIdx> /*tag*/, auto rec) -> const auto& {
-      static_assert(tIdx < sizeof...(TPairs), "The key is not known!");
-      if constexpr (std::tuple_element_t<tIdx, Tuple>::key == tKey) {
-        return std::get<tIdx>(self.pairs_).value;
+    auto impl = [&self](auto idx, auto rec) -> const auto& {
+      static_assert(idx < sizeof...(TPairs), "The key is not known!");
+      if constexpr (std::tuple_element_t<idx, Tuple>::key == tKey) {
+        return std::get<idx>(self.pairs_).value;
       } else {
-        return rec(static_auto<tIdx + 1>, rec);
+        return rec(static_auto<idx + 1>, rec);
       }
     };
     return impl(static_value<std::size_t, 0>, impl);

@@ -19,7 +19,7 @@ THES_ALWAYS_INLINE inline constexpr void
 multidim_for_each(const TRanges& ranges, const TFixedAxes& fixed_axes, auto&& op) {
   constexpr std::size_t size = star::size<TRanges>;
 
-  auto impl = [&fixed_axes, &op, &ranges](auto& self, auto&&... vals) THES_ALWAYS_INLINE {
+  auto impl = [&](auto& self, auto&&... vals) THES_ALWAYS_INLINE {
     constexpr auto index = sizeof...(vals);
     static_assert(index <= size);
     if constexpr (index == size) {

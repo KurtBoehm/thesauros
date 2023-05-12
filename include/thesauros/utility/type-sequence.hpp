@@ -39,116 +39,118 @@ struct IsTypeSeqTrait<TypeSeq<Ts...>> : public std::true_type {};
 template<typename T>
 inline constexpr bool is_type_seq = IsTypeSeqTrait<T>::value;
 
-namespace impl::as_type_seq {
+namespace impl {
 template<typename T>
-struct Impl {
+struct AsTypeSeq {
   using Type = TypeSeq<T>;
 };
 template<typename... Ts>
-struct Impl<TypeSeq<Ts...>> {
+struct AsTypeSeq<TypeSeq<Ts...>> {
   using Type = TypeSeq<Ts...>;
 };
-} // namespace impl::as_type_seq
+} // namespace impl
 template<typename T>
-using AsTypeSeq = typename impl::as_type_seq::Impl<T>::Type;
+using AsTypeSeq = typename impl::AsTypeSeq<T>::Type;
 
-namespace impl::converted_type_seq {
+namespace impl {
 template<typename T>
-struct Impl {
+struct ConvertedTypeSeq {
   using Type = TypeSeq<T>;
 };
 template<typename... Ts>
-struct Impl<std::variant<Ts...>> {
-  using Type = TypeSeq<typename Impl<Ts>::Type...>;
+struct ConvertedTypeSeq<std::variant<Ts...>> {
+  using Type = TypeSeq<typename ConvertedTypeSeq<Ts>::Type...>;
 };
 template<typename... Ts>
-struct Impl<TypeSeq<Ts...>> {
-  using Type = TypeSeq<typename Impl<Ts>::Type...>;
+struct ConvertedTypeSeq<TypeSeq<Ts...>> {
+  using Type = TypeSeq<typename ConvertedTypeSeq<Ts>::Type...>;
 };
-} // namespace impl::converted_type_seq
+} // namespace impl
 template<typename T>
-using ConvertedTypeSeq = typename impl::converted_type_seq::Impl<T>::Type;
+using ConvertedTypeSeq = typename impl::ConvertedTypeSeq<T>::Type;
 
-namespace impl::joined_type_seq {
+namespace impl {
 template<typename... Ts>
-struct Impl;
+struct JoinedTypeSeq;
 
 template<>
-struct Impl<> {
+struct JoinedTypeSeq<> {
   using Type = TypeSeq<>;
 };
 
 template<typename... Ts1, typename... Ts2>
-struct Impl<TypeSeq<Ts1...>, TypeSeq<Ts2...>> {
+struct JoinedTypeSeq<TypeSeq<Ts1...>, TypeSeq<Ts2...>> {
   using Type = TypeSeq<Ts1..., Ts2...>;
 };
 
 template<typename... Ts, typename... TTuples>
-struct Impl<TypeSeq<Ts...>, TTuples...>
-    : public Impl<TypeSeq<Ts...>, typename Impl<TTuples...>::Type> {};
-} // namespace impl::joined_type_seq
+struct JoinedTypeSeq<TypeSeq<Ts...>, TTuples...>
+    : public JoinedTypeSeq<TypeSeq<Ts...>, typename JoinedTypeSeq<TTuples...>::Type> {};
+} // namespace impl
 
 template<typename... Ts>
-using JoinedTypeSeq = typename impl::joined_type_seq::Impl<Ts...>::Type;
+using JoinedTypeSeq = typename impl::JoinedTypeSeq<Ts...>::Type;
 
-namespace impl::product_type_seq {
+namespace impl {
 template<typename T1, typename T2>
-struct Base;
+struct ProductTypeSeqBase;
 template<typename T1, typename... TTypes2>
-struct Base<TypeSeq<T1>, TypeSeq<TTypes2...>> {
+struct ProductTypeSeqBase<TypeSeq<T1>, TypeSeq<TTypes2...>> {
   using Type = TypeSeq<thes::JoinedTypeSeq<TypeSeq<T1>, TTypes2>...>;
 };
 template<typename... TTypes, typename... TTups>
-struct Base<TypeSeq<TTypes...>, TypeSeq<TTups...>> {
-  using Type = thes::JoinedTypeSeq<typename Base<TypeSeq<TTypes>, TypeSeq<TTups...>>::Type...>;
+struct ProductTypeSeqBase<TypeSeq<TTypes...>, TypeSeq<TTups...>> {
+  using Type =
+    thes::JoinedTypeSeq<typename ProductTypeSeqBase<TypeSeq<TTypes>, TypeSeq<TTups...>>::Type...>;
 };
 
 template<typename... TTups>
-struct Impl;
+struct ProductTypeSeq;
 template<>
-struct Impl<> {
+struct ProductTypeSeq<> {
   using Type = TypeSeq<>;
 };
 template<typename... TTypes>
-struct Impl<TypeSeq<TTypes...>> {
+struct ProductTypeSeq<TypeSeq<TTypes...>> {
   using Type = TypeSeq<TypeSeq<TTypes>...>;
 };
 template<typename T1, typename... TTypes2>
-struct Impl<TypeSeq<T1>, TypeSeq<TTypes2...>> {
+struct ProductTypeSeq<TypeSeq<T1>, TypeSeq<TTypes2...>> {
   using Type = TypeSeq<TypeSeq<T1, TTypes2>...>;
 };
 template<typename... TTypes1, typename... TTypes2>
-struct Impl<TypeSeq<TTypes1...>, TypeSeq<TTypes2...>> {
-  using Type = thes::JoinedTypeSeq<typename Impl<TypeSeq<TTypes1>, TypeSeq<TTypes2...>>::Type...>;
+struct ProductTypeSeq<TypeSeq<TTypes1...>, TypeSeq<TTypes2...>> {
+  using Type =
+    thes::JoinedTypeSeq<typename ProductTypeSeq<TypeSeq<TTypes1>, TypeSeq<TTypes2...>>::Type...>;
 };
 template<typename... Ts, typename... TTups>
-struct Impl<TypeSeq<Ts...>, TTups...> {
-  using Tail = typename Impl<TTups...>::Type;
-  using Type = thes::JoinedTypeSeq<typename Base<TypeSeq<Ts>, Tail>::Type...>;
+struct ProductTypeSeq<TypeSeq<Ts...>, TTups...> {
+  using Tail = typename ProductTypeSeq<TTups...>::Type;
+  using Type = thes::JoinedTypeSeq<typename ProductTypeSeqBase<TypeSeq<Ts>, Tail>::Type...>;
 };
-} // namespace impl::product_type_seq
+} // namespace impl
 
 template<typename... TTups>
-using ProductTypeSeq = typename impl::product_type_seq::Impl<TTups...>::Type;
+using ProductTypeSeq = typename impl::ProductTypeSeq<TTups...>::Type;
 
-namespace impl::flat_type_seq {
+namespace impl {
 template<typename T>
-struct Impl;
+struct FlatTypeSeq;
 
 template<typename T>
 requires(!is_type_seq<T>)
-struct Impl<TypeSeq<T>> {
+struct FlatTypeSeq<TypeSeq<T>> {
   using Type = TypeSeq<T>;
 };
 
 template<typename... Ts>
-struct Impl<TypeSeq<Ts...>> {
-  using Type = JoinedTypeSeq<typename Impl<AsTypeSeq<Ts>>::Type...>;
+struct FlatTypeSeq<TypeSeq<Ts...>> {
+  using Type = thes::JoinedTypeSeq<typename FlatTypeSeq<thes::AsTypeSeq<Ts>>::Type...>;
 };
-} // namespace impl::flat_type_seq
+} // namespace impl
 
 template<typename T>
-using FlatTypeSeq = typename impl::flat_type_seq::Impl<T>::Type;
+using FlatTypeSeq = typename impl::FlatTypeSeq<T>::Type;
 
 namespace impl {
 struct TransformedTypeSeq {
@@ -191,27 +193,27 @@ struct FilteredTypeSeq {
 template<typename T, template<typename> typename TFilter>
 using FilteredTypeSeq = impl::FilteredTypeSeq::Type<T, TFilter>;
 
-namespace impl::unique_type_seq {
+namespace impl {
 template<typename T>
-struct Impl;
+struct UniqueTypeSeq;
 
 template<typename T, typename... Ts>
-struct Impl<TypeSeq<T, Ts...>> {
+struct UniqueTypeSeq<TypeSeq<T, Ts...>> {
   template<typename TOther>
   using Filter = std::bool_constant<!std::is_same_v<T, TOther>>;
 
-  using Type =
-    typename Impl<thes::FilteredTypeSeq<TypeSeq<Ts...>, Filter>>::Type::template Prepended<T>;
+  using Type = typename UniqueTypeSeq<
+    thes::FilteredTypeSeq<TypeSeq<Ts...>, Filter>>::Type::template Prepended<T>;
 };
 
 template<>
-struct Impl<TypeSeq<>> {
+struct UniqueTypeSeq<TypeSeq<>> {
   using Type = TypeSeq<>;
 };
-} // namespace impl::unique_type_seq
+} // namespace impl
 
 template<typename T>
-using UniqueTypeSeq = typename impl::unique_type_seq::Impl<T>::Type;
+using UniqueTypeSeq = typename impl::UniqueTypeSeq<T>::Type;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_UTILITY_TYPE_SEQUENCE_HPP

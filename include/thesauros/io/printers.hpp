@@ -11,7 +11,7 @@ concept IsRange = requires(const TRange& r) {
   std::begin(r);
   std::end(r);
 };
-}
+} // namespace impl
 
 template<typename TRange, typename TOp>
 struct RangePrinter {

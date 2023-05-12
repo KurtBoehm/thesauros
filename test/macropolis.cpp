@@ -7,7 +7,6 @@
 
 using namespace thes::literals;
 
-#if true
 struct Test1 {
   THES_DEFINE_TYPE(SNAKE_CASE(Test1), CONSTEXPR_CONSTRUCTOR, (SNAKE_CASE(CapitalName), int),
                    (KEEP(test), float, 2.F))
@@ -15,22 +14,6 @@ struct Test1 {
   Test1(Test1&&) noexcept = default;
   Test1(const Test1&) = delete;
 };
-#else
-struct Test1 {
-  constexpr explicit Test1(int capital_name) : CapitalName(capital_name) {}
-
-  int CapitalName;
-  float test = 2.F;
-};
-template<>
-struct thes::TypeInfo<Test1> {
-  static constexpr auto name = "Test1"_sstr;
-  static constexpr auto serial_name = "test1"_sstr;
-  static constexpr std::tuple members{
-    MemberInfo<int, "CapitalName"_sstr, "capital_name"_sstr, &Test1::CapitalName>{},
-    MemberInfo<float, "test"_sstr, "test"_sstr, &Test1::test>{}};
-};
-#endif
 
 inline constexpr Test1 test1{2};
 
@@ -138,59 +121,7 @@ struct Test7 {
   Test7(Test7&&) noexcept = default;
   Test7(const Test7&) = delete;
 
-#if true
   THES_DEFINE_FLATTEN_TYPE((tVal, TNewType), (TNewType)a)
-#else
-  constexpr auto flatten_variants() && {
-    using Self = typename TypeInfo::Type;
-    using MemberInfos = typename TypeInfo::Members;
-    constexpr auto member_infos = TypeInfo::members;
-
-    constexpr std::tuple variant_members{&Self::a};
-
-    constexpr auto make_index_sequence = [](const auto& tuple) {
-      return std::make_index_sequence<std::tuple_size_v<std::decay_t<decltype(tuple)>>>{};
-    };
-    constexpr auto variant_index_of = [=]<std::size_t tIdx>(std::index_sequence<tIdx>) {
-      constexpr auto ptr = std::get<tIdx>(member_infos).pointer;
-      std::optional<std::size_t> index = std::nullopt;
-      [&]<std::size_t... tIdxs>(std::index_sequence<tIdxs...>) {
-        return ((::thes::Impl::member_ptrs_eq(std::get<tIdxs>(variant_members), ptr)
-                   ? (index = tIdxs, true)
-                   : false) ||
-                ...);
-      }(make_index_sequence(variant_members));
-      return index;
-    };
-    return ::thes::fancy_flat_visit(
-      [&]<typename TNewTypeTemp>(auto maker1, TNewTypeTemp&& p_a_temp) {
-        return ::thes::fancy_visit_with_maker(
-          maker1,
-          [&]<typename TNewType>(auto maker2, TNewType&& p_a) {
-            using Out = typename TypeInfo::template TemplateType<tVal, TNewType>;
-
-            using Visited = std::tuple<TNewType>;
-            Visited visited{std::forward<TNewType>(p_a)};
-
-            auto impl = [&]<std::size_t tIdx>(std::index_sequence<tIdx>) -> decltype(auto) {
-              constexpr auto variant_idx = variant_index_of(std::index_sequence<tIdx>{});
-              if constexpr (variant_idx.has_value()) {
-                return std::forward<std::tuple_element_t<*variant_idx, Visited>>(
-                  std::get<*variant_idx>(visited));
-              } else {
-                return std::forward<typename std::tuple_element_t<tIdx, MemberInfos>::Type>(
-                  this->*std::get<tIdx>(member_infos).pointer);
-              }
-            };
-            return [&]<std::size_t... tIdxs>(std::index_sequence<tIdxs...>) {
-              return maker2(std::in_place_type<Out>, impl(std::index_sequence<tIdxs>{})...);
-            }(make_index_sequence(member_infos));
-          },
-          ::thes::flatten_variants(std::forward<TNewTypeTemp>(p_a_temp)));
-      },
-      std::forward<typename ::thes::Impl::MemberInfoTypeOf<TypeInfo, &Self::a>::Type>(a));
-  }
-#endif
 };
 
 using Type7a = Test7<Type2::A, int>;
