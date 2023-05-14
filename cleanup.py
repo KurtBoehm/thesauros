@@ -4,6 +4,7 @@ from typing import Callable
 
 proj_path = Path(__file__).parent
 inc_path = proj_path.joinpath("include/thesauros")
+test_path = proj_path.joinpath("test")
 
 
 def recurse(path: Path, fun: Callable[[Path], bool]):
@@ -64,4 +65,28 @@ def fix_headers(base: Path):
     recurse(base, inner)
 
 
+def fix_meson(base_path: Path):
+    def to_pascal_case(txt: str) -> str:
+        return "".join(s[0].upper() + s[1:] for s in txt.split("-"))
+
+    sources = sorted(
+        p.relative_to(base_path) for p in base_path.iterdir() if p.suffix == ".cpp"
+    )
+    meson_path = base_path.joinpath("meson.build")
+    with open(meson_path, "r") as f:
+        meson = f.read()
+
+    prefix = "foreach name, info : {\n"
+    suffix = "\n}\n"
+    start = meson.find(prefix) + len(prefix)
+    end = meson.find(suffix)
+
+    lines = "\n".join(f"  '{to_pascal_case(s.stem)}': [['{s}'], []]," for s in sources)
+    out = f"{meson[:start]}{lines}{meson[end:]}"
+
+    with open(meson_path, "w") as f:
+        f.write(out)
+
+
 fix_headers(inc_path)
+fix_meson(test_path)

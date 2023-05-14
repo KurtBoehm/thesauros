@@ -3,6 +3,7 @@
 
 #include <iomanip>
 #include <ios>
+#include <limits>
 #include <type_traits>
 
 #include "thesauros/io/concepts.hpp"

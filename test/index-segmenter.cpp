@@ -48,4 +48,40 @@ int main() {
     }
     THES_ASSERT(sum == size);
   }
+  std::cout << std::endl;
+  {
+    auto impl = []<typename T>(thes::TypeTag<T>) {
+      for (const auto num : thes::range<T>(1024)) {
+        std::cout << "num: " << num << std::endl;
+        for (const auto blocks : thes::range<T>(1, 256)) {
+          // test_to_seg
+          {
+            const T block_num = num / blocks;
+            const thes::UniformIndexSegmenter<T> seg{num, blocks};
+            T sum = 0;
+            for (const auto i : thes::range(blocks)) {
+              const auto i1 = seg.segment_start(i);
+              const auto i2 = seg.segment_start(i + 1);
+              THES_ASSERT(i1 <= i2);
+              const auto block_size = i2 - i1;
+              THES_ASSERT(block_size - block_num <= 1);
+              sum += block_size;
+            }
+            THES_ASSERT(sum == num);
+          }
+
+          // test_from_seg
+          {
+            const thes::UniformIndexSegmenter<T> seg{num, blocks};
+            for (const auto i : thes::range(num)) {
+              const auto s = seg.segment_of(i);
+              THES_ASSERT(seg.segment_range(s).contains(i));
+            }
+          }
+        }
+      }
+    };
+    impl(thes::type_tag<std::uint32_t>);
+    impl(thes::type_tag<std::uint64_t>);
+  }
 }

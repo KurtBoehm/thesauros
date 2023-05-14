@@ -9,15 +9,17 @@ foreach name, info : {
   'Empty': [['empty.cpp'], []],
   'Execution': [['execution.cpp'], []],
   'FancyVisit': [['fancy-visit.cpp'], []],
+  'Format': [['format.cpp'], []],
   'IndexSegmenter': [['index-segmenter.cpp'], []],
   'Macropolis': [['macropolis.cpp'], []],
+  'MultiByteIntegers': [['multi-byte-integers.cpp'], []],
   'Primitives': [['primitives.cpp'], []],
+  'Quantity': [['quantity.cpp'], []],
   'Ranges': [['ranges.cpp'], []],
   'StaticMap': [['static-map.cpp'], []],
   'StaticRanges': [['static-ranges.cpp'], []],
   'StaticString': [['static-string.cpp'], []],
   'Tiling': [['tiling.cpp'], []],
-  'Quantity': [['quantity.cpp'], []],
 }
   sources = info[0]
   deps = info[1]

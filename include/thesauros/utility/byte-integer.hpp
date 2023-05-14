@@ -13,7 +13,7 @@ struct ByteInteger {
   static constexpr std::size_t byte_num = tByteNum;
   static constexpr std::size_t bit_num = CHAR_BIT * byte_num;
 
-  using Unsigned = typename FixedUnsignedInt<std::bit_ceil(byte_num)>::type;
+  using Unsigned = FixedUnsignedInt<std::bit_ceil(byte_num)>;
 
   static constexpr std::size_t overhead_byte_num = sizeof(Unsigned) - byte_num;
   static constexpr std::size_t overhead_bit_num = CHAR_BIT * overhead_byte_num;

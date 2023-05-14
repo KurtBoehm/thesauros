@@ -23,24 +23,39 @@ inline void assert_fail(const char* assertion, const char* file, unsigned int li
 }
 
 inline constexpr bool rangeq(const auto& r1, const auto& r2) {
-  auto it1 = std::begin(r1);
-  auto end1 = std::end(r1);
-  auto it2 = std::begin(r2);
-  auto end2 = std::end(r2);
+  {
+    auto it1 = std::begin(r1);
+    auto end1 = std::end(r1);
+    auto it2 = std::begin(r2);
+    auto end2 = std::end(r2);
 
-  for (; it1 != end1 && it2 != end2; ++it1, ++it2) {
-    if (*it1 != *it2) {
+    for (; it1 != end1 && it2 != end2; ++it1, ++it2) {
+      if (*it1 != *it2) {
+        return false;
+      }
+    }
+    return (it1 == end1) == (it2 == end2);
+  }
+  {
+    const std::size_t size1{r1.size()};
+    const std::size_t size2{r2.size()};
+    if (size1 != size2) {
       return false;
     }
+    for (std::size_t i = 0; i < size1; ++i) {
+      if (r1[i] != r2[i]) {
+        return false;
+      }
+    }
+    return true;
   }
-  return (it1 == end1) == (it2 == end2);
 }
 
 inline constexpr bool stringeq(const std::string_view s1, const std::string_view s2) {
   return s1 == s2;
 }
-inline constexpr bool stringeq(const auto& v, const std::string_view s2) {
-  return (std::stringstream{} << v).str() == s2;
+inline constexpr bool stringeq(const std::string_view s1, const auto&... v) {
+  return s1 == (std::stringstream{} << ... << v).str();
 }
 } // namespace thes::test
 
