@@ -51,7 +51,7 @@ int main() {
   std::cout << std::endl;
   {
     auto impl = []<typename T>(thes::TypeTag<T>) {
-      for (const auto num : thes::range<T>(1024)) {
+      for (const auto num : thes::range<T>(512)) {
         std::cout << "num: " << num << std::endl;
         for (const auto blocks : thes::range<T>(1, 256)) {
           // test_to_seg

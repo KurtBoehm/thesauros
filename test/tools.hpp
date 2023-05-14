@@ -25,7 +25,21 @@ inline void assert_fail(const char* assertion, const char* file, unsigned int li
 }
 
 inline constexpr bool rangeq(const auto& r1, const auto& r2) {
-  {
+  constexpr bool v1 = requires {
+    std::begin(r1);
+    std::begin(r2);
+    std::end(r1);
+    std::end(r2);
+  };
+  constexpr bool v2 = requires(std::size_t i) {
+    r1.size();
+    r2.size();
+    r1[i];
+    r2[i];
+  };
+  static_assert(v1 || v2);
+
+  if constexpr (v1) {
     auto it1 = std::begin(r1);
     auto end1 = std::end(r1);
     auto it2 = std::begin(r2);
@@ -38,12 +52,7 @@ inline constexpr bool rangeq(const auto& r1, const auto& r2) {
     }
     return (it1 == end1) == (it2 == end2);
   }
-  if constexpr (requires(std::size_t i) {
-                  r1.size();
-                  r2.size();
-                  r1[i];
-                  r2[i];
-                }) {
+  if constexpr (v2) {
     const std::size_t size1{r1.size()};
     const std::size_t size2{r2.size()};
     if (size1 != size2) {

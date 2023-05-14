@@ -17,6 +17,7 @@ foreach name, info : {
   'Primitives': [['primitives.cpp'], []],
   'Quantity': [['quantity.cpp'], []],
   'Ranges': [['ranges.cpp'], []],
+  'StaticBitset': [['static-bitset.cpp'], []],
   'StaticMap': [['static-map.cpp'], []],
   'StaticRanges': [['static-ranges.cpp'], []],
   'StaticString': [['static-string.cpp'], []],

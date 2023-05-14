@@ -11,7 +11,7 @@
 
 namespace thes::star {
 template<typename TOp, typename... TInners>
-requires(sizeof...(TInners) > 0 && (std::array{size<TInners>...} | star::has_unique_value))
+requires(sizeof...(TInners) > 0 && star::has_unique_value(std::array{size<TInners>...}))
 struct TransformView {
   TOp op;
   std::tuple<TInners...> inners;
