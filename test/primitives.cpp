@@ -4,6 +4,8 @@
 #include "thesauros/utility.hpp"
 
 int main() {
+  using namespace thes::literals;
+
   static_assert(std::same_as<thes::u8, std::uint8_t>);
 
   static_assert(std::same_as<thes::FixedUnsignedInt<4>, std::uint32_t>);
@@ -15,4 +17,9 @@ int main() {
   static_assert(std::same_as<thes::Union<thes::u32, thes::u16>, thes::u32>);
   static_assert(std::same_as<thes::Intersection<thes::u8, thes::u16>, thes::u8>);
   static_assert(std::same_as<thes::Intersection<thes::u32, thes::u16>, thes::u16>);
+
+  static_assert(123_u8 == 123);
+  static_assert("0x23"_u8 == 0x23);
+  static_assert("0x123"_u16 == 0x123);
+  static_assert("0b101"_u16 == 0b101);
 }

@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <utility>
 
 #include "thesauros/containers/array/typed-chunk.hpp"
 
@@ -160,7 +161,7 @@ private:
   }
 
   template<typename... TArgs>
-  explicit FixedAllocArray([[maybe_unused]] std::in_place_type_t<Data> tag, TArgs&&... args)
+  explicit FixedAllocArray(std::in_place_type_t<Data> /*tag*/, TArgs&&... args)
       : allocation_(std::forward<TArgs>(args)...) {}
 
   Data allocation_{};

@@ -233,7 +233,7 @@ struct DynamicArray {
   constexpr void reserve(Size new_alloc) {
     if (new_alloc > allocation_.size()) {
       const Size current_size = size();
-      allocation_expand(new_alloc, []([[maybe_unused]] iterator new_begin) {});
+      allocation_expand(new_alloc, [](iterator /*new_begin*/) {});
       data_end_ = allocation_.begin() + current_size;
     }
   }

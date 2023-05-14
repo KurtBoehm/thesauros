@@ -11,17 +11,18 @@ struct ReverseRange {
   using value_type = typename Range::value_type;
   using const_iterator = typename Range::const_reverse_iterator;
 
-  explicit ReverseRange(TRange&& container) : container_(std::forward<TRange>(container)) {}
+  explicit constexpr ReverseRange(TRange&& container)
+      : container_(std::forward<TRange>(container)) {}
 
-  const_iterator begin() const {
+  constexpr const_iterator begin() const {
     return container_.rbegin();
   }
 
-  const_iterator end() const {
+  constexpr const_iterator end() const {
     return container_.rend();
   }
 
-  bool contains(const value_type& value) const {
+  constexpr bool contains(const value_type& value) const {
     return container_.contains(value);
   }
 

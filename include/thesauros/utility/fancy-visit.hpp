@@ -3,6 +3,7 @@
 
 #include <stdexcept>
 #include <type_traits>
+#include <utility>
 
 #include "thesauros/utility/type-sequence.hpp"
 #include "thesauros/utility/unwrap.hpp"

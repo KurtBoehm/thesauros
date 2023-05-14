@@ -3,6 +3,8 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <sstream>
+#include <string_view>
 
 namespace thes::test {
 #ifdef NDEBUG
@@ -32,6 +34,13 @@ inline constexpr bool rangeq(const auto& r1, const auto& r2) {
     }
   }
   return (it1 == end1) == (it2 == end2);
+}
+
+inline constexpr bool stringeq(const std::string_view s1, const std::string_view s2) {
+  return s1 == s2;
+}
+inline constexpr bool stringeq(const auto& v, const std::string_view s2) {
+  return (std::stringstream{} << v).str() == s2;
 }
 } // namespace thes::test
 
