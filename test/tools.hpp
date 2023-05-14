@@ -6,6 +6,8 @@
 #include <sstream>
 #include <string_view>
 
+#include "thesauros/format.hpp"
+
 namespace thes::test {
 #ifdef NDEBUG
 #define THES_ASSERT(expr)
@@ -51,11 +53,21 @@ inline constexpr bool rangeq(const auto& r1, const auto& r2) {
   }
 }
 
-inline constexpr bool stringeq(const std::string_view s1, const std::string_view s2) {
-  return s1 == s2;
+inline bool stringeq(const std::string_view s1, const std::string_view s2) {
+  namespace fmt = thes::fmt;
+
+  const bool eq = s1 == s2;
+  if (eq) {
+    std::cout << fmt::set(fmt::fg_green, s1) << std::endl;
+  } else {
+    std::cout << fmt::set(fmt::fg_red, s1) << (eq ? " == " : " != ") << fmt::set(fmt::fg_red, s2)
+              << std::endl;
+  }
+  return eq;
 }
-inline constexpr bool stringeq(const std::string_view s1, const auto&... v) {
-  return s1 == (std::stringstream{} << ... << v).str();
+inline bool stringeq(const std::string_view s1, const auto&... v) {
+  const auto s2 = (std::stringstream{} << ... << v).str();
+  return stringeq(s1, std::string_view{s2});
 }
 } // namespace thes::test
 

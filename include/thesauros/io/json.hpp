@@ -9,9 +9,11 @@
 
 #include "thesauros/macropolis/members.hpp"
 #include "thesauros/macropolis/serial-value.hpp"
+#include "thesauros/utility/numeric-string.hpp"
 #include "thesauros/utility/static-ranges/ranges/iota.hpp"
 #include "thesauros/utility/static-ranges/sinks/for-each.hpp"
 #include "thesauros/utility/static-value.hpp"
+#include "thesauros/utility/string-escape.hpp"
 
 namespace thes {
 struct Indentation {

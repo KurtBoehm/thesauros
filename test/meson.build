@@ -11,6 +11,7 @@ foreach name, info : {
   'FancyVisit': [['fancy-visit.cpp'], []],
   'Format': [['format.cpp'], []],
   'IndexSegmenter': [['index-segmenter.cpp'], []],
+  'Json': [['json.cpp'], []],
   'Macropolis': [['macropolis.cpp'], []],
   'MultiByteIntegers': [['multi-byte-integers.cpp'], []],
   'Primitives': [['primitives.cpp'], []],
