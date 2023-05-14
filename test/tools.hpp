@@ -38,7 +38,12 @@ inline constexpr bool rangeq(const auto& r1, const auto& r2) {
     }
     return (it1 == end1) == (it2 == end2);
   }
-  {
+  if constexpr (requires(std::size_t i) {
+                  r1.size();
+                  r2.size();
+                  r1[i];
+                  r2[i];
+                }) {
     const std::size_t size1{r1.size()};
     const std::size_t size2{r2.size()};
     if (size1 != size2) {

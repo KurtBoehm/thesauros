@@ -11,22 +11,25 @@ namespace thes {
 namespace strong_order {
 template<typename TKey, typename TValue>
 struct Pair {
-  Pair(TKey key, TValue value) : key_{std::move(key)}, value_{std::move(value)} {}
+  constexpr Pair(TKey key, TValue value) : key_{std::move(key)}, value_{std::move(value)} {}
 
-  const TKey& key() const {
+  constexpr const TKey& key() const {
     return key_;
   }
 
-  TValue& value() {
+  constexpr TValue& value() {
     return value_;
   }
-  const TValue& value() const {
+  constexpr const TValue& value() const {
     return value_;
   }
 
   friend std::ostream& operator<<(std::ostream& stream, const Pair& value) {
     return stream << value.key() << "→" << value.value();
   }
+
+  constexpr bool operator==(const Pair& other) const = default;
+  constexpr auto operator<=>(const Pair& other) const = default;
 
 private:
   TKey key_;
@@ -117,12 +120,13 @@ struct StronglyOrderedMap {
     return end();
   }
 
-  void insert(const Key& key, const Mapped& value) {
+  bool insert(const Key& key, const Mapped& value) {
     const auto it{lower_bound(key)};
     if (it != end() && PairEqual{}(*it, key)) {
-      return;
+      return false;
     }
     data_.insert(it, Value{key, value});
+    return true;
   }
 
   Mapped& get_or_insert(const Key& key, Mapped&& value) {

@@ -20,6 +20,7 @@ foreach name, info : {
   'StaticMap': [['static-map.cpp'], []],
   'StaticRanges': [['static-ranges.cpp'], []],
   'StaticString': [['static-string.cpp'], []],
+  'StronglyOrdered': [['strongly-ordered.cpp'], []],
   'Tiling': [['tiling.cpp'], []],
 }
   sources = info[0]

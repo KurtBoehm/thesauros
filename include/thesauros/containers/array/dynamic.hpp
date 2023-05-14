@@ -1,7 +1,9 @@
 #ifndef INCLUDE_THESAUROS_CONTAINERS_ARRAY_DYNAMIC_HPP
 #define INCLUDE_THESAUROS_CONTAINERS_ARRAY_DYNAMIC_HPP
 
+#include <algorithm>
 #include <cstddef>
+#include <memory>
 
 #include "thesauros/containers/array/growth-policy.hpp"
 #include "thesauros/containers/array/initialization-policy.hpp"
@@ -201,6 +203,14 @@ struct DynamicArray {
     }
   }
 
+  constexpr void reserve(Size new_alloc) {
+    if (new_alloc > allocation_.size()) {
+      const Size current_size = size();
+      allocation_expand(new_alloc, [](iterator /*new_begin*/) {});
+      data_end_ = allocation_.begin() + current_size;
+    }
+  }
+
   template<typename... TArgs>
   constexpr void emplace_back(TArgs&&... args) {
     const Size old_size = size();
@@ -221,21 +231,51 @@ struct DynamicArray {
   constexpr void push_back(const Value& value) {
     emplace_back(value);
   }
-  constexpr Value pop_back() {
+  constexpr void pop_back() {
     assert(!empty());
 
-    Value value = std::move(*data_end_);
     std::destroy_at(data_end_);
     --data_end_;
-    return value;
   }
 
-  constexpr void reserve(Size new_alloc) {
-    if (new_alloc > allocation_.size()) {
-      const Size current_size = size();
-      allocation_expand(new_alloc, [](iterator /*new_begin*/) {});
-      data_end_ = allocation_.begin() + current_size;
+  constexpr iterator erase(iterator pos) {
+    assert(pos != data_end_);
+
+    std::destroy_at(pos);
+    std::move(pos + 1, data_end_, pos);
+    std::destroy_at(data_end_);
+    --data_end_;
+
+    return pos + 1;
+  }
+
+  constexpr iterator insert(iterator pos, Value&& value) {
+    const auto offset = pos - allocation_.begin();
+    iterator mut_pos = allocation_.begin() + offset;
+
+    const Size old_size = size();
+    const Size new_size = old_size + 1;
+
+    if (new_size <= allocation_.size()) {
+      std::move_backward(mut_pos, data_end_, data_end_ + 1);
+      ++data_end_;
+      *mut_pos = std::move(value);
+      return mut_pos;
     }
+
+    allocation_.expand(grown_size(new_size),
+                       [&](iterator old_begin, iterator /*old_end*/, iterator new_begin) {
+                         iterator target = new_begin + offset;
+
+                         std::uninitialized_move(old_begin, mut_pos, new_begin);
+                         std::uninitialized_move(mut_pos, data_end_, target + 1);
+
+                         std::construct_at(target, std::move(value));
+
+                         std::destroy(old_begin, data_end_);
+                       });
+    data_end_ = allocation_.begin() + new_size;
+    return allocation_.begin() + offset;
   }
 
 private:
