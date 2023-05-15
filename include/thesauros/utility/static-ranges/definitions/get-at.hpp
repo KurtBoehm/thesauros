@@ -22,6 +22,9 @@ struct GetAtTrait<tIndex, TRange> {
   static constexpr decltype(auto) get_at(const TRange& c) {
     return c.template get<tIndex>();
   }
+  static constexpr decltype(auto) get_at(TRange& c) {
+    return c.template get<tIndex>();
+  }
 };
 
 template<std::size_t tIndex, typename TRange>
@@ -30,12 +33,15 @@ struct GetAtTrait<tIndex, TRange> {
   static constexpr decltype(auto) get_at(const TRange& array) {
     return std::get<tIndex>(array);
   }
+  static constexpr decltype(auto) get_at(TRange& array) {
+    return std::get<tIndex>(array);
+  }
 };
 
 template<std::size_t tIndex, typename TRange>
 requires(requires { sizeof(GetAtTrait<tIndex, TRange>); })
-inline constexpr decltype(auto) get_at(const TRange& c) {
-  return GetAtTrait<tIndex, TRange>::get_at(c);
+inline constexpr decltype(auto) get_at(TRange& c) {
+  return GetAtTrait<tIndex, std::decay_t<TRange>>::get_at(c);
 }
 } // namespace thes::star
 
