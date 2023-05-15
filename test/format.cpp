@@ -79,9 +79,32 @@ int main() {
                                S{3})
             << std::endl;
 
+  std::cout << thes::formatted(fmt::fg_yellow | fmt::bg_blue, "That’s a yellow message on blue!")
+            << std::endl;
+  std::cout << "This should be normal again…" << std::endl;
+  std::cout << thes::formatted(fmt::bold | fmt::italic | fmt::fg_red,
+                               "That’s bold, italic and red!")
+            << std::endl;
+  std::cout << "This should be normal again…" << std::endl;
+  std::cout << thes::formatted(fmt::fg_blue, "This") << " "
+            << thes::formatted(fmt::bold | fmt::bg_yellow, "is") << " a "
+            << thes::formatted(fmt::fg_red | fmt::underline, "mixed") << " "
+            << thes::formatted(fmt::bold | fmt::fg_bright_green, "message") << "!" << std::endl;
+
+  std::cout << thes::formatted(fmt::fg_blue | fmt::italic, "blue ",
+                               thes::formatted(fmt::fg_red, "red ",
+                                               thes::formatted(fmt::underline, "underline"), " red",
+                                               thes::formatted(fmt::fg_green, " green")),
+                               " ", thes::formatted(fmt::bold, "blue"))
+            << std::endl;
+
+  std::cout << thes::formatted(fmt::fg_red, "Nested: ", S{3}, " after") << std::endl;
+  std::cout << "Normal?" << std::endl;
+
+  // TODO This is slightly buggy on Linux…
   {
     auto ctx = fmt::make_context(std::cout);
-    ctx.set(fmt::fg_red | fmt::bg_blue | fmt::italic | fmt::width(5));
+    ctx.set(fmt::fg_magenta | fmt::bg_green | fmt::italic | fmt::width(5));
     std::cout << 123 << std::endl;
 
     {
@@ -92,5 +115,6 @@ int main() {
 
     std::cout << thes::formatted(fmt::not_italic, "345") << std::endl;
   }
+
   std::cout << "abc" << std::endl;
 }

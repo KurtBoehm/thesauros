@@ -27,11 +27,16 @@ enum struct Colour : std::uint8_t {
   BRIGHT_WHITE
 };
 
+enum struct Intensity : std::uint8_t {
+  NORMAL,
+  BOLD,
+  FAINT,
+};
+
 struct Style {
   Colour fg = Colour::NONE;
   Colour bg = Colour::NONE;
-  bool bold : 1 = false;
-  bool faint : 1 = false;
+  Intensity intensity = Intensity::NORMAL;
   bool italic : 1 = false;
   bool underline : 1 = false;
   bool blinking : 1 = false;
@@ -39,10 +44,9 @@ struct Style {
   bool concealed : 1 = false;
   bool crossed_out : 1 = false;
 
-  friend std::ostream& operator<<(std::ostream& s, Style style) {
-    s << "\033[m";
-
-    switch (style.fg) {
+  void apply_fg(std::ostream& s) const {
+    switch (fg) {
+    case Colour::NONE: s << "\033[39m"; break;
     case Colour::BLACK: s << "\033[30m"; break;
     case Colour::RED: s << "\033[31m"; break;
     case Colour::GREEN: s << "\033[32m"; break;
@@ -61,8 +65,10 @@ struct Style {
     case Colour::BRIGHT_WHITE: s << "\033[97m"; break;
     default: break;
     }
-
-    switch (style.bg) {
+  }
+  void apply_bg(std::ostream& s) const {
+    switch (bg) {
+    case Colour::NONE: s << "\033[49m"; break;
     case Colour::BLACK: s << "\033[40m"; break;
     case Colour::RED: s << "\033[41m"; break;
     case Colour::GREEN: s << "\033[42m"; break;
@@ -81,32 +87,63 @@ struct Style {
     case Colour::BRIGHT_WHITE: s << "\033[107m"; break;
     default: break;
     }
+  }
 
-    if (style.bold) {
-      s << "\033[1m";
+  void apply_intensity(std::ostream& s) const {
+    switch (intensity) {
+    case Intensity::NORMAL: s << "\033[22m"; break;
+    case Intensity::BOLD: s << "\033[1m"; break;
+    case Intensity::FAINT: s << "\033[2m"; break;
+    default: break;
     }
-    if (style.faint) {
-      s << "\033[2m";
+  }
+  void apply_italic(std::ostream& s) const {
+    s << (italic ? "\033[3m" : "\033[23m");
+  }
+  void apply_underline(std::ostream& s) const {
+    s << (underline ? "\033[4m" : "\033[24m");
+  }
+  void apply_blinking(std::ostream& s) const {
+    s << (blinking ? "\033[5m" : "\033[25m");
+  }
+  void apply_reversed(std::ostream& s) const {
+    s << (reversed ? "\033[7m" : "\033[27m");
+  }
+  void apply_concealed(std::ostream& s) const {
+    s << (reversed ? "\033[8m" : "\033[28m");
+  }
+  void apply_crossed_out(std::ostream& s) const {
+    s << (reversed ? "\033[9m" : "\033[29m");
+  }
+
+  void apply_diff(std::ostream& s, const Style& other) const {
+    if (fg != other.fg) {
+      apply_fg(s);
     }
-    if (style.italic) {
-      s << "\033[3m";
+    if (bg != other.bg) {
+      apply_bg(s);
     }
-    if (style.underline) {
-      s << "\033[4m";
+    if (intensity != other.intensity) {
+      apply_intensity(s);
     }
-    if (style.blinking) {
-      s << "\033[5m";
+    if (italic != other.italic) {
+      apply_italic(s);
     }
-    if (style.reversed) {
-      s << "\033[7m";
+    if (underline != other.underline) {
+      apply_underline(s);
     }
-    if (style.concealed) {
-      s << "\033[8m";
+    if (blinking != other.blinking) {
+      apply_blinking(s);
     }
-    if (style.crossed_out) {
-      s << "\033[9m";
+    if (reversed != other.reversed) {
+      apply_reversed(s);
     }
-    return s;
+    if (concealed != other.concealed) {
+      apply_concealed(s);
+    }
+    if (crossed_out != other.crossed_out) {
+      apply_crossed_out(s);
+    }
   }
 
   constexpr bool operator==(const Style& s) const = default;
@@ -130,6 +167,15 @@ struct Background {
     s.bg = colour;
   }
 };
+struct IntensityApplier {
+  Intensity intensity;
+
+  constexpr explicit IntensityApplier(Intensity i) : intensity(i) {}
+
+  void apply(Style& s) const {
+    s.intensity = intensity;
+  }
+};
 
 #define THES_DEFINE_STYLE_APPLIER(STRUCT_NAME, ATTRIBUTE_NAME) \
   template<bool tApplyOrInvert> \
@@ -139,8 +185,6 @@ struct Background {
     } \
   }
 
-THES_DEFINE_STYLE_APPLIER(Bold, bold);
-THES_DEFINE_STYLE_APPLIER(Faint, faint);
 THES_DEFINE_STYLE_APPLIER(Italic, italic);
 THES_DEFINE_STYLE_APPLIER(Underline, underline);
 THES_DEFINE_STYLE_APPLIER(Blinking, blinking);
@@ -186,8 +230,10 @@ inline constexpr Background bg_bright_magenta{Colour::BRIGHT_MAGENTA};
 inline constexpr Background bg_bright_cyan{Colour::BRIGHT_CYAN};
 inline constexpr Background bg_bright_white{Colour::BRIGHT_WHITE};
 
-inline constexpr Bold<true> bold{};
-inline constexpr Faint<true> faint{};
+inline constexpr IntensityApplier normal_intensity{Intensity::NORMAL};
+inline constexpr IntensityApplier bold{Intensity::BOLD};
+inline constexpr IntensityApplier faint{Intensity::FAINT};
+
 inline constexpr Italic<true> italic{};
 inline constexpr Underline<true> underline{};
 inline constexpr Blinking<true> blinking{};
@@ -195,8 +241,6 @@ inline constexpr Reversed<true> reversed{};
 inline constexpr Concealed<true> concealed{};
 inline constexpr CrossedOut<true> crossed_out{};
 
-inline constexpr Bold<false> not_bold{};
-inline constexpr Faint<false> not_faint{};
 inline constexpr Italic<false> not_italic{};
 inline constexpr Underline<false> not_underline{};
 inline constexpr Blinking<false> not_blinking{};
@@ -220,9 +264,7 @@ struct StyleContext {
   StyleContext& operator=(StyleContext&&) = delete;
   ~StyleContext() {
     Style& style = get(stream);
-    if (style != previous) {
-      stream << previous;
-    }
+    previous.apply_diff(stream, style);
 
     if (previous != Style{}) {
       style = previous;
@@ -234,8 +276,12 @@ struct StyleContext {
   template<StyleApplier TApp>
   void set(const TApp& app) {
     Style& style = get(stream);
-    app.apply(style);
-    stream << style;
+    Style new_style = style;
+
+    app.apply(new_style);
+    new_style.apply_diff(stream, style);
+
+    style = new_style;
   }
 
 private:
