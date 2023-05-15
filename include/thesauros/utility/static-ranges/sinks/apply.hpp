@@ -26,7 +26,7 @@ template<typename TOp>
 struct ConsumerGeneratorTrait<ApplyGenerator<TOp>> : public std::true_type {};
 
 template<typename TOp>
-inline constexpr ApplyGenerator<TOp> for_each(TOp&& op) {
+inline constexpr ApplyGenerator<TOp> apply(TOp&& op) {
   return {std::forward<TOp>(op)};
 }
 } // namespace thes::star

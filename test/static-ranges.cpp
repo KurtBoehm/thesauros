@@ -294,6 +294,13 @@ int main() {
       star::for_each([](auto v) { std::cout << v << std::endl; });
   }
 
+  // for_each
+  {
+    static constexpr std::array arr{0, 4, 3, 1};
+    arr | star::transform([](auto v) { return 2 * v; }) |
+      star::apply([](auto... v) { (std::cout << ... << v) << std::endl; });
+  }
+
   // multidim_for_each
   {
     static constexpr std::array ranges{thes::range(1, 3), thes::range(1, 2), thes::range(1, 4)};
