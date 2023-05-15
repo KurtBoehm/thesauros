@@ -15,8 +15,10 @@ int main() {
 
   static_assert(std::same_as<thes::Union<thes::u8, thes::u16>, thes::u16>);
   static_assert(std::same_as<thes::Union<thes::u32, thes::u16>, thes::u32>);
+  static_assert(std::same_as<thes::Union<thes::u8, thes::u32, thes::u16>, thes::u32>);
   static_assert(std::same_as<thes::Intersection<thes::u8, thes::u16>, thes::u8>);
   static_assert(std::same_as<thes::Intersection<thes::u32, thes::u16>, thes::u16>);
+  static_assert(std::same_as<thes::Intersection<thes::u8, thes::u32, thes::u16>, thes::u8>);
 
   static_assert(123_u8 == 123);
   static_assert("0x23"_u8 == 0x23);
