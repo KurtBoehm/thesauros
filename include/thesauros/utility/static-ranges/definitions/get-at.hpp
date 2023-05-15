@@ -39,7 +39,7 @@ struct GetAtTrait<tIndex, TRange> {
 };
 
 template<std::size_t tIndex, typename TRange>
-requires(requires { sizeof(GetAtTrait<tIndex, TRange>); })
+requires(requires { sizeof(GetAtTrait<tIndex, std::decay_t<TRange>>); })
 inline constexpr decltype(auto) get_at(TRange& c) {
   return GetAtTrait<tIndex, std::decay_t<TRange>>::get_at(c);
 }
