@@ -5,8 +5,7 @@
 
 #include "thesauros/algorithms.hpp"
 #include "thesauros/execution.hpp"
-
-#include "tools.hpp"
+#include "thesauros/test.hpp"
 
 int main() {
   using Type = int;

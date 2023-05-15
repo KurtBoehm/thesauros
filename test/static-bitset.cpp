@@ -4,8 +4,7 @@
 #include <vector>
 
 #include "thesauros/containers.hpp"
-
-#include "tools.hpp"
+#include "thesauros/test.hpp"
 
 namespace test = thes::test;
 
@@ -29,7 +28,7 @@ constexpr int run() {
     if (!std::is_constant_evaluated()) {
       std::cout << bitset << std::endl;
     }
-    THES_ASSERT(test::rangeq(bitset, ref));
+    THES_ASSERT(test::range_eq(bitset, ref));
   };
 
   auto set = [&](std::size_t idx) {

@@ -4,8 +4,7 @@
 
 #include "thesauros/containers.hpp"
 #include "thesauros/io.hpp"
-
-#include "tools.hpp"
+#include "thesauros/test.hpp"
 
 namespace test = thes::test;
 
@@ -15,7 +14,7 @@ int main() {
 
   auto assert_eq = [&] {
     std::cout << thes::range_print(map) << std::endl;
-    THES_ASSERT(test::rangeq(map, ref));
+    THES_ASSERT(test::range_eq(map, ref));
   };
 
   auto insert = [&](int key, int value) {

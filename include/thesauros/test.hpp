@@ -1,0 +1,6 @@
+#ifndef INCLUDE_THESAUROS_TEST_HPP
+#define INCLUDE_THESAUROS_TEST_HPP
+
+#include "test/test.hpp"
+
+#endif // INCLUDE_THESAUROS_TEST_HPP

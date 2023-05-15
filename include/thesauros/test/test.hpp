@@ -1,5 +1,5 @@
-#ifndef TEST_TOOLS_HPP
-#define TEST_TOOLS_HPP
+#ifndef INCLUDE_THESAUROS_TEST_TEST_HPP
+#define INCLUDE_THESAUROS_TEST_TEST_HPP
 
 #include <cstdlib>
 #include <iostream>
@@ -24,7 +24,7 @@ inline void assert_fail(const char* assertion, const char* file, unsigned int li
   std::abort();
 }
 
-inline constexpr bool rangeq(const auto& r1, const auto& r2) {
+inline constexpr bool range_eq(const auto& r1, const auto& r2) {
   constexpr bool v1 = requires {
     std::begin(r1);
     std::begin(r2);
@@ -67,7 +67,7 @@ inline constexpr bool rangeq(const auto& r1, const auto& r2) {
   }
 }
 
-inline bool stringeq(const std::string_view s1, const std::string_view s2) {
+inline bool string_eq(const std::string_view s1, const std::string_view s2) {
   const bool eq = s1 == s2;
   if (eq) {
     std::cout << formatted(fmt::fg_green, s1) << std::endl;
@@ -86,10 +86,10 @@ inline bool stringeq(const std::string_view s1, const std::string_view s2) {
   }
   return eq;
 }
-inline bool stringeq(const std::string_view s1, const auto&... v) {
+inline bool string_eq(const std::string_view s1, const auto&... v) {
   const auto s2 = (std::stringstream{} << ... << v).str();
-  return stringeq(s1, std::string_view{s2});
+  return string_eq(s1, std::string_view{s2});
 }
 } // namespace thes::test
 
-#endif // TEST_TOOLS_HPP
+#endif // INCLUDE_THESAUROS_TEST_TEST_HPP

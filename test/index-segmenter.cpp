@@ -2,9 +2,8 @@
 #include <iostream>
 #include <limits>
 
+#include "thesauros/test.hpp"
 #include "thesauros/utility.hpp"
-
-#include "tools.hpp"
 
 int main() {
   const std::size_t size = std::numeric_limits<std::size_t>::max() - 10;

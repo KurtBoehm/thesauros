@@ -5,8 +5,7 @@
 
 #include "thesauros/format.hpp"
 #include "thesauros/io.hpp"
-
-#include "tools.hpp"
+#include "thesauros/test.hpp"
 
 namespace test = thes::test;
 namespace fmt = thes::fmt;
@@ -22,36 +21,37 @@ struct S {
 int main() {
   // Manipulations
 
-  THES_ASSERT(test::stringeq("3.14", thes::formatted(fmt::precision(3), std::numbers::pi)));
-  THES_ASSERT(test::stringeq("3.142", thes::formatted(fmt::precision(4), std::numbers::pi)));
-  THES_ASSERT(test::stringeq("3.1416", thes::formatted(fmt::precision(5), std::numbers::pi)));
-  THES_ASSERT(test::stringeq("3.14159265358979",
-                             thes::formatted(fmt::full_precision<double>, std::numbers::pi)));
-  THES_ASSERT(test::stringeq(
+  THES_ASSERT(test::string_eq("3.14", thes::formatted(fmt::precision(3), std::numbers::pi)));
+  THES_ASSERT(test::string_eq("3.142", thes::formatted(fmt::precision(4), std::numbers::pi)));
+  THES_ASSERT(test::string_eq("3.1416", thes::formatted(fmt::precision(5), std::numbers::pi)));
+  THES_ASSERT(test::string_eq("3.14159265358979",
+                              thes::formatted(fmt::full_precision<double>, std::numbers::pi)));
+  THES_ASSERT(test::string_eq(
     "3.14159", thes::formatted(fmt::full_precision<float>, std::numbers::pi_v<float>)));
-  THES_ASSERT(test::stringeq("2.000000", thes::formatted(fmt::fixed, 2.)));
-  THES_ASSERT(test::stringeq("12.000000", thes::formatted(fmt::fixed, 12.)));
+  THES_ASSERT(test::string_eq("2.000000", thes::formatted(fmt::fixed, 2.)));
+  THES_ASSERT(test::string_eq("12.000000", thes::formatted(fmt::fixed, 12.)));
 
-  THES_ASSERT(test::stringeq(
+  THES_ASSERT(test::string_eq(
     "-02.5",
     thes::formatted(fmt::precision(5) | fmt::width(5) | fmt::fill('0') | fmt::internal, -2.5)));
-  THES_ASSERT(test::stringeq(
+  THES_ASSERT(test::string_eq(
     "-02.5",
     thes::formatted((fmt::precision(5) | fmt::width(5)) | (fmt::fill('0') | fmt::internal), -2.5)));
   const auto man1 = fmt::precision(5) | fmt::width(5);
   const auto man2 = fmt::fill('0') | fmt::internal;
-  THES_ASSERT(test::stringeq("-02.5", thes::formatted(man1 | man2, -2.5)));
+  THES_ASSERT(test::string_eq("-02.5", thes::formatted(man1 | man2, -2.5)));
   THES_ASSERT(
-    test::stringeq("-02.5", thes::formatted((fmt::precision(5) | fmt::width(5)) | man2, -2.5)));
+    test::string_eq("-02.5", thes::formatted((fmt::precision(5) | fmt::width(5)) | man2, -2.5)));
   THES_ASSERT(
-    test::stringeq("-02.5", thes::formatted(man1 | (fmt::fill('0') | fmt::internal), -2.5)));
+    test::string_eq("-02.5", thes::formatted(man1 | (fmt::fill('0') | fmt::internal), -2.5)));
 
   THES_ASSERT(
-    test::stringeq("-012.5", thes::formatted(fmt::precision(5) | fmt::zero_pad(6), -12.5)));
+    test::string_eq("-012.5", thes::formatted(fmt::precision(5) | fmt::zero_pad(6), -12.5)));
   THES_ASSERT(
-    test::stringeq("0012.5", thes::formatted(fmt::precision(5) | fmt::zero_pad(6), 12.5)));
-  THES_ASSERT(test::stringeq("3.1416", thes::formatted(fmt::precision(5), std::numbers::pi)));
-  THES_ASSERT(test::stringeq("3.141592654", thes::formatted(fmt::precision(10), std::numbers::pi)));
+    test::string_eq("0012.5", thes::formatted(fmt::precision(5) | fmt::zero_pad(6), 12.5)));
+  THES_ASSERT(test::string_eq("3.1416", thes::formatted(fmt::precision(5), std::numbers::pi)));
+  THES_ASSERT(
+    test::string_eq("3.141592654", thes::formatted(fmt::precision(10), std::numbers::pi)));
 
   // Mix of manipulations and styles
 

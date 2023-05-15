@@ -4,8 +4,7 @@
 
 #include "thesauros/containers.hpp"
 #include "thesauros/ranges.hpp"
-
-#include "tools.hpp"
+#include "thesauros/test.hpp"
 
 namespace test = thes::test;
 
@@ -16,22 +15,22 @@ int main() {
     bitset.push_back((i % 2) != 0);
   }
   THES_ASSERT(bitset.chunk_num() == 1 && bitset.countr_one() == 0 && bitset.countr_zero() == 1);
-  THES_ASSERT(test::stringeq("10101010101010101010101010101010", bitset));
+  THES_ASSERT(test::string_eq("10101010101010101010101010101010", bitset));
 
   bitset.push_back(true);
   bitset.set(0);
   THES_ASSERT(bitset.chunk_num() == 2 && bitset.countr_one() == 2 && bitset.countr_zero() == 0);
-  THES_ASSERT(test::stringeq("110101010101010101010101010101011", bitset));
+  THES_ASSERT(test::string_eq("110101010101010101010101010101011", bitset));
 
   for (const auto i : thes::range<std::size_t>(31)) {
     bitset.push_back((i % 2) != 0);
   }
   THES_ASSERT(bitset.chunk_num() == 2 && bitset.countr_one() == 2 && bitset.countr_zero() == 0);
   THES_ASSERT(
-    test::stringeq("0101010101010101010101010101010110101010101010101010101010101011", bitset));
+    test::string_eq("0101010101010101010101010101010110101010101010101010101010101011", bitset));
 
   bitset.push_back(true);
   THES_ASSERT(bitset.chunk_num() == 3 && bitset.countr_one() == 2 && bitset.countr_zero() == 0);
   THES_ASSERT(
-    test::stringeq("10101010101010101010101010101010110101010101010101010101010101011", bitset));
+    test::string_eq("10101010101010101010101010101010110101010101010101010101010101011", bitset));
 }
