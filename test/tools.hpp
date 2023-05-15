@@ -68,13 +68,20 @@ inline constexpr bool rangeq(const auto& r1, const auto& r2) {
 }
 
 inline bool stringeq(const std::string_view s1, const std::string_view s2) {
-  namespace fmt = thes::fmt;
-
   const bool eq = s1 == s2;
   if (eq) {
-    std::cout << fmt::set(fmt::fg_green, s1) << std::endl;
+    std::cout << formatted(fmt::fg_green, s1) << std::endl;
   } else {
-    std::cout << fmt::set(fmt::fg_red, s1) << (eq ? " == " : " != ") << fmt::set(fmt::fg_red, s2)
+    for (char c : s1) {
+      std::cout << int(c) << ' ';
+    }
+    std::cout << "vs.";
+    for (char c : s2) {
+      std::cout << ' ' << int(c);
+    }
+    std::cout << std::endl;
+
+    std::cout << formatted(fmt::fg_red, s1) << (eq ? " == " : " != ") << formatted(fmt::fg_red, s2)
               << std::endl;
   }
   return eq;

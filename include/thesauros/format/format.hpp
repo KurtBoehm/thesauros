@@ -3,11 +3,13 @@
 
 #include <concepts>
 #include <cstdint>
+#include <iomanip>
 #include <ostream>
 #include <tuple>
 #include <unordered_map>
 
-namespace thes::fmt2::ansi {
+namespace thes {
+namespace fmt {
 enum struct Colour : std::uint8_t {
   NONE,
   BLACK,
@@ -113,57 +115,6 @@ struct Style {
   constexpr bool operator==(const Style& s) const = default;
 };
 
-template<typename TApp>
-concept StyleApplier = requires(const TApp& app, Style& s) {
-  { app.apply(s) } -> std::same_as<void>;
-};
-
-struct StyleContext {
-  std::ostream& stream;
-  Style previous;
-
-  explicit StyleContext(std::ostream& s) : stream(s), previous(get(s)) {}
-  StyleContext(const StyleContext&) = delete;
-  StyleContext(StyleContext&&) = delete;
-  StyleContext& operator=(const StyleContext&) = delete;
-  StyleContext& operator=(StyleContext&&) = delete;
-  ~StyleContext() {
-    if (previous != Style{}) {
-      get(stream) = previous;
-    } else {
-      remove(stream);
-    }
-    stream << previous;
-  }
-
-  template<typename... TApps>
-  requires(... && StyleApplier<std::decay_t<TApps>>)
-  void set(TApps... apps) {
-    Style& style = get(stream);
-    (..., apps.apply(style));
-    stream << style;
-  }
-
-private:
-  using Map = std::unordered_map<std::ostream*, Style>;
-  static Map& get_map() {
-    static Map map{};
-    return map;
-  }
-
-  static Style& get(std::ostream& s) {
-    return get_map().insert({&s, {}}).first->second;
-  }
-
-  static void remove(std::ostream& s) {
-    get_map().erase(&s);
-  }
-};
-
-inline StyleContext make_context(std::ostream& s) {
-  return StyleContext{s};
-}
-
 struct Foreground {
   Colour colour;
 
@@ -256,102 +207,212 @@ inline constexpr Reversed<false> not_reversed{};
 inline constexpr Concealed<false> not_concealed{};
 inline constexpr CrossedOut<false> not_crossed_out{};
 
-template<StyleApplier TApp1, StyleApplier TApp2>
+template<typename TApp>
+concept StyleApplier = requires(const TApp& app, Style& s) {
+  { app.apply(s) } -> std::same_as<void>;
+};
+
+struct StyleContext {
+  std::ostream& stream;
+  Style previous;
+
+  explicit StyleContext(std::ostream& s) : stream(s), previous(get(s)) {}
+  StyleContext(const StyleContext&) = delete;
+  StyleContext(StyleContext&&) = delete;
+  StyleContext& operator=(const StyleContext&) = delete;
+  StyleContext& operator=(StyleContext&&) = delete;
+  ~StyleContext() {
+    Style& style = get(stream);
+    if (style != previous) {
+      stream << previous;
+    }
+
+    if (previous != Style{}) {
+      style = previous;
+    } else {
+      remove(stream);
+    }
+  }
+
+  template<StyleApplier TApp>
+  void set(const TApp& app) {
+    Style& style = get(stream);
+    app.apply(style);
+    stream << style;
+  }
+
+private:
+  using Map = std::unordered_map<std::ostream*, Style>;
+  static Map& get_map() {
+    static Map map{};
+    return map;
+  }
+
+  static Style& get(std::ostream& s) {
+    return get_map().insert({&s, {}}).first->second;
+  }
+
+  static void remove(std::ostream& s) {
+    get_map().erase(&s);
+  }
+};
+
+struct PrecisionManip {
+  int precision;
+
+  void apply(std::ostream& stream) const {
+    stream << std::setprecision(precision);
+  }
+};
+struct FixedFloatManip {
+  static void apply(std::ostream& stream) {
+    stream << std::fixed;
+  }
+};
+struct ScientificFloatManip {
+  static void apply(std::ostream& stream) {
+    stream << std::scientific;
+  }
+};
+struct WidthManip {
+  int width;
+
+  void apply(std::ostream& stream) const {
+    stream << std::setw(width);
+  }
+};
+struct FillManip {
+  char fill;
+
+  void apply(std::ostream& stream) const {
+    stream << std::setfill(fill);
+  }
+};
+struct InternalAdjustmentManip {
+  static void apply(std::ostream& stream) {
+    stream << std::internal;
+  }
+};
+
+template<typename T>
+inline constexpr PrecisionManip full_precision{std::numeric_limits<T>::digits10};
+inline constexpr FixedFloatManip fixed{};
+inline constexpr ScientificFloatManip scientific{};
+inline constexpr InternalAdjustmentManip internal{};
+
+inline constexpr PrecisionManip precision(int precision) {
+  return PrecisionManip{precision};
+}
+inline constexpr WidthManip width(int width) {
+  return WidthManip{width};
+}
+inline constexpr FillManip fill(char fill) {
+  return FillManip{fill};
+}
+
+template<typename TApp>
+concept StreamApplier = requires(const TApp& app, std::ostream& s) {
+  { app.apply(s) } -> std::same_as<void>;
+};
+
+template<typename TApp>
+concept Applier = StyleApplier<TApp> || StreamApplier<TApp>;
+
+struct FormatContext {
+  using FmtFlags = typename std::ios_base::fmtflags;
+  using StreamSize = std::streamsize;
+
+  StyleContext style;
+  FmtFlags flags;
+  StreamSize precision;
+  StreamSize width;
+
+  explicit FormatContext(std::ostream& s)
+      : style(s), flags(s.flags()), precision(s.precision()), width(s.width()) {}
+  FormatContext(const FormatContext&) = delete;
+  FormatContext(FormatContext&&) = delete;
+  FormatContext& operator=(const FormatContext&) = delete;
+  FormatContext& operator=(FormatContext&&) = delete;
+  ~FormatContext() {
+    std::ostream& stream = style.stream;
+    stream.flags(flags);
+    stream.precision(precision);
+    stream.width(width);
+  }
+
+  template<Applier TApp>
+  void set(const TApp& app) {
+    if constexpr (StyleApplier<TApp>) {
+      style.set(app);
+    }
+    if constexpr (StreamApplier<TApp>) {
+      app.apply(style.stream);
+    }
+  }
+};
+
+inline FormatContext make_context(std::ostream& s) {
+  return FormatContext{s};
+}
+
+template<Applier TApp1, Applier TApp2>
 struct MergedStyleApplier {
   TApp1 app1;
   TApp2 app2;
 
-  void apply(Style& s) const {
-    app1.apply(s);
-    app2.apply(s);
+  void apply(Style& s) const
+  requires StyleApplier<TApp1> || StyleApplier<TApp2>
+  {
+    if constexpr (StyleApplier<TApp1>) {
+      app1.apply(s);
+    }
+    if constexpr (StyleApplier<TApp2>) {
+      app2.apply(s);
+    }
+  }
+
+  void apply(std::ostream& s) const
+  requires StreamApplier<TApp1> || StreamApplier<TApp2>
+  {
+    if constexpr (StreamApplier<TApp1>) {
+      app1.apply(s);
+    }
+    if constexpr (StreamApplier<TApp2>) {
+      app2.apply(s);
+    }
   }
 };
 
-template<StyleApplier TApp1, StyleApplier TApp2>
+template<Applier TApp1, Applier TApp2>
 inline constexpr MergedStyleApplier<TApp1, TApp2> operator|(TApp1&& app1, TApp2&& app2) {
   return {std::forward<TApp1>(app1), std::forward<TApp2>(app2)};
 }
-} // namespace thes::fmt2::ansi
 
-namespace thes::fmt2 {
-using ansi::make_context;
-using ansi::StyleApplier;
-using ansi::StyleContext;
-
-using ansi::fg_black;
-using ansi::fg_blue;
-using ansi::fg_bright_black;
-using ansi::fg_bright_blue;
-using ansi::fg_bright_cyan;
-using ansi::fg_bright_green;
-using ansi::fg_bright_magenta;
-using ansi::fg_bright_red;
-using ansi::fg_bright_white;
-using ansi::fg_bright_yellow;
-using ansi::fg_cyan;
-using ansi::fg_green;
-using ansi::fg_magenta;
-using ansi::fg_none;
-using ansi::fg_red;
-using ansi::fg_white;
-using ansi::fg_yellow;
-
-using ansi::bg_black;
-using ansi::bg_blue;
-using ansi::bg_bright_black;
-using ansi::bg_bright_blue;
-using ansi::bg_bright_cyan;
-using ansi::bg_bright_green;
-using ansi::bg_bright_magenta;
-using ansi::bg_bright_red;
-using ansi::bg_bright_white;
-using ansi::bg_bright_yellow;
-using ansi::bg_cyan;
-using ansi::bg_green;
-using ansi::bg_magenta;
-using ansi::bg_none;
-using ansi::bg_red;
-using ansi::bg_white;
-using ansi::bg_yellow;
-
-using ansi::blinking;
-using ansi::bold;
-using ansi::concealed;
-using ansi::crossed_out;
-using ansi::faint;
-using ansi::italic;
-using ansi::reversed;
-using ansi::underline;
-
-using ansi::not_blinking;
-using ansi::not_bold;
-using ansi::not_concealed;
-using ansi::not_crossed_out;
-using ansi::not_faint;
-using ansi::not_italic;
-using ansi::not_reversed;
-using ansi::not_underline;
-
-template<StyleApplier TApp, typename... TArgs>
-struct StyledArgs {
+template<Applier TApp, typename... TArgs>
+struct FormattedArgs {
   TApp applier;
   std::tuple<TArgs...> arguments;
 
-  explicit StyledArgs(TApp&& app, TArgs&&... args)
+  explicit FormattedArgs(TApp&& app, TArgs&&... args)
       : applier{std::forward<TApp>(app)}, arguments{std::forward<TArgs>(args)...} {}
 
-  friend std::ostream& operator<<(std::ostream& s, const StyledArgs& styled) {
-    StyleContext ctx{s};
+  friend std::ostream& operator<<(std::ostream& s, const FormattedArgs& styled) {
+    FormatContext ctx{s};
     ctx.set(styled.applier);
     std::apply([&](const auto&... args) { (s << ... << args); }, styled.arguments);
     return s;
   }
 };
 
-template<StyleApplier TApp, typename... TArgs>
-inline StyledArgs<TApp, TArgs...> set(TApp&& app, TArgs&&... args) {
-  return StyledArgs<TApp, TArgs...>{std::forward<TApp>(app), std::forward<TArgs>(args)...};
+inline constexpr auto zero_pad(int padding) {
+  return width(padding) | fill('0') | internal;
 }
-} // namespace thes::fmt2
+} // namespace fmt
+
+template<fmt::Applier TApp, typename... TArgs>
+inline fmt::FormattedArgs<TApp, TArgs...> formatted(TApp&& app, TArgs&&... args) {
+  return fmt::FormattedArgs<TApp, TArgs...>{std::forward<TApp>(app), std::forward<TArgs>(args)...};
+}
+} // namespace thes
 
 #endif // INCLUDE_THESAUROS_FORMAT_FORMAT_HPP
