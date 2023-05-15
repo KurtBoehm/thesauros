@@ -45,10 +45,27 @@ inline constexpr bool range_eq(const auto& r1, const auto& r2) {
     auto it2 = std::begin(r2);
     auto end2 = std::end(r2);
 
+    constexpr bool can_print = requires {
+      std::cout << *it1;
+      std::cout << *it2;
+    };
+
+    if constexpr (can_print) {
+      std::cout << "range_eq:";
+    }
     for (; it1 != end1 && it2 != end2; ++it1, ++it2) {
+      if constexpr (can_print) {
+        std::cout << ' ' << *it1 << "/" << *it2;
+      }
       if (*it1 != *it2) {
+        if constexpr (can_print) {
+          std::cout << std::endl;
+        }
         return false;
       }
+    }
+    if constexpr (can_print) {
+      std::cout << std::endl;
     }
     return (it1 == end1) == (it2 == end2);
   }
