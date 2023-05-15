@@ -1,5 +1,6 @@
 #include <cstddef>
 #include <iostream>
+#include <type_traits>
 #include <vector>
 
 #include "thesauros/containers.hpp"
@@ -8,7 +9,7 @@
 
 namespace test = thes::test;
 
-int main() {
+constexpr int run() {
   thes::StaticBitset bitset{
     false, true,  false, true,  false, true,  false, true,  false, true,  false, true,  false,
     true,  false, true,  false, true,  false, true,  false, true,  false, true,  false, true,
@@ -16,7 +17,7 @@ int main() {
     true,  false, true,  false, true,  false, true,  false, true,  false, true,  false, true,
     false, true,  false, true,  false, true,  false, true,  false, true,  false, true,  true,
   };
-  std::vector<bool> ref{
+  std::array ref{
     false, true,  false, true,  false, true,  false, true,  false, true,  false, true,  false,
     true,  false, true,  false, true,  false, true,  false, true,  false, true,  false, true,
     false, true,  false, true,  false, true,  false, true,  false, true,  false, true,  false,
@@ -25,7 +26,9 @@ int main() {
   };
 
   auto assert_eq = [&] {
-    std::cout << bitset << std::endl;
+    if (!std::is_constant_evaluated()) {
+      std::cout << bitset << std::endl;
+    }
     THES_ASSERT(test::rangeq(bitset, ref));
   };
 
@@ -43,7 +46,9 @@ int main() {
     const bool v1 = bitset.get(idx);
     const bool v2 = ref[idx];
     THES_ASSERT(v1 == v2);
-    std::cout << "@" << idx << ": " << v1 << std::endl;
+    if (!std::is_constant_evaluated()) {
+      std::cout << "@" << idx << ": " << v1 << std::endl;
+    }
   };
   auto countr_one = [&] {
     const auto v1 = bitset.countr_one();
@@ -58,7 +63,9 @@ int main() {
       return count;
     }();
     THES_ASSERT(v1 == v2);
-    std::cout << "countr_one: " << v1 << std::endl;
+    if (!std::is_constant_evaluated()) {
+      std::cout << "countr_one: " << v1 << std::endl;
+    }
   };
   auto countr_zero = [&] {
     const auto v1 = bitset.countr_zero();
@@ -73,7 +80,9 @@ int main() {
       return count;
     }();
     THES_ASSERT(v1 == v2);
-    std::cout << "countr_zero: " << v1 << std::endl;
+    if (!std::is_constant_evaluated()) {
+      std::cout << "countr_zero: " << v1 << std::endl;
+    }
   };
 
   assert_eq();
@@ -88,4 +97,11 @@ int main() {
   unset(1);
   countr_one();
   countr_zero();
+
+  return 0;
+}
+
+int main() {
+  static_assert(run() == 0);
+  return run();
 }

@@ -91,7 +91,8 @@ template<typename... TArgs>
 struct ArgsPrinter {
   explicit ArgsPrinter(TArgs&&... args) : args_(std::forward<TArgs>(args)...) {}
 
-  friend std::ostream& operator<<(std::ostream& stream, const ArgsPrinter& ap) {
+  template<OutStream TStream>
+  friend TStream& operator<<(TStream& stream, const ArgsPrinter& ap) {
     std::apply([&stream](const TArgs&... args) { (stream << ... << args); }, ap.args_);
     return stream;
   }

@@ -8,7 +8,8 @@
 
 #include "thesauros/io/concepts.hpp"
 
-namespace thes::fmt {
+namespace thes {
+namespace fmt {
 template<typename T>
 struct IsIoManipTrait : public std::false_type {};
 template<typename T>
@@ -207,7 +208,7 @@ inline constexpr auto zero_pad(int padding) {
   return width(padding) | fill('0') | internal();
 }
 
-template<OStream TStream, typename TManip>
+template<StdOStream TStream, typename TManip>
 struct ManipStream {
   ManipStream(TStream& stream, const TManip& manip)
       : stream_(stream), state_(stream), manip_(manip) {
@@ -251,7 +252,7 @@ struct ArgsManipulated {
   explicit ArgsManipulated(TManip&& manip, TArgs&&... args)
       : args_(std::forward<TArgs>(args)...), man_(std::forward<TManip>(manip)) {}
 
-  template<OStream TStream>
+  template<StdOStream TStream>
   friend std::ostream& operator<<(TStream& stream, const ArgsManipulated& mana) {
     ManipStream<TStream, TManip> man_stream(stream, mana.man_);
     std::apply([&man_stream](const auto&... args) { (man_stream << ... << args); }, mana.args_);
@@ -268,6 +269,10 @@ inline constexpr ArgsManipulated<TManip, TArgs...> manip_args(TManip&& manip, TA
   return ArgsManipulated<TManip, TArgs...>{std::forward<TManip>(manip),
                                            std::forward<TArgs>(args)...};
 }
-} // namespace thes::fmt
+} // namespace fmt
+
+template<StdOStream TStream, typename TManip>
+struct IsOutStreamTrait<fmt::ManipStream<TStream, TManip>> : public std::true_type {};
+} // namespace thes
 
 #endif // INCLUDE_THESAUROS_FORMAT_MANIPULATION_HPP
