@@ -32,6 +32,7 @@ public:
   using Value = T;
   using value_type = Value;
 
+  constexpr IotaRange() : begin_{}, end_{} {}
   constexpr IotaRange(T begin, T end) : begin_{begin}, end_{end} {}
 
   struct const_iterator
