@@ -24,22 +24,32 @@ inline void assert_fail(const char* assertion, const char* file, unsigned int li
   std::abort();
 }
 
-inline constexpr bool range_eq(const auto& r1, const auto& r2) {
-  constexpr bool v1 = requires {
-    std::begin(r1);
-    std::begin(r2);
-    std::end(r1);
-    std::end(r2);
-  };
-  constexpr bool v2 = requires(std::size_t i) {
-    r1.size();
-    r2.size();
-    r1[i];
-    r2[i];
-  };
-  static_assert(v1 || v2);
+namespace detail {
+template<typename TRange>
+concept IsIterRange = requires(TRange&& r) {
+  std::begin(r);
+  std::end(r);
+};
+template<typename TRange>
+concept IsAccessRange = requires(TRange&& r, std::size_t i) {
+  r.size();
+  r[i];
+};
 
-  if constexpr (v1) {
+template<typename TRange1, typename TRange2>
+concept AreIterRanges = IsIterRange<TRange1> && IsIterRange<TRange2>;
+template<typename TRange1, typename TRange2>
+concept AreAccessRanges = IsAccessRange<TRange1> && IsAccessRange<TRange2>;
+
+template<typename TRange1, typename TRange2>
+concept AreRanges = AreIterRanges<TRange1, TRange2> || AreAccessRanges<TRange1, TRange2>;
+} // namespace detail
+
+template<typename TRange1, typename TRange2>
+inline constexpr bool range_eq(TRange1&& r1, TRange2&& r2) {
+  static_assert(detail::AreRanges<TRange1, TRange2>);
+
+  if constexpr (detail::AreIterRanges<TRange1, TRange2>) {
     auto it1 = std::begin(r1);
     auto end1 = std::end(r1);
     auto it2 = std::begin(r2);
@@ -69,7 +79,7 @@ inline constexpr bool range_eq(const auto& r1, const auto& r2) {
     }
     return (it1 == end1) == (it2 == end2);
   }
-  if constexpr (v2) {
+  if constexpr (detail::AreAccessRanges<TRange1, TRange2>) {
     const std::size_t size1{r1.size()};
     const std::size_t size2{r2.size()};
     if (size1 != size2) {
