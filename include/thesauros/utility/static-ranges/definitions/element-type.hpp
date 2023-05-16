@@ -21,7 +21,7 @@ struct ElementTypeSeqTrait {
     using Type = TypeSeq<std::decay_t<decltype(get_at<tIdxs>(std::declval<const TRange&>()))>...>;
   };
 
-  using Type = Impl<std::make_index_sequence<size<TRange>>>::Type;
+  using Type = typename Impl<std::make_index_sequence<size<TRange>>>::Type;
 };
 
 template<typename TRange>
