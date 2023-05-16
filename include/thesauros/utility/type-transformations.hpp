@@ -2,6 +2,7 @@
 #define INCLUDE_THESAUROS_UTILITY_TYPE_TRANSFORMATIONS_HPP
 
 #include <concepts>
+#include <limits>
 
 namespace thes {
 template<bool tConst, typename T>
@@ -40,6 +41,12 @@ requires(!std::same_as<T1, T2> && std::signed_integral<T1> && std::signed_integr
 struct UnionTrait<T1, T2> {
   using Type = std::conditional_t<(sizeof(T1) > sizeof(T2)), T1, T2>;
 };
+template<typename T1, typename T2>
+requires(!std::same_as<T1, T2> && std::floating_point<T1> && std::floating_point<T2> &&
+         std::numeric_limits<T1>::is_iec559 && std::numeric_limits<T2>::is_iec559)
+struct UnionTrait<T1, T2> {
+  using Type = std::conditional_t<(sizeof(T1) > sizeof(T2)), T1, T2>;
+};
 
 template<typename... Ts>
 using Union = typename UnionTrait<Ts...>::Type;
@@ -68,6 +75,12 @@ struct IntersectionTrait<T1, T2> {
 };
 template<typename T1, typename T2>
 requires(!std::same_as<T1, T2> && std::signed_integral<T1> && std::signed_integral<T2>)
+struct IntersectionTrait<T1, T2> {
+  using Type = std::conditional_t<(sizeof(T1) < sizeof(T2)), T1, T2>;
+};
+template<typename T1, typename T2>
+requires(!std::same_as<T1, T2> && std::floating_point<T1> && std::floating_point<T2> &&
+         std::numeric_limits<T1>::is_iec559 && std::numeric_limits<T2>::is_iec559)
 struct IntersectionTrait<T1, T2> {
   using Type = std::conditional_t<(sizeof(T1) < sizeof(T2)), T1, T2>;
 };
