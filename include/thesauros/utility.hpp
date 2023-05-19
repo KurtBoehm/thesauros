@@ -32,6 +32,7 @@
 #include "utility/type-sequence.hpp"
 #include "utility/type-tag.hpp"
 #include "utility/type-transformations.hpp"
+#include "utility/typed-integer.hpp"
 #include "utility/unicode.hpp"
 #include "utility/unwrap.hpp"
 
