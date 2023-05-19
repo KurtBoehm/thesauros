@@ -1,8 +1,9 @@
 #ifndef INCLUDE_THESAUROS_MATH_OVERFLOW_HPP
 #define INCLUDE_THESAUROS_MATH_OVERFLOW_HPP
 
-#include "thesauros/utility/info-result.hpp"
 #include <limits>
+
+#include "thesauros/utility/info-result.hpp"
 
 namespace thes {
 template<typename T>

@@ -1,13 +1,14 @@
 #ifndef INCLUDE_THESAUROS_CONTAINERS_MULTI_BYTE_INTEGERS_HPP
 #define INCLUDE_THESAUROS_CONTAINERS_MULTI_BYTE_INTEGERS_HPP
 
-#include "thesauros/containers/array/dynamic.hpp"
-#include "thesauros/iterator/facades.hpp"
-#include "thesauros/utility/arrow-proxy.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <memory>
+
+#include "thesauros/containers/array/dynamic.hpp"
+#include "thesauros/iterator/facades.hpp"
+#include "thesauros/utility/arrow-proxy.hpp"
 
 namespace thes {
 template<typename TByteInt, std::size_t tPaddingBytes,

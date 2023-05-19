@@ -3,9 +3,8 @@
 
 #include <type_traits>
 
+#include "thesauros/utility/static-ranges/definitions/concepts.hpp"
 #include "thesauros/utility/static-ranges/generators/combined.hpp"
-
-#include "definitions/concepts.hpp"
 
 namespace thes::star {
 template<typename TRange, typename TRangeGen>

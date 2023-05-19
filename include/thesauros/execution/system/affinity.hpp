@@ -2,9 +2,9 @@
 #define INCLUDE_THESAUROS_EXECUTION_SYSTEM_AFFINITY_HPP
 
 #include <cstddef>
+#include <thread>
 
 #include <pthread.h>
-#include <thread>
 
 #include "tl/expected.hpp"
 
