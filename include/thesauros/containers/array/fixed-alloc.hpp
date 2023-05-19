@@ -23,8 +23,8 @@ struct FixedAllocArray {
   using const_iterator = typename Data::const_iterator;
 
   constexpr FixedAllocArray() = default;
-  constexpr explicit FixedAllocArray(const Allocator& alloc) : allocation_(alloc) {}
-  constexpr explicit FixedAllocArray(Allocator&& alloc)
+  explicit constexpr FixedAllocArray(const Allocator& alloc) : allocation_(alloc) {}
+  explicit constexpr FixedAllocArray(Allocator&& alloc)
       : allocation_(std::forward<Allocator>(alloc)) {}
 
   constexpr FixedAllocArray(std::initializer_list<Value> init) : allocation_(init.size()) {

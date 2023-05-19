@@ -15,7 +15,7 @@ struct StaticCapacityString {
 
   template<std::size_t tSize>
   requires(tSize <= tCapacity)
-  constexpr explicit StaticCapacityString(char ptr[tSize]) : size_{tSize} {
+  explicit constexpr StaticCapacityString(char ptr[tSize]) : size_{tSize} {
     std::copy(ptr, ptr + tSize, data_.data());
   }
   StaticCapacityString() = default;

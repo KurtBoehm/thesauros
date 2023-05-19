@@ -20,7 +20,7 @@ struct BasicMultiSize {
   using AxisSize = std::array<Size, dimension_num>;
   using ExAxisSize = std::array<Size, dimension_num + 1>;
 
-  constexpr explicit BasicMultiSize(std::array<TIndex, tDimNum> sizes)
+  explicit constexpr BasicMultiSize(std::array<TIndex, tDimNum> sizes)
       : sizes_(sizes), postfix_prod_incl_(star::postfix_product_inclusive(sizes) | star::to_array) {
   }
 
@@ -78,7 +78,7 @@ struct MultiSize : public BasicMultiSize<TIndex, tDimNum> {
   using AxisDiv = std::array<Div, dimension_num>;
   using ExAxisDiv = std::array<Div, dimension_num + 1>;
 
-  constexpr explicit MultiSize(std::array<TIndex, tDimNum> sizes)
+  explicit constexpr MultiSize(std::array<TIndex, tDimNum> sizes)
       : BasicMultiSize<TIndex, tDimNum>(sizes),
         divs_(this->sizes() | star::transform([](Size a) { return Div(a); }) | star::to_array),
         postfix_prod_incl_divs_(this->from_sizes() |

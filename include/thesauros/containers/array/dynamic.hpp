@@ -52,11 +52,11 @@ struct DynamicArray {
   using GrowthPolicy = TGrowthPolicy;
 
   constexpr DynamicArray() = default;
-  constexpr explicit DynamicArray(const Allocator& alloc) : allocation_(alloc) {}
-  constexpr explicit DynamicArray(Allocator&& alloc)
+  explicit constexpr DynamicArray(const Allocator& alloc) : allocation_(alloc) {}
+  explicit constexpr DynamicArray(Allocator&& alloc)
       : allocation_(std::forward<Allocator>(alloc)) {}
 
-  constexpr explicit DynamicArray(Size size) : allocation_(size) {
+  explicit constexpr DynamicArray(Size size) : allocation_(size) {
     initialize_all();
   }
   constexpr DynamicArray(Size size, Allocator&& alloc)

@@ -53,7 +53,7 @@ struct StaticMap<TPairs...> {
     return impl(static_value<std::size_t, 0>, impl);
   }();
 
-  constexpr explicit StaticMap(TPairs&&... pairs) : pairs_{std::forward<TPairs>(pairs)...} {}
+  explicit constexpr StaticMap(TPairs&&... pairs) : pairs_{std::forward<TPairs>(pairs)...} {}
 
   template<Key tKey>
   [[nodiscard]] constexpr const auto& get() const {

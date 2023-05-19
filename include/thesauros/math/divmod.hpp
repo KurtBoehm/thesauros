@@ -55,7 +55,7 @@ struct Divisor {
     return std::numeric_limits<WideValue>::max() / d + 1;
   }
 
-  constexpr explicit Divisor(T d) : divisor_(d), inverse_(invert(d)) {}
+  explicit constexpr Divisor(T d) : divisor_(d), inverse_(invert(d)) {}
 
   [[nodiscard]] constexpr inline friend Value operator%(const Value a, const Divisor& d) {
     const auto low_bits = d.inverse_ * a;

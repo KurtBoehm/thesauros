@@ -32,12 +32,12 @@ struct StaticBitset {
   static constexpr Chunk one_chunk = static_cast<Chunk>(~zero_chunk);
 
   constexpr StaticBitset() = default;
-  constexpr explicit StaticBitset(bool value)
+  explicit constexpr StaticBitset(bool value)
       : chunks_(star::constant<static_chunk_num>(value ? one_chunk : zero_chunk) | star::to_array) {
   }
   template<typename... TArgs>
   requires(sizeof...(TArgs) == tSize && (... && std::same_as<TArgs, bool>))
-  constexpr explicit StaticBitset(TArgs&&... args)
+  explicit constexpr StaticBitset(TArgs&&... args)
       : chunks_(generate(std::forward<TArgs>(args)...)) {}
 
   constexpr void set(std::size_t index) {

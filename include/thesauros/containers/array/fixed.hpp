@@ -24,7 +24,7 @@ struct FixedArray {
 
   using InitPolicy = TInitPolicy;
 
-  constexpr explicit FixedArray(Size size) : allocation_(size) {
+  explicit constexpr FixedArray(Size size) : allocation_(size) {
     initialize_all();
   }
   constexpr FixedArray(Size size, Allocator&& alloc)
@@ -36,7 +36,7 @@ struct FixedArray {
   }
 
   template<typename TOther>
-  constexpr explicit FixedArray(Size size, const TOther& value) : allocation_(size) {
+  explicit constexpr FixedArray(Size size, const TOther& value) : allocation_(size) {
     uninit_fill(value);
   }
   template<typename TOther>

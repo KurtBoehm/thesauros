@@ -118,7 +118,7 @@ struct Quantity {
   using Rep = TRep;
   using Unit = TUnit;
 
-  constexpr explicit Quantity(TRep value) : value_(value) {}
+  explicit constexpr Quantity(TRep value) : value_(value) {}
 
   constexpr Rep count() const {
     return value_;

@@ -27,10 +27,10 @@ struct TypedChunk : public TAllocator {
   using const_iterator = const TValue*;
 
   constexpr TypedChunk() = default;
-  constexpr explicit TypedChunk(const Allocator& alloc) : Allocator(alloc) {}
-  constexpr explicit TypedChunk(Allocator&& alloc) : Allocator(std::forward<Allocator>(alloc)) {}
+  explicit constexpr TypedChunk(const Allocator& alloc) : Allocator(alloc) {}
+  explicit constexpr TypedChunk(Allocator&& alloc) : Allocator(std::forward<Allocator>(alloc)) {}
 
-  constexpr explicit TypedChunk(Size size)
+  explicit constexpr TypedChunk(Size size)
       : begin_(allocate_memory(*this, size)), end_(begin_ + size) {}
   constexpr TypedChunk(Size size, Allocator&& alloc)
       : Allocator(std::forward<Allocator>(alloc)), begin_(allocate_memory(*this, size)),

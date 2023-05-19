@@ -152,7 +152,7 @@ struct Style {
 struct Foreground {
   Colour colour;
 
-  constexpr explicit Foreground(Colour c) : colour(c) {}
+  explicit constexpr Foreground(Colour c) : colour(c) {}
 
   void apply(Style& s) const {
     s.fg = colour;
@@ -161,7 +161,7 @@ struct Foreground {
 struct Background {
   Colour colour;
 
-  constexpr explicit Background(Colour c) : colour(c) {}
+  explicit constexpr Background(Colour c) : colour(c) {}
 
   void apply(Style& s) const {
     s.bg = colour;
@@ -170,7 +170,7 @@ struct Background {
 struct IntensityApplier {
   Intensity intensity;
 
-  constexpr explicit IntensityApplier(Intensity i) : intensity(i) {}
+  explicit constexpr IntensityApplier(Intensity i) : intensity(i) {}
 
   void apply(Style& s) const {
     s.intensity = intensity;

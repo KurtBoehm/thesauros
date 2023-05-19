@@ -18,7 +18,7 @@
 namespace thes {
 struct Indentation {
   constexpr Indentation() = default;
-  constexpr explicit Indentation(std::size_t step) : Indentation{0, step} {}
+  explicit constexpr Indentation(std::size_t step) : Indentation{0, step} {}
   constexpr Indentation(std::size_t depth, std::size_t step) : state_{std::in_place, depth, step} {}
 
   Indentation& operator++() {

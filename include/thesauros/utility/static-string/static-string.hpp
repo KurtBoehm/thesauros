@@ -100,7 +100,7 @@ struct StaticString {
   }
 
 private:
-  constexpr explicit StaticString(char fill)
+  explicit constexpr StaticString(char fill)
       : data{star::index_transform<size + 1>([&](auto idx) { return (idx < size) ? fill : '\0'; }) |
              star::to_array} {}
 };
