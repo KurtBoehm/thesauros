@@ -93,6 +93,10 @@ inline constexpr bool range_eq(TRange1&& r1, TRange2&& r2) {
     return true;
   }
 }
+template<typename TRange1, typename TRange2>
+inline constexpr bool range_eq(TRange1&& r1, TRange2&& r2) {
+  return range_eq<true>(std::forward<TRange1>(r1), std::forward<TRange2>(r2));
+}
 
 inline bool string_eq(const std::string_view s1, const std::string_view s2) {
   const bool eq = s1 == s2;
