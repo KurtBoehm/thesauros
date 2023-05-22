@@ -13,7 +13,7 @@ int main() {
   std::vector<thes::strong_order::Pair<int, int>> ref{};
 
   auto assert_eq = [&] {
-    std::cout << thes::range_print(map) << std::endl;
+    std::cout << thes::range_print(map) << '\n';
     THES_ASSERT(test::range_eq(map, ref));
   };
 
@@ -28,7 +28,7 @@ int main() {
     }
 
     THES_ASSERT(res1 == res2);
-    std::cout << key << ' ' << (res1 ? "inserted" : "not inserted") << std::endl;
+    std::cout << key << ' ' << (res1 ? "inserted" : "not inserted") << '\n';
     assert_eq();
   };
 
@@ -42,7 +42,7 @@ int main() {
     }
 
     THES_ASSERT(res1 == res2);
-    std::cout << key << ' ' << (res1 ? "found" : "not found") << std::endl;
+    std::cout << key << ' ' << (res1 ? "found" : "not found") << '\n';
     assert_eq();
   };
 

@@ -19,7 +19,7 @@ namespace thes::test {
 inline void assert_fail(const char* assertion, const char* file, unsigned int line,
                         const char* function, auto fun) {
   std::cerr << "Assertion “" << assertion << "” failed (" << function << " @ " << file << ":"
-            << line << ")" << std::endl;
+            << line << ")" << '\n';
   fun();
   std::abort();
 }
@@ -69,13 +69,13 @@ inline constexpr bool range_eq(TRange1&& r1, TRange2&& r2) {
       }
       if (*it1 != *it2) {
         if constexpr (can_print) {
-          std::cout << std::endl;
+          std::cout << '\n';
         }
         return false;
       }
     }
     if constexpr (can_print) {
-      std::cout << std::endl;
+      std::cout << '\n';
     }
     return (it1 == end1) == (it2 == end2);
   }
@@ -97,7 +97,7 @@ inline constexpr bool range_eq(TRange1&& r1, TRange2&& r2) {
 inline bool string_eq(const std::string_view s1, const std::string_view s2) {
   const bool eq = s1 == s2;
   if (eq) {
-    std::cout << formatted(fmt::fg_green, s1) << std::endl;
+    std::cout << formatted(fmt::fg_green, s1) << '\n';
   } else {
     for (char c : s1) {
       std::cout << int(c) << ' ';
@@ -106,10 +106,10 @@ inline bool string_eq(const std::string_view s1, const std::string_view s2) {
     for (char c : s2) {
       std::cout << ' ' << int(c);
     }
-    std::cout << std::endl;
+    std::cout << '\n';
 
     std::cout << formatted(fmt::fg_red, s1) << (eq ? " == " : " != ") << formatted(fmt::fg_red, s2)
-              << std::endl;
+              << '\n';
   }
   return eq;
 }

@@ -11,13 +11,13 @@ struct MutableBitReference {
   static constexpr std::size_t chunk_size = tChunkSize;
   using Chunk = FixedUnsignedInt<chunk_size>;
 
-  MutableBitReference(Chunk& chunk, std::size_t index) : chunk_{chunk}, index_{index} {}
+  constexpr MutableBitReference(Chunk& chunk, std::size_t index) : chunk_{chunk}, index_{index} {}
 
-  operator bool() const {
+  constexpr operator bool() const {
     return chunk_ & mask();
   }
 
-  MutableBitReference& operator=(const bool value) {
+  constexpr MutableBitReference& operator=(const bool value) {
     if (value) {
       chunk_ |= mask();
     } else {
@@ -27,12 +27,12 @@ struct MutableBitReference {
   }
 
 private:
-  Chunk& chunk_;
-  const std::size_t index_;
-
   constexpr Chunk mask() const {
     return Chunk{1} << index_;
   }
+
+  Chunk& chunk_;
+  const std::size_t index_;
 };
 } // namespace thes
 

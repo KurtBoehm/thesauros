@@ -8,8 +8,8 @@
 
 namespace test = thes::test;
 
-constexpr int run() {
-  thes::StaticBitset bitset{
+int main() {
+  thes::FixedBitset<4> bitset{
     false, true,  false, true,  false, true,  false, true,  false, true,  false, true,  false,
     true,  false, true,  false, true,  false, true,  false, true,  false, true,  false, true,
     false, true,  false, true,  false, true,  false, true,  false, true,  false, true,  false,
@@ -25,9 +25,7 @@ constexpr int run() {
   };
 
   auto assert_eq = [&] {
-    if (!std::is_constant_evaluated()) {
-      std::cout << bitset << '\n';
-    }
+    std::cout << bitset << '\n';
     THES_ASSERT(test::range_eq(bitset, ref));
   };
 
@@ -45,9 +43,7 @@ constexpr int run() {
     const bool v1 = bitset.get(idx);
     const bool v2 = ref[idx];
     THES_ASSERT(v1 == v2);
-    if (!std::is_constant_evaluated()) {
-      std::cout << "@" << idx << ": " << v1 << '\n';
-    }
+    std::cout << "@" << idx << ": " << v1 << '\n';
   };
   auto countr_one = [&] {
     const auto v1 = bitset.countr_one();
@@ -62,9 +58,7 @@ constexpr int run() {
       return count;
     }();
     THES_ASSERT(v1 == v2);
-    if (!std::is_constant_evaluated()) {
-      std::cout << "countr_one: " << v1 << '\n';
-    }
+    std::cout << "countr_one: " << v1 << '\n';
   };
   auto countr_zero = [&] {
     const auto v1 = bitset.countr_zero();
@@ -79,9 +73,7 @@ constexpr int run() {
       return count;
     }();
     THES_ASSERT(v1 == v2);
-    if (!std::is_constant_evaluated()) {
-      std::cout << "countr_zero: " << v1 << '\n';
-    }
+    std::cout << "countr_zero: " << v1 << '\n';
   };
 
   assert_eq();
@@ -96,11 +88,4 @@ constexpr int run() {
   unset(1);
   countr_one();
   countr_zero();
-
-  return 0;
-}
-
-int main() {
-  static_assert(run() == 0);
-  return run();
 }

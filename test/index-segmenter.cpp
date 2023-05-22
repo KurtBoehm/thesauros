@@ -9,8 +9,8 @@ int main() {
   const std::size_t size = std::numeric_limits<std::size_t>::max() - 10;
   const std::size_t seg_num = 7;
 
-  std::cout << "size: " << size << std::endl;
-  std::cout << std::endl;
+  std::cout << "size: " << size << '\n';
+  std::cout << '\n';
   {
     const thes::UniformIndexSegmenter<std::size_t> seg(size, seg_num);
 
@@ -20,7 +20,7 @@ int main() {
       const auto j0 = seg.segment_start(i);
       const auto j1 = seg.segment_end(i);
 
-      std::cout << j0 << "→" << j1 << ":" << (j1 - j0) << std::endl;
+      std::cout << j0 << "→" << j1 << ":" << (j1 - j0) << '\n';
 
       THES_ASSERT(j0 == start);
       start = j1;
@@ -28,7 +28,7 @@ int main() {
     }
     THES_ASSERT(sum == size);
   }
-  std::cout << std::endl;
+  std::cout << '\n';
   {
     const std::size_t block_size = 8;
     const thes::BlockedIndexSegmenter<std::size_t> seg(size, seg_num, block_size);
@@ -39,7 +39,7 @@ int main() {
       const auto j0 = seg.segment_start(i);
       const auto j1 = seg.segment_end(i);
 
-      std::cout << j0 << "→" << j1 << ":" << (j1 - j0) << std::endl;
+      std::cout << j0 << "→" << j1 << ":" << (j1 - j0) << '\n';
 
       THES_ASSERT(j0 == start);
       start = j1;
@@ -47,11 +47,11 @@ int main() {
     }
     THES_ASSERT(sum == size);
   }
-  std::cout << std::endl;
+  std::cout << '\n';
   {
     auto impl = []<typename T>(thes::TypeTag<T>) {
       for (const auto num : thes::range<T>(512)) {
-        std::cout << "num: " << num << std::endl;
+        std::cout << "num: " << num << '\n';
         for (const auto blocks : thes::range<T>(1, 256)) {
           // test_to_seg
           {

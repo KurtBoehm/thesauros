@@ -55,66 +55,66 @@ int main() {
 
   // Mix of manipulations and styles
 
-  std::cout << thes::formatted(fmt::fg_red, "test") << std::endl;
-  std::cout << thes::formatted(fmt::precision(2), std::numbers::pi) << std::endl;
-  std::cout << thes::formatted(fmt::fg_red | fmt::precision(2), std::numbers::pi) << std::endl;
+  std::cout << thes::formatted(fmt::fg_red, "test") << '\n';
+  std::cout << thes::formatted(fmt::precision(2), std::numbers::pi) << '\n';
+  std::cout << thes::formatted(fmt::fg_red | fmt::precision(2), std::numbers::pi) << '\n';
   std::cout << thes::formatted(fmt::fg_red | fmt::bold | fmt::precision(2), std::numbers::pi)
-            << std::endl;
+            << '\n';
   std::cout << thes::formatted(fmt::fg_red | fmt::bold | fmt::zero_pad(8), std::numbers::pi)
-            << std::endl;
+            << '\n';
   std::cout << thes::formatted(fmt::zero_pad(8) | fmt::fg_red | fmt::bold, std::numbers::pi)
-            << std::endl;
+            << '\n';
   std::cout << thes::formatted(fmt::zero_pad(8) | fmt::fg_red | fmt::precision(5),
                                -std::numbers::pi)
-            << std::endl;
+            << '\n';
   std::cout << thes::formatted(fmt::zero_pad(8) | fmt::precision(4) | fmt::fg_red | fmt::fixed,
                                -2.5)
-            << std::endl;
+            << '\n';
   std::cout << thes::formatted(fmt::zero_pad(8) | fmt::precision(4) | fmt::fg_black | fmt::fixed |
                                  fmt::bg_bright_yellow,
                                -2.5)
-            << std::endl;
+            << '\n';
   std::cout << thes::formatted(fmt::zero_pad(8) | fmt::precision(4) | fmt::fg_black | fmt::fixed |
                                  fmt::bg_bright_yellow,
                                S{3})
-            << std::endl;
+            << '\n';
 
   std::cout << thes::formatted(fmt::fg_yellow | fmt::bg_blue, "That’s a yellow message on blue!")
-            << std::endl;
-  std::cout << "This should be normal again…" << std::endl;
+            << '\n';
+  std::cout << "This should be normal again…" << '\n';
   std::cout << thes::formatted(fmt::bold | fmt::italic | fmt::fg_red,
                                "That’s bold, italic and red!")
-            << std::endl;
-  std::cout << "This should be normal again…" << std::endl;
+            << '\n';
+  std::cout << "This should be normal again…" << '\n';
   std::cout << thes::formatted(fmt::fg_blue, "This") << " "
             << thes::formatted(fmt::bold | fmt::bg_yellow, "is") << " a "
             << thes::formatted(fmt::fg_red | fmt::underline, "mixed") << " "
-            << thes::formatted(fmt::bold | fmt::fg_bright_green, "message") << "!" << std::endl;
+            << thes::formatted(fmt::bold | fmt::fg_bright_green, "message") << "!" << '\n';
 
   std::cout << thes::formatted(fmt::fg_blue | fmt::italic, "blue ",
                                thes::formatted(fmt::fg_red, "red ",
                                                thes::formatted(fmt::underline, "underline"), " red",
                                                thes::formatted(fmt::fg_green, " green")),
                                " ", thes::formatted(fmt::bold, "blue"))
-            << std::endl;
+            << '\n';
 
-  std::cout << thes::formatted(fmt::fg_red, "Nested: ", S{3}, " after") << std::endl;
-  std::cout << "Normal?" << std::endl;
+  std::cout << thes::formatted(fmt::fg_red, "Nested: ", S{3}, " after") << '\n';
+  std::cout << "Normal?" << '\n';
 
   // TODO This is slightly buggy on Linux…
   {
     auto ctx = fmt::make_context(std::cout);
     ctx.set(fmt::fg_magenta | fmt::bg_green | fmt::italic | fmt::width(5));
-    std::cout << 123 << std::endl;
+    std::cout << 123 << '\n';
 
     {
       auto ctx2 = fmt::make_context(std::cout);
       ctx.set(fmt::fg_yellow | fmt::bg_none | fmt::bold);
-      std::cout << "234" << std::endl;
+      std::cout << "234" << '\n';
     }
 
-    std::cout << thes::formatted(fmt::not_italic, "345") << std::endl;
+    std::cout << thes::formatted(fmt::not_italic, "345") << '\n';
   }
 
-  std::cout << "abc" << std::endl;
+  std::cout << "abc" << '\n';
 }

@@ -1,4 +1,3 @@
-#include "thesauros/utility/static-map.hpp"
 #include "thesauros/utility.hpp"
 
 int main() {

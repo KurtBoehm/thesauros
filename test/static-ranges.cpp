@@ -291,14 +291,14 @@ int main() {
   {
     static constexpr std::array arr{0, 4, 3, 1};
     arr | star::transform([](auto v) { return 2 * v; }) |
-      star::for_each([](auto v) { std::cout << v << std::endl; });
+      star::for_each([](auto v) { std::cout << v << '\n'; });
   }
 
   // for_each
   {
     static constexpr std::array arr{0, 4, 3, 1};
     arr | star::transform([](auto v) { return 2 * v; }) |
-      star::apply([](auto... v) { (std::cout << ... << v) << std::endl; });
+      star::apply([](auto... v) { (std::cout << ... << v) << '\n'; });
   }
 
   // multidim_for_each

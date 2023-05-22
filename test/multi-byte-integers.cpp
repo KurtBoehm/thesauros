@@ -5,9 +5,8 @@
 #include <vector>
 
 #include "thesauros/containers.hpp"
-#include "thesauros/utility.hpp"
-
 #include "thesauros/test.hpp"
+#include "thesauros/utility.hpp"
 
 namespace test = thes::test;
 
@@ -23,7 +22,7 @@ int main() {
 
   auto elem_assert = [&integers, &vec] {
     std::cout << '{' << thes::range_print(integers) << "}, [" << thes::range_print(vec) << ']'
-              << std::endl;
+              << '\n';
     THES_ASSERT(test::range_eq(integers, vec));
   };
   auto push_back = [&integers, &vec](UInt v) {

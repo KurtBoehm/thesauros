@@ -9,7 +9,7 @@ int main() {
     static_assert(r.contains(9));
 
     for (auto it = r.begin(); it != r.end(); ++it) {
-      std::cout << *it << std::endl;
+      std::cout << *it << '\n';
     }
 
     static_assert([r] {
@@ -30,7 +30,7 @@ int main() {
     constexpr auto r = thes::reversed(thes::range(10));
 
     for (auto it = r.begin(); it != r.end(); ++it) {
-      std::cout << *it << std::endl;
+      std::cout << *it << '\n';
     }
 
     static_assert([r] {

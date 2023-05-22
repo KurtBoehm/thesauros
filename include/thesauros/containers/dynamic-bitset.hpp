@@ -4,6 +4,8 @@
 #include <atomic>
 #include <bitset>
 #include <cassert>
+#include <climits>
+#include <concepts>
 #include <cstddef>
 #include <limits>
 #include <ostream>
@@ -14,54 +16,52 @@
 #include "thesauros/utility/multi-bit-reference.hpp"
 
 namespace thes {
-template<typename TChunk = std::size_t>
+template<std::unsigned_integral TChunk = std::size_t>
 struct DynamicBitset {
-  static_assert(std::numeric_limits<TChunk>::radix == 2 && !std::numeric_limits<TChunk>::is_signed);
+  static_assert(std::numeric_limits<TChunk>::radix == 2);
   using Chunk = TChunk;
-  static constexpr std::size_t chunk_size{std::numeric_limits<Chunk>::digits};
+  static constexpr std::size_t chunk_byte_num = sizeof(Chunk);
+  static constexpr std::size_t chunk_bit_num = CHAR_BIT * chunk_byte_num;
+
+  using MutBitRef = MutableBitReference<chunk_byte_num>;
 
   DynamicBitset() = default;
-  explicit DynamicBitset(std::size_t size) : chunks_(div_ceil(size, chunk_size)), size_{size} {}
+  explicit DynamicBitset(std::size_t size) : chunks_(div_ceil(size, chunk_bit_num)), size_{size} {}
   DynamicBitset(std::size_t size, bool value)
-      : chunks_(div_ceil(size, chunk_size), value ? one_chunk : zero_chunk), size_{size} {}
+      : chunks_(div_ceil(size, chunk_bit_num), value ? one_chunk : zero_chunk), size_{size} {}
 
   void set(std::size_t index) {
     assert(index < size_);
-    chunks_[index / chunk_size] |= mask(index % chunk_size);
+    chunks_[index / chunk_bit_num] |= mask(index % chunk_bit_num);
   }
 
   void unset(std::size_t index) {
     assert(index < size_);
-    chunks_[index / chunk_size] &= ~mask(index % chunk_size);
+    chunks_[index / chunk_bit_num] &= ~mask(index % chunk_bit_num);
   }
 
   [[nodiscard]] bool get(std::size_t index) const {
     assert(index < size_);
-    return chunks_[index / chunk_size] & mask(index % chunk_size);
+    return chunks_[index / chunk_bit_num] & mask(index % chunk_bit_num);
   }
 
   // Return true if set, false if already set
   [[nodiscard]] bool set_if_unset(std::size_t index) {
     assert(index < size_);
-    const auto index_mask = mask(index % chunk_size);
+    const auto index_mask = mask(index % chunk_bit_num);
 
-    std::atomic_ref atomic_chunk{chunks_[index / chunk_size]};
-    Chunk expected = atomic_chunk;
-    do {
-      if (expected & index_mask) {
-        return false;
-      }
-    } while (!atomic_chunk.compare_exchange_weak(expected, expected | index_mask));
-    return true;
+    std::atomic_ref atomic_chunk{chunks_[index / chunk_bit_num]};
+    const Chunk prev = atomic_chunk.fetch_or(index_mask);
+    return (prev & index_mask) == 0;
   }
 
   void push_back(bool value) {
-    if (size_ == chunks_.size() * chunk_size) {
+    if (size_ == chunks_.size() * chunk_bit_num) {
       chunks_.push_back(Chunk{value});
     } else if (value) {
-      chunks_.back() |= mask(size_ % chunk_size);
+      chunks_.back() |= mask(size_ % chunk_bit_num);
     } else {
-      chunks_.back() &= ~mask(size_ % chunk_size);
+      chunks_.back() &= ~mask(size_ % chunk_bit_num);
     }
     ++size_;
   }
@@ -86,7 +86,7 @@ struct DynamicBitset {
     return size_;
   }
   void resize(const std::size_t size) {
-    chunks_.resize(div_ceil(size, chunk_size));
+    chunks_.resize(div_ceil(size, chunk_bit_num));
     size_ = size;
   }
 
@@ -97,20 +97,20 @@ struct DynamicBitset {
   bool operator[](std::size_t index) const {
     return get(index);
   }
-  MutableBitReference<chunk_size> operator[](std::size_t i) {
+  MutBitRef operator[](std::size_t i) {
     assert(i < size_);
-    return MutableBitReference<chunk_size>{chunks_[i / chunk_size], i % chunk_size};
+    return MutBitRef{chunks_[i / chunk_bit_num], i % chunk_bit_num};
   }
 
   friend std::ostream& operator<<(std::ostream& stream, const DynamicBitset& bitset) {
-    assert(div_ceil(bitset.size_, chunk_size) == bitset.chunks_.size());
+    assert(div_ceil(bitset.size_, chunk_bit_num) == bitset.chunks_.size());
 
     if (bitset.size_ == 0) {
       return stream;
     }
 
-    const std::size_t num{bitset.size_ / chunk_size};
-    const std::size_t remainder{bitset.size_ % chunk_size};
+    const std::size_t num{bitset.size_ / chunk_bit_num};
+    const std::size_t remainder{bitset.size_ % chunk_bit_num};
     if (remainder != 0) {
       const Chunk& last{bitset.chunks_.back()};
       const std::size_t max{remainder - 1};
@@ -121,7 +121,7 @@ struct DynamicBitset {
     if (num > 0) {
       const std::size_t max{num - 1};
       for (const std::size_t i : range(num)) {
-        stream << std::bitset<chunk_size>(bitset.chunks_[max - i]);
+        stream << std::bitset<chunk_bit_num>(bitset.chunks_[max - i]);
       }
     }
     return stream;
@@ -139,17 +139,17 @@ private:
     if (size_ == 0) {
       return 0;
     }
-    assert(div_ceil(size_, chunk_size) == chunks_.size());
+    assert(div_ceil(size_, chunk_bit_num) == chunks_.size());
     const std::size_t max{chunks_.size() - 1};
 
     for (const std::size_t i : range(max)) {
       const std::size_t count{counter(chunks_[i])};
-      if (count != chunk_size) {
-        return count + i * chunk_size;
+      if (count != chunk_bit_num) {
+        return count + i * chunk_bit_num;
       }
     }
     const std::size_t count{counter(chunks_.back())};
-    return std::min(max * chunk_size + count, size_);
+    return std::min(max * chunk_bit_num + count, size_);
   }
 
   static constexpr Chunk mask(std::size_t i) {

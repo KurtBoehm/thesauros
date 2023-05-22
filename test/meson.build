@@ -9,6 +9,7 @@ foreach name, info : {
   'Empty': [['empty.cpp'], []],
   'Execution': [['execution.cpp'], []],
   'FancyVisit': [['fancy-visit.cpp'], []],
+  'FixedBitset': [['fixed-bitset.cpp'], []],
   'Format': [['format.cpp'], []],
   'IndexSegmenter': [['index-segmenter.cpp'], []],
   'Json': [['json.cpp'], []],

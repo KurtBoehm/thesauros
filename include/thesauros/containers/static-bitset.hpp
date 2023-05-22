@@ -31,12 +31,14 @@ struct StaticBitset {
   static constexpr Chunk zero_chunk = 0;
   static constexpr Chunk one_chunk = static_cast<Chunk>(~zero_chunk);
 
+  using MutBitRef = MutableBitReference<chunk_byte_num>;
+
   constexpr StaticBitset() = default;
   explicit constexpr StaticBitset(bool value)
       : chunks_(star::constant<static_chunk_num>(value ? one_chunk : zero_chunk) | star::to_array) {
   }
   template<typename... TArgs>
-  requires(sizeof...(TArgs) == tSize && (... && std::same_as<TArgs, bool>))
+  requires(sizeof...(TArgs) == static_size && (... && std::same_as<TArgs, bool>))
   explicit constexpr StaticBitset(TArgs&&... args)
       : chunks_(generate(std::forward<TArgs>(args)...)) {}
 
@@ -89,13 +91,12 @@ struct StaticBitset {
   constexpr bool operator[](std::size_t index) const {
     return get(index);
   }
-  constexpr MutableBitReference<chunk_bit_num> operator[](std::size_t index) {
+  constexpr MutBitRef operator[](std::size_t index) {
     assert(index < static_size);
     if constexpr (static_chunk_num == 1) {
-      return MutableBitReference<chunk_bit_num>{std::get<0>(chunks_), index};
+      return MutBitRef{std::get<0>(chunks_), index};
     } else {
-      return MutableBitReference<chunk_bit_num>{chunks_[index / chunk_bit_num],
-                                                index % chunk_bit_num};
+      return MutBitRef{chunks_[index / chunk_bit_num], index % chunk_bit_num};
     }
   }
 

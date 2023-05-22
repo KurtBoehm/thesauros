@@ -30,16 +30,15 @@ int main() {
     thes::quantity_cast<thes::Quantity<double, thes::unit::gibibyte>>(rawmaxrss);
   const auto decmaxrss =
     thes::quantity_cast<thes::Quantity<double, thes::unit::gigabyte>>(rawmaxrss);
-  std::cout << "maxrss: " << binmaxrss << ", " << decmaxrss << std::endl;
-  std::cout << "user time: " << convert_time(usage.user_time()) << std::endl;
-  std::cout << "user time: " << split_time(usage.user_time()) << std::endl;
-  std::cout << "system time: " << convert_time(usage.system_time()) << std::endl;
-  std::cout << "overall time: " << convert_time(usage.user_time() + usage.system_time())
-            << std::endl;
+  std::cout << "maxrss: " << binmaxrss << ", " << decmaxrss << '\n';
+  std::cout << "user time: " << convert_time(usage.user_time()) << '\n';
+  std::cout << "user time: " << split_time(usage.user_time()) << '\n';
+  std::cout << "system time: " << convert_time(usage.system_time()) << '\n';
+  std::cout << "overall time: " << convert_time(usage.user_time() + usage.system_time()) << '\n';
 
   const auto t2 = Clock::now();
   const auto q =
     quantity_cast<thes::Quantity<double, thes::unit::second>>(thes::duration_quantity(t2 - t1));
-  std::cout << "time: " << q << std::endl;
-  std::cout << "time: " << split_time(q) << std::endl;
+  std::cout << "time: " << q << '\n';
+  std::cout << "time: " << split_time(q) << '\n';
 }
