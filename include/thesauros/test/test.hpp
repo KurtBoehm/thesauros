@@ -45,7 +45,7 @@ template<typename TRange1, typename TRange2>
 concept AreRanges = AreIterRanges<TRange1, TRange2> || AreAccessRanges<TRange1, TRange2>;
 } // namespace detail
 
-template<typename TRange1, typename TRange2>
+template<bool tAllowPrinting, typename TRange1, typename TRange2>
 inline constexpr bool range_eq(TRange1&& r1, TRange2&& r2) {
   static_assert(detail::AreRanges<TRange1, TRange2>);
 
@@ -55,26 +55,26 @@ inline constexpr bool range_eq(TRange1&& r1, TRange2&& r2) {
     auto it2 = std::begin(r2);
     auto end2 = std::end(r2);
 
-    constexpr bool can_print = requires {
+    constexpr bool print = tAllowPrinting && requires {
       std::cout << *it1;
       std::cout << *it2;
     };
 
-    if constexpr (can_print) {
+    if constexpr (print) {
       std::cout << "range_eq:";
     }
     for (; it1 != end1 && it2 != end2; ++it1, ++it2) {
-      if constexpr (can_print) {
+      if constexpr (print) {
         std::cout << ' ' << *it1 << "/" << *it2;
       }
       if (*it1 != *it2) {
-        if constexpr (can_print) {
+        if constexpr (print) {
           std::cout << '\n';
         }
         return false;
       }
     }
-    if constexpr (can_print) {
+    if constexpr (print) {
       std::cout << '\n';
     }
     return (it1 == end1) == (it2 == end2);
