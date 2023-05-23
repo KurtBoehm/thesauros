@@ -5,6 +5,17 @@
 #include <limits>
 
 namespace thes {
+template<typename T>
+struct AddConstTrait {
+  using Type = const T;
+};
+template<typename T>
+struct AddConstTrait<T&> {
+  using Type = const T&;
+};
+template<typename T>
+using AddConst = typename AddConstTrait<T>::Type;
+
 template<bool tConst, typename T>
 using ConditionalConst = std::conditional_t<tConst, const T, T>;
 
