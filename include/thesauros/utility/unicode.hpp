@@ -2,9 +2,11 @@
 #define INCLUDE_THESAUROS_UTILITY_UNICODE_HPP
 
 #include <array>
+#include <bit>
 #include <cstdint>
 #include <stdexcept>
 #include <string_view>
+#include <tuple>
 #include <utility>
 
 namespace thes {

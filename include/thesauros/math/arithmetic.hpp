@@ -2,11 +2,13 @@
 #define INCLUDE_THESAUROS_MATH_ARITHMETIC_HPP
 
 #include <algorithm>
+#include <cassert>
 #include <concepts>
+#include <cstddef>
 #include <limits>
 
 #include "thesauros/math/overflow.hpp"
-#include "thesauros/optimization.hpp"
+#include "thesauros/utility/inlining.hpp"
 
 namespace thes {
 template<typename T>

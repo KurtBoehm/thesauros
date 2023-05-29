@@ -2,9 +2,9 @@
 #define INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_SINKS_APPLY_HPP
 
 #include <cstddef>
+#include <type_traits>
 #include <utility>
 
-#include "thesauros/optimization.hpp"
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
 

@@ -2,7 +2,10 @@
 #define INCLUDE_THESAUROS_CONTAINERS_ARRAY_FIXED_HPP
 
 #include <cstddef>
+#include <initializer_list>
+#include <memory>
 #include <span>
+#include <stdexcept>
 
 #include "thesauros/containers/array/initialization-policy.hpp"
 #include "thesauros/containers/array/typed-chunk.hpp"

@@ -1,6 +1,7 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_RANGES_POSTFIX_PRODUCT_INCLUSIVE_HPP
 #define INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_RANGES_POSTFIX_PRODUCT_INCLUSIVE_HPP
 
+#include <cstddef>
 #include <functional>
 
 #include "thesauros/utility/static-ranges/definitions/element-type.hpp"

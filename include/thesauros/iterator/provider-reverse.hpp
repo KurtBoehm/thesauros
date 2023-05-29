@@ -1,6 +1,8 @@
 #ifndef INCLUDE_THESAUROS_ITERATOR_PROVIDER_REVERSE_HPP
 #define INCLUDE_THESAUROS_ITERATOR_PROVIDER_REVERSE_HPP
 
+#include <compare>
+
 #include "thesauros/iterator/concepts.hpp"
 
 namespace thes::iter_provider {

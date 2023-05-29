@@ -2,7 +2,9 @@
 #define INCLUDE_THESAUROS_CONTAINERS_ARRAY_DYNAMIC_HPP
 
 #include <algorithm>
+#include <cassert>
 #include <cstddef>
+#include <initializer_list>
 #include <memory>
 
 #include "thesauros/containers/array/growth-policy.hpp"

@@ -2,8 +2,14 @@
 #define INCLUDE_THESAUROS_CONTAINERS_BLOCKED_DYNAMIC_ARRAY_HPP
 
 #include <algorithm>
+#include <cassert>
+#include <cstddef>
+#include <functional>
+#include <memory>
 #include <numeric>
+#include <ostream>
 #include <span>
+#include <type_traits>
 
 #include "thesauros/containers/array/growth-policy.hpp"
 #include "thesauros/containers/array/typed-chunk.hpp"

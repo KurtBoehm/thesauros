@@ -1,8 +1,10 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_SINKS_UNIQUE_VALUE_HPP
 #define INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_SINKS_UNIQUE_VALUE_HPP
 
+#include <cstddef>
 #include <functional>
 #include <optional>
+#include <type_traits>
 #include <utility>
 
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"

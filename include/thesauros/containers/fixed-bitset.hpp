@@ -1,10 +1,14 @@
 #ifndef INCLUDE_THESAUROS_CONTAINERS_FIXED_BITSET_HPP
 #define INCLUDE_THESAUROS_CONTAINERS_FIXED_BITSET_HPP
 
+#include <algorithm>
+#include <array>
 #include <bitset>
 #include <cassert>
+#include <climits>
 #include <concepts>
 #include <cstddef>
+#include <functional>
 #include <initializer_list>
 #include <ostream>
 

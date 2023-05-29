@@ -2,6 +2,7 @@
 #define INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_DEFINITIONS_GET_AT_HPP
 
 #include <cstddef>
+#include <type_traits>
 #include <utility>
 
 namespace thes::star {

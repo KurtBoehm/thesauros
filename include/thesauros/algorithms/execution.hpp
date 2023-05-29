@@ -1,6 +1,6 @@
 #ifndef INCLUDE_THESAUROS_ALGORITHMS_EXECUTION_HPP
 #define INCLUDE_THESAUROS_ALGORITHMS_EXECUTION_HPP
 
-#include "execution/transform-inclusive-scan.hpp"
+#include "execution/transform-inclusive-scan.hpp" // IWYU pragma: export
 
 #endif // INCLUDE_THESAUROS_ALGORITHMS_EXECUTION_HPP

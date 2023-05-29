@@ -5,6 +5,9 @@
 #include <iterator>
 #include <optional>
 #include <ostream>
+#include <string>
+#include <string_view>
+#include <type_traits>
 #include <utility>
 
 #include "thesauros/macropolis/members.hpp"

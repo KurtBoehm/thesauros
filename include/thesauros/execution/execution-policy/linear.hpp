@@ -1,6 +1,8 @@
 #ifndef INCLUDE_THESAUROS_EXECUTION_EXECUTION_POLICY_LINEAR_HPP
 #define INCLUDE_THESAUROS_EXECUTION_EXECUTION_POLICY_LINEAR_HPP
 
+#include <cstddef>
+
 #include "thesauros/utility/index-segmentation.hpp"
 
 namespace thes {

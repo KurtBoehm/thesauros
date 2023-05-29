@@ -2,6 +2,7 @@
 #define INCLUDE_THESAUROS_UTILITY_INDEX_SEGMENTATION_HPP
 
 #include <algorithm>
+#include <cassert>
 #include <optional>
 
 #include "thesauros/math/arithmetic.hpp"

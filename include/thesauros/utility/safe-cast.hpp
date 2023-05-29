@@ -3,6 +3,7 @@
 
 #include <limits>
 #include <ostream>
+#include <type_traits>
 
 #include "tl/expected.hpp"
 

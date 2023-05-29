@@ -2,9 +2,9 @@
 #define INCLUDE_THESAUROS_ALGORITHMS_STATIC_RANGES_INDEX_TO_POSITION_HPP
 
 #include <array>
+#include <cstddef>
 
 #include "thesauros/math/divmod.hpp"
-#include "thesauros/optimization.hpp"
 #include "thesauros/utility/static-value.hpp"
 
 namespace thes::star {

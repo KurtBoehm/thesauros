@@ -2,6 +2,7 @@
 #define INCLUDE_THESAUROS_UTILITY_FIXED_SIZE_INTEGER_HPP
 
 #include <bit>
+#include <cstddef>
 
 #include "primitives.hpp"
 

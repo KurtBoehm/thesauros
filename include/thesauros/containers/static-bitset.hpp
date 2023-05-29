@@ -1,6 +1,8 @@
 #ifndef INCLUDE_THESAUROS_CONTAINERS_STATIC_BITSET_HPP
 #define INCLUDE_THESAUROS_CONTAINERS_STATIC_BITSET_HPP
 
+#include <algorithm>
+#include <array>
 #include <cassert>
 #include <climits>
 #include <cstddef>

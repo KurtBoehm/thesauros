@@ -1,6 +1,8 @@
 #ifndef INCLUDE_THESAUROS_RANGES_IOTA_HPP
 #define INCLUDE_THESAUROS_RANGES_IOTA_HPP
 
+#include <cstddef>
+
 #include "thesauros/iterator/facades.hpp"
 #include "thesauros/iterator/provider-map.hpp"
 #include "thesauros/iterator/provider-reverse.hpp"

@@ -1,10 +1,16 @@
 #ifndef INCLUDE_THESAUROS_CONTAINERS_MULTI_BYTE_INTEGERS_HPP
 #define INCLUDE_THESAUROS_CONTAINERS_MULTI_BYTE_INTEGERS_HPP
 
+#include <bit>
+#include <cassert>
+#include <compare>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <initializer_list>
+#include <limits>
 #include <memory>
+#include <type_traits>
 
 #include "thesauros/containers/array/dynamic.hpp"
 #include "thesauros/iterator/facades.hpp"

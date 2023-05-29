@@ -1,6 +1,7 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_RANGES_ENUMERATE_HPP
 #define INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_RANGES_ENUMERATE_HPP
 
+#include <cstddef>
 #include <type_traits>
 
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"

@@ -1,7 +1,10 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_RANGES_TRANSFORM_HPP
 #define INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_RANGES_TRANSFORM_HPP
 
+#include <array>
+#include <cstddef>
 #include <tuple>
+#include <type_traits>
 
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"
 #include "thesauros/utility/static-ranges/definitions/get-at.hpp"

@@ -1,6 +1,7 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_STATIC_MAP_HPP
 #define INCLUDE_THESAUROS_UTILITY_STATIC_MAP_HPP
 
+#include <cstddef>
 #include <tuple>
 #include <utility>
 

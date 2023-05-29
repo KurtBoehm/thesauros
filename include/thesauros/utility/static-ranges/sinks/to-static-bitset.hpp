@@ -2,6 +2,7 @@
 #define INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_SINKS_TO_STATIC_BITSET_HPP
 
 #include <concepts>
+#include <cstddef>
 #include <type_traits>
 
 #include "thesauros/containers/static-bitset.hpp"

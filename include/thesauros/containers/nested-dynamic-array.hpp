@@ -1,6 +1,10 @@
 #ifndef INCLUDE_THESAUROS_CONTAINERS_NESTED_DYNAMIC_ARRAY_HPP
 #define INCLUDE_THESAUROS_CONTAINERS_NESTED_DYNAMIC_ARRAY_HPP
 
+#include <cassert>
+#include <cstddef>
+#include <memory>
+#include <ostream>
 #include <span>
 
 #include "thesauros/containers/array/typed-chunk.hpp"

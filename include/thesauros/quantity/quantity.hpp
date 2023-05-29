@@ -2,8 +2,10 @@
 #define INCLUDE_THESAUROS_QUANTITY_QUANTITY_HPP
 
 #include <concepts>
+#include <cstdint>
 #include <numeric>
 #include <ratio>
+#include <type_traits>
 
 namespace thes {
 using std::atto;
@@ -155,7 +157,7 @@ inline constexpr TOutQuant quantity_cast(const Quantity<TRep, Unit<TMul, TBUnit>
   using ToMultiple = typename TOutQuant::Unit::Multiple;
   using ToRep = typename TOutQuant::Rep;
   using CMul = std::ratio_divide<TMul, ToMultiple>;
-  using CRep = std::common_type_t<ToRep, TRep, intmax_t>;
+  using CRep = std::common_type_t<ToRep, TRep, std::intmax_t>;
 
   if constexpr (CMul::num == 1) {
     if constexpr (CMul::den == 1) {

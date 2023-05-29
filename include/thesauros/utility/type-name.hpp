@@ -1,6 +1,7 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_TYPE_NAME_HPP
 #define INCLUDE_THESAUROS_UTILITY_TYPE_NAME_HPP
 
+#include <cstdlib>
 #include <memory>
 #include <sstream>
 #include <stdexcept>

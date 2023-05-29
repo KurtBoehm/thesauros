@@ -6,7 +6,9 @@
 #include <cassert>
 #include <concepts>
 #include <cstddef>
+#include <limits>
 #include <memory>
+#include <utility>
 
 #include "thesauros/containers/array/dynamic.hpp"
 #include "thesauros/math/arithmetic.hpp"

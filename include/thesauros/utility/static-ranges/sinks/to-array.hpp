@@ -1,6 +1,8 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_SINKS_TO_ARRAY_HPP
 #define INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_SINKS_TO_ARRAY_HPP
 
+#include <array>
+#include <cstddef>
 #include <type_traits>
 
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"

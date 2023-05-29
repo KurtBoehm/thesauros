@@ -2,6 +2,7 @@
 #define INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_DEFINITIONS_ELEMENT_TYPE_HPP
 
 #include <cstddef>
+#include <type_traits>
 #include <utility>
 
 #include "thesauros/utility/static-ranges/definitions/get-at.hpp"

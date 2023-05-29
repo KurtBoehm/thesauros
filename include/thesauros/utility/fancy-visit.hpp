@@ -1,9 +1,11 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_FANCY_VISIT_HPP
 #define INCLUDE_THESAUROS_UTILITY_FANCY_VISIT_HPP
 
+#include <functional>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
+#include <variant>
 
 #include "thesauros/utility/type-sequence.hpp"
 #include "thesauros/utility/unwrap.hpp"

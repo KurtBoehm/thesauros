@@ -2,7 +2,9 @@
 #define INCLUDE_THESAUROS_CONTAINERS_STRONGLY_ORDERED_SET_HPP
 
 #include <algorithm>
+#include <cstddef>
 #include <functional>
+#include <memory>
 
 #include "thesauros/containers/array/dynamic.hpp"
 #include "thesauros/containers/set-algorithms.hpp"

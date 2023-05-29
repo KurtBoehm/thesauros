@@ -1,6 +1,8 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_PARSE_INTEGER_HPP
 #define INCLUDE_THESAUROS_UTILITY_PARSE_INTEGER_HPP
 
+#include <cstddef>
+#include <limits>
 #include <optional>
 #include <string_view>
 

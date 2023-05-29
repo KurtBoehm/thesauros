@@ -1,6 +1,9 @@
 #ifndef INCLUDE_THESAUROS_CONTAINERS_STRONGLY_ORDERED_MAP_HPP
 #define INCLUDE_THESAUROS_CONTAINERS_STRONGLY_ORDERED_MAP_HPP
 
+#include <cstddef>
+#include <functional>
+#include <memory>
 #include <ostream>
 #include <utility>
 

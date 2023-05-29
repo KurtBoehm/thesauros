@@ -5,10 +5,11 @@
 #include <cstddef>
 
 #include "thesauros/math/arithmetic.hpp"
-#include "thesauros/optimization.hpp"
+#include "thesauros/utility/inlining.hpp"
 #include "thesauros/utility/literals.hpp"
 #include "thesauros/utility/static-ranges/definitions/element-type.hpp"
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
+#include "thesauros/utility/static-value.hpp"
 #include "thesauros/utility/type-sequence.hpp"
 
 namespace thes {

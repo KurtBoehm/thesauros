@@ -1,6 +1,7 @@
 #ifndef INCLUDE_THESAUROS_CONTAINERS_DYNAMIC_BITSET_HPP
 #define INCLUDE_THESAUROS_CONTAINERS_DYNAMIC_BITSET_HPP
 
+#include <algorithm>
 #include <atomic>
 #include <bitset>
 #include <cassert>

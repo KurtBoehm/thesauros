@@ -1,6 +1,7 @@
 #ifndef INCLUDE_THESAUROS_MACROPOLIS_ENUM_HPP
 #define INCLUDE_THESAUROS_MACROPOLIS_ENUM_HPP
 
+#include <cstddef>
 #include <tuple>
 
 #include <boost/preprocessor.hpp>

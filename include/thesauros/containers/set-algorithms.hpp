@@ -2,6 +2,7 @@
 #define INCLUDE_THESAUROS_CONTAINERS_SET_ALGORITHMS_HPP
 
 #include <algorithm>
+#include <cstddef>
 #include <functional>
 
 namespace thes {

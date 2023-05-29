@@ -1,7 +1,9 @@
 #ifndef INCLUDE_THESAUROS_CONTAINERS_ARRAY_FIXED_ALLOC_HPP
 #define INCLUDE_THESAUROS_CONTAINERS_ARRAY_FIXED_ALLOC_HPP
 
+#include <cassert>
 #include <cstddef>
+#include <initializer_list>
 #include <memory>
 #include <utility>
 

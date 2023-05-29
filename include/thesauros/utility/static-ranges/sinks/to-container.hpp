@@ -2,6 +2,7 @@
 #define INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_SINKS_TO_CONTAINER_HPP
 
 #include <cstddef>
+#include <type_traits>
 #include <utility>
 
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"

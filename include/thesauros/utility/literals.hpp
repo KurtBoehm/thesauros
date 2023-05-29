@@ -1,6 +1,7 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_LITERALS_HPP
 #define INCLUDE_THESAUROS_UTILITY_LITERALS_HPP
 
+#include <cstddef>
 #include <cstdint>
 #include <type_traits>
 

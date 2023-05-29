@@ -5,6 +5,7 @@
 #include <thread>
 
 #include <pthread.h>
+#include <sched.h>
 
 #include "tl/expected.hpp"
 

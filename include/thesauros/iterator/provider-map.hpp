@@ -1,6 +1,8 @@
 #ifndef INCLUDE_THESAUROS_ITERATOR_PROVIDER_MAP_HPP
 #define INCLUDE_THESAUROS_ITERATOR_PROVIDER_MAP_HPP
 
+#include <compare>
+
 #include "concepts.hpp"
 
 namespace thes::iter_provider {

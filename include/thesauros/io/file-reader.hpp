@@ -1,10 +1,15 @@
 #ifndef INCLUDE_THESAUROS_IO_FILE_READER_HPP
 #define INCLUDE_THESAUROS_IO_FILE_READER_HPP
 
+#include <array>
+#include <cerrno>
+#include <cstdio>
 #include <exception>
 #include <filesystem>
 #include <sstream>
+#include <stdio.h>
 #include <string>
+#include <utility>
 
 #include "thesauros/containers/dynamic-buffer.hpp"
 

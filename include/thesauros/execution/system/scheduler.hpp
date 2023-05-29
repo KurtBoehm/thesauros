@@ -4,6 +4,7 @@
 #include <thread>
 #include <type_traits>
 
+#include <pthread.h>
 #include <sched.h>
 
 #include "tl/expected.hpp"

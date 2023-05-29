@@ -3,6 +3,8 @@
 
 #include <iterator>
 #include <ostream>
+#include <string_view>
+#include <utility>
 
 namespace thes {
 namespace impl {

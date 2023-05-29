@@ -1,9 +1,11 @@
 #ifndef INCLUDE_THESAUROS_QUANTITY_IO_HPP
 #define INCLUDE_THESAUROS_QUANTITY_IO_HPP
 
+#include <cstdint>
 #include <iomanip>
 #include <ostream>
 #include <ratio>
+#include <type_traits>
 
 #include "quantity.hpp"
 

@@ -1,10 +1,13 @@
 #ifndef INCLUDE_THESAUROS_IO_FILE_WRITER_HPP
 #define INCLUDE_THESAUROS_IO_FILE_WRITER_HPP
 
+#include <cerrno>
+#include <cstdio>
 #include <exception>
 #include <filesystem>
 #include <sstream>
 #include <string>
+#include <utility>
 
 namespace thes {
 struct FileWriter {

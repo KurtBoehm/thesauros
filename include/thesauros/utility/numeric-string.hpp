@@ -4,7 +4,9 @@
 #include <algorithm>
 #include <charconv>
 #include <concepts>
+#include <cstddef>
 #include <limits>
+#include <system_error>
 
 #include "tl/expected.hpp"
 

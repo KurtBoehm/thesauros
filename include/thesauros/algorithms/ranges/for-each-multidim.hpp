@@ -1,11 +1,12 @@
 #ifndef INCLUDE_THESAUROS_ALGORITHMS_RANGES_FOR_EACH_MULTIDIM_HPP
 #define INCLUDE_THESAUROS_ALGORITHMS_RANGES_FOR_EACH_MULTIDIM_HPP
 
+#include <cstddef>
 #include <iterator>
 #include <utility>
 
-#include "thesauros/optimization.hpp"
 #include "thesauros/ranges/iota.hpp"
+#include "thesauros/utility/inlining.hpp"
 #include "thesauros/utility/static-map.hpp"
 #include "thesauros/utility/static-ranges/definitions/element-type.hpp"
 #include "thesauros/utility/static-ranges/definitions/get-at.hpp"

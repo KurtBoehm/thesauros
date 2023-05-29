@@ -4,6 +4,7 @@
 #include <bit>
 #include <climits>
 #include <cstddef>
+#include <limits>
 
 #include "thesauros/utility/fixed-size-integer.hpp"
 

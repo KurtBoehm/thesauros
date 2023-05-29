@@ -1,7 +1,12 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_STRING_ESCAPE_HPP
 #define INCLUDE_THESAUROS_UTILITY_STRING_ESCAPE_HPP
 
+#include <bit>
+#include <cstddef>
+#include <cstdint>
 #include <iterator>
+#include <ostream>
+#include <stdexcept>
 #include <string_view>
 
 #include "thesauros/math/safe-integer.hpp"
