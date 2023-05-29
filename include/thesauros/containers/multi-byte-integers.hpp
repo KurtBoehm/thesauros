@@ -15,6 +15,7 @@
 #include "thesauros/containers/array/dynamic.hpp"
 #include "thesauros/iterator/facades.hpp"
 #include "thesauros/utility/arrow-proxy.hpp"
+#include "thesauros/utility/inlining.hpp"
 
 namespace thes {
 template<typename TByteInt, std::size_t tPaddingBytes,
@@ -204,6 +205,13 @@ struct MultiByteIntegers {
     return IntRef{data_.data() + byte_size(i)};
   }
 
+  decltype(auto) front() const {
+    return load(data_.data());
+  }
+  decltype(auto) front() {
+    return IntRef{data_.data()};
+  }
+
   void push_back(Value value) {
     const Size size = byte_size(size_);
     assert(data_.size() == size + int_bytes);
@@ -225,14 +233,14 @@ struct MultiByteIntegers {
   }
 
 private:
-  static Size effective_allocation(Size allocation) {
+  static Size effective_allocation(Size allocation) THES_ALWAYS_INLINE {
     return byte_size(allocation) + padding_bytes;
   }
-  static Size byte_size(Size size) {
+  static Size byte_size(Size size) THES_ALWAYS_INLINE {
     return size * element_bytes;
   }
 
-  static Value load(const Byte* ptr) {
+  static Value load(const Byte* ptr) THES_ALWAYS_INLINE {
     Value output;
     std::memcpy(&output, ptr, int_bytes);
     if constexpr (std::endian::native == std::endian::little) {
@@ -244,16 +252,16 @@ private:
     return output;
   }
 
-  static Value& store_transform(Value& value) noexcept {
+  static Value& store_transform(Value& value) noexcept THES_ALWAYS_INLINE {
     if constexpr (std::endian::native == std::endian::big) {
       value <<= overhead_bits;
     }
     return value;
   }
-  static void store(Byte* ptr, Value value) noexcept {
+  static void store(Byte* ptr, Value value) noexcept THES_ALWAYS_INLINE {
     std::memcpy(ptr, &store_transform(value), element_bytes);
   }
-  static void store_full(Byte* ptr, Value value) {
+  static void store_full(Byte* ptr, Value value) THES_ALWAYS_INLINE {
     std::memcpy(ptr, &store_transform(value), int_bytes);
   }
 
