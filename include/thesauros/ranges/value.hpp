@@ -6,12 +6,12 @@
 namespace thes {
 template<typename TIt>
 struct ValueRange {
-  ValueRange(TIt begin, TIt end) : begin_(std::move(begin)), end_(std::move(end)) {}
+  constexpr ValueRange(TIt begin, TIt end) : begin_(std::move(begin)), end_(std::move(end)) {}
 
-  TIt begin() const {
+  constexpr TIt begin() const {
     return begin_;
   }
-  TIt end() const {
+  constexpr TIt end() const {
     return end_;
   }
 
