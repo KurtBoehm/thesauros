@@ -1,6 +1,7 @@
 #include <array>
 #include <cstddef>
 #include <optional>
+#include <utility>
 
 #include "thesauros/algorithms.hpp"
 #include "thesauros/algorithms/ranges/for-each-tile.hpp"

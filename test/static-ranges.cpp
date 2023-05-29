@@ -1,9 +1,11 @@
 #include <array>
 #include <concepts>
+#include <cstddef>
 #include <functional>
 #include <iostream>
 #include <tuple>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "thesauros/algorithms.hpp"

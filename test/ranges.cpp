@@ -3,7 +3,7 @@
 #include <numeric>
 
 #include "thesauros/ranges.hpp"
-#include "thesauros/test/test.hpp"
+#include "thesauros/test.hpp"
 
 int main() {
   {

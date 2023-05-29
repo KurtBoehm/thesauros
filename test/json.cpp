@@ -1,9 +1,14 @@
 #include <iostream>
+#include <iterator>
+#include <limits>
+#include <numbers>
+#include <string>
 #include <string_view>
 
 #include "thesauros/io.hpp"
 #include "thesauros/macropolis.hpp"
 #include "thesauros/test.hpp"
+#include "thesauros/utility.hpp"
 
 namespace test = thes::test;
 

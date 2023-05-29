@@ -1,10 +1,13 @@
 #include <algorithm>
 #include <climits>
+#include <cstddef>
 #include <cstdint>
 #include <iostream>
 #include <vector>
 
 #include "thesauros/containers.hpp"
+#include "thesauros/io.hpp"
+#include "thesauros/ranges.hpp"
 #include "thesauros/test.hpp"
 #include "thesauros/utility.hpp"
 

@@ -1,6 +1,9 @@
 #include <concepts>
+#include <optional>
 #include <tuple>
+#include <type_traits>
 #include <utility>
+#include <variant>
 
 #include "thesauros/macropolis.hpp"
 #include "thesauros/utility.hpp"

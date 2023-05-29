@@ -1,5 +1,6 @@
 #include <cassert>
 #include <concepts>
+#include <cstdint>
 
 #include "thesauros/utility.hpp"
 

@@ -4,7 +4,6 @@
 #include <sstream>
 
 #include "thesauros/format.hpp"
-#include "thesauros/io.hpp"
 #include "thesauros/test.hpp"
 
 namespace test = thes::test;
