@@ -18,8 +18,8 @@
 #include "thesauros/ranges/iota.hpp"
 #include "thesauros/utility/fixed-size-integer.hpp"
 #include "thesauros/utility/multi-bit-reference.hpp"
-#include "thesauros/utility/static-ranges/ranges/filter.hpp"
 #include "thesauros/utility/static-ranges/ranges/transform.hpp"
+#include "thesauros/utility/static-ranges/sinks/for-each.hpp"
 #include "thesauros/utility/static-ranges/sinks/reduce.hpp"
 
 namespace thes {

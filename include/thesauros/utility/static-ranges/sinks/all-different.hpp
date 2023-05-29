@@ -8,7 +8,6 @@
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"
 #include "thesauros/utility/static-ranges/definitions/get-at.hpp"
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
-#include "thesauros/utility/static-ranges/ranges/iota.hpp"
 #include "thesauros/utility/static-ranges/ranges/transform.hpp"
 #include "thesauros/utility/static-ranges/sinks/reduce.hpp"
 

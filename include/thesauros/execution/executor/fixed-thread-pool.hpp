@@ -11,8 +11,6 @@
 #include <thread>
 #include <utility>
 
-#include "tl/expected.hpp"
-
 #include "thesauros/containers/array/fixed-alloc.hpp"
 #include "thesauros/execution/system.hpp"
 #include "thesauros/execution/system/affinity.hpp"

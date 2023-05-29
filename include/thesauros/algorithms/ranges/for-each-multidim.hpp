@@ -8,11 +8,9 @@
 #include "thesauros/ranges/iota.hpp"
 #include "thesauros/utility/inlining.hpp"
 #include "thesauros/utility/static-map.hpp"
-#include "thesauros/utility/static-ranges/definitions/element-type.hpp"
 #include "thesauros/utility/static-ranges/definitions/get-at.hpp"
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
 #include "thesauros/utility/static-ranges/ranges/transform.hpp"
-#include "thesauros/utility/static-value.hpp"
 
 namespace thes {
 template<typename TRanges, typename TFixedAxes>

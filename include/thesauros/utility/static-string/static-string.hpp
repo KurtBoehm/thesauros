@@ -15,7 +15,6 @@
 #include "thesauros/utility/static-ranges/ranges/transform.hpp"
 #include "thesauros/utility/static-ranges/sinks/reduce.hpp"
 #include "thesauros/utility/static-string/character-tools.hpp"
-#include "thesauros/utility/static-value.hpp"
 
 namespace thes {
 template<std::size_t tSize>

@@ -5,8 +5,6 @@
 #include <ostream>
 #include <type_traits>
 
-#include "tl/expected.hpp"
-
 #include "thesauros/utility/info-result.hpp"
 
 namespace thes {

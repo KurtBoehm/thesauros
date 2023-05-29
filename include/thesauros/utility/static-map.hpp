@@ -5,7 +5,7 @@
 #include <tuple>
 #include <utility>
 
-#include "thesauros/utility/static-ranges.hpp"
+#include "thesauros/utility/static-ranges/sinks/all-different.hpp"
 #include "thesauros/utility/static-value.hpp"
 #include "thesauros/utility/type-sequence.hpp"
 

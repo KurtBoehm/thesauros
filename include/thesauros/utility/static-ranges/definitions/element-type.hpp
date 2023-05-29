@@ -8,7 +8,6 @@
 #include "thesauros/utility/static-ranges/definitions/get-at.hpp"
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
 #include "thesauros/utility/type-sequence.hpp"
-#include "thesauros/utility/type-tag.hpp"
 
 namespace thes::star {
 template<typename TRange>
