@@ -22,11 +22,13 @@ struct TypeSeqBase<THead, TTail...> {
 
 template<typename... Ts>
 struct TypeSeq : public TypeSeqBase<Ts...> {
+  using AsTuple = std::tuple<Ts...>;
+
   template<std::size_t tIndex>
-  using GetAt = std::tuple_element_t<tIndex, std::tuple<Ts...>>;
+  using GetAt = std::tuple_element_t<tIndex, AsTuple>;
 
   template<typename T>
-  static constexpr bool contains = (... && std::same_as<T, Ts>);
+  static constexpr bool contains = (... || std::same_as<T, Ts>);
 
   template<typename T>
   using Prepended = TypeSeq<T, Ts...>;
