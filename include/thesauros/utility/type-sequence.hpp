@@ -8,6 +8,8 @@
 #include <utility>
 #include <variant>
 
+#include "thesauros/utility/type-tag.hpp"
+
 namespace thes {
 template<typename... Ts>
 struct TypeSeqBase {
@@ -52,7 +54,7 @@ struct AsTypeSeq<TypeSeq<Ts...>> {
 };
 } // namespace impl
 template<typename T>
-using AsTypeSeq = typename impl::AsTypeSeq<T>::Type;
+using AsTypeSeq = impl::AsTypeSeq<T>::Type;
 
 namespace impl {
 template<typename T>
@@ -69,7 +71,7 @@ struct ConvertedTypeSeq<TypeSeq<Ts...>> {
 };
 } // namespace impl
 template<typename T>
-using ConvertedTypeSeq = typename impl::ConvertedTypeSeq<T>::Type;
+using ConvertedTypeSeq = impl::ConvertedTypeSeq<T>::Type;
 
 namespace impl {
 template<typename... Ts>
@@ -91,7 +93,7 @@ struct JoinedTypeSeq<TypeSeq<Ts...>, TTuples...>
 } // namespace impl
 
 template<typename... Ts>
-using JoinedTypeSeq = typename impl::JoinedTypeSeq<Ts...>::Type;
+using JoinedTypeSeq = impl::JoinedTypeSeq<Ts...>::Type;
 
 namespace impl {
 template<typename T1, typename T2>
@@ -127,13 +129,13 @@ struct ProductTypeSeq<TypeSeq<TTypes1...>, TypeSeq<TTypes2...>> {
 };
 template<typename... Ts, typename... TTups>
 struct ProductTypeSeq<TypeSeq<Ts...>, TTups...> {
-  using Tail = typename ProductTypeSeq<TTups...>::Type;
+  using Tail = ProductTypeSeq<TTups...>::Type;
   using Type = thes::JoinedTypeSeq<typename ProductTypeSeqBase<TypeSeq<Ts>, Tail>::Type...>;
 };
 } // namespace impl
 
 template<typename... TTups>
-using ProductTypeSeq = typename impl::ProductTypeSeq<TTups...>::Type;
+using ProductTypeSeq = impl::ProductTypeSeq<TTups...>::Type;
 
 namespace impl {
 template<typename T>
@@ -152,7 +154,7 @@ struct FlatTypeSeq<TypeSeq<Ts...>> {
 } // namespace impl
 
 template<typename T>
-using FlatTypeSeq = typename impl::FlatTypeSeq<T>::Type;
+using FlatTypeSeq = impl::FlatTypeSeq<T>::Type;
 
 namespace impl {
 struct TransformedTypeSeq {
@@ -164,7 +166,7 @@ struct TransformedTypeSeq {
   };
 
   template<typename T, template<typename> typename TMap>
-  using Type = typename Impl<T, TMap>::Type;
+  using Type = Impl<T, TMap>::Type;
 };
 } // namespace impl
 template<typename T, template<typename> typename TMap>
@@ -177,7 +179,7 @@ struct FilteredTypeSeq {
 
   template<typename THead, typename... TTail, template<typename> typename TFilter>
   struct Impl<TypeSeq<THead, TTail...>, TFilter> {
-    using Rec = typename Impl<TypeSeq<TTail...>, TFilter>::Type;
+    using Rec = Impl<TypeSeq<TTail...>, TFilter>::Type;
     using Type =
       std::conditional_t<TFilter<THead>::value, typename Rec::template Prepended<THead>, Rec>;
   };
@@ -188,12 +190,24 @@ struct FilteredTypeSeq {
   };
 
   template<typename T, template<typename> typename TFilter>
-  using Type = typename Impl<T, TFilter>::Type;
+  using Type = Impl<T, TFilter>::Type;
 };
 } // namespace impl
 
 template<typename T, template<typename> typename TFilter>
 using FilteredTypeSeq = impl::FilteredTypeSeq::Type<T, TFilter>;
+
+namespace impl {
+template<typename T, auto tLambda>
+struct LambdaFilteredTypeSeq {
+  template<typename TInner>
+  using Filter = std::bool_constant<tLambda(type_tag<TInner>)>;
+  using Type = thes::FilteredTypeSeq<T, Filter>;
+};
+} // namespace impl
+
+template<typename T, auto tLambda>
+using LambdaFilteredTypeSeq = impl::LambdaFilteredTypeSeq<T, tLambda>::Type;
 
 namespace impl {
 template<typename T>
@@ -204,8 +218,8 @@ struct UniqueTypeSeq<TypeSeq<T, Ts...>> {
   template<typename TOther>
   using Filter = std::bool_constant<!std::is_same_v<T, TOther>>;
 
-  using Type = typename UniqueTypeSeq<
-    thes::FilteredTypeSeq<TypeSeq<Ts...>, Filter>>::Type::template Prepended<T>;
+  using Type =
+    UniqueTypeSeq<thes::FilteredTypeSeq<TypeSeq<Ts...>, Filter>>::Type::template Prepended<T>;
 };
 
 template<>
@@ -215,7 +229,7 @@ struct UniqueTypeSeq<TypeSeq<>> {
 } // namespace impl
 
 template<typename T>
-using UniqueTypeSeq = typename impl::UniqueTypeSeq<T>::Type;
+using UniqueTypeSeq = impl::UniqueTypeSeq<T>::Type;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_UTILITY_TYPE_SEQUENCE_HPP
