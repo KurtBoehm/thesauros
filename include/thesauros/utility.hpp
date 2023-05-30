@@ -53,6 +53,7 @@
 #include "utility/type-name.hpp" // IWYU pragma: export
 #include "utility/type-sequence.hpp" // IWYU pragma: export
 #include "utility/type-tag.hpp" // IWYU pragma: export
+#include "utility/type-traits.hpp" // IWYU pragma: export
 #include "utility/type-transformations.hpp" // IWYU pragma: export
 #include "utility/typed-integer.hpp" // IWYU pragma: export
 #include "utility/unicode.hpp" // IWYU pragma: export
