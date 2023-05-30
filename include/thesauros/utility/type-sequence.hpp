@@ -8,6 +8,7 @@
 #include <utility>
 #include <variant>
 
+#include "thesauros/utility/static-ranges/sinks/contains.hpp"
 #include "thesauros/utility/type-tag.hpp"
 
 namespace thes {
@@ -198,29 +199,29 @@ template<typename T, template<typename> typename TFilter>
 using FilteredTypeSeq = impl::FilteredTypeSeq::Type<T, TFilter>;
 
 namespace impl {
-struct ExtFilteredTypeSeq {
-  template<std::size_t tIdx, typename T, auto tLambda>
+struct IndexFilteredTypeSeq {
+  template<std::size_t tIdx, typename T, auto tIdxSeq>
   struct Impl;
 
-  template<std::size_t tIdx, typename THead, typename... TTail, auto tLambda>
-  struct Impl<tIdx, TypeSeq<THead, TTail...>, tLambda> {
-    using Rec = Impl<tIdx + 1, TypeSeq<TTail...>, tLambda>::Type;
-    using Type = std::conditional_t<tLambda(tIdx, type_tag<THead>),
+  template<std::size_t tIdx, typename THead, typename... TTail, auto tIdxSeq>
+  struct Impl<tIdx, TypeSeq<THead, TTail...>, tIdxSeq> {
+    using Rec = Impl<tIdx + 1, TypeSeq<TTail...>, tIdxSeq>::Type;
+    using Type = std::conditional_t<tIdxSeq | star::contains(tIdx),
                                     typename Rec::template Prepended<THead>, Rec>;
   };
 
-  template<std::size_t tIdx, auto tLambda>
-  struct Impl<tIdx, TypeSeq<>, tLambda> {
+  template<std::size_t tIdx, auto tIdxSeq>
+  struct Impl<tIdx, TypeSeq<>, tIdxSeq> {
     using Type = TypeSeq<>;
   };
 
-  template<typename T, auto tLambda>
-  using Type = Impl<0, T, tLambda>::Type;
+  template<typename T, auto tIdxSeq>
+  using Type = Impl<0, T, tIdxSeq>::Type;
 };
 } // namespace impl
 
-template<typename T, auto tLambda>
-using ExtFilteredTypeSeq = impl::ExtFilteredTypeSeq::Type<T, tLambda>;
+template<typename T, auto tIdxSeq>
+using IndexFilteredTypeSeq = impl::IndexFilteredTypeSeq::Type<T, tIdxSeq>;
 
 namespace impl {
 template<typename T>

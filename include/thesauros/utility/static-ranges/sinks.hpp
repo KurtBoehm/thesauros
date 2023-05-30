@@ -3,6 +3,7 @@
 
 #include "sinks/all-different.hpp" // IWYU pragma: export
 #include "sinks/apply.hpp" // IWYU pragma: export
+#include "sinks/contains.hpp" // IWYU pragma: export
 #include "sinks/for-each.hpp" // IWYU pragma: export
 #include "sinks/reduce.hpp" // IWYU pragma: export
 #include "sinks/to-array.hpp" // IWYU pragma: export

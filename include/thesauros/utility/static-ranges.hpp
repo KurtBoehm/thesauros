@@ -16,6 +16,7 @@
 #include "static-ranges/ranges/transform.hpp" // IWYU pragma: export
 #include "static-ranges/sinks/all-different.hpp" // IWYU pragma: export
 #include "static-ranges/sinks/apply.hpp" // IWYU pragma: export
+#include "static-ranges/sinks/contains.hpp" // IWYU pragma: export
 #include "static-ranges/sinks/for-each.hpp" // IWYU pragma: export
 #include "static-ranges/sinks/reduce.hpp" // IWYU pragma: export
 #include "static-ranges/sinks/to-array.hpp" // IWYU pragma: export

@@ -39,6 +39,7 @@
 #include "utility/static-ranges/ranges/transform.hpp" // IWYU pragma: export
 #include "utility/static-ranges/sinks/all-different.hpp" // IWYU pragma: export
 #include "utility/static-ranges/sinks/apply.hpp" // IWYU pragma: export
+#include "utility/static-ranges/sinks/contains.hpp" // IWYU pragma: export
 #include "utility/static-ranges/sinks/for-each.hpp" // IWYU pragma: export
 #include "utility/static-ranges/sinks/reduce.hpp" // IWYU pragma: export
 #include "utility/static-ranges/sinks/to-array.hpp" // IWYU pragma: export

@@ -268,6 +268,13 @@ int main() {
     static_assert(red == 16);
   }
 
+  // contains
+  {
+    static constexpr std::tuple<int, float, double> tup{1, 2.0F, 3.0};
+    static_assert(tup | star::contains(1));
+    static_assert(!(tup | star::contains(1.0F)));
+  }
+
   // to_array
   {
     static constexpr std::array arr{0, 4, 3, 1};
