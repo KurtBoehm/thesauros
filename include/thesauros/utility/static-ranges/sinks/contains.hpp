@@ -16,17 +16,15 @@ struct ContainsGenerator {
 
   template<typename TRange>
   constexpr bool operator()(TRange&& range) const {
-    return apply(
-      [&](const auto&... values) {
-        return (... || [&]<typename TV>(const TV& v) {
-          if constexpr (std::same_as<Value, std::decay_t<TV>>) {
-            return value == v;
-          } else {
-            return false;
-          }
-        }(values));
-      },
-      range);
+    return apply([&](const auto&... values) {
+      return (... || [&]<typename TV>(const TV& v) {
+        if constexpr (std::same_as<Value, std::decay_t<TV>>) {
+          return value == v;
+        } else {
+          return false;
+        }
+      }(values));
+    })(std::forward<TRange>(range));
   }
 };
 template<typename TValue>
