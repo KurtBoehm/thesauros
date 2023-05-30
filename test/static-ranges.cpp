@@ -274,6 +274,11 @@ int main() {
     static_assert(tup | star::contains(1));
     static_assert(!(tup | star::contains(1.0F)));
   }
+  {
+    static_assert(star::get_at<0>(thes::star::iota<0, 1>) == 0);
+    static_assert(star::size<decltype(thes::star::iota<0, 1>)> == 1);
+    static_assert(thes::star::iota<0, 1> | star::contains(thes::static_value<std::size_t, 0>));
+  }
 
   // to_array
   {

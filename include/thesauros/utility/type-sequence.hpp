@@ -9,6 +9,7 @@
 #include <variant>
 
 #include "thesauros/utility/static-ranges/sinks/contains.hpp"
+#include "thesauros/utility/static-value.hpp"
 #include "thesauros/utility/type-tag.hpp"
 
 namespace thes {
@@ -206,7 +207,7 @@ struct IndexFilteredTypeSeq {
   template<std::size_t tIdx, typename THead, typename... TTail, auto tIdxSeq>
   struct Impl<tIdx, TypeSeq<THead, TTail...>, tIdxSeq> {
     using Rec = Impl<tIdx + 1, TypeSeq<TTail...>, tIdxSeq>::Type;
-    using Type = std::conditional_t<star::contains(tIdx)(tIdxSeq),
+    using Type = std::conditional_t<star::contains(static_auto<tIdx>)(tIdxSeq),
                                     typename Rec::template Prepended<THead>, Rec>;
   };
 
