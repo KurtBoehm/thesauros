@@ -198,16 +198,29 @@ template<typename T, template<typename> typename TFilter>
 using FilteredTypeSeq = impl::FilteredTypeSeq::Type<T, TFilter>;
 
 namespace impl {
-template<typename T, auto tLambda>
-struct LambdaFilteredTypeSeq {
-  template<typename TInner>
-  using Filter = std::bool_constant<tLambda(type_tag<TInner>)>;
-  using Type = thes::FilteredTypeSeq<T, Filter>;
+struct ExtFilteredTypeSeq {
+  template<std::size_t tIdx, typename T, auto tLambda>
+  struct Impl;
+
+  template<std::size_t tIdx, typename THead, typename... TTail, auto tLambda>
+  struct Impl<tIdx, TypeSeq<THead, TTail...>, tLambda> {
+    using Rec = Impl<tIdx + 1, TypeSeq<TTail...>, tLambda>::Type;
+    using Type = std::conditional_t<tLambda(tIdx, type_tag<THead>),
+                                    typename Rec::template Prepended<THead>, Rec>;
+  };
+
+  template<std::size_t tIdx, auto tLambda>
+  struct Impl<tIdx, TypeSeq<>, tLambda> {
+    using Type = TypeSeq<>;
+  };
+
+  template<typename T, auto tLambda>
+  using Type = Impl<0, T, tLambda>::Type;
 };
 } // namespace impl
 
 template<typename T, auto tLambda>
-using LambdaFilteredTypeSeq = impl::LambdaFilteredTypeSeq<T, tLambda>::Type;
+using ExtFilteredTypeSeq = impl::ExtFilteredTypeSeq::Type<T, tLambda>;
 
 namespace impl {
 template<typename T>

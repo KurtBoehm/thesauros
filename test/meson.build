@@ -24,7 +24,7 @@ foreach name, info : {
   'StaticString': [['static-string.cpp'], []],
   'StronglyOrdered': [['strongly-ordered.cpp'], []],
   'Tiling': [['tiling.cpp'], []],
-  'Types': [['types.cpp'], []],
+  'TypeTraits': [['type-traits.cpp'], []],
 }
   sources = info[0]
   deps = info[1]
