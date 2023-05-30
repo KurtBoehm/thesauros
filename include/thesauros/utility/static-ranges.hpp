@@ -11,6 +11,7 @@
 #include "static-ranges/ranges/enumerate.hpp" // IWYU pragma: export
 #include "static-ranges/ranges/filter.hpp" // IWYU pragma: export
 #include "static-ranges/ranges/iota.hpp" // IWYU pragma: export
+#include "static-ranges/ranges/join.hpp" // IWYU pragma: export
 #include "static-ranges/ranges/postfix-product-inclusive.hpp" // IWYU pragma: export
 #include "static-ranges/ranges/reversed.hpp" // IWYU pragma: export
 #include "static-ranges/ranges/transform.hpp" // IWYU pragma: export

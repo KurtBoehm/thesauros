@@ -240,6 +240,19 @@ int main() {
     static_assert(star::HasSingleElementType<Range>);
   }
 
+  // join
+  {
+    static constexpr auto j =
+      star::joined(std::array{0, 4, 3, 1}, std::array{4, 0}, std::array{3, 1});
+    using Range = decltype(j);
+
+    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::size<Range> == 8);
+    static_assert(star::get_at<1>(j) == 4);
+    static_assert((j | star::to_array) == std::array{0, 4, 3, 1, 4, 0, 3, 1});
+    static_assert(star::HasSingleElementType<Range>);
+  }
+
   // left_reduce
   {
     static constexpr std::array arr{0, 4, 3, 1};
@@ -308,7 +321,7 @@ int main() {
       star::for_each([](auto v) { std::cout << v << '\n'; });
   }
 
-  // for_each
+  // apply
   {
     static constexpr std::array arr{0, 4, 3, 1};
     arr | star::transform([](auto v) { return 2 * v; }) |

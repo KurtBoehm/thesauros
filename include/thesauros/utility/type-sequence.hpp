@@ -10,7 +10,6 @@
 
 #include "thesauros/utility/static-ranges/sinks/contains.hpp"
 #include "thesauros/utility/static-value.hpp"
-#include "thesauros/utility/type-tag.hpp"
 
 namespace thes {
 template<typename... Ts>
