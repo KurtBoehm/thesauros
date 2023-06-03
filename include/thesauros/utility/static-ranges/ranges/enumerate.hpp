@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <type_traits>
+#include <utility>
 
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
@@ -17,8 +18,8 @@ struct EnumerateView {
   static constexpr std::size_t size = thes::star::size<Inner>;
 
   template<std::size_t tIndex>
-  constexpr auto get() const {
-    return std::make_pair(static_value<TSize, tIndex>, get_at<tIndex>(inner));
+  constexpr std::pair<StaticValue<TSize, tIndex>, decltype(get_at<tIndex>(inner))> get() const {
+    return {static_value<TSize, tIndex>, get_at<tIndex>(inner)};
   }
 };
 
@@ -32,7 +33,7 @@ struct EnumerateGenerator {
 template<typename TSize>
 struct RangeGeneratorTrait<EnumerateGenerator<TSize>> : public std::true_type {};
 
-template<typename TSize>
+template<typename TSize = std::size_t>
 inline constexpr EnumerateGenerator<TSize> enumerate{};
 } // namespace thes::star
 

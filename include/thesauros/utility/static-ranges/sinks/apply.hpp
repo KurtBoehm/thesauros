@@ -5,6 +5,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "thesauros/utility/inlining.hpp"
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
 
@@ -16,10 +17,10 @@ struct ApplyGenerator {
   template<typename TRange>
   constexpr decltype(auto) operator()(TRange&& range) const {
     constexpr std::size_t size = thes::star::size<TRange>;
-    return [this, &range]<std::size_t... tIdxs>(
-             std::index_sequence<tIdxs...> /*idxs*/) -> decltype(auto) {
-      return op(get_at<tIdxs>(range)...);
-    }(std::make_index_sequence<size>{});
+    return [&]<std::size_t... tIdxs>(std::index_sequence<tIdxs...> /*idxs*/)
+             THES_ALWAYS_INLINE -> decltype(auto) {
+               return op(get_at<tIdxs>(range)...);
+             }(std::make_index_sequence<size>{});
   }
 };
 template<typename TOp>
