@@ -17,6 +17,11 @@ struct LimitedArray {
   explicit LimitedArray(std::size_t size) : size_(size) {
     assert(size_ <= capacity);
   }
+  template<typename... Ts>
+  requires(sizeof...(Ts) <= tCapacity && (... && std::same_as<T, Ts>))
+  explicit LimitedArray(Ts... values) : size_(sizeof...(Ts)), data_{values...} {
+    assert(size_ <= capacity);
+  }
 
   template<typename TIt>
   LimitedArray(TIt first, TIt last) : size_(std::distance(first, last)) {
