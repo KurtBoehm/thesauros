@@ -6,6 +6,7 @@
 #include "containers/array/fixed.hpp" // IWYU pragma: export
 #include "containers/array/growth-policy.hpp" // IWYU pragma: export
 #include "containers/array/initialization-policy.hpp" // IWYU pragma: export
+#include "containers/array/limited.hpp" // IWYU pragma: export
 #include "containers/array/typed-chunk.hpp" // IWYU pragma: export
 #include "containers/blocked-dynamic-array.hpp" // IWYU pragma: export
 #include "containers/dynamic-bitset.hpp" // IWYU pragma: export
