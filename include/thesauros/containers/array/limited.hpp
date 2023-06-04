@@ -18,7 +18,7 @@ struct LimitedArray {
     assert(size_ <= capacity);
   }
   template<typename... Ts>
-  requires(sizeof...(Ts) <= tCapacity && (... && std::same_as<T, Ts>))
+  requires(sizeof...(Ts) <= tCapacity)
   explicit LimitedArray(Ts... values) : size_(sizeof...(Ts)), data_{values...} {
     assert(size_ <= capacity);
   }
