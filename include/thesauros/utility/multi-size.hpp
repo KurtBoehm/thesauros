@@ -11,6 +11,7 @@
 #include "thesauros/utility/static-ranges/ranges/postfix-product-inclusive.hpp"
 #include "thesauros/utility/static-ranges/ranges/transform.hpp"
 #include "thesauros/utility/static-ranges/sinks/to-array.hpp"
+#include "thesauros/utility/static-value.hpp"
 
 namespace thes {
 template<typename TIndex, std::size_t tDimNum>
@@ -31,7 +32,7 @@ struct BasicMultiSize {
     return star::get_at<0>(postfix_prod_incl_);
   }
   template<std::size_t tDim>
-  [[nodiscard]] constexpr Size axis_size() const {
+  [[nodiscard]] constexpr Size axis_size(StaticAuto<tDim> /*tag*/ = {}) const {
     return star::get_at<tDim>(sizes_);
   }
 
@@ -40,7 +41,7 @@ struct BasicMultiSize {
   }
 
   template<std::size_t tDim>
-  [[nodiscard]] constexpr Size from_size() const {
+  [[nodiscard]] constexpr Size from_size(StaticAuto<tDim> /*tag*/ = {}) const {
     return star::get_at<tDim>(postfix_prod_incl_);
   }
   [[nodiscard]] constexpr Size from_size(std::size_t dim) const {
@@ -48,7 +49,7 @@ struct BasicMultiSize {
   }
 
   template<std::size_t tDim>
-  [[nodiscard]] constexpr Size after_size() const {
+  [[nodiscard]] constexpr Size after_size(StaticAuto<tDim> /*tag*/ = {}) const {
     if constexpr (tDim + 1 == dimension_num) {
       return 1;
     } else {
@@ -89,7 +90,8 @@ struct MultiSize : public BasicMultiSize<TIndex, tDimNum> {
   }
 
   template<std::size_t tDim>
-  [[nodiscard]] constexpr Size index_to_axis_index(Size index) const {
+  [[nodiscard]] constexpr Size index_to_axis_index(Size index,
+                                                   StaticAuto<tDim> /*tag*/ = {}) const {
     if constexpr (tDim + 1 == dimension_num) {
       return index % star::get_at<tDim>(divs_);
     } else {
@@ -101,11 +103,11 @@ struct MultiSize : public BasicMultiSize<TIndex, tDimNum> {
   }
 
   template<std::size_t tDim>
-  const Div& from_size_div() const {
+  const Div& from_size_div(StaticAuto<tDim> /*tag*/ = {}) const {
     return star::get_at<tDim>(postfix_prod_incl_divs_);
   }
   template<std::size_t tDim>
-  const Div& after_size_div() const {
+  const Div& after_size_div(StaticAuto<tDim> /*tag*/ = {}) const {
     return star::get_at<tDim + 1>(postfix_prod_incl_divs_);
   }
 
