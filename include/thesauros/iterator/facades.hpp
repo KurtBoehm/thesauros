@@ -70,7 +70,7 @@ struct IteratorFacade {
   static constexpr bool is_random_access_iter =
     iter_provider::RandomAccessIterProvider<State, TProvider>;
 
-  using iter_category =
+  using iterator_category =
     std::conditional_t<is_random_access_iter, std::random_access_iterator_tag,
                        std::conditional_t<is_bidirectional_iter, std::bidirectional_iterator_tag,
                                           std::forward_iterator_tag>>;
