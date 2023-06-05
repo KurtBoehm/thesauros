@@ -32,9 +32,9 @@ template<typename T, T tValue>
 struct AnyStaticValueTrait<StaticValue<T, tValue>> : public std::true_type {};
 template<typename TStaticValue>
 concept AnyStaticValue = AnyStaticValueTrait<TStaticValue>::value;
-template<typename T, typename TStaticValue>
+template<typename TStaticValue, typename T>
 concept TypedStaticValue =
-  AnyStaticValue<TStaticValue> && std::same_as<T, typename TStaticValue::Value>;
+  AnyStaticValue<TStaticValue> && std::same_as<typename TStaticValue::Value, T>;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_UTILITY_STATIC_VALUE_HPP
