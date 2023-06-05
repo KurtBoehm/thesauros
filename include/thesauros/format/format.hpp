@@ -5,9 +5,11 @@
 #include <ios>
 #include <ostream>
 #include <tuple>
+#include <type_traits>
 
 #include "thesauros/format/manip.hpp"
 #include "thesauros/format/style.hpp"
+#include "thesauros/utility/static-value.hpp"
 
 namespace thes {
 namespace fmt {
@@ -84,6 +86,10 @@ inline constexpr MergedStyleApplier<TApp1, TApp2> operator|(TApp1&& app1, TApp2&
   return {std::forward<TApp1>(app1), std::forward<TApp2>(app2)};
 }
 
+inline constexpr auto zero_pad(int padding) {
+  return width(padding) | fill('0') | internal;
+}
+
 template<Applier TApp, typename... TArgs>
 struct FormattedArgs {
   TApp applier;
@@ -100,14 +106,45 @@ struct FormattedArgs {
   }
 };
 
-inline constexpr auto zero_pad(int padding) {
-  return width(padding) | fill('0') | internal;
-}
+template<typename... TArgs>
+struct UnformattedArgs {
+  explicit UnformattedArgs(TArgs&&... args) : args_(std::forward<TArgs>(args)...) {}
+
+  friend std::ostream& operator<<(std::ostream& stream, const UnformattedArgs& wrapper) {
+    std::apply([&](const TArgs&... args) { (stream << ... << args); }, wrapper.args_);
+    return stream;
+  }
+
+private:
+  std::tuple<TArgs...> args_;
+};
+
+template<bool tFormat>
+struct FormatTag : public StaticAuto<tFormat> {};
+inline constexpr FormatTag<true> formatted_tag{};
+inline constexpr FormatTag<false> unformatted_tag{};
+template<typename T>
+struct IsFormatTagTrait : public std::false_type {};
+template<bool tIsFormat>
+struct IsFormatTagTrait<FormatTag<tIsFormat>> : public std::true_type {};
+template<typename T>
+concept AnyFormatTag = IsFormatTagTrait<T>::value;
 } // namespace fmt
 
 template<fmt::Applier TApp, typename... TArgs>
 inline fmt::FormattedArgs<TApp, TArgs...> formatted(TApp&& app, TArgs&&... args) {
   return fmt::FormattedArgs<TApp, TArgs...>{std::forward<TApp>(app), std::forward<TArgs>(args)...};
+}
+
+template<fmt::Applier TApp, typename... TArgs>
+inline auto opt_formatted(fmt::AnyFormatTag auto tag, [[maybe_unused]] TApp&& app,
+                          TArgs&&... args) {
+  if constexpr (tag) {
+    return fmt::FormattedArgs<TApp, TArgs...>{std::forward<TApp>(app),
+                                              std::forward<TArgs>(args)...};
+  } else {
+    return fmt::UnformattedArgs<TArgs...>{std::forward<TArgs>(args)...};
+  }
 }
 } // namespace thes
 

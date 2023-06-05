@@ -97,6 +97,11 @@ int main() {
                                " ", thes::formatted(fmt::bold, "blue"))
             << '\n';
 
+  std::cout << thes::opt_formatted(fmt::formatted_tag, fmt::fg_red, "This should be formatted…")
+            << '\n';
+  std::cout << thes::opt_formatted(fmt::unformatted_tag, fmt::fg_red, "…and this should not!")
+            << '\n';
+
   std::cout << thes::formatted(fmt::fg_red, "Nested: ", S{3}, " after") << '\n';
   std::cout << "Normal?" << '\n';
 

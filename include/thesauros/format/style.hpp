@@ -273,8 +273,7 @@ struct StyleContext {
     }
   }
 
-  template<StyleApplier TApp>
-  void set(const TApp& app) {
+  void set(const StyleApplier auto& app) {
     Style& style = get(stream);
     Style new_style = style;
 

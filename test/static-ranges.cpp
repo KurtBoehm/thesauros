@@ -81,21 +81,24 @@ int main() {
   {
     static constexpr std::array arr{0, 4, 3, 1};
     static constexpr auto enu = arr | star::enumerate<std::size_t>;
+    static constexpr auto ref = 1;
     using Range = decltype(enu);
 
     static_assert(star::IsStaticRange<Range>);
     static_assert(star::size<Range> == 4);
-    static_assert(star::get_at<3>(enu) == std::make_pair(thes::static_value<std::size_t, 3>, 1));
+    static_assert(star::get_at<3>(enu) ==
+                  std::make_pair(thes::static_value<std::size_t, 3>, std::cref(ref)));
     static_assert(!star::HasSingleElementType<Range>);
   }
   {
     static constexpr std::tuple<int, float, double> tup{1, 2.0F, 3.0};
     static constexpr auto enu = tup | star::enumerate<int>;
+    static constexpr auto ref = 2.0F;
     using Range = decltype(enu);
 
     static_assert(star::IsStaticRange<Range>);
     static_assert(star::size<Range> == 3);
-    static_assert(star::get_at<1>(enu) == std::make_pair(thes::static_auto<1>, 2.0F));
+    static_assert(star::get_at<1>(enu) == std::make_pair(thes::static_auto<1>, std::cref(ref)));
     static_assert(!star::HasSingleElementType<Range>);
   }
   {
