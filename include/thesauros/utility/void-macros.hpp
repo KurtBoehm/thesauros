@@ -6,8 +6,7 @@ namespace thes {
   if constexpr (std::is_void_v<TYPE>) { \
     EXPR; \
   } else { \
-    decltype(auto) value = EXPR; \
-    if (value.has_value()) { \
+    if (decltype(auto) value = EXPR; value.has_value()) { \
       return value; \
     } \
   }
