@@ -29,11 +29,11 @@ struct BasicMultiSize {
     return sizes_;
   }
   [[nodiscard]] constexpr Size total_size() const {
-    return star::get_at<0>(postfix_prod_incl_);
+    return std::get<0>(postfix_prod_incl_);
   }
   template<std::size_t tDim>
   [[nodiscard]] constexpr Size axis_size(StaticAuto<tDim> /*tag*/ = {}) const {
-    return star::get_at<tDim>(sizes_);
+    return std::get<tDim>(sizes_);
   }
 
   [[nodiscard]] constexpr const ExAxisSize& from_sizes() const {
@@ -42,7 +42,7 @@ struct BasicMultiSize {
 
   template<std::size_t tDim>
   [[nodiscard]] constexpr Size from_size(StaticAuto<tDim> /*tag*/ = {}) const {
-    return star::get_at<tDim>(postfix_prod_incl_);
+    return std::get<tDim>(postfix_prod_incl_);
   }
   [[nodiscard]] constexpr Size from_size(std::size_t dim) const {
     postfix_prod_incl_[dim];
@@ -93,9 +93,9 @@ struct MultiSize : public BasicMultiSize<TIndex, tDimNum> {
   [[nodiscard]] constexpr Size index_to_axis_index(Size index,
                                                    StaticAuto<tDim> /*tag*/ = {}) const {
     if constexpr (tDim + 1 == dimension_num) {
-      return index % star::get_at<tDim>(divs_);
+      return index % std::get<tDim>(divs_);
     } else {
-      return (index / star::get_at<tDim + 1>(postfix_prod_incl_divs_)) % star::get_at<tDim>(divs_);
+      return (index / std::get<tDim + 1>(postfix_prod_incl_divs_)) % std::get<tDim>(divs_);
     }
   }
   [[nodiscard]] constexpr Size index_to_axis_index(Size index, std::size_t dim) const {
@@ -104,11 +104,11 @@ struct MultiSize : public BasicMultiSize<TIndex, tDimNum> {
 
   template<std::size_t tDim>
   const Div& from_size_div(StaticAuto<tDim> /*tag*/ = {}) const {
-    return star::get_at<tDim>(postfix_prod_incl_divs_);
+    return std::get<tDim>(postfix_prod_incl_divs_);
   }
   template<std::size_t tDim>
   const Div& after_size_div(StaticAuto<tDim> /*tag*/ = {}) const {
-    return star::get_at<tDim + 1>(postfix_prod_incl_divs_);
+    return std::get<tDim + 1>(postfix_prod_incl_divs_);
   }
 
 private:

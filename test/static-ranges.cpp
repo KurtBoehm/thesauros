@@ -219,17 +219,17 @@ int main() {
 
     static_assert(star::IsStaticRange<Range>);
     static_assert(star::size<Range> == 3);
-    static_assert(star::get_at<2>(map) == 1);
+    static_assert((map | star::to_array) == std::array{0, 4, 1});
     static_assert(star::HasSingleElementType<Range>);
   }
   {
     static constexpr std::array arr{0, 4, 3, 1};
-    static constexpr auto map = arr | star::all_except_idxseq<std::array{2}>;
+    static constexpr auto map = arr | star::all_except_idxseq<std::array{1}>;
     using Range = decltype(map);
 
     static_assert(star::IsStaticRange<Range>);
     static_assert(star::size<Range> == 3);
-    static_assert(star::get_at<2>(map) == 1);
+    static_assert((map | star::to_array) == std::array{0, 3, 1});
     static_assert(star::HasSingleElementType<Range>);
   }
   {
@@ -266,8 +266,19 @@ int main() {
   {
     static constexpr std::array arr{0, 4, 3, 1};
     static constexpr auto red =
-      arr | (star::transform([](auto v) { return 2 * v; }) | star::left_reduce(std::plus<>{}, 0));
+      arr | (star::transform([](auto v) { return 2 * v; }) | star::left_reduce(std::plus<>{}));
     static_assert(red == 16);
+  }
+  {
+    static constexpr std::array<int, 0> arr{};
+    static constexpr auto red =
+      arr | star::transform([](auto v) { return 2 * v; }) | star::left_reduce(std::plus<>{}, 0);
+    static_assert(red == 0);
+  }
+  {
+    static constexpr std::array arr{4, 3, 1};
+    static_assert((arr | star::minimum) == 1);
+    static_assert((arr | star::maximum) == 4);
   }
 
   // right_reduce
@@ -280,7 +291,7 @@ int main() {
   {
     static constexpr std::array arr{0, 4, 3, 1};
     static constexpr auto red =
-      arr | (star::transform([](auto v) { return 2 * v; }) | star::right_reduce(std::plus<>{}, 0));
+      arr | (star::transform([](auto v) { return 2 * v; }) | star::right_reduce(std::plus<>{}));
     static_assert(red == 16);
   }
 
