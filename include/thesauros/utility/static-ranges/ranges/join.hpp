@@ -15,7 +15,7 @@
 namespace thes::star {
 template<typename... TRanges>
 struct Join {
-  using Tuple = Tuple<TRanges...>;
+  using Tuple = ::thes::Tuple<TRanges...>;
   Tuple ranges;
 
   explicit constexpr Join(TRanges&&... rngs) : ranges{std::forward<TRanges>(rngs)...} {}
