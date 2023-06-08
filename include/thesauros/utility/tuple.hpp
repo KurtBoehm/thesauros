@@ -29,7 +29,7 @@ struct Tuple<std::index_sequence<tIdxs...>, Ts...> : detail::TupleLeaf<tIdxs, Ts
   requires(sizeof...(TOthers) > 0 && sizeof...(TOthers) == sizeof...(Ts) &&
            (... && std::is_constructible_v<Ts, TOthers>))
   explicit constexpr Tuple(TOthers&&... args)
-      : detail::TupleLeaf<tIdxs, Ts>{Ts{std::forward<Ts>(args)}}... {}
+      : detail::TupleLeaf<tIdxs, Ts>{Ts{std::forward<TOthers>(args)}}... {}
 
   constexpr Tuple()
   requires(... && std::is_default_constructible_v<Ts>)
