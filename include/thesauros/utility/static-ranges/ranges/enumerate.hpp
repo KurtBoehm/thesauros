@@ -7,7 +7,7 @@
 
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
-#include "thesauros/utility/static-value.hpp"
+#include "thesauros/utility/value-tag.hpp"
 
 namespace thes::star {
 template<typename TSize, typename TInner>
@@ -18,8 +18,8 @@ struct EnumerateView {
   static constexpr std::size_t size = thes::star::size<Inner>;
 
   template<std::size_t tIndex>
-  constexpr std::pair<StaticValue<TSize, tIndex>, decltype(get_at<tIndex>(inner))> get() const {
-    return {static_value<TSize, tIndex>, get_at<tIndex>(inner)};
+  constexpr std::pair<ValueTag<TSize, tIndex>, decltype(get_at<tIndex>(inner))> get() const {
+    return {value_tag<TSize, tIndex>, get_at<tIndex>(inner)};
   }
 };
 

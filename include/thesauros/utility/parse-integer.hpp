@@ -7,13 +7,13 @@
 #include <string_view>
 
 #include "thesauros/math/overflow.hpp"
-#include "thesauros/utility/static-value.hpp"
+#include "thesauros/utility/value-tag.hpp"
 
 namespace thes {
 template<typename T, bool tFromString>
 inline constexpr std::optional<T> parse_integer(std::string_view src) {
   auto parse_impl = [](std::string_view number, auto op) -> std::optional<T> {
-    auto parse_base = [op]<auto tBase>(std::string_view sv, StaticAuto<tBase>) {
+    auto parse_base = [op]<std::size_t tBase>(std::string_view sv, IndexTag<tBase>) {
       auto parse_char = [](char c) -> std::optional<T> {
         // This slightly convoluted implementation optimizes better
         auto char_map = [c]() -> T {
@@ -76,20 +76,20 @@ inline constexpr std::optional<T> parse_integer(std::string_view src) {
       }
       char c = number.front();
       if (c == 'x' or c == 'X') {
-        return parse_base(number.substr(1), StaticValue<std::size_t, 16>{});
+        return parse_base(number.substr(1), index_tag<16>);
       }
       if (c == 'b' or c == 'B') {
-        return parse_base(number.substr(1), StaticValue<std::size_t, 2>{});
+        return parse_base(number.substr(1), index_tag<2>);
       }
       if constexpr (tFromString) {
         if (c == 'o' or c == 'O') {
-          return parse_base(number.substr(1), StaticValue<std::size_t, 8>{});
+          return parse_base(number.substr(1), index_tag<8>);
         }
       } else {
-        return parse_base(number, StaticValue<std::size_t, 8>{});
+        return parse_base(number, index_tag<8>);
       }
     }
-    return parse_base(number, StaticValue<std::size_t, 10>{});
+    return parse_base(number, index_tag<10>);
   };
 
   if (src.empty()) {

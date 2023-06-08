@@ -11,7 +11,7 @@
 #include "thesauros/utility/static-ranges/ranges/postfix-product-inclusive.hpp"
 #include "thesauros/utility/static-ranges/ranges/transform.hpp"
 #include "thesauros/utility/static-ranges/sinks/to-array.hpp"
-#include "thesauros/utility/static-value.hpp"
+#include "thesauros/utility/value-tag.hpp"
 
 namespace thes {
 template<typename TIndex, std::size_t tDimNum>
@@ -32,7 +32,7 @@ struct BasicMultiSize {
     return std::get<0>(postfix_prod_incl_);
   }
   template<std::size_t tDim>
-  [[nodiscard]] constexpr Size axis_size(StaticAuto<tDim> /*tag*/ = {}) const {
+  [[nodiscard]] constexpr Size axis_size(IndexTag<tDim> /*tag*/ = {}) const {
     return std::get<tDim>(sizes_);
   }
 
@@ -41,7 +41,7 @@ struct BasicMultiSize {
   }
 
   template<std::size_t tDim>
-  [[nodiscard]] constexpr Size from_size(StaticAuto<tDim> /*tag*/ = {}) const {
+  [[nodiscard]] constexpr Size from_size(IndexTag<tDim> /*tag*/ = {}) const {
     return std::get<tDim>(postfix_prod_incl_);
   }
   [[nodiscard]] constexpr Size from_size(std::size_t dim) const {
@@ -49,7 +49,7 @@ struct BasicMultiSize {
   }
 
   template<std::size_t tDim>
-  [[nodiscard]] constexpr Size after_size(StaticAuto<tDim> /*tag*/ = {}) const {
+  [[nodiscard]] constexpr Size after_size(IndexTag<tDim> /*tag*/ = {}) const {
     if constexpr (tDim + 1 == dimension_num) {
       return 1;
     } else {
@@ -90,8 +90,7 @@ struct MultiSize : public BasicMultiSize<TIndex, tDimNum> {
   }
 
   template<std::size_t tDim>
-  [[nodiscard]] constexpr Size index_to_axis_index(Size index,
-                                                   StaticAuto<tDim> /*tag*/ = {}) const {
+  [[nodiscard]] constexpr Size index_to_axis_index(Size index, IndexTag<tDim> /*tag*/ = {}) const {
     if constexpr (tDim + 1 == dimension_num) {
       return index % std::get<tDim>(divs_);
     } else {
@@ -103,11 +102,11 @@ struct MultiSize : public BasicMultiSize<TIndex, tDimNum> {
   }
 
   template<std::size_t tDim>
-  const Div& from_size_div(StaticAuto<tDim> /*tag*/ = {}) const {
+  const Div& from_size_div(IndexTag<tDim> /*tag*/ = {}) const {
     return std::get<tDim>(postfix_prod_incl_divs_);
   }
   template<std::size_t tDim>
-  const Div& after_size_div(StaticAuto<tDim> /*tag*/ = {}) const {
+  const Div& after_size_div(IndexTag<tDim> /*tag*/ = {}) const {
     return std::get<tDim + 1>(postfix_prod_incl_divs_);
   }
 

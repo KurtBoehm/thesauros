@@ -9,7 +9,7 @@
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"
 #include "thesauros/utility/static-ranges/definitions/get-at.hpp"
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
-#include "thesauros/utility/static-value.hpp"
+#include "thesauros/utility/value-tag.hpp"
 
 namespace thes::star {
 template<typename TOp, typename TInit, bool tRight>
@@ -23,21 +23,21 @@ struct InitReduceGenerator {
     if constexpr (!tRight) {
       auto impl = [&](auto& self, auto idx, auto value) THES_ALWAYS_INLINE {
         if constexpr (idx < size) {
-          return self(self, static_auto<idx + 1>, op(value, get_at<idx>(range)));
+          return self(self, index_tag<idx + 1>, op(value, get_at<idx>(range)));
         } else {
           return value;
         }
       };
-      return impl(impl, static_value<std::size_t, 0>, init);
+      return impl(impl, index_tag<0>, init);
     } else {
       auto impl = [&](auto& self, auto idx) THES_ALWAYS_INLINE {
         if constexpr (idx < size) {
-          return op(get_at<idx>(range), self(self, static_auto<idx + 1>));
+          return op(get_at<idx>(range), self(self, index_tag<idx + 1>));
         } else {
           return init;
         }
       };
-      return impl(impl, static_value<std::size_t, 0>);
+      return impl(impl, index_tag<0>);
     }
   }
 };
@@ -54,21 +54,21 @@ struct ReduceGenerator {
     if constexpr (!tRight) {
       auto impl = [&](auto& self, auto idx, auto value) THES_ALWAYS_INLINE {
         if constexpr (idx < size) {
-          return self(self, static_auto<idx + 1>, op(value, get_at<idx>(range)));
+          return self(self, index_tag<idx + 1>, op(value, get_at<idx>(range)));
         } else {
           return value;
         }
       };
-      return impl(impl, static_value<std::size_t, 1>, get_at<0>(range));
+      return impl(impl, index_tag<1>, get_at<0>(range));
     } else {
       auto impl = [&](auto& self, auto idx) THES_ALWAYS_INLINE {
         if constexpr (idx + 1 < size) {
-          return op(get_at<idx>(range), self(self, static_auto<idx + 1>));
+          return op(get_at<idx>(range), self(self, index_tag<idx + 1>));
         } else {
           return get_at<idx>(range);
         }
       };
-      return impl(impl, static_value<std::size_t, 0>);
+      return impl(impl, index_tag<0>);
     }
   }
 };

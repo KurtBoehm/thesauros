@@ -9,7 +9,7 @@
 
 #include "thesauros/format/manip.hpp"
 #include "thesauros/format/style.hpp"
-#include "thesauros/utility/static-value.hpp"
+#include "thesauros/utility/value-tag.hpp"
 
 namespace thes {
 namespace fmt {
@@ -120,7 +120,7 @@ private:
 };
 
 template<bool tFormat>
-struct FormatTag : public StaticAuto<tFormat> {};
+struct FormatTag : public AutoTag<tFormat> {};
 inline constexpr FormatTag<true> formatted_tag{};
 inline constexpr FormatTag<false> unformatted_tag{};
 template<typename T>

@@ -5,7 +5,7 @@
 #include <cstddef>
 
 #include "thesauros/math/divmod.hpp"
-#include "thesauros/utility/static-value.hpp"
+#include "thesauros/utility/value-tag.hpp"
 
 namespace thes::star {
 template<typename TIdx, typename TSize, std::size_t tSize>
@@ -24,11 +24,11 @@ inline constexpr auto index_to_position(TIdx index, const std::array<TSize, tSiz
     if constexpr (end == 2) {
       return std::array{div, mod, std::forward<TArgs>(args)...};
     } else {
-      return self(self, div, static_auto<end - 1>, mod, std::forward<TArgs>(args)...);
+      return self(self, div, index_tag<end - 1>, mod, std::forward<TArgs>(args)...);
     }
   };
 
-  return impl(impl, index, static_auto<tSize>);
+  return impl(impl, index, index_tag<tSize>);
 }
 } // namespace thes::star
 

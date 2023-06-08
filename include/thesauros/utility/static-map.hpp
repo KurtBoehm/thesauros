@@ -5,9 +5,9 @@
 #include <utility>
 
 #include "thesauros/utility/static-ranges/sinks/all-different.hpp"
-#include "thesauros/utility/static-value.hpp"
 #include "thesauros/utility/tuple.hpp"
 #include "thesauros/utility/type-sequence.hpp"
+#include "thesauros/utility/value-tag.hpp"
 
 namespace thes {
 template<auto tKey, typename TValue>
@@ -47,10 +47,10 @@ struct StaticMap<TPairs...> {
       } else if constexpr (TupleElement<idx, Tuple>::key == tKey) {
         return true;
       } else {
-        return rec(static_auto<idx + 1>, rec);
+        return rec(index_tag<idx + 1>, rec);
       }
     };
-    return impl(static_value<std::size_t, 0>, impl);
+    return impl(index_tag<0>, impl);
   }();
 
   explicit constexpr StaticMap(TPairs&&... pairs) : pairs_{std::forward<TPairs>(pairs)...} {}
@@ -72,10 +72,10 @@ private:
       if constexpr (TupleElement<idx, Tuple>::key == tKey) {
         return star::get_at<idx>(self.pairs_).value;
       } else {
-        return rec(static_auto<idx + 1>, rec);
+        return rec(index_tag<idx + 1>, rec);
       }
     };
-    return impl(static_value<std::size_t, 0>, impl);
+    return impl(index_tag<0>, impl);
   }
 
   Tuple pairs_;

@@ -8,7 +8,7 @@
 #include "thesauros/utility/inlining.hpp"
 #include "thesauros/utility/static-ranges/definitions/element-type.hpp"
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
-#include "thesauros/utility/static-value.hpp"
+#include "thesauros/utility/value-tag.hpp"
 
 namespace thes {
 enum struct IterDirection { FORWARD, BACKWARD };
@@ -43,14 +43,13 @@ inline constexpr void for_each_tile(const TSizes& sizes, const TTileSizes& tile_
       if constexpr (dim == dim_num) {
         fun(args...);
       } else if constexpr (TFixedAxes::template contains<dim>) {
-        rec(static_auto<dim + 1>, rec, args..., fixed_axes.template get<dim>());
+        rec(index_tag<dim + 1>, rec, args..., fixed_axes.template get<dim>());
       } else {
         const Size size = star::get_at<dim>(sizes);
         const Size tile_size = star::get_at<dim>(tile_sizes);
         if constexpr (tDirection == IterDirection::FORWARD) {
           for (Size i = 0; i < size; i += tile_size) {
-            rec(static_auto<dim + 1>, rec, args...,
-                std::make_pair(i, std::min(i + tile_size, size)));
+            rec(index_tag<dim + 1>, rec, args..., std::make_pair(i, std::min(i + tile_size, size)));
           }
         } else {
           if (size == 0) {
@@ -58,13 +57,12 @@ inline constexpr void for_each_tile(const TSizes& sizes, const TTileSizes& tile_
           }
           const Size end_tile = div_ceil(size, tile_size) * tile_size;
           for (Size i = end_tile; i > 0; i -= tile_size) {
-            rec(static_auto<dim + 1>, rec, args...,
-                std::make_pair(i - tile_size, std::min(i, size)));
+            rec(index_tag<dim + 1>, rec, args..., std::make_pair(i - tile_size, std::min(i, size)));
           }
         }
       }
     };
-    impl(static_value<std::size_t, 0>, impl);
+    impl(index_tag<0>, impl);
   }
 }
 
@@ -83,11 +81,11 @@ inline constexpr void iterate_tile(const auto& multi_size, const TRanges& ranges
       const auto factor = multi_size.template after_size<dim>();
       if constexpr (tDirection == IterDirection::FORWARD) {
         for (Size i = begin; i < end; ++i) {
-          rec(static_auto<dim + 1>, rec, index + i * factor, args..., i);
+          rec(index_tag<dim + 1>, rec, index + i * factor, args..., i);
         }
       } else {
         for (Size i = end; i > begin; --i) {
-          rec(static_auto<dim + 1>, rec, index + (i - 1) * factor, args..., i - 1);
+          rec(index_tag<dim + 1>, rec, index + (i - 1) * factor, args..., i - 1);
         }
       }
     } else {
@@ -103,7 +101,7 @@ inline constexpr void iterate_tile(const auto& multi_size, const TRanges& ranges
       }
     }
   };
-  impl(static_value<std::size_t, 0>, impl, Size{0});
+  impl(index_tag<0>, impl, Size{0});
 }
 } // namespace thes
 

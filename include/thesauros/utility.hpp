@@ -50,7 +50,6 @@
 #include "utility/static-ranges/sinks/unique-value.hpp" // IWYU pragma: export
 #include "utility/static-string/character-tools.hpp" // IWYU pragma: export
 #include "utility/static-string/static-string.hpp" // IWYU pragma: export
-#include "utility/static-value.hpp" // IWYU pragma: export
 #include "utility/string-escape.hpp" // IWYU pragma: export
 #include "utility/tuple.hpp" // IWYU pragma: export
 #include "utility/type-name.hpp" // IWYU pragma: export
@@ -61,6 +60,7 @@
 #include "utility/typed-integer.hpp" // IWYU pragma: export
 #include "utility/unicode.hpp" // IWYU pragma: export
 #include "utility/unwrap.hpp" // IWYU pragma: export
+#include "utility/value-tag.hpp" // IWYU pragma: export
 #include "utility/void-macros.hpp" // IWYU pragma: export
 
 #endif // INCLUDE_THESAUROS_UTILITY_HPP

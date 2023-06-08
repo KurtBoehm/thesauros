@@ -4,7 +4,7 @@
 #include <cstddef>
 
 #include "thesauros/math/arithmetic.hpp"
-#include "thesauros/utility/static-value.hpp"
+#include "thesauros/utility/value-tag.hpp"
 
 namespace thes::star {
 template<std::size_t tBegin, std::size_t tEnd, std::size_t tStep>
@@ -14,7 +14,7 @@ struct IotaView {
   template<std::size_t tIndex>
   requires(tBegin + tIndex * tStep < tEnd)
   constexpr decltype(auto) get() const {
-    return static_auto<tBegin + tIndex * tStep>;
+    return index_tag<tBegin + tIndex * tStep>;
   }
 };
 

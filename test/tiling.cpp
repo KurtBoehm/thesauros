@@ -53,19 +53,19 @@ int main() {
   };
   {
     static constexpr auto index_pos =
-      make_index_pos(0, thes::static_auto<thes::IterDirection::BACKWARD>);
+      make_index_pos(0, thes::auto_tag<thes::IterDirection::BACKWARD>);
     static_assert(ms.index_to_pos(index_pos.index) == index_pos.position);
     static_assert(index_pos.position == std::array{7_uz, 7_uz, 3_uz});
   }
   {
     static constexpr auto index_pos =
-      make_index_pos(16, thes::static_auto<thes::IterDirection::BACKWARD>);
+      make_index_pos(16, thes::auto_tag<thes::IterDirection::BACKWARD>);
     static_assert(ms.index_to_pos(index_pos.index) == index_pos.position);
     static_assert(index_pos.position == std::array{6_uz, 7_uz, 3_uz});
   }
   {
     static constexpr auto index_pos =
-      make_index_pos(16, thes::static_auto<thes::IterDirection::FORWARD>);
+      make_index_pos(16, thes::auto_tag<thes::IterDirection::FORWARD>);
     static_assert(ms.index_to_pos(index_pos.index) == index_pos.position);
     static_assert(index_pos.position == std::array{5_uz, 4_uz, 0_uz});
   }

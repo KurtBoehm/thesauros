@@ -7,7 +7,7 @@
 #include <boost/preprocessor.hpp>
 
 #include "thesauros/macropolis/helpers.hpp"
-#include "thesauros/utility/static-value.hpp"
+#include "thesauros/utility/value-tag.hpp"
 
 namespace thes {
 template<auto tValue, auto tName, auto tSerialName>
@@ -83,10 +83,10 @@ inline constexpr auto enum_value_info = [] {
     if constexpr (info.value == tValue) {
       return info;
     } else {
-      return self(self, static_auto<idx + 1>);
+      return self(self, index_tag<idx + 1>);
     }
   };
-  return impl(impl, static_value<std::size_t, 0>);
+  return impl(impl, index_tag<0>);
 }();
 
 template<typename T>

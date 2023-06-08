@@ -1,0 +1,44 @@
+#ifndef INCLUDE_THESAUROS_UTILITY_VALUE_TAG_HPP
+#define INCLUDE_THESAUROS_UTILITY_VALUE_TAG_HPP
+
+#include <concepts>
+#include <cstddef>
+#include <type_traits>
+
+namespace thes {
+template<typename T, T tValue>
+struct ValueTag {
+  using Value = T;
+  using Self = ValueTag;
+  static constexpr Value value = tValue;
+
+  constexpr operator Value() const noexcept {
+    return value;
+  }
+  constexpr Value operator()() const noexcept {
+    return value;
+  }
+};
+template<auto tValue>
+using AutoTag = ValueTag<decltype(tValue), tValue>;
+template<std::size_t tValue>
+using IndexTag = AutoTag<tValue>;
+
+template<typename T, T tValue>
+inline constexpr ValueTag<T, tValue> value_tag{};
+template<auto tValue>
+inline constexpr AutoTag<tValue> auto_tag{};
+template<std::size_t tValue>
+inline constexpr IndexTag<tValue> index_tag{};
+
+template<typename TValueTag>
+struct AnyValueTagTrait : public std::false_type {};
+template<typename T, T tValue>
+struct AnyValueTagTrait<ValueTag<T, tValue>> : public std::true_type {};
+template<typename TValueTag>
+concept AnyValueTag = AnyValueTagTrait<TValueTag>::value;
+template<typename TValueTag, typename T>
+concept TypedValueTag = AnyValueTag<TValueTag> && std::same_as<typename TValueTag::Value, T>;
+} // namespace thes
+
+#endif // INCLUDE_THESAUROS_UTILITY_VALUE_TAG_HPP
