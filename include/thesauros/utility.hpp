@@ -51,6 +51,7 @@
 #include "utility/static-string/character-tools.hpp" // IWYU pragma: export
 #include "utility/static-string/static-string.hpp" // IWYU pragma: export
 #include "utility/string-escape.hpp" // IWYU pragma: export
+#include "utility/swap-or-equal.hpp" // IWYU pragma: export
 #include "utility/tuple.hpp" // IWYU pragma: export
 #include "utility/type-name.hpp" // IWYU pragma: export
 #include "utility/type-sequence.hpp" // IWYU pragma: export

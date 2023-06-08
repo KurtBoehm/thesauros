@@ -83,7 +83,7 @@ struct IteratorFacade {
   constexpr pointer operator->() const
   requires(!std::same_as<pointer, void>)
   {
-    return ArrowCreator<value_type, pointer>::create(**this);
+    return ArrowCreator<value_type, pointer>::create(TProvider::deref(state(derived())));
   }
   constexpr friend TDerived& operator++(TDerived& self) {
     TProvider::incr(state(self));
