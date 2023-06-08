@@ -2,6 +2,7 @@
 #define INCLUDE_THESAUROS_UTILITY_TUPLE_HPP
 
 #include <cstddef>
+#include <type_traits>
 #include <utility>
 
 #include "thesauros/utility/static-ranges/definitions/get-at.hpp"
@@ -23,6 +24,12 @@ template<std::size_t... tIdxs, typename... Ts>
 struct Tuple<std::index_sequence<tIdxs...>, Ts...> : detail::TupleLeaf<tIdxs, Ts>... {
   explicit constexpr Tuple(Ts&&... args)
       : detail::TupleLeaf<tIdxs, Ts>{std::forward<Ts>(args)}... {}
+
+  template<typename... TOthers>
+  requires(sizeof...(TOthers) > 0 && sizeof...(TOthers) == sizeof...(Ts) &&
+           (... && std::is_constructible_v<Ts, TOthers>))
+  explicit constexpr Tuple(TOthers&&... args)
+      : detail::TupleLeaf<tIdxs, Ts>{Ts{std::forward<Ts>(args)}}... {}
 
   constexpr Tuple()
   requires(... && std::is_default_constructible_v<Ts>)
