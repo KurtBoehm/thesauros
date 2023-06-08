@@ -10,12 +10,15 @@
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
 #include "thesauros/utility/static-ranges/ranges/iota.hpp"
 #include "thesauros/utility/static-ranges/sinks/for-each.hpp"
+#include "thesauros/utility/tuple.hpp"
 
 namespace thes::star {
 template<typename... TRanges>
 struct Join {
-  using Tuple = std::tuple<TRanges...>;
+  using Tuple = Tuple<TRanges...>;
   Tuple ranges;
+
+  explicit constexpr Join(TRanges&&... rngs) : ranges{std::forward<TRanges>(rngs)...} {}
 
   static constexpr std::size_t size = (... + star::size<TRanges>);
 
@@ -26,7 +29,7 @@ struct Join {
       std::size_t sum = 0;
       std::optional<std::pair<std::size_t, std::size_t>> out{};
       star::iota<0, sizeof...(TRanges)> | star::for_each([&](auto idx) {
-        constexpr std::size_t idx_size = star::size<std::tuple_element_t<idx, Tuple>>;
+        constexpr std::size_t idx_size = star::size<thes::TupleElement<idx, Tuple>>;
         if (sum <= tIndex && tIndex < sum + idx_size) {
           if (out.has_value()) {
             std::abort();
@@ -37,14 +40,16 @@ struct Join {
       });
       return *out;
     }();
-    return get_at<pair.second>(std::get<pair.first>(ranges));
+    return get_at<pair.second>(get_at<pair.first>(ranges));
   }
 };
+template<typename... TRanges>
+Join(TRanges&&...) -> Join<TRanges...>;
 
 template<typename... TRanges>
 requires(sizeof...(TRanges) > 0)
-inline constexpr Join<TRanges...> joined(TRanges&&... ranges) {
-  return {std::make_tuple(std::forward<TRanges>(ranges)...)};
+inline constexpr auto joined(TRanges&&... ranges) {
+  return Join{std::forward<TRanges>(ranges)...};
 }
 } // namespace thes::star
 

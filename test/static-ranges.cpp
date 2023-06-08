@@ -57,6 +57,18 @@ int main() {
     static_assert(!star::IsStaticRange<Range>);
   }
 
+  // Tuple
+  {
+    using Range = thes::Tuple<int, float, double>;
+    static constexpr Range tup{1, 2.0F, 3.0};
+    [[maybe_unused]] static constexpr thes::StaticAuto<tup> sv{};
+
+    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::size<Range> == 3);
+    static_assert(star::get_at<1>(tup) == 2.0F);
+    static_assert(!star::HasSingleElementType<Range>);
+  }
+
   // constant
   {
     static constexpr auto con = star::constant<5>(1);
@@ -133,7 +145,7 @@ int main() {
     static_assert(!star::HasSingleElementType<Range>);
   }
   {
-    static constexpr std::tuple<int, float, double> tup{1, 2.0F, 3.0};
+    static constexpr thes::Tuple<int, float, double> tup{1, 2.0F, 3.0};
     static constexpr auto map = tup | star::transform([](auto v) { return 2 * v; });
     using Range = decltype(map);
 
@@ -325,7 +337,7 @@ int main() {
     static constexpr std::array arr{0, 4, 3, 1};
     static constexpr auto red =
       arr | star::transform([](auto v) { return 2 * v; }) | star::to_tuple;
-    static_assert(red == std::tuple{0, 8, 6, 2});
+    static_assert(red == thes::Tuple{0, 8, 6, 2});
   }
 
   // for_each

@@ -10,22 +10,23 @@
 #include "thesauros/utility/static-ranges/definitions/get-at.hpp"
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
 #include "thesauros/utility/static-ranges/ranges/iota.hpp"
+#include "thesauros/utility/static-ranges/sinks/apply.hpp"
 #include "thesauros/utility/static-ranges/sinks/unique-value.hpp"
+#include "thesauros/utility/tuple.hpp"
 
 namespace thes::star {
 template<typename TOp, typename... TInners>
 requires(sizeof...(TInners) > 0 && star::has_unique_value(std::array{size<TInners>...}))
 struct TransformView {
   TOp op;
-  std::tuple<TInners...> inners;
+  Tuple<TInners...> inners;
 
   static constexpr std::size_t size =
     (std::array{star::size<TInners>...} | star::unique_value).value();
 
   template<std::size_t tIndex>
   constexpr decltype(auto) get() const {
-    return std::apply([this](const auto&... ranges) { return op(get_at<tIndex>(ranges)...); },
-                      inners);
+    return apply([this](const auto&... ranges) { return op(get_at<tIndex>(ranges)...); })(inners);
   }
 };
 
@@ -35,7 +36,8 @@ struct TransformGenerator {
 
   template<typename... TInners>
   constexpr auto operator()(TInners&&... inners) const {
-    return TransformView<TOp, TInners...>{op, {std::forward<TInners>(inners)...}};
+    return TransformView<TOp, TInners...>{TOp{op},
+                                          Tuple<TInners...>{std::forward<TInners>(inners)...}};
   }
 };
 template<typename TOp>
@@ -49,7 +51,7 @@ inline constexpr TransformGenerator<TOp> transform(TOp&& op) {
 template<typename TOp, typename... TInners>
 requires(sizeof...(TInners) > 0)
 inline constexpr TransformView<TOp, TInners...> transform(TOp&& op, TInners&&... inners) {
-  return {std::forward<TOp>(op), {std::forward<TInners>(inners)...}};
+  return {std::forward<TOp>(op), Tuple<TInners...>{std::forward<TInners>(inners)...}};
 }
 
 template<std::size_t tSize, typename TOp>

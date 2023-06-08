@@ -8,13 +8,14 @@
 
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
+#include "thesauros/utility/tuple.hpp"
 
 namespace thes::star {
 struct ToTupleGenerator {
   template<typename TRange>
   constexpr auto operator()(TRange&& range) const {
     return [&]<std::size_t... tIdxs>(std::index_sequence<tIdxs...> /*idxd*/) {
-      return std::tuple{get_at<tIdxs>(range)...};
+      return Tuple{get_at<tIdxs>(range)...};
     }(std::make_index_sequence<size<TRange>>{});
   }
 };

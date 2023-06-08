@@ -3,13 +3,13 @@
 
 #include <concepts>
 #include <cstddef>
-#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <variant>
 
 #include "thesauros/utility/static-ranges/sinks/contains.hpp"
 #include "thesauros/utility/static-value.hpp"
+#include "thesauros/utility/tuple.hpp"
 
 namespace thes {
 template<typename... Ts>
@@ -25,10 +25,10 @@ struct TypeSeqBase<THead, TTail...> {
 
 template<typename... Ts>
 struct TypeSeq : public TypeSeqBase<Ts...> {
-  using AsTuple = std::tuple<Ts...>;
+  using AsTuple = Tuple<Ts...>;
 
   template<std::size_t tIndex>
-  using GetAt = std::tuple_element_t<tIndex, AsTuple>;
+  using GetAt = TupleElement<tIndex, AsTuple>;
 
   template<typename T>
   static constexpr bool contains = (... || std::same_as<T, Ts>);

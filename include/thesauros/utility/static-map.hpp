@@ -2,11 +2,11 @@
 #define INCLUDE_THESAUROS_UTILITY_STATIC_MAP_HPP
 
 #include <cstddef>
-#include <tuple>
 #include <utility>
 
 #include "thesauros/utility/static-ranges/sinks/all-different.hpp"
 #include "thesauros/utility/static-value.hpp"
+#include "thesauros/utility/tuple.hpp"
 #include "thesauros/utility/type-sequence.hpp"
 
 namespace thes {
@@ -34,10 +34,9 @@ template<typename... TPairs>
 struct StaticMap;
 
 template<typename... TPairs>
-requires(TypeSeq<typename TPairs::Key...>::is_unique &&
-         std::tuple{TPairs::key...} | star::all_different)
+requires(TypeSeq<typename TPairs::Key...>::is_unique && Tuple{TPairs::key...} | star::all_different)
 struct StaticMap<TPairs...> {
-  using Tuple = std::tuple<TPairs...>;
+  using Tuple = ::thes::Tuple<TPairs...>;
   using Key = typename TypeSeq<typename TPairs::Key...>::Unique;
 
   template<Key tKey>
@@ -45,7 +44,7 @@ struct StaticMap<TPairs...> {
     auto impl = [](auto idx, auto rec) {
       if constexpr (idx == sizeof...(TPairs)) {
         return false;
-      } else if constexpr (std::tuple_element_t<idx, Tuple>::key == tKey) {
+      } else if constexpr (TupleElement<idx, Tuple>::key == tKey) {
         return true;
       } else {
         return rec(static_auto<idx + 1>, rec);
@@ -70,8 +69,8 @@ private:
   static constexpr auto& get_impl(auto& self) {
     auto impl = [&self](auto idx, auto rec) -> const auto& {
       static_assert(idx < sizeof...(TPairs), "The key is not known!");
-      if constexpr (std::tuple_element_t<idx, Tuple>::key == tKey) {
-        return std::get<idx>(self.pairs_).value;
+      if constexpr (TupleElement<idx, Tuple>::key == tKey) {
+        return star::get_at<idx>(self.pairs_).value;
       } else {
         return rec(static_auto<idx + 1>, rec);
       }
