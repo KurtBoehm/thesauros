@@ -63,5 +63,6 @@
 #include "utility/unwrap.hpp" // IWYU pragma: export
 #include "utility/value-tag.hpp" // IWYU pragma: export
 #include "utility/void-macros.hpp" // IWYU pragma: export
+#include "utility/void-storage.hpp" // IWYU pragma: export
 
 #endif // INCLUDE_THESAUROS_UTILITY_HPP
