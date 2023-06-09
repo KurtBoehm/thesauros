@@ -1,5 +1,6 @@
-#include "thesauros/utility.hpp"
 #include <iostream>
+
+#include "thesauros/utility.hpp"
 
 int main() {
   int a = 5;

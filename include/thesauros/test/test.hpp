@@ -2,6 +2,7 @@
 #define INCLUDE_THESAUROS_TEST_TEST_HPP
 
 #include <cstdlib>
+#include <functional>
 #include <iostream>
 #include <sstream>
 #include <string_view>
@@ -45,8 +46,8 @@ template<typename TRange1, typename TRange2>
 concept AreRanges = AreIterRanges<TRange1, TRange2> || AreAccessRanges<TRange1, TRange2>;
 } // namespace detail
 
-template<bool tAllowPrinting, typename TRange1, typename TRange2>
-inline constexpr bool range_eq(TRange1&& r1, TRange2&& r2) {
+template<bool tAllowPrinting, typename TRange1, typename TRange2, typename TEqual = std::equal_to<>>
+inline constexpr bool range_eq(TRange1&& r1, TRange2&& r2, TEqual equal = {}) {
   static_assert(detail::AreRanges<TRange1, TRange2>);
 
   if constexpr (detail::AreIterRanges<TRange1, TRange2>) {
@@ -67,7 +68,7 @@ inline constexpr bool range_eq(TRange1&& r1, TRange2&& r2) {
       if constexpr (print) {
         std::cout << ' ' << *it1 << "/" << *it2;
       }
-      if (*it1 != *it2) {
+      if (!equal(*it1, *it2)) {
         if constexpr (print) {
           std::cout << '\n';
         }
@@ -93,9 +94,9 @@ inline constexpr bool range_eq(TRange1&& r1, TRange2&& r2) {
     return true;
   }
 }
-template<typename TRange1, typename TRange2>
-inline constexpr bool range_eq(TRange1&& r1, TRange2&& r2) {
-  return range_eq<true>(std::forward<TRange1>(r1), std::forward<TRange2>(r2));
+template<typename TRange1, typename TRange2, typename TEqual = std::equal_to<>>
+inline constexpr bool range_eq(TRange1&& r1, TRange2&& r2, TEqual equal = {}) {
+  return range_eq<true>(std::forward<TRange1>(r1), std::forward<TRange2>(r2), equal);
 }
 
 inline bool string_eq(const std::string_view s1, const std::string_view s2) {
