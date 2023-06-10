@@ -39,6 +39,11 @@ template<typename TValueTag>
 concept AnyValueTag = AnyValueTagTrait<TValueTag>::value;
 template<typename TValueTag, typename T>
 concept TypedValueTag = AnyValueTag<TValueTag> && std::same_as<typename TValueTag::Value, T>;
+
+template<typename T, T tVal1, T tVal2>
+inline constexpr bool operator==(ValueTag<T, tVal1> /*tag1*/, ValueTag<T, tVal2> /*tag2*/) {
+  return tVal1 == tVal2;
+}
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_UTILITY_VALUE_TAG_HPP
