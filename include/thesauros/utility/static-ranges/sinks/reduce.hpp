@@ -13,9 +13,12 @@
 
 namespace thes::star {
 template<typename TOp, typename TInit, bool tRight>
-struct InitReduceGenerator {
+struct InitReduceGenerator : public ConsumerGeneratorBase {
   TOp op;
   TInit init;
+
+  constexpr InitReduceGenerator(TOp&& op, TInit&& init)
+      : op(std::forward<TOp>(op)), init(std::forward<TInit>(init)) {}
 
   template<typename TRange>
   constexpr auto operator()(TRange&& range) const {
@@ -41,12 +44,12 @@ struct InitReduceGenerator {
     }
   }
 };
-template<typename TOp, typename TInit, bool tRight>
-struct ConsumerGeneratorTrait<InitReduceGenerator<TOp, TInit, tRight>> : public std::true_type {};
 
 template<typename TOp, bool tRight>
-struct ReduceGenerator {
+struct ReduceGenerator : public ConsumerGeneratorBase {
   TOp op;
+
+  explicit constexpr ReduceGenerator(TOp&& op) : op(std::forward<TOp>(op)) {}
 
   template<typename TRange>
   constexpr auto operator()(TRange&& range) const {
@@ -72,16 +75,14 @@ struct ReduceGenerator {
     }
   }
 };
-template<typename TOp, bool tRight>
-struct ConsumerGeneratorTrait<ReduceGenerator<TOp, tRight>> : public std::true_type {};
 
 template<typename TOp, typename TInit>
 inline constexpr InitReduceGenerator<TOp, TInit, false> left_reduce(TOp&& op, TInit&& init) {
   return {std::forward<TOp>(op), std::forward<TInit>(init)};
 }
 template<typename TOp>
-inline constexpr ReduceGenerator<TOp, false> left_reduce(TOp&& op) {
-  return {std::forward<TOp>(op)};
+inline constexpr auto left_reduce(TOp&& op) {
+  return ReduceGenerator<TOp, false>{std::forward<TOp>(op)};
 }
 inline constexpr auto minimum =
   left_reduce([]<typename T>(const T& v1, const T& v2) { return std::min(v1, v2); });
@@ -93,8 +94,8 @@ inline constexpr InitReduceGenerator<TOp, TInit, true> right_reduce(TOp&& op, TI
   return {std::forward<TOp>(op), std::forward<TInit>(init)};
 }
 template<typename TOp>
-inline constexpr ReduceGenerator<TOp, true> right_reduce(TOp&& op) {
-  return {std::forward<TOp>(op)};
+inline constexpr auto right_reduce(TOp&& op) {
+  return ReduceGenerator<TOp, true>{std::forward<TOp>(op)};
 }
 } // namespace thes::star
 

@@ -2,9 +2,9 @@
 #define INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_HPP
 
 #include "static-ranges/definitions/concepts.hpp" // IWYU pragma: export
-#include "static-ranges/definitions/element-type.hpp" // IWYU pragma: export
 #include "static-ranges/definitions/get-at.hpp" // IWYU pragma: export
 #include "static-ranges/definitions/size.hpp" // IWYU pragma: export
+#include "static-ranges/definitions/type-traits.hpp" // IWYU pragma: export
 #include "static-ranges/generators/combined.hpp" // IWYU pragma: export
 #include "static-ranges/piping.hpp" // IWYU pragma: export
 #include "static-ranges/ranges/constant.hpp" // IWYU pragma: export

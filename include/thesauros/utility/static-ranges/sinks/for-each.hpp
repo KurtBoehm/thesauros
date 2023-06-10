@@ -10,8 +10,10 @@
 
 namespace thes::star {
 template<typename TOp>
-struct ForEachGenerator {
+struct ForEachGenerator : public ConsumerGeneratorBase {
   TOp op;
+
+  explicit constexpr ForEachGenerator(TOp&& op) : op(std::forward<TOp>(op)) {}
 
   template<typename TRange>
   constexpr auto operator()(TRange&& range) const {
@@ -21,12 +23,10 @@ struct ForEachGenerator {
     }(std::make_index_sequence<size>{});
   }
 };
-template<typename TOp>
-struct ConsumerGeneratorTrait<ForEachGenerator<TOp>> : public std::true_type {};
 
 template<typename TOp>
-inline constexpr ForEachGenerator<TOp> for_each(TOp&& op) {
-  return {std::forward<TOp>(op)};
+inline constexpr auto for_each(TOp&& op) {
+  return ForEachGenerator<TOp>{std::forward<TOp>(op)};
 }
 } // namespace thes::star
 

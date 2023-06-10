@@ -1,5 +1,5 @@
-#ifndef INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_DEFINITIONS_ELEMENT_TYPE_HPP
-#define INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_DEFINITIONS_ELEMENT_TYPE_HPP
+#ifndef INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_DEFINITIONS_TYPE_TRAITS_HPP
+#define INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_DEFINITIONS_TYPE_TRAITS_HPP
 
 #include <cstddef>
 #include <type_traits>
@@ -10,8 +10,11 @@
 #include "thesauros/utility/type-sequence.hpp"
 
 namespace thes::star {
+template<std::size_t tIdx, typename TRange>
+using Element = decltype(get_at<tIdx>(std::declval<const TRange&>()));
+
 template<typename TRange>
-struct ElementTypeSeqTrait {
+struct ValueSeqTrait {
   template<typename TIdxRange>
   struct Impl;
 
@@ -24,41 +27,41 @@ struct ElementTypeSeqTrait {
 };
 
 template<typename TRange>
-using ElementTypeSeq = typename ElementTypeSeqTrait<TRange>::Type;
+using ValueSeq = typename ValueSeqTrait<TRange>::Type;
 
 namespace detail {
 template<typename TRange>
 concept HasValue = requires { typename TRange::Value; };
 template<typename TRange>
-concept HasValueType = requires { typename TRange::value_type; };
+concept HasTypeValue = requires { typename TRange::value_type; };
 template<typename TRange>
-concept HasElemType = ElementTypeSeq<TRange>::is_unique;
+concept HasElemType = ValueSeq<TRange>::is_unique;
 } // namespace detail
 
 template<typename TRange>
-struct ElementTypeTrait;
+struct ValueTrait;
 
 template<typename TRange>
 requires detail::HasValue<TRange>
-struct ElementTypeTrait<TRange> {
+struct ValueTrait<TRange> {
   using Type = typename TRange::Value;
 };
 template<typename TRange>
-requires(!detail::HasValue<TRange> && detail::HasValueType<TRange>)
-struct ElementTypeTrait<TRange> {
+requires(!detail::HasValue<TRange> && detail::HasTypeValue<TRange>)
+struct ValueTrait<TRange> {
   using Type = typename TRange::value_type;
 };
 template<typename TRange>
-requires(!detail::HasValue<TRange> && !detail::HasValueType<TRange> && detail::HasElemType<TRange>)
-struct ElementTypeTrait<TRange> {
-  using Type = typename ElementTypeSeq<TRange>::Unique;
+requires(!detail::HasValue<TRange> && !detail::HasTypeValue<TRange> && detail::HasElemType<TRange>)
+struct ValueTrait<TRange> {
+  using Type = typename ValueSeq<TRange>::Unique;
 };
 
 template<typename TRange>
-using ElementType = typename ElementTypeTrait<TRange>::Type;
+using Value = typename ValueTrait<TRange>::Type;
 
 template<typename TRange>
-concept HasSingleElementType = requires { typename ElementType<TRange>; };
+concept HasValue = requires { typename Value<TRange>; };
 } // namespace thes::star
 
-#endif // INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_DEFINITIONS_ELEMENT_TYPE_HPP
+#endif // INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_DEFINITIONS_TYPE_TRAITS_HPP

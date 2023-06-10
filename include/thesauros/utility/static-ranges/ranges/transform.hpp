@@ -21,6 +21,9 @@ struct TransformView {
   TOp op;
   Tuple<TInners...> inners;
 
+  explicit constexpr TransformView(TOp&& op, TInners&&... inners)
+      : op(std::forward<TOp>(op)), inners(std::forward<TInners>(inners)...) {}
+
   static constexpr std::size_t size =
     (std::array{star::size<TInners>...} | star::unique_value).value();
 
@@ -31,36 +34,35 @@ struct TransformView {
 };
 
 template<typename TOp>
-struct TransformGenerator {
+struct TransformGenerator : public RangeGeneratorBase {
   TOp op;
+
+  explicit constexpr TransformGenerator(TOp&& op) : op(std::forward<TOp>(op)) {}
 
   template<typename... TInners>
   constexpr auto operator()(TInners&&... inners) const {
-    return TransformView<TOp, TInners...>{TOp{op},
-                                          Tuple<TInners...>{std::forward<TInners>(inners)...}};
+    return TransformView<TOp, TInners...>{TOp{op}, std::forward<TInners>(inners)...};
   }
 };
-template<typename TOp>
-struct RangeGeneratorTrait<TransformGenerator<TOp>> : public std::true_type {};
 
 template<typename TOp>
-inline constexpr TransformGenerator<TOp> transform(TOp&& op) {
-  return {std::forward<TOp>(op)};
+inline constexpr auto transform(TOp&& op) {
+  return TransformGenerator<TOp>{std::forward<TOp>(op)};
 };
 
 template<typename TOp, typename... TInners>
 requires(sizeof...(TInners) > 0)
-inline constexpr TransformView<TOp, TInners...> transform(TOp&& op, TInners&&... inners) {
-  return {std::forward<TOp>(op), Tuple<TInners...>{std::forward<TInners>(inners)...}};
+inline constexpr auto transform(TOp&& op, TInners&&... inners) {
+  return TransformView<TOp, TInners...>{std::forward<TOp>(op), std::forward<TInners>(inners)...};
 }
 
 template<std::size_t tSize, typename TOp>
-inline constexpr TransformView<TOp, IotaView<0, tSize, 1>> index_transform(TOp&& op) {
-  return {std::forward<TOp>(op), {}};
+inline constexpr auto index_transform(TOp&& op) {
+  return TransformView<TOp, IotaView<0, tSize, 1>>{std::forward<TOp>(op), {}};
 };
 template<std::size_t tBegin, std::size_t tEnd, typename TOp>
-inline constexpr TransformView<TOp, IotaView<tBegin, tEnd, 1>> index_transform(TOp&& op) {
-  return {std::forward<TOp>(op), {}};
+inline constexpr auto index_transform(TOp&& op) {
+  return TransformView<TOp, IotaView<tBegin, tEnd, 1>>{std::forward<TOp>(op), {}};
 };
 } // namespace thes::star
 

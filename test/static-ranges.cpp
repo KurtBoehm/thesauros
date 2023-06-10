@@ -26,13 +26,13 @@ int main() {
     static_assert(star::IsStaticRange<Range>);
     static_assert(star::size<Range> == 4);
     static_assert(star::get_at<3>(arr) == 1);
-    static_assert(std::same_as<star::ElementType<Range>, int>);
+    static_assert(std::same_as<star::Value<Range>, int>);
   }
   {
     using Range = std::tuple<>;
     static_assert(star::IsStaticRange<Range>);
     static_assert(star::size<Range> == 0);
-    static_assert(!star::HasSingleElementType<Range>);
+    static_assert(!star::HasValue<Range>);
   }
   {
     using Range = std::tuple<int>;
@@ -41,7 +41,7 @@ int main() {
     static_assert(star::IsStaticRange<Range>);
     static_assert(star::size<Range> == 1);
     static_assert(star::get_at<0>(tup) == 1);
-    static_assert(star::HasSingleElementType<Range>);
+    static_assert(star::HasValue<Range>);
   }
   {
     using Range = std::tuple<int, float, double>;
@@ -50,7 +50,7 @@ int main() {
     static_assert(star::IsStaticRange<Range>);
     static_assert(star::size<Range> == 3);
     static_assert(star::get_at<1>(tup) == 2.0F);
-    static_assert(!star::HasSingleElementType<Range>);
+    static_assert(!star::HasValue<Range>);
   }
   {
     using Range = std::vector<int>;
@@ -66,7 +66,7 @@ int main() {
     static_assert(star::IsStaticRange<Range>);
     static_assert(star::size<Range> == 3);
     static_assert(star::get_at<1>(tup) == 2.0F);
-    static_assert(!star::HasSingleElementType<Range>);
+    static_assert(!star::HasValue<Range>);
   }
 
   // constant
@@ -99,7 +99,7 @@ int main() {
     static_assert(star::IsStaticRange<Range>);
     static_assert(star::size<Range> == 4);
     static_assert(star::get_at<3>(enu) == std::make_pair(thes::index_tag<3>, std::cref(ref)));
-    static_assert(!star::HasSingleElementType<Range>);
+    static_assert(!star::HasValue<Range>);
   }
   {
     static constexpr std::tuple<int, float, double> tup{1, 2.0F, 3.0};
@@ -110,7 +110,7 @@ int main() {
     static_assert(star::IsStaticRange<Range>);
     static_assert(star::size<Range> == 3);
     static_assert(star::get_at<1>(enu) == std::make_pair(thes::auto_tag<1>, std::cref(ref)));
-    static_assert(!star::HasSingleElementType<Range>);
+    static_assert(!star::HasValue<Range>);
   }
   {
     static constexpr auto con = star::constant<5>(1);
@@ -130,7 +130,7 @@ int main() {
     static_assert(star::IsStaticRange<Range>);
     static_assert(star::size<Range> == 4);
     static_assert(star::get_at<3>(map) == 6);
-    static_assert(star::HasSingleElementType<Range>);
+    static_assert(star::HasValue<Range>);
   }
   {
     static constexpr std::array arr{0, 4, 3, 1};
@@ -141,7 +141,7 @@ int main() {
     static_assert(star::IsStaticRange<Range>);
     static_assert(star::size<Range> == 4);
     static_assert(star::get_at<3>(map) == std::make_pair(thes::auto_tag<3>, 2));
-    static_assert(!star::HasSingleElementType<Range>);
+    static_assert(!star::HasValue<Range>);
   }
   {
     static constexpr thes::Tuple<int, float, double> tup{1, 2.0F, 3.0};
@@ -151,7 +151,7 @@ int main() {
     static_assert(star::IsStaticRange<Range>);
     static_assert(star::size<Range> == 3);
     static_assert(star::get_at<1>(map) == 4.0F);
-    static_assert(!star::HasSingleElementType<Range>);
+    static_assert(!star::HasValue<Range>);
   }
   {
     static constexpr std::array arr{0, 4, 3, 1};
@@ -166,7 +166,7 @@ int main() {
     static_assert(star::IsStaticRange<Range>);
     static_assert(star::size<Range> == 4);
     static_assert(star::get_at<1>(map) == 8.0F);
-    static_assert(star::HasSingleElementType<Range>);
+    static_assert(star::HasValue<Range>);
   }
   {
     using namespace thes::literals;
@@ -177,7 +177,7 @@ int main() {
     static_assert(star::IsStaticRange<Range>);
     static_assert(star::size<Range> == 4);
     static_assert((map | star::to_array) == std::array{0_uz, 1_uz, 4_uz, 9_uz});
-    static_assert(star::HasSingleElementType<Range>);
+    static_assert(star::HasValue<Range>);
   }
   {
     static constexpr std::array arr{0, 4, 3, 1};
@@ -188,7 +188,7 @@ int main() {
     static_assert(star::IsStaticRange<Range>);
     static_assert(star::size<Range> == 4);
     static_assert(star::get_at<3>(map) == std::make_pair(thes::auto_tag<3>, 2));
-    static_assert(!star::HasSingleElementType<Range>);
+    static_assert(!star::HasValue<Range>);
   }
 
   // filter
@@ -200,7 +200,7 @@ int main() {
     static_assert(star::IsStaticRange<Range>);
     static_assert(star::size<Range> == 2);
     static_assert(star::get_at<1>(map) == 3);
-    static_assert(star::HasSingleElementType<Range>);
+    static_assert(star::HasValue<Range>);
   }
   {
     static constexpr std::array arr{0, 4, 3, 1};
@@ -211,7 +211,7 @@ int main() {
     static_assert(star::IsStaticRange<Range>);
     static_assert(star::size<Range> == 2);
     static_assert(star::get_at<1>(map) == 6);
-    static_assert(star::HasSingleElementType<Range>);
+    static_assert(star::HasValue<Range>);
   }
   {
     static constexpr std::array arr{0, 4, 3, 1};
@@ -221,7 +221,7 @@ int main() {
     static_assert(star::IsStaticRange<Range>);
     static_assert(star::size<Range> == 1);
     static_assert(star::get_at<0>(map) == 3);
-    static_assert(star::HasSingleElementType<Range>);
+    static_assert(star::HasValue<Range>);
   }
   {
     static constexpr std::array arr{0, 4, 3, 1};
@@ -231,7 +231,7 @@ int main() {
     static_assert(star::IsStaticRange<Range>);
     static_assert(star::size<Range> == 3);
     static_assert((map | star::to_array) == std::array{0, 4, 1});
-    static_assert(star::HasSingleElementType<Range>);
+    static_assert(star::HasValue<Range>);
   }
   {
     static constexpr std::array arr{0, 4, 3, 1};
@@ -241,7 +241,7 @@ int main() {
     static_assert(star::IsStaticRange<Range>);
     static_assert(star::size<Range> == 3);
     static_assert((map | star::to_array) == std::array{0, 3, 1});
-    static_assert(star::HasSingleElementType<Range>);
+    static_assert(star::HasValue<Range>);
   }
   {
     static constexpr std::array arr{0, 4, 3, 1};
@@ -251,7 +251,7 @@ int main() {
     static_assert(star::IsStaticRange<Range>);
     static_assert(star::size<Range> == 2);
     static_assert((map | star::to_array) == std::array{4, 3});
-    static_assert(star::HasSingleElementType<Range>);
+    static_assert(star::HasValue<Range>);
   }
 
   // join
@@ -264,7 +264,18 @@ int main() {
     static_assert(star::size<Range> == 8);
     static_assert(star::get_at<1>(j) == 4);
     static_assert((j | star::to_array) == std::array{0, 4, 3, 1, 4, 0, 3, 1});
-    static_assert(star::HasSingleElementType<Range>);
+    static_assert(star::HasValue<Range>);
+  }
+  {
+    static constexpr auto j =
+      std::tuple{std::array{0, 4, 3, 1}, std::array{4, 0}, std::array{3, 1}} | star::join;
+    using Range = decltype(j);
+
+    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::size<Range> == 8);
+    static_assert(star::get_at<1>(j) == 4);
+    static_assert((j | star::to_array) == std::array{0, 4, 3, 1, 4, 0, 3, 1});
+    static_assert(star::HasValue<Range>);
   }
 
   // left_reduce

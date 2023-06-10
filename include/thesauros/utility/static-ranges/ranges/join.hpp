@@ -5,22 +5,24 @@
 #include <cstdlib>
 #include <optional>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 
+#include "thesauros/utility/static-ranges/definitions/concepts.hpp"
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
+#include "thesauros/utility/static-ranges/definitions/type-traits.hpp"
 #include "thesauros/utility/static-ranges/ranges/iota.hpp"
 #include "thesauros/utility/static-ranges/sinks/for-each.hpp"
 #include "thesauros/utility/tuple.hpp"
 
 namespace thes::star {
-template<typename... TRanges>
-struct Join {
-  using Tuple = ::thes::Tuple<TRanges...>;
-  Tuple ranges;
+template<typename TRanges>
+struct JoinView {
+  TRanges ranges;
 
-  explicit constexpr Join(TRanges&&... rngs) : ranges{std::forward<TRanges>(rngs)...} {}
-
-  static constexpr std::size_t size = (... + star::size<TRanges>);
+  static constexpr std::size_t size = []<std::size_t... tIdxs>(std::index_sequence<tIdxs...>) {
+    return (... + thes::star::size<std::decay_t<Element<tIdxs, TRanges>>>);
+  }(std::make_index_sequence<star::size<TRanges>>{});
 
   template<std::size_t tIndex>
   requires(tIndex < size)
@@ -28,8 +30,8 @@ struct Join {
     constexpr auto pair = []() {
       std::size_t sum = 0;
       std::optional<std::pair<std::size_t, std::size_t>> out{};
-      star::iota<0, sizeof...(TRanges)> | star::for_each([&](auto idx) {
-        constexpr std::size_t idx_size = star::size<thes::TupleElement<idx, Tuple>>;
+      star::iota<0, star::size<TRanges>> | star::for_each([&](auto idx) {
+        constexpr std::size_t idx_size = star::size<std::decay_t<Element<idx, TRanges>>>;
         if (sum <= tIndex && tIndex < sum + idx_size) {
           if (out.has_value()) {
             std::abort();
@@ -44,13 +46,21 @@ struct Join {
   }
 };
 template<typename... TRanges>
-Join(TRanges&&...) -> Join<TRanges...>;
+JoinView(TRanges&&...) -> JoinView<TRanges...>;
 
 template<typename... TRanges>
 requires(sizeof...(TRanges) > 0)
 inline constexpr auto joined(TRanges&&... ranges) {
-  return Join{std::forward<TRanges>(ranges)...};
+  return JoinView{Tuple{std::forward<TRanges>(ranges)...}};
 }
+
+struct JoinGenerator : public RangeGeneratorBase {
+  template<typename TRanges>
+  constexpr JoinView<TRanges> operator()(TRanges&& range) const {
+    return {std::forward<TRanges>(range)};
+  }
+};
+inline constexpr JoinGenerator join;
 } // namespace thes::star
 
 #endif // INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_RANGES_JOIN_HPP

@@ -25,9 +25,9 @@
 #include "utility/static-capacity-string.hpp" // IWYU pragma: export
 #include "utility/static-map.hpp" // IWYU pragma: export
 #include "utility/static-ranges/definitions/concepts.hpp" // IWYU pragma: export
-#include "utility/static-ranges/definitions/element-type.hpp" // IWYU pragma: export
 #include "utility/static-ranges/definitions/get-at.hpp" // IWYU pragma: export
 #include "utility/static-ranges/definitions/size.hpp" // IWYU pragma: export
+#include "utility/static-ranges/definitions/type-traits.hpp" // IWYU pragma: export
 #include "utility/static-ranges/generators/combined.hpp" // IWYU pragma: export
 #include "utility/static-ranges/piping.hpp" // IWYU pragma: export
 #include "utility/static-ranges/ranges/constant.hpp" // IWYU pragma: export

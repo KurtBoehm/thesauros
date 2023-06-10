@@ -6,8 +6,8 @@
 
 #include "thesauros/math/arithmetic.hpp"
 #include "thesauros/utility/inlining.hpp"
-#include "thesauros/utility/static-ranges/definitions/element-type.hpp"
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
+#include "thesauros/utility/static-ranges/definitions/type-traits.hpp"
 #include "thesauros/utility/value-tag.hpp"
 
 namespace thes {
@@ -30,7 +30,7 @@ template<IterDirection tDirection, typename TSizes, typename TTileSizes, typenam
          typename TFun>
 inline constexpr void for_each_tile(const TSizes& sizes, const TTileSizes& tile_sizes,
                                     const TFixedAxes& fixed_axes, TFun&& fun) {
-  using Size = star::ElementType<TSizes>;
+  using Size = star::Value<TSizes>;
   constexpr std::size_t dim_num = star::size<TSizes>;
 
   if constexpr (dim_num == 0) {
@@ -68,8 +68,8 @@ inline constexpr void for_each_tile(const TSizes& sizes, const TTileSizes& tile_
 
 template<IterDirection tDirection, typename TRanges, typename TFun>
 inline constexpr void iterate_tile(const auto& multi_size, const TRanges& ranges, TFun&& fun) {
-  using Range = star::ElementType<TRanges>;
-  using Size = star::ElementType<Range>;
+  using Range = star::Value<TRanges>;
+  using Size = star::Value<Range>;
   constexpr std::size_t dim_num = star::size<TRanges>;
 
   auto impl = [&](auto dim, auto rec, auto index, auto... args) THES_ALWAYS_INLINE {

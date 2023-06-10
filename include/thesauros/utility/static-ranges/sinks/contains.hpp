@@ -9,10 +9,12 @@
 
 namespace thes::star {
 template<typename TValue>
-struct ContainsGenerator {
+struct ContainsGenerator : public ConsumerGeneratorBase {
   using Value = std::decay_t<TValue>;
 
   TValue value;
+
+  explicit constexpr ContainsGenerator(TValue&& value) : value(std::forward<TValue>(value)) {}
 
   template<typename TRange>
   constexpr bool operator()(TRange&& range) const {
@@ -27,12 +29,10 @@ struct ContainsGenerator {
     })(std::forward<TRange>(range));
   }
 };
-template<typename TValue>
-struct ConsumerGeneratorTrait<ContainsGenerator<TValue>> : public std::true_type {};
 
 template<typename TValue>
-inline constexpr ContainsGenerator<TValue> contains(TValue&& value) {
-  return {std::forward<TValue>(value)};
+inline constexpr auto contains(TValue&& value) {
+  return ContainsGenerator<TValue>{std::forward<TValue>(value)};
 }
 } // namespace thes::star
 

@@ -18,10 +18,13 @@ concept IsStaticRange =
     return (... && SupportsGetAt<TRange, tIdxs>);
   }(std::make_index_sequence<size<TRange>>{});
 
+struct RangeGeneratorBase {};
 template<typename TGen>
-struct RangeGeneratorTrait : std::false_type {};
+struct RangeGeneratorTrait : std::is_base_of<RangeGeneratorBase, TGen> {};
+
+struct ConsumerGeneratorBase {};
 template<typename TGen>
-struct ConsumerGeneratorTrait : std::false_type {};
+struct ConsumerGeneratorTrait : std::is_base_of<ConsumerGeneratorBase, TGen> {};
 
 template<typename TGen>
 concept IsRangeGenerator = RangeGeneratorTrait<std::decay_t<TGen>>::value;

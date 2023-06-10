@@ -10,7 +10,7 @@
 
 namespace thes::star {
 template<typename TContainer>
-struct ToContainerGenerator {
+struct ToContainerGenerator : public ConsumerGeneratorBase {
   template<typename TRange>
   constexpr auto operator()(TRange&& range) const {
     return [&]<std::size_t... tIdxs>(std::index_sequence<tIdxs...> /*idxd*/) {
@@ -18,8 +18,6 @@ struct ToContainerGenerator {
     }(std::make_index_sequence<size<TRange>>{});
   }
 };
-template<typename TContainer>
-struct ConsumerGeneratorTrait<ToContainerGenerator<TContainer>> : public std::true_type {};
 
 template<typename TContainer>
 inline constexpr ToContainerGenerator<TContainer> to_container{};

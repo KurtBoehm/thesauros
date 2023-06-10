@@ -24,14 +24,12 @@ struct EnumerateView {
 };
 
 template<typename TSize>
-struct EnumerateGenerator {
+struct EnumerateGenerator : public RangeGeneratorBase {
   template<typename TRange>
   constexpr EnumerateView<TSize, TRange> operator()(TRange&& range) const {
     return {std::forward<TRange>(range)};
   }
 };
-template<typename TSize>
-struct RangeGeneratorTrait<EnumerateGenerator<TSize>> : public std::true_type {};
 
 template<typename TSize = std::size_t>
 inline constexpr EnumerateGenerator<TSize> enumerate{};

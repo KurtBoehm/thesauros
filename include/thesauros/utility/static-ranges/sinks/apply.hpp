@@ -11,8 +11,10 @@
 
 namespace thes::star {
 template<typename TOp>
-struct ApplyGenerator {
+struct ApplyGenerator : public ConsumerGeneratorBase {
   TOp op;
+
+  explicit constexpr ApplyGenerator(TOp&& op) : op(std::forward<TOp>(op)) {}
 
   template<typename TRange>
   constexpr decltype(auto) operator()(TRange&& range) const {
@@ -23,12 +25,10 @@ struct ApplyGenerator {
              }(std::make_index_sequence<size>{});
   }
 };
-template<typename TOp>
-struct ConsumerGeneratorTrait<ApplyGenerator<TOp>> : public std::true_type {};
 
 template<typename TOp>
-inline constexpr ApplyGenerator<TOp> apply(TOp&& op) {
-  return {std::forward<TOp>(op)};
+inline constexpr auto apply(TOp&& op) {
+  return ApplyGenerator<TOp>{std::forward<TOp>(op)};
 }
 } // namespace thes::star
 

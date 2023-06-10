@@ -5,13 +5,13 @@
 #include <cstddef>
 #include <utility>
 
-#include "thesauros/utility/static-ranges/definitions/element-type.hpp"
 #include "thesauros/utility/static-ranges/definitions/get-at.hpp"
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
+#include "thesauros/utility/static-ranges/definitions/type-traits.hpp"
 
 namespace thes::star {
 template<typename TPos, typename TProds>
-requires(std::same_as<star::ElementType<TPos>, star::ElementType<TProds>> &&
+requires(std::same_as<star::Value<TPos>, star::Value<TProds>> &&
          star::size<TPos> + 1 == star::size<TProds>)
 inline constexpr auto position_to_index(const TPos& pos, const TProds& incl_postfix_products) {
   constexpr auto size = star::size<TPos>;

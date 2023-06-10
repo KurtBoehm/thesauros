@@ -22,14 +22,12 @@ struct ReversedView {
   }
 };
 
-struct ReversedGenerator {
+struct ReversedGenerator : public RangeGeneratorBase {
   template<typename TRange>
   constexpr ReversedView<TRange> operator()(TRange&& range) const {
     return {std::forward<TRange>(range)};
   }
 };
-template<>
-struct RangeGeneratorTrait<ReversedGenerator> : public std::true_type {};
 
 inline constexpr ReversedGenerator reversed{};
 } // namespace thes::star

@@ -8,15 +8,15 @@
 #include <utility>
 
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"
-#include "thesauros/utility/static-ranges/definitions/element-type.hpp"
 #include "thesauros/utility/static-ranges/definitions/get-at.hpp"
+#include "thesauros/utility/static-ranges/definitions/type-traits.hpp"
 
 namespace thes::star {
-struct HasUniqueValueGenerator {
+struct HasUniqueValueGenerator : public ConsumerGeneratorBase {
   template<typename TRange>
   constexpr bool operator()(TRange&& range) const {
     constexpr std::size_t size = star::size<TRange>;
-    if constexpr (size == 0 || !HasSingleElementType<TRange>) {
+    if constexpr (size == 0 || !HasValue<TRange>) {
       return false;
     } else {
       return [&]<std::size_t... tIdxs>(std::index_sequence<tIdxs...>) {
@@ -25,23 +25,19 @@ struct HasUniqueValueGenerator {
     }
   }
 };
-template<>
-struct ConsumerGeneratorTrait<HasUniqueValueGenerator> : public std::true_type {};
 
 inline constexpr HasUniqueValueGenerator has_unique_value{};
 
-struct UniqueValueGenerator {
+struct UniqueValueGenerator : public ConsumerGeneratorBase {
   template<typename TRange>
-  requires HasSingleElementType<TRange>
-  constexpr std::optional<ElementType<TRange>> operator()(TRange&& range) const {
+  requires HasValue<TRange>
+  constexpr std::optional<Value<TRange>> operator()(TRange&& range) const {
     if (has_unique_value(range)) {
       return get_at<0>(range);
     }
     return std::nullopt;
   }
 };
-template<>
-struct ConsumerGeneratorTrait<UniqueValueGenerator> : public std::true_type {};
 
 inline constexpr UniqueValueGenerator unique_value{};
 } // namespace thes::star

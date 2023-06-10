@@ -28,17 +28,15 @@ struct FilterView {
 };
 
 template<auto tIdxRange>
-struct FilterGenerator {
+struct FilterGenerator : public RangeGeneratorBase {
   template<typename TRange>
   constexpr FilterView<TRange, tIdxRange> operator()(TRange&& range) const {
     return {std::forward<TRange>(range)};
   }
 };
-template<auto tIdxRange>
-struct RangeGeneratorTrait<FilterGenerator<tIdxRange>> : public std::true_type {};
 
 template<auto tIdxRange>
-struct AllExceptGenerator {
+struct AllExceptGenerator : public RangeGeneratorBase {
   template<typename TRange>
   constexpr auto operator()(TRange&& range) const {
     constexpr std::size_t range_size = star::size<TRange>;
@@ -65,8 +63,6 @@ struct AllExceptGenerator {
     return FilterView<TRange, idxs>{std::forward<TRange>(range)};
   }
 };
-template<auto tIdxRange>
-struct RangeGeneratorTrait<AllExceptGenerator<tIdxRange>> : public std::true_type {};
 
 template<std::size_t... tIdxs>
 inline constexpr FilterGenerator<std::array<std::size_t, sizeof...(tIdxs)>{tIdxs...}> only_idxs{};

@@ -12,7 +12,7 @@
 #include "thesauros/utility/static-ranges/sinks/reduce.hpp"
 
 namespace thes::star {
-struct AllDifferentGenerator {
+struct AllDifferentGenerator : public ConsumerGeneratorBase {
   template<typename TRange>
   constexpr bool operator()(TRange&& range) const {
     constexpr std::size_t size = star::size<TRange>;
@@ -24,8 +24,6 @@ struct AllDifferentGenerator {
            star::left_reduce(std::logical_and<>{}, true);
   }
 };
-template<>
-struct ConsumerGeneratorTrait<AllDifferentGenerator> : public std::true_type {};
 
 inline constexpr AllDifferentGenerator all_different{};
 } // namespace thes::star
