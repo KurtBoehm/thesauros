@@ -22,7 +22,8 @@ using VoidStorage = VoidStorageTrait<T>::Type;
 template<typename T>
 using VoidStorageCref = VoidStorageTrait<T>::Cref;
 template<typename T>
-inline constexpr VoidStorageTrait<T>::Rvalue void_storage_rvalue(const T& value) {
+inline constexpr VoidStorageTrait<T>::Rvalue
+void_storage_rvalue(const typename VoidStorageTrait<T>::Type& value) {
   return value;
 }
 } // namespace thes
