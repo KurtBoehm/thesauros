@@ -220,10 +220,10 @@ inline constexpr std::array fg_bright_rainbow{fmt::fg_bright_red,   fmt::fg_brig
                                               fmt::fg_bright_green, fmt::fg_bright_cyan,
                                               fmt::fg_bright_blue,  fmt::fg_bright_magenta};
 inline constexpr Foreground rainbow_fg(std::size_t idx) {
-  return fg_rainbow[idx];
+  return fg_rainbow[idx % fg_rainbow.size()];
 }
 inline constexpr Foreground bright_rainbow_fg(std::size_t idx) {
-  return fg_bright_rainbow[idx];
+  return fg_bright_rainbow[idx % fg_bright_rainbow.size()];
 }
 
 inline constexpr Background bg_none{Colour::NONE};
