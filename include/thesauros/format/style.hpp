@@ -1,7 +1,9 @@
 #ifndef INCLUDE_THESAUROS_FORMAT_STYLE_HPP
 #define INCLUDE_THESAUROS_FORMAT_STYLE_HPP
 
+#include <array>
 #include <concepts>
+#include <cstddef>
 #include <cstdint>
 #include <ostream>
 #include <unordered_map>
@@ -211,6 +213,18 @@ inline constexpr Foreground fg_bright_blue{Colour::BRIGHT_BLUE};
 inline constexpr Foreground fg_bright_magenta{Colour::BRIGHT_MAGENTA};
 inline constexpr Foreground fg_bright_cyan{Colour::BRIGHT_CYAN};
 inline constexpr Foreground fg_bright_white{Colour::BRIGHT_WHITE};
+
+inline constexpr std::array fg_rainbow{fmt::fg_red,  fmt::fg_yellow, fmt::fg_green,
+                                       fmt::fg_cyan, fmt::fg_blue,   fmt::fg_magenta};
+inline constexpr std::array fg_bright_rainbow{fmt::fg_bright_red,   fmt::fg_bright_yellow,
+                                              fmt::fg_bright_green, fmt::fg_bright_cyan,
+                                              fmt::fg_bright_blue,  fmt::fg_bright_magenta};
+inline constexpr Foreground rainbow_fg(std::size_t idx) {
+  return fg_rainbow[idx];
+}
+inline constexpr Foreground bright_rainbow_fg(std::size_t idx) {
+  return fg_bright_rainbow[idx];
+}
 
 inline constexpr Background bg_none{Colour::NONE};
 inline constexpr Background bg_black{Colour::BLACK};
