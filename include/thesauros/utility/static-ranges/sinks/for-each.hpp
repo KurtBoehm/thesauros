@@ -19,7 +19,7 @@ struct ForEachGenerator : public ConsumerGeneratorBase {
   constexpr auto operator()(TRange&& range) const {
     constexpr std::size_t size = thes::star::size<TRange>;
     return [this, &range]<std::size_t... tIdxs>(std::index_sequence<tIdxs...> /*idxs*/) {
-      return (op(get_at<tIdxs>(range)), ...);
+      (op(get_at<tIdxs>(range)), ...);
     }(std::make_index_sequence<size>{});
   }
 };
