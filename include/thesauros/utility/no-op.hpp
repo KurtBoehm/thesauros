@@ -5,7 +5,7 @@
 
 namespace thes {
 struct NoOp {
-  constexpr void operator()() const noexcept {}
+  constexpr void operator()(const auto&...) const noexcept {}
 };
 template<typename TOp>
 struct AnyNoOpTrait : public std::false_type {};
