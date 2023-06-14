@@ -63,6 +63,7 @@
 #include "utility/typed-integer.hpp" // IWYU pragma: export
 #include "utility/unicode.hpp" // IWYU pragma: export
 #include "utility/unwrap.hpp" // IWYU pragma: export
+#include "utility/value-optional.hpp" // IWYU pragma: export
 #include "utility/value-tag.hpp" // IWYU pragma: export
 #include "utility/void-macros.hpp" // IWYU pragma: export
 #include "utility/void-storage.hpp" // IWYU pragma: export

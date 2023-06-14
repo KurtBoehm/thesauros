@@ -10,8 +10,8 @@ struct ValueOptional {
   static constexpr Value empty_value = tEmpty;
 
   constexpr ValueOptional() = default;
-  constexpr explicit ValueOptional(const Value& value) : value_{value} {}
-  constexpr explicit ValueOptional(Value&& value) : value_{std::forward<Value>(value)} {}
+  explicit constexpr ValueOptional(const Value& value) : value_{value} {}
+  explicit constexpr ValueOptional(Value&& value) : value_{std::forward<Value>(value)} {}
 
   void clear() {
     value_ = empty_value;
