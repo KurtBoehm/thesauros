@@ -16,6 +16,7 @@
 #include "utility/move-detector.hpp" // IWYU pragma: export
 #include "utility/multi-bit-reference.hpp" // IWYU pragma: export
 #include "utility/multi-size.hpp" // IWYU pragma: export
+#include "utility/no-op.hpp" // IWYU pragma: export
 #include "utility/numeric-info.hpp" // IWYU pragma: export
 #include "utility/numeric-string.hpp" // IWYU pragma: export
 #include "utility/parse-integer.hpp" // IWYU pragma: export
