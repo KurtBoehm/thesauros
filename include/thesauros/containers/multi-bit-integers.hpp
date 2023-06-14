@@ -44,6 +44,9 @@ struct MultiBitIntegers {
     constexpr void set_bit(Chunk index, bool value) {
       chunk = thes::set_bit<Chunk>(chunk, index + offset, value);
     }
+    constexpr bool get_bit(Chunk index) {
+      return thes::get_bit<Chunk>(chunk, index + offset);
+    }
 
     [[nodiscard]] constexpr operator Chunk() const {
       return (chunk >> offset) & mask;

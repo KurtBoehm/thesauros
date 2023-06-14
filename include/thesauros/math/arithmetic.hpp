@@ -90,10 +90,13 @@ inline consteval unsigned abs_log_ceil(T base, T num) {
   return out + 1;
 }
 
-template<typename T>
-requires std::unsigned_integral<T>
+template<std::unsigned_integral T>
 inline constexpr T set_bit(T value, T bit_index, bool bit_value) {
   return (value & T(~(T{1} << bit_index))) + (T{bit_value} << bit_index);
+}
+template<std::unsigned_integral T>
+inline constexpr bool get_bit(T value, T bit_index) {
+  return value & T(T{1} << bit_index);
 }
 
 // Computes floor(x^(1/n)) precisely. The complexity is Θ(log2(x)/n).
