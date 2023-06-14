@@ -15,15 +15,15 @@ template<typename TValue, typename TAllocator, typename TInitPolicy>
 struct FixedArray {
   using Data = array::TypedChunk<TValue, std::size_t, TAllocator>;
 
-  using Value = typename Data::Value;
-  using Size = typename Data::Size;
-  using Allocator = typename Data::Allocator;
+  using Value = Data::Value;
+  using Size = Data::Size;
+  using Allocator = Data::Allocator;
 
   using value_type = Value;
   using size_type = Size;
 
-  using iterator = typename Data::iterator;
-  using const_iterator = typename Data::const_iterator;
+  using iterator = Data::iterator;
+  using const_iterator = Data::const_iterator;
 
   using InitPolicy = TInitPolicy;
 
@@ -189,8 +189,8 @@ struct FixedArrayDefault : public FixedArray<TValue, TAlloc, array::DefaultInitP
 template<typename TValue, typename TAlloc = std::allocator<TValue>>
 struct FixedArrayUninit : public FixedArray<TValue, TAlloc, array::NoInitPolicy> {
   using Parent = FixedArray<TValue, TAlloc, array::NoInitPolicy>;
-  using Size = typename Parent::Size;
-  using Value = typename Parent::Value;
+  using Size = Parent::Size;
+  using Value = Parent::Value;
 
   using Parent::Parent;
 

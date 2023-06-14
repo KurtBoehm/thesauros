@@ -17,7 +17,7 @@ template<typename TApp>
 concept Applier = StyleApplier<TApp> || StreamApplier<TApp>;
 
 struct FormatContext {
-  using FmtFlags = typename std::ios_base::fmtflags;
+  using FmtFlags = std::ios_base::fmtflags;
   using StreamSize = std::streamsize;
 
   StyleContext style;

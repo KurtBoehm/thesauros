@@ -23,8 +23,8 @@ template<typename T>
 requires(requires { typename T::TypeInfo; })
 struct TypeInfo<T> {
   using Type = T;
-  using Info = typename Type::TypeInfo;
-  using Members = typename Info::Members;
+  using Info = Type::TypeInfo;
+  using Members = Info::Members;
 
   static constexpr auto name = Info::name;
   static constexpr auto serial_name = Info::serial_name;

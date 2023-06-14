@@ -37,7 +37,7 @@ struct S {
 
 using Blocked = thes::BlockedDynamicArray<S>;
 using Nested = thes::NestedDynamicArray<S>;
-using NestedBuilder = typename Nested::NestedBuilder;
+using NestedBuilder = Nested::NestedBuilder;
 
 int main() {
   Blocked vec(8);

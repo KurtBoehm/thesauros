@@ -14,15 +14,15 @@ template<typename TValue, typename TAllocator = std::allocator<TValue>>
 struct FixedAllocArray {
   using Data = array::TypedChunk<TValue, std::size_t, TAllocator>;
 
-  using Value = typename Data::Value;
-  using Size = typename Data::Size;
-  using Allocator = typename Data::Allocator;
+  using Value = Data::Value;
+  using Size = Data::Size;
+  using Allocator = Data::Allocator;
 
   using value_type = Value;
   using size_type = Size;
 
-  using iterator = typename Data::iterator;
-  using const_iterator = typename Data::const_iterator;
+  using iterator = Data::iterator;
+  using const_iterator = Data::const_iterator;
 
   constexpr FixedAllocArray() = default;
   explicit constexpr FixedAllocArray(const Allocator& alloc) : allocation_(alloc) {}

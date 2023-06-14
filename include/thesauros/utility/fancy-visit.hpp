@@ -65,8 +65,8 @@ struct FancyVisitor {
   };
 
   template<typename TTup>
-  using FunReturnType = typename std::conditional_t<tWithMaker, TaggedFunReturnType<TTup>,
-                                                    BareFunReturnType<TTup>>::Type;
+  using FunReturnType =
+    std::conditional_t<tWithMaker, TaggedFunReturnType<TTup>, BareFunReturnType<TTup>>::Type;
 
   template<typename TTup>
   struct MakeReturn;
@@ -113,7 +113,7 @@ struct FancyVisitor {
   struct ReturnFilter : std::bool_constant<!std::is_same_v<T, FancyVisitorIgnore>> {};
   using ReturnTup = UniqueTypeSeq<FilteredTypeSeq<BaseReturnTup, ReturnFilter>>;
 
-  using Return = typename MakeReturn<ReturnTup>::Type;
+  using Return = MakeReturn<ReturnTup>::Type;
 
   static constexpr Maker<ReturnTup> construct_in_place{};
 

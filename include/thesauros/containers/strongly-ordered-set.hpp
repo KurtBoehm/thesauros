@@ -17,8 +17,8 @@ struct StronglyOrderedSet {
   using Data = DynamicArrayDefault<TValue, TAllocator>;
 
   using value_type = Value;
-  using iterator = typename Data::const_iterator;
-  using const_iterator = typename Data::const_iterator;
+  using iterator = Data::const_iterator;
+  using const_iterator = Data::const_iterator;
 
   StronglyOrderedSet() = default;
 

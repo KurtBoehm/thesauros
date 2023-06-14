@@ -40,15 +40,15 @@ template<typename TValue, typename TAllocator, typename TInitPolicy, typename TG
 struct DynamicArray {
   using Data = array::TypedChunk<TValue, std::size_t, TAllocator>;
 
-  using Value = typename Data::Value;
-  using Size = typename Data::Size;
-  using Allocator = typename Data::Allocator;
+  using Value = Data::Value;
+  using Size = Data::Size;
+  using Allocator = Data::Allocator;
 
   using value_type = Value;
   using size_type = Size;
 
-  using iterator = typename Data::iterator;
-  using const_iterator = typename Data::const_iterator;
+  using iterator = Data::iterator;
+  using const_iterator = Data::const_iterator;
 
   using InitPolicy = TInitPolicy;
   using GrowthPolicy = TGrowthPolicy;
@@ -337,8 +337,8 @@ template<typename TValue, typename TAlloc = std::allocator<TValue>>
 struct DynamicArrayUninit
     : public DynamicArray<TValue, TAlloc, array::NoInitPolicy, array::DoublingGrowthPolicy> {
   using Parent = DynamicArray<TValue, TAlloc, array::NoInitPolicy, array::DoublingGrowthPolicy>;
-  using Size = typename Parent::size_type;
-  using Value = typename Parent::value_type;
+  using Size = Parent::size_type;
+  using Value = Parent::value_type;
 
   using Parent::Parent;
 

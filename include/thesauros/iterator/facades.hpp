@@ -42,19 +42,19 @@ namespace thes {
 // available.
 template<typename TDerived, typename TProvider>
 struct IteratorFacade {
-  using IterTypes = typename TProvider::IterTypes;
+  using IterTypes = TProvider::IterTypes;
 
   /** @brief The type of value accessed through the iter. */
-  using value_type = typename IterTypes::IterValue;
+  using value_type = IterTypes::IterValue;
   /** @brief The type of the reference to a value. */
-  using reference = typename IterTypes::IterRef;
+  using reference = IterTypes::IterRef;
   /** @brief The type of the pointer to a value. */
-  using pointer = typename IterTypes::IterPtr;
+  using pointer = IterTypes::IterPtr;
   /** @brief The type of the difference between two iters. */
-  using difference_type = typename IterTypes::IterDiff;
+  using difference_type = IterTypes::IterDiff;
 
   static constexpr bool has_state = requires { typename TProvider::FacadeState; };
-  using State = typename decltype([] {
+  using State = decltype([] {
     if constexpr (has_state) {
       return type_tag<typename TProvider::FacadeState>;
     } else {

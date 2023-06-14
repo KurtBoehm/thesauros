@@ -37,7 +37,7 @@ template<typename... TPairs>
 requires(TypeSeq<typename TPairs::Key...>::is_unique && Tuple{TPairs::key...} | star::all_different)
 struct StaticMap<TPairs...> {
   using Tuple = ::thes::Tuple<TPairs...>;
-  using Key = typename TypeSeq<typename TPairs::Key...>::Unique;
+  using Key = TypeSeq<typename TPairs::Key...>::Unique;
 
   template<Key tKey>
   static constexpr bool contains = [] {

@@ -46,7 +46,7 @@ struct bit;
 
 template<typename TMultiple, typename TBaseUnit>
 struct Unit {
-  using Multiple = typename TMultiple::type;
+  using Multiple = TMultiple::type;
   using BaseUnit = TBaseUnit;
 
   using Type = Unit<Multiple, BaseUnit>;
@@ -144,7 +144,7 @@ struct UnitRatioTrait<Unit<TMul1, TBUnit>, Unit<TMul2, TBUnit>> {
   using Type = std::ratio_divide<TMul1, TMul2>;
 };
 template<typename TU1, typename TU2>
-using UnitRatio = typename UnitRatioTrait<TU1, TU2>::Type;
+using UnitRatio = UnitRatioTrait<TU1, TU2>::Type;
 
 template<typename TRep, typename TUnit>
 struct IsBaseUnitQuantityTrait : std::false_type {};
@@ -154,8 +154,8 @@ struct IsBaseUnitQuantityTrait<Quantity<TRep, Unit<TMul, TBUnit>>, TBUnit> : std
 template<typename TOutQuant, typename TRep, typename TMul, typename TBUnit>
 requires IsBaseUnitQuantityTrait<TOutQuant, TBUnit>::value
 inline constexpr TOutQuant quantity_cast(const Quantity<TRep, Unit<TMul, TBUnit>>& sc) {
-  using ToMultiple = typename TOutQuant::Unit::Multiple;
-  using ToRep = typename TOutQuant::Rep;
+  using ToMultiple = TOutQuant::Unit::Multiple;
+  using ToRep = TOutQuant::Rep;
   using CMul = std::ratio_divide<TMul, ToMultiple>;
   using CRep = std::common_type_t<ToRep, TRep, std::intmax_t>;
 
@@ -187,7 +187,7 @@ struct common_type<thes::Quantity<TRep1, thes::Unit<TMul1, TBUnit>>,
   static constexpr auto gcd_num = std::gcd(TMul1::num, TMul2::num);
   static constexpr auto gcd_den = std::gcd(TMul1::den, TMul2::den);
   using CRep = std::common_type_t<TRep1, TRep2>;
-  using Ratio = typename std::ratio<gcd_num, (TMul1::den / gcd_den) * TMul2::den>::type;
+  using Ratio = std::ratio<gcd_num, (TMul1::den / gcd_den) * TMul2::den>::type;
 
   using type = thes::Quantity<CRep, thes::Unit<Ratio, TBUnit>>;
 };

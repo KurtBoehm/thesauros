@@ -54,8 +54,8 @@ struct StronglyOrderedMap {
   using Data = DynamicArrayDefault<Value, TAllocator>;
 
   using value_type = Value;
-  using iterator = typename Data::iterator;
-  using const_iterator = typename Data::const_iterator;
+  using iterator = Data::iterator;
+  using const_iterator = Data::const_iterator;
 
   StronglyOrderedMap() = default;
 

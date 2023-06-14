@@ -25,7 +25,7 @@ struct MultiByteIntegers {
                   std::endian::native == std::endian::big,
                 "Only big and little endian systems are supported!");
 
-  using Value = typename TByteInt::Unsigned;
+  using Value = TByteInt::Unsigned;
   using Size = std::size_t;
 
   using value_type = Value;

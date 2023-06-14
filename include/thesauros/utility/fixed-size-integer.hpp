@@ -37,9 +37,9 @@ struct FixedIntTrait<16> {
 };
 
 template<std::size_t tByteNum>
-using FixedUnsignedInt = typename FixedIntTrait<tByteNum>::Unsigned;
+using FixedUnsignedInt = FixedIntTrait<tByteNum>::Unsigned;
 template<std::size_t tByteNum>
-using FixedSignedInt = typename FixedIntTrait<tByteNum>::Signed;
+using FixedSignedInt = FixedIntTrait<tByteNum>::Signed;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_UTILITY_FIXED_SIZE_INTEGER_HPP

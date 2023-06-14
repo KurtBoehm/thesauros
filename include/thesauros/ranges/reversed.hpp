@@ -8,8 +8,8 @@ namespace thes {
 template<typename TRange>
 struct ReverseRange {
   using Range = std::decay_t<TRange>;
-  using value_type = typename Range::value_type;
-  using const_iterator = typename Range::const_reverse_iterator;
+  using value_type = Range::value_type;
+  using const_iterator = Range::const_reverse_iterator;
 
   explicit constexpr ReverseRange(TRange&& container)
       : container_(std::forward<TRange>(container)) {}

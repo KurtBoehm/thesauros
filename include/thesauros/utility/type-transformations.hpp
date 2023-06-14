@@ -15,7 +15,7 @@ struct AddConstTrait<T&> {
   using Type = const T&;
 };
 template<typename T>
-using AddConst = typename AddConstTrait<T>::Type;
+using AddConst = AddConstTrait<T>::Type;
 
 template<bool tConst, typename T>
 using ConditionalConst = std::conditional_t<tConst, const T, T>;
@@ -40,7 +40,7 @@ struct UnionTrait<T, T> {
 template<typename T1, typename T2, typename... Ts>
 requires(sizeof...(Ts) > 0)
 struct UnionTrait<T1, T2, Ts...> {
-  using Type = typename UnionTrait<typename UnionTrait<T1, T2>::Type, Ts...>::Type;
+  using Type = UnionTrait<typename UnionTrait<T1, T2>::Type, Ts...>::Type;
 };
 
 template<typename T1, typename T2>
@@ -61,7 +61,7 @@ struct UnionTrait<T1, T2> {
 };
 
 template<typename... Ts>
-using Union = typename UnionTrait<Ts...>::Type;
+using Union = UnionTrait<Ts...>::Type;
 
 template<typename... Ts>
 struct IntersectionTrait;
@@ -77,7 +77,7 @@ struct IntersectionTrait<T, T> {
 template<typename T1, typename T2, typename... Ts>
 requires(sizeof...(Ts) > 0)
 struct IntersectionTrait<T1, T2, Ts...> {
-  using Type = typename IntersectionTrait<typename IntersectionTrait<T1, T2>::Type, Ts...>::Type;
+  using Type = IntersectionTrait<typename IntersectionTrait<T1, T2>::Type, Ts...>::Type;
 };
 
 template<typename T1, typename T2>
@@ -98,7 +98,7 @@ struct IntersectionTrait<T1, T2> {
 };
 
 template<typename... Ts>
-using Intersection = typename IntersectionTrait<Ts...>::Type;
+using Intersection = IntersectionTrait<Ts...>::Type;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_UTILITY_TYPE_TRANSFORMATIONS_HPP

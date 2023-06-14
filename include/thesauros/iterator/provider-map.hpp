@@ -17,10 +17,10 @@ namespace thes::iter_provider {
 //   * This is called when comparing instances and is intended for assertions.
 template<typename TStateProvider, typename TDerived>
 struct Map {
-  using IterTypes = typename TStateProvider::IterTypes;
-  using Ref = typename IterTypes::IterRef;
-  using Diff = typename IterTypes::IterDiff;
-  using State = typename IterTypes::IterState;
+  using IterTypes = TStateProvider::IterTypes;
+  using Ref = IterTypes::IterRef;
+  using Diff = IterTypes::IterDiff;
+  using State = IterTypes::IterState;
 
   static constexpr Ref deref(const auto& self) {
     return TStateProvider::deref(self);

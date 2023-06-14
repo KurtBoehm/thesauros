@@ -55,8 +55,8 @@ struct FlattenType {
 
 template<typename T>
 struct FlattenType<std::optional<T>> {
-  using Type = typename impl::OptionalVariantTrait<decltype(FlattenType<T>::flatten(
-    std::declval<T&&>()))>::Type;
+  using Type =
+    impl::OptionalVariantTrait<decltype(FlattenType<T>::flatten(std::declval<T&&>()))>::Type;
 
   static constexpr Type flatten(std::optional<T>&& value) {
     if (value.has_value()) {
@@ -148,8 +148,8 @@ inline constexpr decltype(auto) flatten_type(T&& value) {
 
 #define THES_DEFINE_FLATTEN_TYPE_IMPL(VARIANT_MEMBERS, TEMPLATE_PARAMS) \
   constexpr auto flatten()&& { \
-    using Self = typename TypeInfo::Type; \
-    using MemberInfos = typename TypeInfo::Members; \
+    using Self = TypeInfo::Type; \
+    using MemberInfos = TypeInfo::Members; \
     constexpr auto member_infos = TypeInfo::members; \
 \
     constexpr std::tuple variant_members{ \
@@ -175,7 +175,7 @@ inline constexpr decltype(auto) flatten_type(T&& value) {
       [&]<BOOST_PP_LIST_FOR_EACH_I(THES_POLIS_FLATTEN_TYPE_LAMBDA_TYPENAME, TYPENAME, \
                                    VARIANT_MEMBERS)>( \
         BOOST_PP_LIST_FOR_EACH_I(THES_POLIS_FLATTEN_TYPE_PARAM, TYPENAME, VARIANT_MEMBERS)) { \
-        using Out = typename TypeInfo::template TemplateType<BOOST_PP_LIST_FOR_EACH_I( \
+        using Out = TypeInfo::template TemplateType<BOOST_PP_LIST_FOR_EACH_I( \
           THES_POLIS_FLATTEN_TYPE_TYPENAME, TYPENAME, TEMPLATE_PARAMS)>; \
 \
         using Visited = std::tuple<BOOST_PP_LIST_FOR_EACH_I(THES_POLIS_FLATTEN_TYPE_VISITED_TYPES, \

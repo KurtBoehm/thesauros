@@ -23,11 +23,11 @@ struct ValueSeqTrait {
     using Type = TypeSeq<std::decay_t<decltype(get_at<tIdxs>(std::declval<const TRange&>()))>...>;
   };
 
-  using Type = typename Impl<std::make_index_sequence<size<TRange>>>::Type;
+  using Type = Impl<std::make_index_sequence<size<TRange>>>::Type;
 };
 
 template<typename TRange>
-using ValueSeq = typename ValueSeqTrait<TRange>::Type;
+using ValueSeq = ValueSeqTrait<TRange>::Type;
 
 namespace detail {
 template<typename TRange>
@@ -44,21 +44,21 @@ struct ValueTrait;
 template<typename TRange>
 requires detail::HasValue<TRange>
 struct ValueTrait<TRange> {
-  using Type = typename TRange::Value;
+  using Type = TRange::Value;
 };
 template<typename TRange>
 requires(!detail::HasValue<TRange> && detail::HasTypeValue<TRange>)
 struct ValueTrait<TRange> {
-  using Type = typename TRange::value_type;
+  using Type = TRange::value_type;
 };
 template<typename TRange>
 requires(!detail::HasValue<TRange> && !detail::HasTypeValue<TRange> && detail::HasElemType<TRange>)
 struct ValueTrait<TRange> {
-  using Type = typename ValueSeq<TRange>::Unique;
+  using Type = ValueSeq<TRange>::Unique;
 };
 
 template<typename TRange>
-using Value = typename ValueTrait<TRange>::Type;
+using Value = ValueTrait<TRange>::Type;
 
 template<typename TRange>
 concept HasValue = requires { typename Value<TRange>; };

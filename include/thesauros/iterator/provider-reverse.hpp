@@ -8,9 +8,9 @@
 namespace thes::iter_provider {
 template<typename TForwardProvider, typename TDerived>
 struct Reverse {
-  using IterTypes = typename TForwardProvider::IterTypes;
-  using Ref = typename IterTypes::IterRef;
-  using Diff = typename IterTypes::IterDiff;
+  using IterTypes = TForwardProvider::IterTypes;
+  using Ref = IterTypes::IterRef;
+  using Diff = IterTypes::IterDiff;
 
   static constexpr Ref deref(const auto& self)
   requires iter_provider::RevDeref<TDerived, TForwardProvider> ||
