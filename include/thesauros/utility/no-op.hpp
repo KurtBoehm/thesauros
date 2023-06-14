@@ -22,6 +22,7 @@ template<>
 struct NoOp<void> {
   constexpr void operator()(const auto&... /*args*/) const noexcept {}
 };
+NoOp() -> NoOp<void>;
 
 template<typename TOp>
 struct AnyNoOpTrait : public std::false_type {};

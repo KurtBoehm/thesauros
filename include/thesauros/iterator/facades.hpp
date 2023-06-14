@@ -44,13 +44,9 @@ template<typename TDerived, typename TProvider>
 struct IteratorFacade {
   using IterTypes = TProvider::IterTypes;
 
-  /** @brief The type of value accessed through the iter. */
   using value_type = IterTypes::IterValue;
-  /** @brief The type of the reference to a value. */
   using reference = IterTypes::IterRef;
-  /** @brief The type of the pointer to a value. */
   using pointer = IterTypes::IterPtr;
-  /** @brief The type of the difference between two iters. */
   using difference_type = IterTypes::IterDiff;
 
   static constexpr bool has_state = requires { typename TProvider::FacadeState; };

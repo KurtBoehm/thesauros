@@ -12,30 +12,23 @@
 #include "thesauros/containers/array/typed-chunk.hpp"
 
 namespace thes {
-/**
- * @brief A generic dynamic array class.
- *
- *  The initialization policy `IP` is used to initialize newly created elements when no constructor
- *  parameters are given, e.g. in the fixed-size constructor and `resize`.
- *
- *  Independently of the initialization policy, many functions (e.g. copy construction and
- *  assignment, destruction, `resize`, `push_back`, etc.) assume that all elements are in a state
- *  that permits copying or moving (depending on the operation), e.g. the elements
- *  need to have been constructed if they are of a class type.
- *  If a initialization policy that does not initialize its elements (e.g. `NoInitPolicy`)
- *  is used, it is the responsibility of the user to ensure that this assumption is true.
- *
- *  In any case, no helper function for initialization is provided, as such a function makes
- *  no sense if the elements are implicitly initialized by the initialization policy.
- *
- *  The growth policy `GP` determines the growth behaviour when e.g. `resize` or `push_back` are
- *  called.
- *
- * @tparam T The element type.
- * @tparam A The allocator type.
- * @tparam IP The initialization policy.
- * @tparam GP The growth policy.
- */
+// A generic dynamic array class.
+//
+// The initialization policy `IP` is used to initialize newly created elements when no constructor
+// parameters are given, e.g. in the fixed-size constructor and `resize`.
+//
+// Independently of the initialization policy, many functions (e.g. copy construction and
+// assignment, destruction, `resize`, `push_back`, etc.) assume that all elements are in a state
+// that permits copying or moving (depending on the operation), e.g. the elements
+// need to have been constructed if they are of a class type.
+// If a initialization policy that does not initialize its elements (e.g. `NoInitPolicy`)
+// is used, it is the responsibility of the user to ensure that this assumption is true.
+//
+// In any case, no helper function for initialization is provided, as such a function makes
+// no sense if the elements are implicitly initialized by the initialization policy.
+//
+// The growth policy `GP` determines the growth behaviour when e.g. `resize` or `push_back` are
+// called.
 template<typename TValue, typename TAllocator, typename TInitPolicy, typename TGrowthPolicy>
 struct DynamicArray {
   using Data = array::TypedChunk<TValue, std::size_t, TAllocator>;

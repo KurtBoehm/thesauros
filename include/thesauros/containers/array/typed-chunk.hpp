@@ -6,16 +6,10 @@
 #include <utility>
 
 namespace thes::array {
-/**
- * @brief A helper class managing a typed chunk of memory.
- *
- *  Note that managing the lifetime of elements is the responsibility of the user — elements are
- *  neither constructed or destroyed!
- *
- * @tparam T The type of the elements.
- * @tparam S The type used for sizes and indices.
- * @tparam A The allocator
- */
+// A helper class managing a typed chunk of memory.
+//
+// Note that managing the lifetime of elements is the responsibility of the user — elements are
+// neither constructed or destroyed!
 template<typename TValue, typename TSize, typename TAllocator>
 struct TypedChunk : public TAllocator {
   using Value = TValue;

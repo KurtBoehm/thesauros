@@ -24,7 +24,7 @@ struct IndexMarker {
   }
 
 private:
-  FixedBitset<8> data_;
+  FixedBitset<sizeof(std::size_t)> data_;
   const Size size_;
 };
 
@@ -47,7 +47,7 @@ struct OffsetIndexMarker {
   }
 
 private:
-  FixedBitset<8> data_;
+  FixedBitset<sizeof(std::size_t)> data_;
   const Size offset_;
   const Size size_;
 };
