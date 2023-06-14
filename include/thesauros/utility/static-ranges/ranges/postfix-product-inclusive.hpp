@@ -18,7 +18,7 @@ inline constexpr auto postfix_product_inclusive(const TRange& range) {
   constexpr std::size_t size = thes::star::size<TRange>;
 
   return iota<0, size + 1> | transform([&range](auto idx) {
-           return range | star::only_idxseq<iota<idx, size>> |
+           return range | star::only_range<iota<idx, size>> |
                   left_reduce(std::multiplies<>{}, Value{1});
          });
 }

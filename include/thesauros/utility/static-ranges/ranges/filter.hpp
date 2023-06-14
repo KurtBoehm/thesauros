@@ -67,12 +67,12 @@ struct AllExceptGenerator : public RangeGeneratorBase {
 template<std::size_t... tIdxs>
 inline constexpr FilterGenerator<std::array<std::size_t, sizeof...(tIdxs)>{tIdxs...}> only_idxs{};
 template<auto tIdxRange>
-inline constexpr FilterGenerator<tIdxRange> only_idxseq{};
+inline constexpr FilterGenerator<tIdxRange> only_range{};
 template<std::size_t... tIdxs>
 inline constexpr AllExceptGenerator<std::array<std::size_t, sizeof...(tIdxs)>{tIdxs...}>
   all_except_idxs{};
 template<auto tIdxRange>
-inline constexpr AllExceptGenerator<tIdxRange> all_except_idxseq{};
+inline constexpr AllExceptGenerator<tIdxRange> all_except_range{};
 template<std::size_t tBegin, std::size_t tEnd>
 inline constexpr FilterGenerator<star::iota<tBegin, tEnd>> sub_range{};
 } // namespace thes::star

@@ -215,7 +215,7 @@ int main() {
   }
   {
     static constexpr std::array arr{0, 4, 3, 1};
-    static constexpr auto map = arr | star::only_idxseq<std::array{2}>;
+    static constexpr auto map = arr | star::only_range<std::array{2}>;
     using Range = decltype(map);
 
     static_assert(star::IsStaticRange<Range>);
@@ -235,7 +235,7 @@ int main() {
   }
   {
     static constexpr std::array arr{0, 4, 3, 1};
-    static constexpr auto map = arr | star::all_except_idxseq<std::array{1}>;
+    static constexpr auto map = arr | star::all_except_range<std::array{1}>;
     using Range = decltype(map);
 
     static_assert(star::IsStaticRange<Range>);
