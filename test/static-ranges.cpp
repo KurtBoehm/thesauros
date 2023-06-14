@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <functional>
 #include <iostream>
+#include <optional>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -355,6 +356,46 @@ int main() {
     static constexpr std::array arr{0, 4, 3, 1};
     arr | star::transform([](auto v) { return 2 * v; }) |
       star::for_each([](auto v) { std::cout << v << '\n'; });
+  }
+
+  // first_value
+  {
+    static constexpr std::array arr{0, 4, 3, 1};
+    static_assert((arr | star::transform([](auto v) { return 2 * v; }) |
+                   star::first_value([](int v) -> std::optional<int> {
+                     if (v == 6) {
+                       return v;
+                     }
+                     return std::nullopt;
+                   }))
+                    .value() == 6);
+    static_assert([&] {
+      int idx = 0;
+      auto rng = std::array{0, 1, 0, 1} | star::first_value([&](int v) -> std::optional<int> {
+                   ++idx;
+                   if (v == 0) {
+                     return v;
+                   }
+                   return std::nullopt;
+                 });
+      return std::make_pair(rng, idx);
+    }() == std::make_pair(std::make_optional(0), 1));
+    static_assert([&] {
+      int idx = 0;
+      auto rng = std::array{0, 1, 0, 1} | star::first_value([&](int v) -> std::optional<int> {
+                   ++idx;
+                   if (v == 1) {
+                     return v;
+                   }
+                   return std::nullopt;
+                 });
+      return std::make_pair(rng, idx);
+    }() == std::make_pair(std::make_optional(1), 2));
+    static_assert([&] {
+      int idx = 0;
+      std::array{0, 1, 0, 1} | star::first_value([&](int v) { idx += v; });
+      return idx;
+    }() == 2);
   }
 
   // apply

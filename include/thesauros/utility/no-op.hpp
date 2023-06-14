@@ -9,7 +9,7 @@ template<typename TRet = void>
 struct NoOp {
   TRet value{};
 
-  constexpr explicit NoOp(TRet&& val) : value(std::forward<TRet>(val)) {}
+  explicit constexpr NoOp(TRet&& val) : value(std::forward<TRet>(val)) {}
   constexpr NoOp()
   requires(std::is_default_constructible_v<TRet>)
   = default;
