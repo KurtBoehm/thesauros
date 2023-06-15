@@ -1,6 +1,7 @@
 #ifndef INCLUDE_THESAUROS_IO_HPP
 #define INCLUDE_THESAUROS_IO_HPP
 
+#include "io/delimiter.hpp" // IWYU pragma: export
 #include "io/file-reader.hpp" // IWYU pragma: export
 #include "io/file-writer.hpp" // IWYU pragma: export
 #include "io/json.hpp" // IWYU pragma: export
