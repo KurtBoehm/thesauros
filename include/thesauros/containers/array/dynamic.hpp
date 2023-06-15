@@ -235,16 +235,20 @@ struct DynamicArray {
 
   constexpr iterator erase(iterator pos) {
     assert(pos != data_end_);
-
-    std::destroy_at(pos);
     std::move(pos + 1, data_end_, pos);
     std::destroy_at(data_end_);
     --data_end_;
-
-    return pos + 1;
+    return pos ;
+  }
+  constexpr iterator erase(iterator first, iterator last) {
+    assert(first != data_end_);
+    iterator new_end = std::move(last, data_end_, first);
+    std::destroy(new_end, data_end_);
+    data_end_ = new_end;
+    return last;
   }
 
-  constexpr iterator insert(iterator pos, Value&& value) {
+  constexpr iterator insert(iterator pos, Value value) {
     const auto offset = pos - allocation_.begin();
     iterator mut_pos = allocation_.begin() + offset;
 

@@ -15,9 +15,9 @@ template<typename TValue, typename TKeyCompare = std::less<TValue>,
 struct StronglyOrderedSet {
   using Value = TValue;
   using Data = DynamicArrayDefault<TValue, TAllocator>;
+  using DataIterator = Data::iterator;
 
   using value_type = Value;
-  using iterator = Data::const_iterator;
   using const_iterator = Data::const_iterator;
 
   StronglyOrderedSet() = default;
@@ -68,7 +68,7 @@ struct StronglyOrderedSet {
   }
 
   void insert(const TValue& value) {
-    const auto it{lower_bound(value)};
+    DataIterator it = lower_bound(value);
     if (it != end() && TKeyEqual{}(*it, value)) {
       return;
     }
@@ -104,6 +104,10 @@ struct StronglyOrderedSet {
   }
 
 private:
+  DataIterator lower_bound(const auto& value) {
+    return std::lower_bound(data_.begin(), data_.end(), value, TKeyCompare{});
+  }
+
   Data data_{};
 };
 } // namespace thes
