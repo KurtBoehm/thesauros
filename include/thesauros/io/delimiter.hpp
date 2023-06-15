@@ -15,6 +15,7 @@ struct Delimiter {
     } else {
       s << delim.str_;
     }
+    return s;
   }
 
 private:
