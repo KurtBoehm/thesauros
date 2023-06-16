@@ -7,7 +7,7 @@
 namespace thes {
 template<typename TStr>
 struct Delimiter {
-  explicit Delimiter(TStr str) : str_(std::forward<TStr>(str)) {}
+  explicit constexpr Delimiter(TStr str) : str_(std::forward<TStr>(str)) {}
 
   friend std::ostream& operator<<(std::ostream& s, Delimiter& delim) {
     if (delim.first_) {

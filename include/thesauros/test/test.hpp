@@ -8,6 +8,7 @@
 #include <string_view>
 
 #include "thesauros/format.hpp"
+#include "thesauros/io.hpp"
 
 namespace thes::test {
 #ifdef NDEBUG
@@ -47,7 +48,7 @@ concept AreRanges = AreIterRanges<TRange1, TRange2> || AreAccessRanges<TRange1, 
 } // namespace detail
 
 template<bool tAllowPrinting, typename TRange1, typename TRange2, typename TEqual = std::equal_to<>>
-inline constexpr bool range_eq(TRange1&& r1, TRange2&& r2, TEqual equal = {}) {
+inline bool range_eq(TRange1&& r1, TRange2&& r2, TEqual equal = {}) {
   static_assert(detail::AreRanges<TRange1, TRange2>);
 
   if constexpr (detail::AreIterRanges<TRange1, TRange2>) {
@@ -62,11 +63,12 @@ inline constexpr bool range_eq(TRange1&& r1, TRange2&& r2, TEqual equal = {}) {
     };
 
     if constexpr (print) {
-      std::cout << "range_eq:";
+      std::cout << "range_eq: ";
     }
-    for (; it1 != end1 && it2 != end2; ++it1, ++it2) {
+    std::size_t counter = 0;
+    for (Delimiter delim{", "}; it1 != end1 && it2 != end2; ++it1, ++it2) {
       if constexpr (print) {
-        std::cout << ' ' << *it1 << "/" << *it2;
+        std::cout << delim << thes::formatted(thes::fmt::rainbow_fg(counter++), *it1, "/", *it2);
       }
       if (!equal(*it1, *it2)) {
         if constexpr (print) {
@@ -104,12 +106,12 @@ inline bool string_eq(const std::string_view s1, const std::string_view s2) {
   if (eq) {
     std::cout << formatted(fmt::fg_green, s1) << '\n';
   } else {
-    for (char c : s1) {
-      std::cout << int(c) << ' ';
+    for (Delimiter delim{", "}; char c : s1) {
+      std::cout << delim << int(c);
     }
-    std::cout << "vs.";
-    for (char c : s2) {
-      std::cout << ' ' << int(c);
+    std::cout << " vs. ";
+    for (Delimiter delim{", "}; char c : s2) {
+      std::cout << delim << int(c);
     }
     std::cout << '\n';
 
