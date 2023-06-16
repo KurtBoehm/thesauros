@@ -84,6 +84,9 @@ public:
   [[nodiscard]] constexpr bool contains(const T& value) const {
     return begin_ <= value && value < end_;
   }
+  [[nodiscard]] constexpr bool valid_offset(const T& value) const {
+    return begin_ <= value && value <= end_;
+  }
 
   [[nodiscard]] constexpr bool is_empty() const {
     return begin_ == end_;

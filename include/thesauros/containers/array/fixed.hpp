@@ -5,6 +5,7 @@
 #include <initializer_list>
 #include <memory>
 #include <span>
+#include <sstream>
 #include <stdexcept>
 
 #include "thesauros/containers/array/initialization-policy.hpp"
@@ -122,15 +123,15 @@ struct FixedArray {
 
   [[nodiscard]] constexpr Value& at(Size index) {
     if (index >= size()) {
-      throw std::out_of_range("Invalid index: " + std::to_string(index) + " " +
-                              std::to_string(size()));
+      throw std::out_of_range(
+        (std::stringstream{} << "Invalid index: " << index << ' ' << size()).str());
     }
     return allocation_[index];
   }
   [[nodiscard]] constexpr const Value& at(Size index) const {
     if (index >= size()) {
-      throw std::out_of_range("Invalid index: " + std::to_string(index) + " " +
-                              std::to_string(size()));
+      throw std::out_of_range(
+        (std::stringstream{} << "Invalid index: " << index << ' ' << size()).str());
     }
     return allocation_[index];
   }
