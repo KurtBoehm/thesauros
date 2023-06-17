@@ -13,9 +13,15 @@
 namespace thes {
 template<typename T>
 requires std::unsigned_integral<T>
-inline constexpr T add_max(T s1, T s2, T maximum) {
-  const auto [v, overflow] = overflow_add(s1, s2);
-  return overflow ? maximum : std::min(v, maximum);
+inline constexpr T add_max(T arg1, T arg2, T maximum) {
+  const auto v = overflow_add(arg1, arg2);
+  return v.is_valid() ? std::min(*v, maximum) : maximum;
+}
+template<typename T>
+requires std::unsigned_integral<T>
+inline constexpr T sub_min(T arg1, T arg2, T minimum) {
+  const auto v = overflow_subtract(arg1, arg2);
+  return v.is_valid() ? std::max(*v, minimum) : minimum;
 }
 
 template<typename T>

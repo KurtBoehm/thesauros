@@ -14,6 +14,7 @@ foreach name, info : {
   'IndexSegmenter': [['index-segmenter.cpp'], []],
   'Json': [['json.cpp'], []],
   'Macropolis': [['macropolis.cpp'], []],
+  'Math': [['math.cpp'], []],
   'MultiByteIntegers': [['multi-byte-integers.cpp'], []],
   'Primitives': [['primitives.cpp'], []],
   'Quantity': [['quantity.cpp'], []],
