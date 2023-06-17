@@ -2,6 +2,7 @@
 #define INCLUDE_THESAUROS_RANGES_IOTA_HPP
 
 #include <cstddef>
+#include <ostream>
 
 #include "thesauros/iterator/facades.hpp"
 #include "thesauros/iterator/provider-map.hpp"
@@ -10,6 +11,9 @@
 namespace thes {
 template<typename T>
 struct IotaRange {
+  using Value = T;
+  using value_type = Value;
+
 private:
   struct IterProv {
     using Value = T;
@@ -31,9 +35,6 @@ private:
   };
 
 public:
-  using Value = T;
-  using value_type = Value;
-
   constexpr IotaRange() : begin_{}, end_{} {}
   constexpr IotaRange(T begin, T end) : begin_{begin}, end_{end} {}
 
@@ -96,15 +97,25 @@ public:
     return end_ - begin_;
   }
 
+  auto transform(auto op) const {
+    return IotaRange{op(begin_), op(end_)};
+  }
+
   friend IotaRange operator&(const IotaRange& r1, const IotaRange& r2) {
     const T new_begin = std::max(r1.begin_, r2.begin_);
     const T new_end = std::min(r1.end_, r2.end_);
     return {new_begin, std::max(new_begin, new_end)};
   }
 
+  friend std::ostream& operator<<(std::ostream& stream, const IotaRange& range) {
+    return stream << range.begin_ << ":" << range.end_;
+  }
+
 private:
   const T begin_, end_;
 };
+template<typename T>
+IotaRange(T, T) -> IotaRange<T>;
 
 template<typename T>
 struct ExtendedIotaRange {
