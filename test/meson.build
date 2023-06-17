@@ -26,6 +26,7 @@ foreach name, info : {
   'SwapOrEqual': [['swap-or-equal.cpp'], []],
   'Tiling': [['tiling.cpp'], []],
   'TypeTraits': [['type-traits.cpp'], []],
+  'ValueTag': [['value-tag.cpp'], []],
 }
   sources = info[0]
   deps = info[1]

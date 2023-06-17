@@ -41,6 +41,11 @@ template<typename T, T tValue>
 struct AnyValueTagTrait<ValueTag<T, tValue>> : public std::true_type {};
 template<typename TValueTag>
 concept AnyValueTag = AnyValueTagTrait<TValueTag>::value;
+template<typename TValueTag>
+concept DerivedValueTag = !AnyValueTag<TValueTag> && requires {
+  typename TValueTag::Value;
+  requires std::same_as<std::decay_t<decltype(TValueTag::value)>, typename TValueTag::Value>;
+} && std::derived_from<TValueTag, ValueTag<typename TValueTag::Value, TValueTag::value>>;
 template<typename TValueTag, typename T>
 concept TypedValueTag = AnyValueTag<TValueTag> && std::same_as<typename TValueTag::Value, T>;
 template<typename TValueTag>
@@ -48,10 +53,14 @@ concept AnyIndexTag = TypedValueTag<TValueTag, std::size_t>;
 template<typename TValueTag>
 concept AnyBoolTag = TypedValueTag<TValueTag, bool>;
 
-template<typename T, T tVal1, T tVal2>
-inline constexpr bool operator==(ValueTag<T, tVal1> /*tag1*/, ValueTag<T, tVal2> /*tag2*/) {
-  return tVal1 == tVal2;
+template<AnyValueTag TTag1, AnyValueTag TTag2>
+requires std::same_as<typename TTag1::Value, typename TTag2::Value>
+inline constexpr bool operator==(TTag1 tag1, TTag2 tag2) {
+  return tag1.value == tag2.value;
 }
+template<DerivedValueTag TTag1, DerivedValueTag TTag2>
+requires std::same_as<typename TTag1::Value, typename TTag2::Value>
+inline constexpr bool operator==(TTag1 tag1, TTag2 tag2) = delete;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_UTILITY_VALUE_TAG_HPP

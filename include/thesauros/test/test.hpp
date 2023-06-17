@@ -48,7 +48,7 @@ concept AreRanges = AreIterRanges<TRange1, TRange2> || AreAccessRanges<TRange1, 
 } // namespace detail
 
 template<bool tAllowPrinting, typename TRange1, typename TRange2, typename TEqual = std::equal_to<>>
-inline bool range_eq(TRange1&& r1, TRange2&& r2, TEqual equal = {}) {
+inline constexpr bool range_eq(TRange1&& r1, TRange2&& r2, TEqual equal = {}) {
   static_assert(detail::AreRanges<TRange1, TRange2>);
 
   if constexpr (detail::AreIterRanges<TRange1, TRange2>) {
