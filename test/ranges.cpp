@@ -67,7 +67,7 @@ int main() {
 
   {
     static constexpr std::array base{8, 4, 6, 2};
-    static constexpr auto enu = thes::enumerate_range<std::size_t>(base);
+    static constexpr auto enu = thes::enumerate<std::size_t>(base);
     using Value = decltype(enu)::Value;
     static_assert(thes::test::range_eq<false>(
       enu, std::array{Value{0, base[0]}, Value{1, base[1]}, Value{2, base[2]}, Value{3, base[3]}}));

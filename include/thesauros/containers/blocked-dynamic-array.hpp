@@ -206,13 +206,13 @@ public:
     return ConstBlock(val_ptr, val_ptr + sizes_[i]);
   }
 
-  void push_block() {
+  void add_blocks(Size block_num) {
     assert(elements_.size() % block_size_ == 0);
     assert(sizes_.size() == elements_.size() / block_size_);
 
     const Size current_allocation = sizes_.size();
     const Size old_block_num = block_num_;
-    const Size new_block_num = old_block_num + 1;
+    const Size new_block_num = old_block_num + block_num;
 
     // Case distinction: Do we need more memory?
     if (new_block_num >= current_allocation) {
@@ -234,14 +234,18 @@ public:
       Size* old_size_end = sizes_.data() + old_block_num;
       sizes_.expand(new_allocation_size, [&](Size* old_begin, Size* /*old_end*/, Size* new_begin) {
         std::uninitialized_move(old_begin, old_size_end, new_begin);
-        new (new_begin + old_block_num) Size(0);
+        std::uninitialized_fill(new_begin + old_block_num, new_begin + new_block_num, Size{0});
         std::destroy(old_begin, old_size_end);
       });
     } else {
-      sizes_[old_block_num] = 0;
+      Size* size_data = sizes_.data();
+      std::uninitialized_fill(size_data + old_block_num, size_data + new_block_num, Size{0});
     }
 
-    ++block_num_;
+    block_num_ = new_block_num;
+  }
+  void push_block() {
+    add_blocks(1);
   }
   void pop_block() {
     assert(block_num_ > 0);

@@ -35,6 +35,17 @@ struct S {
   bool operator==(const S&) const = default;
 };
 
+inline void test2() {
+  thes::BlockedDynamicArray<int> arr(8);
+  arr.add_blocks(4);
+  arr[0].emplace_back(2);
+  arr[0].emplace_back(5);
+  arr[3].emplace_back(3);
+
+  THES_ASSERT(test::range_eq(thes::transform_range([](auto block) { return block.size(); }, arr),
+                             std::array<std::size_t, 4>{2, 0, 0, 1}));
+}
+
 using Blocked = thes::BlockedDynamicArray<S>;
 using Nested = thes::NestedDynamicArray<S>;
 using NestedBuilder = Nested::NestedBuilder;
@@ -127,4 +138,6 @@ int main() {
     THES_ASSERT(test::range_eq(vec[0], std::array{S{1}, S{4}, S{5}, S{6}, S{7}}));
     THES_ASSERT(test::range_eq(vec[1], std::array{S{2}, S{3}, S{5}, S{11}, S{17}}));
   }
+
+  test2();
 }
