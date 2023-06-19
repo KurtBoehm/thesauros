@@ -58,12 +58,12 @@ private:
 };
 
 template<typename TSize, typename TRange>
-inline constexpr auto enumerate_range(TRange&& container) {
+inline constexpr auto enumerate(TRange&& container) {
   using Iter = decltype(container.begin());
   return EnumerateRange<TSize, Iter>{container.begin(), container.end()};
 }
 template<typename TSize, typename TIter>
-inline constexpr auto enumerate_range(TIter begin, TIter end) {
+inline constexpr auto enumerate(TIter begin, TIter end) {
   return EnumerateRange<TSize, TIter>{std::move(begin), std::move(end)};
 }
 } // namespace thes
