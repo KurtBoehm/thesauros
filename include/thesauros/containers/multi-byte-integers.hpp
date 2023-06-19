@@ -106,6 +106,7 @@ struct MultiByteIntegers {
     };
 
     static Ref deref(const auto& self) {
+      assert(self.ptr_ != nullptr);
       if constexpr (tConst) {
         return load(self.ptr_);
       } else {
