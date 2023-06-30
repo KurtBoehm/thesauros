@@ -17,10 +17,10 @@ concept IsRange = requires(const TRange& r) {
 
 template<typename TRange, typename TOp>
 struct RangePrinter {
-  RangePrinter(const TRange& range, TOp operation, std::string_view delimiter,
+  RangePrinter(TRange&& range, TOp operation, std::string_view delimiter,
                std::string_view prefix = {}, std::string_view suffix = {})
-      : range_{range}, operation_{std::move(operation)}, delimiter_{delimiter}, prefix_{prefix},
-        suffix_{suffix} {}
+      : range_{std::forward<TRange>(range)}, operation_{std::move(operation)},
+        delimiter_{delimiter}, prefix_{prefix}, suffix_{suffix} {}
 
   friend std::ostream& operator<<(std::ostream& stream, const RangePrinter& printer) {
     stream << printer.prefix_;
@@ -44,41 +44,39 @@ struct RangePrinter {
   }
 
 private:
-  const TRange& range_;
+  TRange range_;
   TOp operation_;
   std::string_view delimiter_, prefix_, suffix_;
 };
+template<typename TRange, typename TOp>
+RangePrinter(TRange&&, TOp, std::string_view, std::string_view, std::string_view)
+  -> RangePrinter<TRange, TOp>;
 
 template<typename T>
 struct Printer {
-  explicit Printer(const T& value) : value_{value} {}
+  explicit Printer(T&& value) : value_{std::forward<T>(value)} {}
 
   std::ostream& print(std::ostream& stream) const {
     return stream << value_;
   }
 
 private:
-  const T& value_;
+  T value_;
 };
+template<typename T>
+Printer(T&&) -> Printer<T>;
 
-template<typename TRange>
-requires impl::IsRange<TRange>
+template<impl::IsRange TRange>
 struct Printer<TRange> {
+  explicit Printer(TRange&& range) : range_{std::forward<TRange>(range)} {}
+
   std::ostream& print(std::ostream& stream) const {
-    return stream << RangePrinter{
-             range, []<typename T>(std::ostream& s1, const T& x) { s1 << Printer<T>{x}; }, ", ",
-             "[", "]"};
+    return stream << RangePrinter{range_, [](std::ostream& s1, const auto& x) { s1 << Printer{x}; },
+                                  ", ", "[", "]"};
   }
 
-  const TRange& range;
-};
-template<typename T1, typename T2>
-struct Printer<std::pair<T1, T2>> {
-  std::ostream& print(std::ostream& stream) const {
-    return stream << '(' << Printer<T1>{pair.first} << ", " << Printer<T2>{pair.second} << ")";
-  }
-
-  const std::pair<T1, T2>& pair;
+private:
+  TRange range_;
 };
 
 template<typename T>
@@ -87,15 +85,16 @@ std::ostream& operator<<(std::ostream& stream, const Printer<T>& printer) {
 }
 
 template<typename T>
-auto print(const T& value) {
-  return Printer<T>{value};
+auto print(T&& value) {
+  return Printer<T>{std::forward<T>(value)};
 }
 
 template<typename TRange>
-auto range_print(const TRange& range, std::string_view delimiter = ", ",
-                 std::string_view prefix = "[", std::string_view suffix = "]") {
-  return RangePrinter{range, [](std::ostream& stream, const auto& x) { stream << Printer{x}; },
-                      delimiter, prefix, suffix};
+auto range_print(TRange&& range, std::string_view delimiter = ", ", std::string_view prefix = "[",
+                 std::string_view suffix = "]") {
+  return RangePrinter{std::forward<TRange>(range),
+                      [](std::ostream& stream, const auto& x) { stream << Printer{x}; }, delimiter,
+                      prefix, suffix};
 }
 } // namespace thes
 
