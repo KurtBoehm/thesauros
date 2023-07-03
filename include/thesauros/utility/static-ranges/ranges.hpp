@@ -9,5 +9,6 @@
 #include "ranges/postfix-product-inclusive.hpp" // IWYU pragma: export
 #include "ranges/reversed.hpp" // IWYU pragma: export
 #include "ranges/transform.hpp" // IWYU pragma: export
+#include "ranges/zip.hpp" // IWYU pragma: export
 
 #endif // INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_RANGES_HPP

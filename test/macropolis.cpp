@@ -1,4 +1,7 @@
+#include <array>
 #include <concepts>
+#include <cstddef>
+#include <iostream>
 #include <optional>
 #include <tuple>
 #include <type_traits>
@@ -127,6 +130,16 @@ struct Test7 {
   THES_DEFINE_FLATTEN_TYPE((tVal, TNewType), (TNewType)a)
 };
 
+////////////////////////////////////////////////////////////////
+
+THES_CREATE_TYPE_EX(SNAKE_CASE(Test8), CONSTEXPR_CONSTRUCTOR,
+                    MEMBERS((SNAKE_CASE(a), int), (SNAKE_CASE(b), bool)),
+                    BODY(int test() const { return a; }))
+THES_CREATE_TYPE_EX(SNAKE_CASE(Test9), CONSTEXPR_CONSTRUCTOR, NAMESPACE(n1), NAMESPACE(n2),
+                    TEMPLATE_PARAMS((int)tVal, (typename)TType),
+                    MEMBERS((SNAKE_CASE(a), TType), (KEEP(b), char), (SNAKE_CASE(c), int)),
+                    STATIC_MEMBERS(("value", tVal), ("type", thes::type_tag<TType>)))
+
 using Type7a = Test7<Type2::A, int>;
 using Type7aInfo = thes::TypeInfo<Type7a>;
 inline constexpr auto mems = Type7aInfo::members;
@@ -162,4 +175,15 @@ static_assert(thes::serial_name_of<Test1>() == "test1"_sstr);
 static_assert(thes::serial_name_of<Type2>() == "test2"_sstr);
 static_assert(thes::serial_name_of<Type2::A>() == "a"_sstr);
 
-int main() {}
+////////////////////////////////////////////////////////////////
+
+using Type9 = n1::n2::Test9<11, double>;
+static_assert((thes::memory_layout_info<Type9> |
+               thes::star::transform([](auto info) { return info.offset; }) |
+               thes::star::to_array) == std::array{0_uz, 8_uz, 12_uz});
+
+int main() {
+  thes::memory_layout_info<Type9> | thes::star::for_each([](auto info) {
+    std::cout << info.name.view() << ": " << info.offset << '\n';
+  });
+}

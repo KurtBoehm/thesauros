@@ -15,6 +15,7 @@
 #include "static-ranges/ranges/postfix-product-inclusive.hpp" // IWYU pragma: export
 #include "static-ranges/ranges/reversed.hpp" // IWYU pragma: export
 #include "static-ranges/ranges/transform.hpp" // IWYU pragma: export
+#include "static-ranges/ranges/zip.hpp" // IWYU pragma: export
 #include "static-ranges/sinks/all-different.hpp" // IWYU pragma: export
 #include "static-ranges/sinks/apply.hpp" // IWYU pragma: export
 #include "static-ranges/sinks/contains.hpp" // IWYU pragma: export

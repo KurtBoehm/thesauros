@@ -156,9 +156,11 @@ int main() {
   }
   {
     static constexpr std::array arr{0, 4, 3, 1};
-    static constexpr std::tuple<int, float, double, unsigned> tup{1, 2.0F, 3.0, 4U};
+    static constexpr std::tuple tup{1, 2.0F, 3.0, 4U};
     static constexpr auto lambda = [](auto v1, auto v2) { return v1 * int(v2); };
-    static constexpr auto map1 = star::transform(lambda)(arr, tup);
+    // TODO gcc does not like “lambda” here, as it claims the reference is not a constant expression
+    static constexpr auto map1 =
+      star::transform([](auto v1, auto v2) { return v1 * int(v2); })(arr, tup);
     static constexpr auto map2 = star::transform(lambda, arr, tup);
     static_assert((map1 | star::to_array) == (map2 | star::to_array));
     static constexpr auto map = map2;
@@ -277,6 +279,23 @@ int main() {
     static_assert(star::get_at<1>(j) == 4);
     static_assert((j | star::to_array) == std::array{0, 4, 3, 1, 4, 0, 3, 1});
     static_assert(star::HasValue<Range>);
+  }
+
+  // zip
+  {
+    static constexpr auto r1 = std::array{1, 2, 3};
+    static constexpr auto r2 = std::tuple{1U, 2, 3.F};
+    static constexpr auto z = thes::star::zip(r1, r2);
+    using Range = decltype(z);
+
+    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::size<Range> == 3);
+    static_assert(star::get_at<1>(z) == thes::Tuple{std::get<1>(r1), std::get<1>(r2)});
+    static_assert((z | star::to_tuple) ==
+                  thes::Tuple{thes::Tuple{std::get<0>(r1), std::get<0>(r2)},
+                              thes::Tuple{std::get<1>(r1), std::get<1>(r2)},
+                              thes::Tuple{std::get<2>(r1), std::get<2>(r2)}});
+    static_assert(!star::HasValue<Range>);
   }
 
   // left_reduce

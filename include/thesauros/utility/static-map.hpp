@@ -34,7 +34,8 @@ template<typename... TPairs>
 struct StaticMap;
 
 template<typename... TPairs>
-requires(TypeSeq<typename TPairs::Key...>::is_unique && Tuple{TPairs::key...} | star::all_different)
+requires(TypeSeq<typename TPairs::Key...>::is_unique &&
+         Tuple<typename TPairs::Key...>{TPairs::key...} | star::all_different)
 struct StaticMap<TPairs...> {
   using Tuple = ::thes::Tuple<TPairs...>;
   using Key = TypeSeq<typename TPairs::Key...>::Unique;
