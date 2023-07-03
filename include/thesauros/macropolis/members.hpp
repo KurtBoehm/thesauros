@@ -33,6 +33,9 @@ template<typename T>
 inline constexpr auto memory_layout_info = MemoryLayoutInfoTrait<T>::members;
 
 template<typename T>
+concept HasMemoryLayoutInfo = sizeof(MemoryLayoutInfoTrait<T>) > 0;
+
+template<typename T>
 struct TypeInfo;
 
 template<typename T>
