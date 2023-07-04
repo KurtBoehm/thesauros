@@ -23,6 +23,7 @@ foreach name, info : {
   'StaticMap': [['static-map.cpp'], []],
   'StaticRanges': [['static-ranges.cpp'], []],
   'StaticString': [['static-string.cpp'], []],
+  'StdExtensions': [['std-extensions.cpp'], []],
   'StronglyOrdered': [['strongly-ordered.cpp'], []],
   'SwapOrEqual': [['swap-or-equal.cpp'], []],
   'Tiling': [['tiling.cpp'], []],

@@ -19,6 +19,7 @@
 #include "utility/no-op.hpp" // IWYU pragma: export
 #include "utility/numeric-info.hpp" // IWYU pragma: export
 #include "utility/numeric-string.hpp" // IWYU pragma: export
+#include "utility/optional.hpp" // IWYU pragma: export
 #include "utility/parse-integer.hpp" // IWYU pragma: export
 #include "utility/primitives.hpp" // IWYU pragma: export
 #include "utility/resource-usage.hpp" // IWYU pragma: export
