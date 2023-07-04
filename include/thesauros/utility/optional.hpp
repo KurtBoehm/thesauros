@@ -79,6 +79,20 @@ struct Optional : public std::optional<T> {
   constexpr Optional or_else(TF&& f) && {
     return this->has_value() ? std::move(*this) : std::forward<TF>(f)();
   }
+
+  template<typename TF>
+  requires(std::same_as<std::remove_cvref_t<std::invoke_result_t<TF>>, T> &&
+           std::copy_constructible<T>)
+  constexpr T value_or_else(TF&& f) const& {
+    return this->has_value() ? **this : std::forward<TF>(f)();
+  }
+
+  template<typename TF>
+  requires(std::same_as<std::remove_cvref_t<std::invoke_result_t<TF>>, T> &&
+           std::move_constructible<T>)
+  constexpr T value_or_else(TF&& f) && {
+    return this->has_value() ? std::move(**this) : std::forward<TF>(f)();
+  }
 };
 template<class T>
 Optional(T) -> Optional<T>;
