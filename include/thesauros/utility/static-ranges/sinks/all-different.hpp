@@ -18,7 +18,7 @@ struct AllDifferentGenerator : public ConsumerGeneratorBase {
     constexpr std::size_t size = star::size<TRange>;
     return star::index_transform<size>([&](auto i) {
              const auto trans = star::index_transform<i + 1, size>(
-               [&, i](auto j) { return get_at<i>(range) != get_at<j>(range); });
+               [&](auto j) { return get_at(range, i) != get_at(range, j); });
              return trans | star::left_reduce(std::logical_and<>{}, true);
            }) |
            star::left_reduce(std::logical_and<>{}, true);

@@ -5,6 +5,8 @@
 #include <type_traits>
 #include <utility>
 
+#include "thesauros/utility/value-tag.hpp"
+
 namespace thes::star {
 namespace impl {
 template<std::size_t tIndex, typename TRange>
@@ -42,6 +44,11 @@ struct GetAtTrait<tIndex, TRange> {
 template<std::size_t tIndex, typename TRange>
 requires(requires { sizeof(GetAtTrait<tIndex, std::decay_t<TRange>>); })
 inline constexpr decltype(auto) get_at(TRange& c) {
+  return GetAtTrait<tIndex, std::decay_t<TRange>>::get_at(c);
+}
+template<std::size_t tIndex, typename TRange>
+requires(requires { sizeof(GetAtTrait<tIndex, std::decay_t<TRange>>); })
+inline constexpr decltype(auto) get_at(TRange& c, IndexTag<tIndex> /*tag*/) {
   return GetAtTrait<tIndex, std::decay_t<TRange>>::get_at(c);
 }
 } // namespace thes::star
