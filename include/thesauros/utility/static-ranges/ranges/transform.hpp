@@ -15,54 +15,56 @@
 #include "thesauros/utility/tuple.hpp"
 
 namespace thes::star {
-template<typename TOp, typename... TInners>
-requires(sizeof...(TInners) > 0 && star::has_unique_value(std::array{size<TInners>...}))
+template<typename TFun, typename... TArgRanges>
+requires(sizeof...(TArgRanges) > 0 && star::has_unique_value(std::array{size<TArgRanges>...}))
 struct TransformView {
-  TOp op;
-  Tuple<TInners...> inners;
+  TFun fun;
+  Tuple<TArgRanges...> range_tup;
 
-  explicit constexpr TransformView(TOp&& op, TInners&&... inners)
-      : op(std::forward<TOp>(op)), inners(std::forward<TInners>(inners)...) {}
+  explicit constexpr TransformView(TFun&& f, TArgRanges&&... ranges)
+      : fun(std::forward<TFun>(f)), range_tup(std::forward<TArgRanges>(ranges)...) {}
 
   static constexpr std::size_t size =
-    (std::array{star::size<TInners>...} | star::unique_value).value();
+    (std::array{star::size<TArgRanges>...} | star::unique_value).value();
 
   template<std::size_t tIndex>
   constexpr decltype(auto) get() const {
-    return apply([this](const auto&... ranges) { return op(get_at<tIndex>(ranges)...); })(inners);
+    return apply([this](const auto&... ranges) { return fun(get_at<tIndex>(ranges)...); })(
+      range_tup);
   }
 };
 
-template<typename TOp>
+template<typename TFun>
 struct TransformGenerator : public RangeGeneratorBase {
-  TOp op;
+  TFun fun;
 
-  explicit constexpr TransformGenerator(TOp&& op) : op(std::forward<TOp>(op)) {}
+  explicit constexpr TransformGenerator(TFun&& f) : fun(std::forward<TFun>(f)) {}
 
-  template<typename... TInners>
-  constexpr auto operator()(TInners&&... inners) const {
-    return TransformView<TOp, TInners...>{TOp{op}, std::forward<TInners>(inners)...};
+  template<typename... TArgRanges>
+  constexpr auto operator()(TArgRanges&&... ranges) const {
+    return TransformView<TFun, TArgRanges...>{TFun{fun}, std::forward<TArgRanges>(ranges)...};
   }
 };
 
-template<typename TOp>
-inline constexpr auto transform(TOp&& op) {
-  return TransformGenerator<TOp>{std::forward<TOp>(op)};
+template<typename TFun>
+inline constexpr auto transform(TFun&& f) {
+  return TransformGenerator<TFun>{std::forward<TFun>(f)};
 };
 
-template<typename TOp, typename... TInners>
-requires(sizeof...(TInners) > 0)
-inline constexpr auto transform(TOp&& op, TInners&&... inners) {
-  return TransformView<TOp, TInners...>{std::forward<TOp>(op), std::forward<TInners>(inners)...};
+template<typename TFun, typename... TArgRanges>
+requires(sizeof...(TArgRanges) > 0)
+inline constexpr auto transform(TFun&& f, TArgRanges&&... ranges) {
+  return TransformView<TFun, TArgRanges...>{std::forward<TFun>(f),
+                                            std::forward<TArgRanges>(ranges)...};
 }
 
-template<std::size_t tSize, typename TOp>
-inline constexpr auto index_transform(TOp&& op) {
-  return TransformView<TOp, IotaView<0, tSize, 1>>{std::forward<TOp>(op), {}};
+template<std::size_t tSize, typename TFun>
+inline constexpr auto index_transform(TFun&& f) {
+  return TransformView<TFun, IotaView<0, tSize, 1>>{std::forward<TFun>(f), {}};
 };
-template<std::size_t tBegin, std::size_t tEnd, typename TOp>
-inline constexpr auto index_transform(TOp&& op) {
-  return TransformView<TOp, IotaView<tBegin, tEnd, 1>>{std::forward<TOp>(op), {}};
+template<std::size_t tBegin, std::size_t tEnd, typename TFun>
+inline constexpr auto index_transform(TFun&& f) {
+  return TransformView<TFun, IotaView<tBegin, tEnd, 1>>{std::forward<TFun>(f), {}};
 };
 } // namespace thes::star
 

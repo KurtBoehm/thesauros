@@ -8,17 +8,17 @@
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
 
 namespace thes::star {
-template<typename TOp>
+template<typename TFun>
 struct ForEachGenerator : public ConsumerGeneratorBase {
-  TOp op;
+  TFun fun;
 
-  explicit constexpr ForEachGenerator(TOp&& op) : op(std::forward<TOp>(op)) {}
+  explicit constexpr ForEachGenerator(TFun&& f) : fun(std::forward<TFun>(f)) {}
 
   template<typename TRange>
   constexpr void operator()(TRange&& range) const {
     constexpr std::size_t size = thes::star::size<TRange>;
-    return [this, &range]<std::size_t... tIdxs>(std::index_sequence<tIdxs...> /*idxs*/) {
-      (op(get_at<tIdxs>(range)), ...);
+    return [&]<std::size_t... tIdxs>(std::index_sequence<tIdxs...> /*idxs*/) {
+      (fun(get_at<tIdxs>(range)), ...);
     }(std::make_index_sequence<size>{});
   }
 };

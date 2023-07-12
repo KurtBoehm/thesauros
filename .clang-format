@@ -14,4 +14,5 @@ QualifierAlignment: Custom
 QualifierOrder: ["static", "inline", "constexpr", "const", "type"]
 RequiresClausePosition: OwnLine
 SpaceAfterTemplateKeyword: false
+Standard: c++20
 UseTab: Never

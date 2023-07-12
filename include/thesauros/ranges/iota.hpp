@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <ostream>
+#include <type_traits>
 
 #include "thesauros/iterator/facades.hpp"
 #include "thesauros/iterator/provider-map.hpp"
@@ -116,6 +117,13 @@ private:
 };
 template<typename T>
 IotaRange(T, T) -> IotaRange<T>;
+
+template<typename T>
+struct IsIotaRange : public std::false_type {};
+template<typename T>
+struct IsIotaRange<IotaRange<T>> : public std::true_type {};
+template<typename T>
+concept AnyIotaRange = IsIotaRange<T>::value;
 
 template<typename T>
 struct ExtendedIotaRange {

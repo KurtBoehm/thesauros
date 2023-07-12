@@ -8,6 +8,10 @@
 
 namespace thes {
 namespace impl {
+template<typename T>
+concept SupportsOStream = requires(std::ostream& s, const T& v) {
+  { s << v } -> std::same_as<std::ostream&>;
+};
 template<typename TRange>
 concept IsRange = requires(const TRange& r) {
   std::begin(r);
@@ -53,7 +57,9 @@ RangePrinter(TRange&&, TOp, std::string_view, std::string_view, std::string_view
   -> RangePrinter<TRange, TOp>;
 
 template<typename T>
-struct Printer {
+struct Printer;
+template<impl::SupportsOStream T>
+struct Printer<T> {
   explicit Printer(T&& value) : value_{std::forward<T>(value)} {}
 
   std::ostream& print(std::ostream& stream) const {
@@ -66,13 +72,15 @@ private:
 template<typename T>
 Printer(T&&) -> Printer<T>;
 
-template<impl::IsRange TRange>
+template<typename TRange>
+requires(!impl::SupportsOStream<TRange> && impl::IsRange<TRange>)
 struct Printer<TRange> {
   explicit Printer(TRange&& range) : range_{std::forward<TRange>(range)} {}
 
   std::ostream& print(std::ostream& stream) const {
-    return stream << RangePrinter{range_, [](std::ostream& s1, const auto& x) { s1 << Printer{x}; },
-                                  ", ", "[", "]"};
+    return stream << RangePrinter{
+             range_, []<typename T>(std::ostream& s1, const T& x) { s1 << Printer<const T&>{x}; },
+             ", ", "[", "]"};
   }
 
 private:

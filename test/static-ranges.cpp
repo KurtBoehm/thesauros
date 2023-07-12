@@ -380,39 +380,41 @@ int main() {
   // first_value
   {
     static constexpr std::array arr{0, 4, 3, 1};
-    static_assert((arr | star::transform([](auto v) { return 2 * v; }) |
-                   star::first_value([](int v) -> std::optional<int> {
-                     if (v == 6) {
-                       return v;
+    static_assert((arr | star::transform([](int v) -> std::optional<int> {
+                     if (v == 3) {
+                       return 2 * v;
                      }
                      return std::nullopt;
-                   }))
+                   }) |
+                   star::first_value)
                     .value() == 6);
     static_assert([&] {
       int idx = 0;
-      auto rng = std::array{0, 1, 0, 1} | star::first_value([&](int v) -> std::optional<int> {
+      auto rng = std::array{0, 1, 0, 1} | star::transform([&](int v) -> std::optional<int> {
                    ++idx;
                    if (v == 0) {
                      return v;
                    }
                    return std::nullopt;
-                 });
+                 }) |
+                 star::first_value;
       return std::make_pair(rng, idx);
     }() == std::make_pair(std::make_optional(0), 1));
     static_assert([&] {
       int idx = 0;
-      auto rng = std::array{0, 1, 0, 1} | star::first_value([&](int v) -> std::optional<int> {
+      auto rng = std::array{0, 1, 0, 1} | star::transform([&](int v) -> std::optional<int> {
                    ++idx;
                    if (v == 1) {
                      return v;
                    }
                    return std::nullopt;
-                 });
+                 }) |
+                 star::first_value;
       return std::make_pair(rng, idx);
     }() == std::make_pair(std::make_optional(1), 2));
     static_assert([&] {
       int idx = 0;
-      std::array{0, 1, 0, 1} | star::first_value([&](int v) { idx += v; });
+      std::array{0, 1, 0, 1} | star::transform([&](int v) { idx += v; }) | star::first_value;
       return idx;
     }() == 2);
   }
