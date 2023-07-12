@@ -2,6 +2,7 @@
 #define INCLUDE_THESAUROS_MATH_ARITHMETIC_HPP
 
 #include <algorithm>
+#include <bit>
 #include <cassert>
 #include <concepts>
 #include <cstddef>
