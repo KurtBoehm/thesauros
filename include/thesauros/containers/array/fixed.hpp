@@ -28,6 +28,7 @@ struct FixedArray {
 
   using InitPolicy = TInitPolicy;
 
+  constexpr FixedArray() = default;
   explicit constexpr FixedArray(Size size) : allocation_(size) {
     initialize_all();
   }
