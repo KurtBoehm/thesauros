@@ -9,7 +9,7 @@ template<typename TStr>
 struct Delimiter {
   explicit constexpr Delimiter(TStr str) : str_(std::forward<TStr>(str)) {}
 
-  friend std::ostream& operator<<(std::ostream& s, Delimiter& delim) {
+  friend std::ostream& operator<<(std::ostream& s, const Delimiter& delim) {
     if (delim.first_) {
       delim.first_ = false;
     } else {
@@ -20,7 +20,7 @@ struct Delimiter {
 
 private:
   TStr str_;
-  bool first_ = true;
+  mutable bool first_ = true;
 };
 } // namespace thes
 

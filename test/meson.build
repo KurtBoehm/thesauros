@@ -34,10 +34,12 @@ foreach name, info : {
   deps = info[1]
   test(
     name,
-    executable('Test' + name, sources,
+    executable(
+      'Test' + name,
+      sources,
       override_options: opts,
       cpp_args: args,
       dependencies: [thesauros_dep] + deps,
-    )
+    ),
   )
 endforeach

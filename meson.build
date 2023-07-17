@@ -1,7 +1,7 @@
 project(
   'thesauros',
   'cpp',
-  default_options: ['cpp_std=c++20', 'warning_level=3']
+  default_options: ['cpp_std=c++20', 'warning_level=3'],
 )
 
 boost_preprocessor_dep = dependency('boost-preprocessor')
@@ -12,10 +12,7 @@ thesauros_dep = declare_dependency(
   dependencies: [boost_preprocessor_dep, expected_dep],
 )
 
-install_subdir(
-  'include',
-  install_dir: 'include'
-)
+install_subdir('include', install_dir: 'include')
 
 pc = import('pkgconfig')
 pc.generate(
