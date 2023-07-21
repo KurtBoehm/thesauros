@@ -10,6 +10,7 @@
 #include <initializer_list>
 #include <limits>
 #include <memory>
+#include <span>
 #include <type_traits>
 
 #include "thesauros/containers/array/dynamic.hpp"
@@ -20,6 +21,39 @@
 namespace thes {
 template<typename TByteInt, std::size_t tPaddingBytes,
          template<typename> typename TAllocator = std::allocator>
+struct MultiByteIntegers;
+
+template<typename TByteInt, std::size_t tPaddingBytes,
+         template<typename> typename TAllocator = std::allocator>
+struct MultiByteSubRange {
+  using Base = MultiByteIntegers<TByteInt, tPaddingBytes, TAllocator>;
+  using Size = std::size_t;
+  static constexpr std::size_t element_bytes = TByteInt::byte_num;
+
+  MultiByteSubRange(const Base& base, Size begin, Size end)
+      : base_(&base), begin_(begin), end_(end) {}
+
+  const Base& base() const {
+    return *base_;
+  }
+
+  [[nodiscard]] std::span<const std::byte> byte_span() const {
+    const Size byte_begin = byte_size(begin_);
+    const Size byte_end = byte_size(end_);
+    return base_->byte_span().subspan(byte_begin, byte_end - byte_begin);
+  }
+
+private:
+  static Size byte_size(Size size) THES_ALWAYS_INLINE {
+    return size * element_bytes;
+  }
+
+  const Base* base_;
+  Size begin_;
+  Size end_;
+};
+
+template<typename TByteInt, std::size_t tPaddingBytes, template<typename> typename TAllocator>
 struct MultiByteIntegers {
   static_assert(std::endian::native == std::endian::little ||
                   std::endian::native == std::endian::big,
@@ -35,9 +69,8 @@ struct MultiByteIntegers {
   static constexpr std::size_t padding_bytes = tPaddingBytes;
   static constexpr Value int_bytes = sizeof(Value);
 
-  using Byte = std::uint8_t;
-  using Allocator = TAllocator<Byte>;
-  using Data = DynamicArrayDefault<Byte, Allocator>;
+  using Allocator = TAllocator<std::byte>;
+  using Data = DynamicArrayDefault<std::byte, Allocator>;
 
   static_assert(element_bytes <= int_bytes);
   static_assert(padding_bytes >= int_bytes);
@@ -46,7 +79,7 @@ struct MultiByteIntegers {
   static constexpr Value mask = TByteInt::max;
 
   struct IntRef {
-    explicit IntRef(Byte* ptr) : ptr_(ptr) {}
+    explicit IntRef(std::byte* ptr) : ptr_(ptr) {}
     IntRef(const IntRef&) = delete;
     IntRef(IntRef&&) noexcept = default;
     ~IntRef() = default;
@@ -70,26 +103,26 @@ struct MultiByteIntegers {
       return load(ptr_);
     }
 
-    friend void swap(IntRef vw1, IntRef vw2) {
+    friend void swap(IntRef vw1, IntRef vw2) noexcept {
       Value v1 = vw1;
       Value v2 = vw2;
       vw1 = v2;
       vw2 = v1;
     }
 
-    friend void swap(IntRef vw1, Value& i2) {
+    friend void swap(IntRef vw1, Value& i2) noexcept {
       Value v1 = vw1;
       vw1 = i2;
       i2 = v1;
     }
-    friend void swap(Value& i1, IntRef vw2) {
+    friend void swap(Value& i1, IntRef vw2) noexcept {
       Value v2 = vw2;
       vw2 = i1;
       i1 = v2;
     }
 
   private:
-    Byte* ptr_;
+    std::byte* ptr_;
   };
 
   template<bool tConst>
@@ -151,7 +184,7 @@ struct MultiByteIntegers {
   template<bool tConst>
   struct Iterator : public IteratorFacade<Iterator<tConst>, IterProv<tConst>> {
     using Container = MultiByteIntegers;
-    using Ptr = std::conditional_t<tConst, const Byte, Byte>*;
+    using Ptr = std::conditional_t<tConst, const std::byte, std::byte>*;
     friend IterProv<tConst>;
 
     explicit Iterator() = default;
@@ -165,13 +198,15 @@ struct MultiByteIntegers {
     Ptr ptr_{nullptr};
   };
 
+  using ConstSubRange = MultiByteSubRange<TByteInt, tPaddingBytes, TAllocator>;
+
   using iterator = Iterator<false>;
   using const_iterator = Iterator<true>;
 
   static MultiByteIntegers all_set(Value size) {
     MultiByteIntegers mbi(size);
     std::uninitialized_fill_n(mbi.data_.data(), byte_size(mbi.size_),
-                              std::numeric_limits<Byte>::max());
+                              std::byte{std::numeric_limits<unsigned char>::max()});
     return mbi;
   }
 
@@ -233,6 +268,17 @@ struct MultiByteIntegers {
     data_.reserve(effective_allocation(allocation));
   }
 
+  [[nodiscard]] std::span<const std::byte> byte_span() const {
+    return std::span{data_.begin(), byte_size(size_)};
+  }
+  [[nodiscard]] std::span<std::byte> byte_span() {
+    return std::span{data_.begin(), byte_size(size_)};
+  }
+
+  ConstSubRange sub_range(Size begin, Size end) const {
+    return ConstSubRange(*this, begin, end);
+  }
+
 private:
   static Size effective_allocation(Size allocation) THES_ALWAYS_INLINE {
     return byte_size(allocation) + padding_bytes;
@@ -241,7 +287,7 @@ private:
     return size * element_bytes;
   }
 
-  static Value load(const Byte* ptr) THES_ALWAYS_INLINE {
+  static Value load(const std::byte* ptr) THES_ALWAYS_INLINE {
     Value output;
     std::memcpy(&output, ptr, int_bytes);
     if constexpr (std::endian::native == std::endian::little) {
@@ -259,10 +305,10 @@ private:
     }
     return value;
   }
-  static void store(Byte* ptr, Value value) noexcept THES_ALWAYS_INLINE {
+  static void store(std::byte* ptr, Value value) noexcept THES_ALWAYS_INLINE {
     std::memcpy(ptr, &store_transform(value), element_bytes);
   }
-  static void store_full(Byte* ptr, Value value) THES_ALWAYS_INLINE {
+  static void store_full(std::byte* ptr, Value value) THES_ALWAYS_INLINE {
     std::memcpy(ptr, &store_transform(value), int_bytes);
   }
 
