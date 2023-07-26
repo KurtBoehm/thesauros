@@ -7,8 +7,7 @@
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"
 
 namespace thes::star {
-template<typename TRangeGen1, typename TRangeGen2>
-requires(IsRangeGenerator<TRangeGen1> && IsPipeSink<TRangeGen2>)
+template<IsRangeGenerator TRangeGen1, IsPipeSink TRangeGen2>
 struct CombinedGenerator {
   TRangeGen1 gen1;
   TRangeGen2 gen2;

@@ -22,24 +22,25 @@ inline void transform_inclusive_scan(TExecutionPolicy&& policy, TForwardIt1 firs
 
   std::latch barrier{safe_cast<std::ptrdiff_t>(policy.size()).valid_value()};
   FixedArrayDefault<T> offsets(policy.size());
-  policy.execute_segmented(size, [&, first, d_first, binary_op, unary_op,
-                                  neutral](std::size_t thread_idx, Size begin, Size end) {
-    auto thread_first = first;
-    std::advance(thread_first, begin);
+  std::forward<TExecutionPolicy>(policy).execute_segmented(
+    size, [=, &barrier, &offsets](std::size_t thread_idx, Size begin, Size end) {
+      auto thread_first = first;
+      std::advance(thread_first, begin);
 
-    auto thread_last = first;
-    std::advance(thread_last, end);
+      auto thread_last = first;
+      std::advance(thread_last, end);
 
-    const T part = std::transform_reduce(thread_first, thread_last, neutral, binary_op, unary_op);
-    offsets[thread_idx] = part;
-    barrier.arrive_and_wait();
+      const T part = std::transform_reduce(thread_first, thread_last, neutral, binary_op, unary_op);
+      offsets[thread_idx] = part;
+      barrier.arrive_and_wait();
 
-    const T offset = std::reduce(offsets.begin(), offsets.begin() + thread_idx, neutral, binary_op);
-    auto thread_d_first = d_first;
-    std::advance(thread_d_first, begin);
-    std::transform_inclusive_scan(thread_first, thread_last, thread_d_first, binary_op, unary_op,
-                                  offset);
-  });
+      const T offset =
+        std::reduce(offsets.begin(), offsets.begin() + thread_idx, neutral, binary_op);
+      auto thread_d_first = d_first;
+      std::advance(thread_d_first, begin);
+      std::transform_inclusive_scan(thread_first, thread_last, thread_d_first, binary_op, unary_op,
+                                    offset);
+    });
 }
 } // namespace thes
 

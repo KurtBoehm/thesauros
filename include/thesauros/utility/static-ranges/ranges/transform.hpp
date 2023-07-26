@@ -3,8 +3,6 @@
 
 #include <array>
 #include <cstddef>
-#include <tuple>
-#include <type_traits>
 
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"
 #include "thesauros/utility/static-ranges/definitions/get-at.hpp"
@@ -25,7 +23,7 @@ struct TransformView {
       : fun(std::forward<TFun>(f)), range_tup(std::forward<TArgRanges>(ranges)...) {}
 
   static constexpr std::size_t size =
-    (std::array{star::size<TArgRanges>...} | star::unique_value).value();
+    star::unique_value(std::array{star::size<TArgRanges>...}).value();
 
   template<std::size_t tIndex>
   constexpr decltype(auto) get() const {

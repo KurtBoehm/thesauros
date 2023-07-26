@@ -1,6 +1,5 @@
 #include <array>
 #include <cstddef>
-#include <iostream>
 
 #include "thesauros/containers.hpp"
 #include "thesauros/ranges.hpp"

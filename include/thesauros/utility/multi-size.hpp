@@ -3,14 +3,11 @@
 
 #include <array>
 #include <cstddef>
-#include <functional>
 
 #include "thesauros/algorithms/static-ranges/index-to-position.hpp"
 #include "thesauros/algorithms/static-ranges/position-to-index.hpp"
 #include "thesauros/math/divmod.hpp"
-#include "thesauros/utility/static-ranges/ranges/postfix-product-inclusive.hpp"
-#include "thesauros/utility/static-ranges/ranges/transform.hpp"
-#include "thesauros/utility/static-ranges/sinks/to-array.hpp"
+#include "thesauros/utility/static-ranges.hpp"
 #include "thesauros/utility/value-tag.hpp"
 
 namespace thes {

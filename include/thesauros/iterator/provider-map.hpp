@@ -2,6 +2,7 @@
 #define INCLUDE_THESAUROS_ITERATOR_PROVIDER_MAP_HPP
 
 #include <compare>
+#include <concepts>
 
 #include "concepts.hpp"
 
@@ -82,9 +83,9 @@ struct Map {
   }
 
 private:
-  template<typename I1, typename I2>
-  static constexpr void test_if_cmp(const I1& i1, const I2& i2) {
-    if constexpr (iter_provider::TestIfCmp<TStateProvider, I1, I2>) {
+  template<typename TIt1, typename TIt2>
+  static constexpr void test_if_cmp(const TIt1& i1, const TIt2& i2) {
+    if constexpr (iter_provider::TestIfCmp<TStateProvider, TIt1, TIt2>) {
       TStateProvider::test_if_cmp(i1, i2);
     }
   }

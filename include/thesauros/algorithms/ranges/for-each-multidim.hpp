@@ -2,7 +2,6 @@
 #define INCLUDE_THESAUROS_ALGORITHMS_RANGES_FOR_EACH_MULTIDIM_HPP
 
 #include <cstddef>
-#include <iterator>
 #include <utility>
 
 #include "thesauros/ranges/iota.hpp"
@@ -42,7 +41,7 @@ THES_ALWAYS_INLINE inline constexpr void multidim_for_each(const TRanges& ranges
 template<typename TSizes, typename TFixedAxes, typename TOp>
 THES_ALWAYS_INLINE inline constexpr void
 multidim_for_each_size(const TSizes& sizes, const TFixedAxes& fixed_axes, TOp&& op) {
-  multidim_for_each(sizes | star::transform([](auto size) { return range(size); }), fixed_axes,
+  multidim_for_each(star::transform([](auto size) { return range(size); })(sizes), fixed_axes,
                     std::forward<TOp>(op));
 }
 template<typename TSizes, typename TOp>

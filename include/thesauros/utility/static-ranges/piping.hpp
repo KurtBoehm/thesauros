@@ -1,7 +1,7 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_PIPING_HPP
 #define INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_PIPING_HPP
 
-#include <type_traits>
+#include <utility>
 
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"
 #include "thesauros/utility/static-ranges/generators/combined.hpp"

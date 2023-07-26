@@ -1,7 +1,6 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_PRIMITIVES_HPP
 #define INCLUDE_THESAUROS_UTILITY_PRIMITIVES_HPP
 
-#include <climits>
 #include <cstdint>
 #include <limits>
 

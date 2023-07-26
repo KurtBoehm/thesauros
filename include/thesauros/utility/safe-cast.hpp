@@ -1,6 +1,7 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_SAFE_CAST_HPP
 #define INCLUDE_THESAUROS_UTILITY_SAFE_CAST_HPP
 
+#include <concepts>
 #include <limits>
 #include <ostream>
 #include <type_traits>
@@ -24,8 +25,7 @@ using CastResult = InfoResult<T, CastInfo, CastInfo::OKAY>;
 
 template<typename TIn, typename TOut>
 struct SafeCast;
-template<typename TIn, typename TOut>
-requires std::unsigned_integral<TOut>
+template<typename TIn, std::unsigned_integral TOut>
 struct SafeCast<TIn, TOut> {
   using Ret = CastResult<TOut>;
 
@@ -44,8 +44,7 @@ struct SafeCast<TIn, TOut> {
     return {static_cast<TOut>(in), info};
   }
 };
-template<typename TIn, typename TOut>
-requires std::signed_integral<TOut>
+template<typename TIn, std::signed_integral TOut>
 struct SafeCast<TIn, TOut> {
   using Ret = CastResult<TOut>;
 

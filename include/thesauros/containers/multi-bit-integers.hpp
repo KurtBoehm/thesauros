@@ -14,9 +14,9 @@
 #include "thesauros/math/arithmetic.hpp"
 
 namespace thes {
-template<typename TChunk, std::size_t tBitNum,
+template<std::unsigned_integral TChunk, std::size_t tBitNum,
          template<typename> typename TAllocator = std::allocator>
-requires(std::unsigned_integral<TChunk> && std::has_single_bit(tBitNum))
+requires(std::has_single_bit(tBitNum))
 struct MultiBitIntegers {
   using Chunk = TChunk;
   using Allocator = TAllocator<Chunk>;
@@ -30,7 +30,7 @@ struct MultiBitIntegers {
 
     constexpr SetProxy& operator=(Chunk value) {
       assert(value == (value & mask));
-      chunk = (chunk & ~(mask << offset)) | value << offset;
+      chunk = (chunk & ~(mask << offset)) | (value << offset);
       return *this;
     }
 
@@ -54,7 +54,7 @@ struct MultiBitIntegers {
 
   private:
     static constexpr Chunk update_chunk(Chunk chunk, std::size_t offset, Chunk value) {
-      return (chunk & ~(mask << offset)) | value << offset;
+      return (chunk & ~(mask << offset)) | (value << offset);
     }
   };
 

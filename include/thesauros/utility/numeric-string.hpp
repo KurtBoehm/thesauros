@@ -17,8 +17,7 @@
 namespace thes {
 template<typename T>
 struct MaxCharNumTrait;
-template<typename T>
-requires std::floating_point<T>
+template<std::floating_point T>
 struct MaxCharNumTrait<T> {
   using Type = T;
   using Limits = std::numeric_limits<Type>;
@@ -30,8 +29,7 @@ struct MaxCharNumTrait<T> {
     4U + unsigned{Limits::max_digits10} +
     std::max(2U, abs_log_ceil(10U, unsigned{Limits::max_exponent10}));
 };
-template<typename T>
-requires std::unsigned_integral<T>
+template<std::unsigned_integral T>
 struct MaxCharNumTrait<T> {
   using Type = T;
   using Limits = std::numeric_limits<Type>;
@@ -39,8 +37,7 @@ struct MaxCharNumTrait<T> {
   // 1: sign
   static constexpr auto char_num = abs_log_ceil(Type{10}, Limits::max());
 };
-template<typename T>
-requires std::signed_integral<T>
+template<std::signed_integral T>
 struct MaxCharNumTrait<T> {
   using Type = T;
   using Limits = std::numeric_limits<Type>;

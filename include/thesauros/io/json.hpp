@@ -1,6 +1,7 @@
 #ifndef INCLUDE_THESAUROS_IO_JSON_HPP
 #define INCLUDE_THESAUROS_IO_JSON_HPP
 
+#include <concepts>
 #include <cstddef>
 #include <iterator>
 #include <optional>
@@ -13,8 +14,7 @@
 #include "thesauros/macropolis/members.hpp"
 #include "thesauros/macropolis/serial-value.hpp"
 #include "thesauros/utility/numeric-string.hpp"
-#include "thesauros/utility/static-ranges/ranges/iota.hpp"
-#include "thesauros/utility/static-ranges/sinks/for-each.hpp"
+#include "thesauros/utility/static-ranges.hpp"
 #include "thesauros/utility/string-escape.hpp"
 
 namespace thes {
@@ -72,12 +72,12 @@ struct JsonWriter;
 template<typename T>
 inline auto write_json(auto out_it, T&& value, Indentation indent = {}) {
   using Type = std::remove_cvref_t<T>;
-  return JsonWriter<Type>::write(out_it, value, indent);
+  return JsonWriter<Type>::write(out_it, std::forward<T>(value), indent);
 }
 
 template<typename T>
 struct JsonPrinter {
-  JsonPrinter(T&& value, Indentation indent = {})
+  explicit JsonPrinter(T&& value, Indentation indent = {})
       : value_(std::forward<T>(value)), indent_{indent} {}
 
   friend std::ostream& operator<<(std::ostream& stream, const JsonPrinter& printer) {

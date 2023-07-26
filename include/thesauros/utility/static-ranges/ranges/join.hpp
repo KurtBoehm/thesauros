@@ -4,7 +4,6 @@
 #include <cstddef>
 #include <cstdlib>
 #include <optional>
-#include <tuple>
 #include <type_traits>
 #include <utility>
 
@@ -30,7 +29,7 @@ struct JoinView {
     constexpr auto pair = []() {
       std::size_t sum = 0;
       std::optional<std::pair<std::size_t, std::size_t>> out{};
-      star::iota<0, star::size<TRanges>> | star::for_each([&](auto idx) {
+      star::for_each([&](auto idx) {
         constexpr std::size_t idx_size = star::size<std::decay_t<Element<idx, TRanges>>>;
         if (sum <= tIndex && tIndex < sum + idx_size) {
           if (out.has_value()) {
@@ -39,7 +38,7 @@ struct JoinView {
           out = std::make_pair(idx.value, tIndex - sum);
         }
         sum += idx_size;
-      });
+      })(star::iota<0, star::size<TRanges>>);
       return *out;
     }();
     return get_at<pair.second>(get_at<pair.first>(ranges));

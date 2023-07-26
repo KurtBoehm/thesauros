@@ -1,11 +1,9 @@
 #include <array>
 #include <concepts>
-#include <cstddef>
 #include <iostream>
 #include <optional>
 #include <tuple>
 #include <type_traits>
-#include <utility>
 #include <variant>
 
 #include "thesauros/macropolis.hpp"

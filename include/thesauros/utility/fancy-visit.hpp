@@ -1,6 +1,7 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_FANCY_VISIT_HPP
 #define INCLUDE_THESAUROS_UTILITY_FANCY_VISIT_HPP
 
+#include <concepts>
 #include <functional>
 #include <stdexcept>
 #include <type_traits>

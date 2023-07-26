@@ -1,4 +1,3 @@
-#include <cassert>
 #include <concepts>
 #include <cstdint>
 

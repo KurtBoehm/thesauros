@@ -4,7 +4,6 @@
 #include <concepts>
 #include <cstddef>
 #include <type_traits>
-#include <utility>
 #include <variant>
 
 #include "thesauros/utility/static-ranges/sinks/contains.hpp"

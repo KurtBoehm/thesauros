@@ -7,7 +7,6 @@
 #include <exception>
 #include <filesystem>
 #include <sstream>
-#include <stdio.h>
 #include <string>
 #include <utility>
 
@@ -84,7 +83,7 @@ struct FileReader {
     seek(pre, SEEK_SET);
     return ret;
   }
-  auto try_pread(DynamicBuffer& buf, std::size_t size, off_t offset) {
+  auto try_pread(DynamicBuffer& buf, std::size_t size, long offset) {
     buf.resize(size);
     const auto ret = try_pread(buf.data(), size, offset);
     buf.resize(ret);
@@ -93,13 +92,13 @@ struct FileReader {
 
   template<typename T>
   requires std::is_trivial_v<T>
-  void pread(T* ptr, std::size_t size, off_t offset) {
+  void pread(T* ptr, std::size_t size, long offset) {
     const auto ret = try_pread(ptr, size, offset);
     if (ret != size) {
       throw Exception("pread failed: ", ret, " != ", size);
     }
   }
-  void pread(DynamicBuffer& buf, std::size_t size, off_t offset) {
+  void pread(DynamicBuffer& buf, std::size_t size, long offset) {
     buf.resize(size);
     pread(buf.data(), size, offset);
   }

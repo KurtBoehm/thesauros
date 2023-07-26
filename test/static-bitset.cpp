@@ -2,7 +2,6 @@
 #include <cstddef>
 #include <iostream>
 #include <type_traits>
-#include <vector>
 
 #include "thesauros/containers.hpp"
 #include "thesauros/test.hpp"

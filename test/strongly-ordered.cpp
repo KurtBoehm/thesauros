@@ -1,6 +1,5 @@
 #include <algorithm>
 #include <iostream>
-#include <utility>
 #include <vector>
 
 #include "thesauros/containers.hpp"

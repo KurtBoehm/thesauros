@@ -1,6 +1,4 @@
 #include <functional>
-#include <iostream>
-#include <ostream>
 #include <vector>
 
 #include "thesauros/algorithms.hpp"

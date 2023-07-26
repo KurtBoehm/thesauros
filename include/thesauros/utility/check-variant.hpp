@@ -1,6 +1,7 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_CHECK_VARIANT_HPP
 #define INCLUDE_THESAUROS_UTILITY_CHECK_VARIANT_HPP
 
+#include <concepts>
 #include <exception>
 #include <variant>
 

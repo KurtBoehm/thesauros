@@ -1,7 +1,5 @@
-#include <iomanip>
 #include <iostream>
 #include <numbers>
-#include <sstream>
 
 #include "thesauros/format.hpp"
 #include "thesauros/test.hpp"

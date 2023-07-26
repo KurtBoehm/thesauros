@@ -99,8 +99,7 @@ inline double hypot_single(__m128d x, __m128d y) {
 } // namespace sse
 #endif
 
-template<typename T>
-requires std::floating_point<T>
+template<std::floating_point T>
 inline T fma(T x, T y, T z) {
   if constexpr (std::same_as<T, float>) {
     return __builtin_fmaf(x, y, z);
@@ -129,8 +128,7 @@ inline T sqrt(T value) {
   return std::sqrt(value);
 }
 
-template<typename T>
-requires std::floating_point<T>
+template<std::floating_point T>
 inline T hypot(T x, T y) {
 #ifdef __SSE__
   if constexpr (std::same_as<T, float>) {

@@ -2,6 +2,7 @@
 #define INCLUDE_THESAUROS_ITERATOR_FACADES_HPP
 
 #include <compare>
+#include <concepts>
 #include <iterator>
 #include <type_traits>
 

@@ -1,6 +1,7 @@
 #ifndef INCLUDE_THESAUROS_MATH_DIVMOD_HPP
 #define INCLUDE_THESAUROS_MATH_DIVMOD_HPP
 
+#include <concepts>
 #include <limits>
 #include <utility>
 

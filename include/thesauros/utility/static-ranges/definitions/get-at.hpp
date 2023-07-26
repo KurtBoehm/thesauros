@@ -1,9 +1,12 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_DEFINITIONS_GET_AT_HPP
 #define INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_DEFINITIONS_GET_AT_HPP
 
+#include <array>
 #include <cstddef>
+#include <tuple>
 #include <type_traits>
 #include <utility>
+#include <variant>
 
 #include "thesauros/utility/value-tag.hpp"
 

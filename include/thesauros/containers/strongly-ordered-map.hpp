@@ -143,10 +143,10 @@ struct StronglyOrderedMap {
   void transform_or_create(const Key& key, TTrans&& transform, TCreate&& create) {
     const auto iter = lower_bound(key);
     if (iter != end() && PairEqual{}(*iter, key)) {
-      transform(iter->value());
+      std::forward<TTrans>(transform)(iter->value());
       return;
     }
-    data_.insert(iter, Value{key, create()});
+    data_.insert(iter, Value{key, std::forward<TCreate>(create)()});
   }
 
   bool erase(const auto& key) {

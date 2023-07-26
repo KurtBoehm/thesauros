@@ -3,7 +3,6 @@
 
 #include <cstddef>
 #include <functional>
-#include <type_traits>
 
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"
 #include "thesauros/utility/static-ranges/definitions/get-at.hpp"
@@ -16,12 +15,11 @@ struct AllDifferentGenerator : public ConsumerGeneratorBase {
   template<typename TRange>
   constexpr bool operator()(TRange&& range) const {
     constexpr std::size_t size = star::size<TRange>;
-    return star::index_transform<size>([&](auto i) {
-             const auto trans = star::index_transform<i + 1, size>(
-               [&](auto j) { return get_at(range, i) != get_at(range, j); });
-             return trans | star::left_reduce(std::logical_and<>{}, true);
-           }) |
-           star::left_reduce(std::logical_and<>{}, true);
+    return star::left_reduce(std::logical_and<>{}, true)(star::index_transform<size>([&](auto i) {
+      const auto trans = star::index_transform<i + 1, size>(
+        [&](auto j) { return get_at(range, i) != get_at(range, j); });
+      return star::left_reduce(std::logical_and<>{}, true)(trans);
+    }));
   }
 };
 

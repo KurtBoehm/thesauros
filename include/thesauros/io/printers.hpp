@@ -1,6 +1,7 @@
 #ifndef INCLUDE_THESAUROS_IO_PRINTERS_HPP
 #define INCLUDE_THESAUROS_IO_PRINTERS_HPP
 
+#include <concepts>
 #include <iterator>
 #include <ostream>
 #include <string_view>

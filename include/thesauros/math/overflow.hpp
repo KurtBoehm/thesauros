@@ -1,6 +1,7 @@
 #ifndef INCLUDE_THESAUROS_MATH_OVERFLOW_HPP
 #define INCLUDE_THESAUROS_MATH_OVERFLOW_HPP
 
+#include <concepts>
 #include <limits>
 
 #include "thesauros/utility/info-result.hpp"
@@ -69,20 +70,17 @@ struct OverflowMultiplies<void> {
   }
 };
 
-template<typename T>
-requires std::unsigned_integral<T>
+template<std::unsigned_integral T>
 inline constexpr T saturate_add(T arg1, T arg2) {
   return overflow_add(arg1, arg2).value_or(std::numeric_limits<T>::max());
 }
 
-template<typename T>
-requires std::unsigned_integral<T>
+template<std::unsigned_integral T>
 inline constexpr T saturate_subtract(T arg1, T arg2) {
   return overflow_subtract(arg1, arg2).value_or(0);
 }
 
-template<typename T>
-requires std::unsigned_integral<T>
+template<std::unsigned_integral T>
 inline constexpr T saturate_multiply(T arg1, T arg2) {
   return overflow_multiply(arg1, arg2).value_or(std::numeric_limits<T>::max());
 }

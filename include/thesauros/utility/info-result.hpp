@@ -2,7 +2,6 @@
 #define INCLUDE_THESAUROS_UTILITY_INFO_RESULT_HPP
 
 #include <cassert>
-#include <concepts>
 #include <stdexcept>
 #include <utility>
 

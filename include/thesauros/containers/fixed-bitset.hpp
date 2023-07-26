@@ -9,7 +9,6 @@
 #include <concepts>
 #include <cstddef>
 #include <functional>
-#include <initializer_list>
 #include <ostream>
 
 #include "thesauros/containers/array/fixed.hpp"
@@ -46,12 +45,12 @@ struct FixedBitset {
     constexpr std::size_t chunk_num = div_ceil(size, chunk_bit_num);
 
     std::array<bool, size> arr{values...};
-    star::iota<0, chunk_num> | star::for_each([&](auto i) {
+    star::for_each([&](auto i) {
       constexpr auto offset = i * chunk_bit_num;
-      chunks_[i] = star::index_transform<std::min(chunk_bit_num, size - offset)>(
-                     [&](auto j) { return Chunk{std::get<offset + j>(arr)} << j; }) |
-                   star::left_reduce(std::bit_or<>{}, false);
-    });
+      chunks_[i] = star::left_reduce(std::bit_or<>{}, false)(
+        star::index_transform<std::min(chunk_bit_num, size - offset)>(
+          [&](auto j) { return Chunk{std::get<offset + j>(arr)} << j; }));
+    })(star::iota<0, chunk_num>);
   }
 
   void set(std::size_t index) {

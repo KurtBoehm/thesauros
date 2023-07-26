@@ -45,20 +45,19 @@ struct AllExceptGenerator : public RangeGeneratorBase {
       std::array<std::size_t, range_size> buffer{};
       std::size_t count = 0;
 
-      star::iota<0, range_size> | star::for_each([&](auto i) {
+      star::for_each([&](auto i) {
         bool contains = false;
-        tIdxRange | star::for_each([&](auto j) { contains = contains || (i == j); });
+        star::for_each([&](auto j) { contains = contains || (i == j); })(tIdxRange);
         if (!contains) {
           buffer[count] = i;
           ++count;
         }
-      });
+      })(star::iota<0, range_size>);
 
       return std::make_pair(buffer, count);
     }();
-    constexpr auto idxs =
-      star::index_transform<pair.second>([&](auto idx) { return std::get<idx>(pair.first); }) |
-      star::to_array;
+    constexpr auto idxs = star::to_array(
+      star::index_transform<pair.second>([&](auto idx) { return std::get<idx>(pair.first); }));
 
     return FilterView<TRange, idxs>{std::forward<TRange>(range)};
   }

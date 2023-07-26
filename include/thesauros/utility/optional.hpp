@@ -1,6 +1,7 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_OPTIONAL_HPP
 #define INCLUDE_THESAUROS_UTILITY_OPTIONAL_HPP
 
+#include <concepts>
 #include <functional>
 #include <optional>
 #include <type_traits>

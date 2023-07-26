@@ -1,10 +1,9 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_STATIC_MAP_HPP
 #define INCLUDE_THESAUROS_UTILITY_STATIC_MAP_HPP
 
-#include <cstddef>
 #include <utility>
 
-#include "thesauros/utility/static-ranges/sinks/all-different.hpp"
+#include "thesauros/utility/static-ranges.hpp"
 #include "thesauros/utility/tuple.hpp"
 #include "thesauros/utility/type-sequence.hpp"
 #include "thesauros/utility/value-tag.hpp"

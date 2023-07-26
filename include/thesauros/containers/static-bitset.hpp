@@ -5,15 +5,14 @@
 #include <array>
 #include <cassert>
 #include <climits>
+#include <concepts>
 #include <cstddef>
-#include <limits>
 #include <ostream>
 
 #include "thesauros/math/arithmetic.hpp"
 #include "thesauros/ranges/iota.hpp"
 #include "thesauros/utility/fixed-size-integer.hpp"
 #include "thesauros/utility/multi-bit-reference.hpp"
-#include "thesauros/utility/static-ranges/piping.hpp"
 #include "thesauros/utility/static-ranges/ranges/constant.hpp"
 #include "thesauros/utility/static-ranges/ranges/iota.hpp"
 #include "thesauros/utility/static-ranges/ranges/reversed.hpp"
@@ -37,8 +36,8 @@ struct StaticBitset {
 
   constexpr StaticBitset() = default;
   explicit constexpr StaticBitset(bool value)
-      : chunks_(star::constant<static_chunk_num>(value ? one_chunk : zero_chunk) | star::to_array) {
-  }
+      : chunks_(star::to_array(star::constant<static_chunk_num>(value ? one_chunk : zero_chunk))) {}
+
   template<typename... TArgs>
   requires(sizeof...(TArgs) == static_size && (... && std::same_as<TArgs, bool>))
   explicit constexpr StaticBitset(TArgs&&... args)
@@ -103,8 +102,8 @@ struct StaticBitset {
   }
 
   friend std::ostream& operator<<(std::ostream& stream, const StaticBitset& bitset) {
-    star::iota<0, static_size> | star::reversed |
-      star::for_each([&](auto i) { stream << int{bitset.get(i)}; });
+    star::for_each([&](auto i) { stream << int{bitset.get(i)}; })(
+      star::reversed(star::iota<0, static_size>));
     return stream;
   }
 
@@ -114,29 +113,28 @@ private:
   template<typename... TArgs>
   static constexpr auto generate(TArgs&&... args) {
     const auto data = std::make_tuple(std::forward<TArgs>(args)...);
-    return star::index_transform<static_chunk_num>([&](auto chunk_index) {
-             Chunk chunk{0};
+    return star::to_array(star::index_transform<static_chunk_num>([&](auto chunk_index) {
+      Chunk chunk{0};
 
-             if constexpr ((chunk_index + 1) * chunk_bit_num <= static_size) {
-               // complete chunk
-               star::iota<0, chunk_bit_num> | star::for_each([&](auto bit_index) {
-                 constexpr std::size_t index = chunk_bit_num * chunk_index + bit_index;
-                 chunk += Chunk{std::get<index>(data)} << bit_index;
-               });
-             } else {
-               // incomplete chunk
-               constexpr std::size_t full_chunk_num = static_size / chunk_bit_num;
-               constexpr std::size_t remainder = static_size % chunk_bit_num;
+      if constexpr ((chunk_index + 1) * chunk_bit_num <= static_size) {
+        // complete chunk
+        star::for_each([&](auto bit_index) {
+          constexpr std::size_t index = chunk_bit_num * chunk_index + bit_index;
+          chunk += Chunk{std::get<index>(data)} << bit_index;
+        })(star::iota<0, chunk_bit_num>);
+      } else {
+        // incomplete chunk
+        constexpr std::size_t full_chunk_num = static_size / chunk_bit_num;
+        constexpr std::size_t remainder = static_size % chunk_bit_num;
 
-               star::iota<0, remainder> | star::for_each([&chunk, &data](auto bit_index) {
-                 constexpr std::size_t index = chunk_bit_num * full_chunk_num + bit_index;
-                 chunk += Chunk{std::get<index>(data)} << bit_index;
-               });
-             }
+        star::for_each([&chunk, &data](auto bit_index) {
+          constexpr std::size_t index = chunk_bit_num * full_chunk_num + bit_index;
+          chunk += Chunk{std::get<index>(data)} << bit_index;
+        })(star::iota<0, remainder>);
+      }
 
-             return chunk;
-           }) |
-           star::to_array;
+      return chunk;
+    }));
   }
 
   template<typename TCounter>

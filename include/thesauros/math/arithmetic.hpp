@@ -12,14 +12,12 @@
 #include "thesauros/utility/inlining.hpp"
 
 namespace thes {
-template<typename T>
-requires std::unsigned_integral<T>
+template<std::unsigned_integral T>
 inline constexpr T add_max(T arg1, T arg2, T maximum) {
   const auto v = overflow_add(arg1, arg2);
   return v.is_valid() ? std::min(*v, maximum) : maximum;
 }
-template<typename T>
-requires std::unsigned_integral<T>
+template<std::unsigned_integral T>
 inline constexpr T sub_min(T arg1, T arg2, T minimum) {
   const auto v = overflow_subtract(arg1, arg2);
   return v.is_valid() ? std::max(*v, minimum) : minimum;
@@ -40,8 +38,7 @@ inline constexpr T prod_div(const T factor1, const T factor2, const T divisor) {
   return factor2 * div + (factor2 * rem) / divisor;
 }
 
-template<typename TBase, typename TUInt>
-requires std::unsigned_integral<TUInt>
+template<typename TBase, std::unsigned_integral TUInt>
 inline constexpr TBase pow(TBase x, const TUInt exponent) {
   const unsigned iter = std::bit_width(exponent);
   TBase y = 1;

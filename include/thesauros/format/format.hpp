@@ -1,7 +1,6 @@
 #ifndef INCLUDE_THESAUROS_FORMAT_FORMAT_HPP
 #define INCLUDE_THESAUROS_FORMAT_FORMAT_HPP
 
-#include <concepts>
 #include <ios>
 #include <ostream>
 #include <tuple>

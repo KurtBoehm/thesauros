@@ -11,9 +11,6 @@
 #include <utility>
 
 #include "thesauros/utility/static-ranges.hpp"
-#include "thesauros/utility/static-ranges/ranges/iota.hpp"
-#include "thesauros/utility/static-ranges/ranges/transform.hpp"
-#include "thesauros/utility/static-ranges/sinks/reduce.hpp"
 #include "thesauros/utility/static-string/character-tools.hpp"
 
 namespace thes {

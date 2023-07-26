@@ -4,8 +4,7 @@
 #include <concepts>
 
 namespace thes {
-template<typename T>
-requires std::integral<T>
+template<std::integral T>
 struct SafeInt {
   explicit constexpr SafeInt(T value) : value_(value) {}
 
@@ -29,8 +28,7 @@ struct SafeInt {
     return a -= b;
   }
 
-  template<typename TOther>
-  requires std::unsigned_integral<TOther>
+  template<std::unsigned_integral TOther>
   constexpr SafeInt& operator>>=(SafeInt<TOther> amount) {
     value_ >>= amount.raw();
     return *this;
