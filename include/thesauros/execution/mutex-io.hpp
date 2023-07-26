@@ -5,6 +5,7 @@
 #include <iostream>
 #include <mutex>
 #include <ostream>
+#include <utility>
 
 namespace thes {
 template<typename TStream>

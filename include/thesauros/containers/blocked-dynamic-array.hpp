@@ -10,6 +10,7 @@
 #include <ostream>
 #include <span>
 #include <type_traits>
+#include <utility>
 
 #include "thesauros/containers/array/growth-policy.hpp"
 #include "thesauros/containers/array/typed-chunk.hpp"

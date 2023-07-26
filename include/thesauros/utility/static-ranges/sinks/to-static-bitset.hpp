@@ -4,6 +4,7 @@
 #include <concepts>
 #include <cstddef>
 #include <type_traits>
+#include <utility>
 
 #include "thesauros/containers/static-bitset.hpp"
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"

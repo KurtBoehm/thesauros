@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <ostream>
 #include <type_traits>
+#include <utility>
 
 #include "thesauros/iterator/facades.hpp"
 #include "thesauros/iterator/provider-map.hpp"

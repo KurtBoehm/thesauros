@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <utility>
 
 #include "thesauros/utility/inlining.hpp"
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"

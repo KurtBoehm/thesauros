@@ -6,6 +6,7 @@
 #include <latch>
 #include <numeric>
 #include <type_traits>
+#include <utility>
 
 #include "thesauros/containers/array/fixed.hpp"
 #include "thesauros/utility/safe-cast.hpp"

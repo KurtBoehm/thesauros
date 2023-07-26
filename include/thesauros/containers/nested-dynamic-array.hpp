@@ -6,6 +6,7 @@
 #include <memory>
 #include <ostream>
 #include <span>
+#include <utility>
 
 #include "thesauros/containers/array/typed-chunk.hpp"
 #include "thesauros/io/printers.hpp"

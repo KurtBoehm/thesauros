@@ -8,6 +8,7 @@
 #include <concepts>
 #include <cstddef>
 #include <ostream>
+#include <utility>
 
 #include "thesauros/math/arithmetic.hpp"
 #include "thesauros/ranges/iota.hpp"

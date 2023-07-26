@@ -3,6 +3,7 @@
 
 #include <array>
 #include <cstddef>
+#include <utility>
 
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"
 #include "thesauros/utility/static-ranges/definitions/get-at.hpp"

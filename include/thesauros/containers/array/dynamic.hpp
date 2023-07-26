@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <initializer_list>
 #include <memory>
+#include <utility>
 
 #include "thesauros/containers/array/growth-policy.hpp"
 #include "thesauros/containers/array/initialization-policy.hpp"

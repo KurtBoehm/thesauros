@@ -5,6 +5,7 @@
 #include <ostream>
 #include <tuple>
 #include <type_traits>
+#include <utility>
 
 #include "thesauros/format/manip.hpp"
 #include "thesauros/format/style.hpp"

@@ -3,6 +3,7 @@
 
 #include <concepts>
 #include <exception>
+#include <utility>
 #include <variant>
 
 #include "thesauros/utility/fancy-visit.hpp"

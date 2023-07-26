@@ -8,6 +8,7 @@
 #include <ostream>
 #include <stdexcept>
 #include <string_view>
+#include <utility>
 
 #include "thesauros/math/safe-integer.hpp"
 #include "thesauros/utility/static-capacity-string.hpp"

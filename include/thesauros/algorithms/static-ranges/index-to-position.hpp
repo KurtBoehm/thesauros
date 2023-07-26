@@ -3,6 +3,7 @@
 
 #include <array>
 #include <cstddef>
+#include <utility>
 
 #include "thesauros/math/divmod.hpp"
 #include "thesauros/utility/value-tag.hpp"

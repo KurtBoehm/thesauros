@@ -7,6 +7,7 @@
 #include <span>
 #include <sstream>
 #include <stdexcept>
+#include <utility>
 
 #include "thesauros/containers/array/initialization-policy.hpp"
 #include "thesauros/containers/array/typed-chunk.hpp"

@@ -3,6 +3,7 @@
 
 #include <concepts>
 #include <type_traits>
+#include <utility>
 
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"
 #include "thesauros/utility/static-ranges/sinks/apply.hpp"

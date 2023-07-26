@@ -2,6 +2,7 @@
 #define INCLUDE_THESAUROS_MACROPOLIS_MEMBERS_HPP
 
 #include <cstddef>
+#include <utility>
 
 namespace thes {
 template<auto tSerialName, auto tValue>

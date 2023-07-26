@@ -2,6 +2,7 @@
 #define INCLUDE_THESAUROS_UTILITY_VALUE_OPTIONAL_HPP
 
 #include <ostream>
+#include <utility>
 
 namespace thes {
 template<typename T, T tEmpty>
