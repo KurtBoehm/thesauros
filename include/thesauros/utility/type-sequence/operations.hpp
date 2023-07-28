@@ -8,6 +8,8 @@
 #include "thesauros/utility/type-sequence/type-sequence.hpp"
 
 namespace thes {
+// join
+
 template<AnyTypeSeq... Ts>
 struct JoinedTypeSeqTrait;
 
@@ -36,6 +38,8 @@ inline constexpr auto join(TSeqs... seqs) {
   return join_type_seqs(seqs...);
 }
 
+// cartesian produce
+
 template<typename T, AnyTypeSeq... TSeqs>
 inline constexpr auto cartesian_product(TypeSeq<T> /*seq*/) {
   return TypeSeq<TypeSeq<T>>{};
@@ -54,87 +58,84 @@ inline constexpr auto cartesian_product(TypeSeq<Ts...> /*head*/, TSeqs... tail) 
 template<AnyTypeSeq... TSeqs>
 using CartesianTypeSeq = decltype(cartesian_product(TSeqs{}...));
 
-template<typename T>
-struct FlatTypeSeqTrait;
+// flatten
 
+template<AnyTypeSeq T>
+struct FlatTypeSeqTrait;
 template<typename T>
 requires(!AnyTypeSeq<T>)
 struct FlatTypeSeqTrait<TypeSeq<T>> {
   using Type = TypeSeq<T>;
 };
-
 template<typename... Ts>
 struct FlatTypeSeqTrait<TypeSeq<Ts...>> {
   using Type = JoinedTypeSeq<typename FlatTypeSeqTrait<AsTypeSeq<Ts>>::Type...>;
 };
 
-template<typename T>
-using FlatTypeSeq = FlatTypeSeqTrait<T>::Type;
+template<AnyTypeSeq TSeq>
+using FlatTypeSeq = FlatTypeSeqTrait<TSeq>::Type;
 
-struct TransformedTypeSeqTrait {
-  template<typename T, template<typename> typename TMap>
-  struct Impl;
-  template<typename... Ts, template<typename> typename TMap>
-  struct Impl<TypeSeq<Ts...>, TMap> {
-    using Type = TypeSeq<TMap<Ts>...>;
-  };
+template<AnyTypeSeq TSeq>
+inline constexpr FlatTypeSeq<TSeq> flatten(TSeq /*seq*/) {
+  return {};
+}
 
-  template<typename T, template<typename> typename TMap>
-  using Type = Impl<T, TMap>::Type;
+// transform
+
+template<AnyTypeSeq TSeq, template<typename> typename TMap>
+struct TransformedTypeSeqTrait;
+template<typename... Ts, template<typename> typename TMap>
+struct TransformedTypeSeqTrait<TypeSeq<Ts...>, TMap> {
+  using Type = TypeSeq<TMap<Ts>...>;
 };
 
-template<typename T, template<typename> typename TMap>
-using TransformedTypeSeq = TransformedTypeSeqTrait::Type<T, TMap>;
+template<AnyTypeSeq TSeq, template<typename> typename TMap>
+using TransformedTypeSeq = TransformedTypeSeqTrait<TSeq, TMap>::Type;
 
-struct FilteredTypeSeqTrait {
-  template<typename T, template<typename> typename TFilter>
-  struct Impl;
+// filter
 
-  template<typename THead, typename... TTail, template<typename> typename TFilter>
-  struct Impl<TypeSeq<THead, TTail...>, TFilter> {
-    using Rec = Impl<TypeSeq<TTail...>, TFilter>::Type;
-    using Type =
-      std::conditional_t<TFilter<THead>::value, typename Rec::template Prepended<THead>, Rec>;
-  };
-
-  template<template<typename> typename TFilter>
-  struct Impl<TypeSeq<>, TFilter> {
-    using Type = TypeSeq<>;
-  };
-
-  template<typename T, template<typename> typename TFilter>
-  using Type = Impl<T, TFilter>::Type;
+template<AnyTypeSeq TSeq, template<typename> typename TFilter>
+struct FilteredTypeSeqTrait;
+template<template<typename> typename TFilter>
+struct FilteredTypeSeqTrait<TypeSeq<>, TFilter> {
+  using Type = TypeSeq<>;
+};
+template<typename THead, typename... TTail, template<typename> typename TFilter>
+struct FilteredTypeSeqTrait<TypeSeq<THead, TTail...>, TFilter> {
+  using Rec = FilteredTypeSeqTrait<TypeSeq<TTail...>, TFilter>::Type;
+  using Type =
+    std::conditional_t<TFilter<THead>::value, typename Rec::template Prepended<THead>, Rec>;
 };
 
-template<typename T, template<typename> typename TFilter>
-using FilteredTypeSeq = FilteredTypeSeqTrait::Type<T, TFilter>;
+template<AnyTypeSeq TSeq, template<typename> typename TFilter>
+using FilteredTypeSeq = FilteredTypeSeqTrait<TSeq, TFilter>::Type;
 
-struct IndexFilteredTypeSeqTrait {
-  template<std::size_t tIdx, typename T, auto tIdxSeq>
-  struct Impl;
+// index filter
 
-  template<std::size_t tIdx, typename THead, typename... TTail, auto tIdxSeq>
-  struct Impl<tIdx, TypeSeq<THead, TTail...>, tIdxSeq> {
-    using Rec = Impl<tIdx + 1, TypeSeq<TTail...>, tIdxSeq>::Type;
-    using Type = std::conditional_t<star::contains(index_tag<tIdx>)(tIdxSeq),
-                                    typename Rec::template Prepended<THead>, Rec>;
-  };
-
-  template<std::size_t tIdx, auto tIdxSeq>
-  struct Impl<tIdx, TypeSeq<>, tIdxSeq> {
-    using Type = TypeSeq<>;
-  };
-
-  template<typename T, auto tIdxSeq>
-  using Type = Impl<0, T, tIdxSeq>::Type;
+template<std::size_t tIdx, AnyTypeSeq TSeq, auto tIdxSeq>
+struct IndexFilteredTypeSeqTrait;
+template<std::size_t tIdx, auto tIdxSeq>
+struct IndexFilteredTypeSeqTrait<tIdx, TypeSeq<>, tIdxSeq> {
+  using Type = TypeSeq<>;
+};
+template<std::size_t tIdx, typename THead, typename... TTail, auto tIdxSeq>
+struct IndexFilteredTypeSeqTrait<tIdx, TypeSeq<THead, TTail...>, tIdxSeq> {
+  using Rec = IndexFilteredTypeSeqTrait<tIdx + 1, TypeSeq<TTail...>, tIdxSeq>::Type;
+  using Type = std::conditional_t<tIdxSeq | star::contains(index_tag<tIdx>),
+                                  typename Rec::template Prepended<THead>, Rec>;
 };
 
 template<typename T, auto tIdxSeq>
-using IndexFilteredTypeSeq = IndexFilteredTypeSeqTrait::Type<T, tIdxSeq>;
+using IndexFilteredTypeSeq = IndexFilteredTypeSeqTrait<0, T, tIdxSeq>::Type;
 
-template<typename T>
+// unique type
+
+template<AnyTypeSeq TSeq>
 struct UniqueTypeSeqTrait;
-
+template<>
+struct UniqueTypeSeqTrait<TypeSeq<>> {
+  using Type = TypeSeq<>;
+};
 template<typename T, typename... Ts>
 struct UniqueTypeSeqTrait<TypeSeq<T, Ts...>> {
   template<typename TOther>
@@ -142,11 +143,6 @@ struct UniqueTypeSeqTrait<TypeSeq<T, Ts...>> {
 
   using Type =
     UniqueTypeSeqTrait<FilteredTypeSeq<TypeSeq<Ts...>, Filter>>::Type::template Prepended<T>;
-};
-
-template<>
-struct UniqueTypeSeqTrait<TypeSeq<>> {
-  using Type = TypeSeq<>;
 };
 
 template<typename T>
