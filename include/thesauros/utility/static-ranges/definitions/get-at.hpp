@@ -14,10 +14,10 @@
 namespace thes::star {
 namespace impl {
 template<std::size_t tIndex, typename TRange>
-concept HasMemberGet = requires(const TRange& c) { c.template get<tIndex>(); };
+concept HasMemberGet = requires(TRange&& rng) { std::forward<TRange>(rng).template get<tIndex>(); };
 
 template<std::size_t tIndex, typename TRange>
-concept HasFreeGet = requires(const TRange& c) { std::get<tIndex>(c); };
+concept HasFreeGet = requires(TRange&& rng) { std::get<tIndex>(std::forward<TRange>(rng)); };
 } // namespace impl
 
 template<std::size_t tIndex, typename TRange>
@@ -26,27 +26,23 @@ struct GetAtTrait;
 template<std::size_t tIndex, typename TRange>
 requires impl::HasMemberGet<tIndex, TRange>
 struct GetAtTrait<tIndex, TRange> {
-  template<typename TR>
-  requires std::same_as<std::decay_t<TR>, TRange>
-  static constexpr decltype(auto) get_at(TR&& range) {
-    return std::forward<TR>(range).template get<tIndex>();
+  static constexpr decltype(auto) get_at(TRange&& range) {
+    return std::forward<TRange>(range).template get<tIndex>();
   }
 };
 
 template<std::size_t tIndex, typename TRange>
 requires(!impl::HasMemberGet<tIndex, TRange> && impl::HasFreeGet<tIndex, TRange>)
 struct GetAtTrait<tIndex, TRange> {
-  template<typename TR>
-  requires std::same_as<std::decay_t<TR>, TRange>
-  static constexpr decltype(auto) get_at(TR&& range) {
-    return std::get<tIndex>(std::forward<TR>(range));
+  static constexpr decltype(auto) get_at(TRange&& range) {
+    return std::get<tIndex>(std::forward<TRange>(range));
   }
 };
 
 template<std::size_t tIndex, typename TRange>
-requires(requires { sizeof(GetAtTrait<tIndex, std::decay_t<TRange>>); })
+requires(requires { sizeof(GetAtTrait<tIndex, TRange>); })
 inline constexpr decltype(auto) get_at(TRange&& r, IndexTag<tIndex> /*tag*/ = {}) {
-  return GetAtTrait<tIndex, std::decay_t<TRange>>::get_at(std::forward<TRange>(r));
+  return GetAtTrait<tIndex, TRange>::get_at(std::forward<TRange>(r));
 }
 } // namespace thes::star
 
