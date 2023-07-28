@@ -24,6 +24,9 @@ template<typename T>
 struct Optional : public std::optional<T> {
   using std::optional<T>::optional;
 
+  Optional(const std::optional<T>& opt) : std::optional<T>(opt) {}
+  Optional(std::optional<T>&& opt) : std::optional<T>(std::move(opt)) {}
+
   template<detail::ReturnsOptional<T&> TF>
   constexpr auto and_then(TF&& f) & {
     return this->has_value() ? std::invoke(std::forward<TF>(f), **this)
@@ -98,6 +101,8 @@ struct Optional : public std::optional<T> {
 };
 template<class T>
 Optional(T) -> Optional<T>;
+template<class T>
+Optional(std::optional<T>) -> Optional<T>;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_UTILITY_OPTIONAL_HPP
