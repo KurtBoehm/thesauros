@@ -280,6 +280,19 @@ int main() {
     static_assert(star::HasValue<Range>);
   }
 
+  // flatten
+  {
+    static constexpr auto j =
+      star::flattened(std::tuple{std::array{0, 4, 3, 1}, std::array{4, 0}, std::array{3, 1}});
+    using Range = decltype(j);
+
+    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::size<Range> == 8);
+    static_assert(star::get_at<1>(j) == 4);
+    static_assert((j | star::to_array) == std::array{0, 4, 3, 1, 4, 0, 3, 1});
+    static_assert(star::HasValue<Range>);
+  }
+
   // zip
   {
     static constexpr auto r1 = std::array{1, 2, 3};

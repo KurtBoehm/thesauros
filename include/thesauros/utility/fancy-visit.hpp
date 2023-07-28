@@ -47,14 +47,14 @@ struct FancyVisitor {
     }
   };
 
-  template<typename TTup>
+  template<typename TSeq>
   struct BareFunReturnType;
   template<typename... TArgs>
   struct BareFunReturnType<TypeSeq<TArgs...>> {
     using Type = decltype(std::declval<TVisitor>()(unwrap(std::declval<TArgs>())...));
   };
 
-  template<typename TTup>
+  template<typename TSeq>
   struct TaggedFunReturnType;
   template<typename... TArgs>
   struct TaggedFunReturnType<TypeSeq<TArgs...>> {
@@ -65,11 +65,11 @@ struct FancyVisitor {
       unwrap(std::declval<TArgs>())...));
   };
 
-  template<typename TTup>
+  template<typename TSeq>
   using FunReturnType =
-    std::conditional_t<tWithMaker, TaggedFunReturnType<TTup>, BareFunReturnType<TTup>>::Type;
+    std::conditional_t<tWithMaker, TaggedFunReturnType<TSeq>, BareFunReturnType<TSeq>>::Type;
 
-  template<typename TTup>
+  template<typename TSeq>
   struct MakeReturn;
   template<typename T>
   struct MakeReturn<TypeSeq<T>> {
@@ -80,7 +80,7 @@ struct FancyVisitor {
     using Type = std::variant<Ts...>;
   };
 
-  template<typename TTup>
+  template<typename TSeq>
   struct Maker;
 
   template<typename... Ts>
@@ -103,20 +103,20 @@ struct FancyVisitor {
     }
   };
 
-  using Params = ProductTypeSeq<typename VariantHandler<std::decay_t<TVariants>>::Tuple...>;
+  using Params = CartesianTypeSeq<typename VariantHandler<std::decay_t<TVariants>>::Tuple...>;
 
-  using RawReturnTup = TransformedTypeSeq<Params, FunReturnType>;
+  using RawReturnSeq = TransformedTypeSeq<Params, FunReturnType>;
 
-  using BaseReturnTup =
-    std::conditional_t<tFlatten, FlatTypeSeq<ConvertedTypeSeq<RawReturnTup>>, RawReturnTup>;
+  using BaseReturnSeq =
+    std::conditional_t<tFlatten, FlatTypeSeq<ConvertedTypeSeq<RawReturnSeq>>, RawReturnSeq>;
 
   template<typename T>
   struct ReturnFilter : std::bool_constant<!std::is_same_v<T, FancyVisitorIgnore>> {};
-  using ReturnTup = UniqueTypeSeq<FilteredTypeSeq<BaseReturnTup, ReturnFilter>>;
+  using ReturnSeq = UniqueTypeSeq<FilteredTypeSeq<BaseReturnSeq, ReturnFilter>>;
 
-  using Return = MakeReturn<ReturnTup>::Type;
+  using Return = MakeReturn<ReturnSeq>::Type;
 
-  static constexpr Maker<ReturnTup> construct_in_place{};
+  static constexpr Maker<ReturnSeq> construct_in_place{};
 
   template<typename... TArgs>
   static constexpr auto call(auto maker, TVisitor&& visitor, TArgs&&... args) {

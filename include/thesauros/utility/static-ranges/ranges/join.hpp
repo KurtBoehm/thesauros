@@ -53,6 +53,11 @@ inline constexpr auto joined(TRanges&&... ranges) {
   return JoinView{Tuple{std::forward<TRanges>(ranges)...}};
 }
 
+template<typename TRangeRange>
+inline constexpr auto flattened(TRangeRange&& ranges) {
+  return JoinView{std::forward<TRangeRange>(ranges)};
+}
+
 struct JoinGenerator : public RangeGeneratorBase {
   template<typename TRanges>
   constexpr JoinView<TRanges> operator()(TRanges&& range) const {

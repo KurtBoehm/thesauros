@@ -19,6 +19,17 @@ static_assert(
                                  thes::TypeSeq<thes::TypeSeq<long>, thes::TypeSeq<double>>>>);
 using V5 = thes::FlatTypeSeq<thes::TypeSeq<V4, V4>>;
 static_assert(std::same_as<V5, thes::TypeSeq<int, float, long, double, int, float, long, double>>);
+
+using Prod = thes::CartesianTypeSeq<thes::TypeSeq<int, float>, thes::TypeSeq<short, long, char>,
+                                    thes::TypeSeq<double, long>>;
+static_assert(
+  std::same_as<
+    Prod, thes::TypeSeq<thes::TypeSeq<int, short, double>, thes::TypeSeq<int, short, long>,
+                        thes::TypeSeq<int, long, double>, thes::TypeSeq<int, long, long>,
+                        thes::TypeSeq<int, char, double>, thes::TypeSeq<int, char, long>,
+                        thes::TypeSeq<float, short, double>, thes::TypeSeq<float, short, long>,
+                        thes::TypeSeq<float, long, double>, thes::TypeSeq<float, long, long>,
+                        thes::TypeSeq<float, char, double>, thes::TypeSeq<float, char, long>>>);
 } // namespace nsp1
 
 struct Test1 {

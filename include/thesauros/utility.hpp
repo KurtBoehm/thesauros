@@ -58,7 +58,8 @@
 #include "utility/swap-or-equal.hpp" // IWYU pragma: export
 #include "utility/tuple.hpp" // IWYU pragma: export
 #include "utility/type-name.hpp" // IWYU pragma: export
-#include "utility/type-sequence.hpp" // IWYU pragma: export
+#include "utility/type-sequence/operations.hpp" // IWYU pragma: export
+#include "utility/type-sequence/type-sequence.hpp" // IWYU pragma: export
 #include "utility/type-tag.hpp" // IWYU pragma: export
 #include "utility/type-traits.hpp" // IWYU pragma: export
 #include "utility/type-transformations.hpp" // IWYU pragma: export
