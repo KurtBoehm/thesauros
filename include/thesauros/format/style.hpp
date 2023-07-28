@@ -219,11 +219,21 @@ inline constexpr std::array fg_rainbow{fmt::fg_red,  fmt::fg_yellow, fmt::fg_gre
 inline constexpr std::array fg_bright_rainbow{fmt::fg_bright_red,   fmt::fg_bright_yellow,
                                               fmt::fg_bright_green, fmt::fg_bright_cyan,
                                               fmt::fg_bright_blue,  fmt::fg_bright_magenta};
+
 inline constexpr Foreground rainbow_fg(std::size_t idx) {
   return fg_rainbow[idx % fg_rainbow.size()];
 }
+inline Foreground next_rainbow_fg() {
+  static std::size_t idx = 0;
+  return rainbow_fg(idx++);
+}
+
 inline constexpr Foreground bright_rainbow_fg(std::size_t idx) {
   return fg_bright_rainbow[idx % fg_bright_rainbow.size()];
+}
+inline Foreground next_bright_rainbow_fg() {
+  static std::size_t idx = 0;
+  return bright_rainbow_fg(idx++);
 }
 
 inline constexpr Background bg_none{Colour::NONE};
