@@ -136,14 +136,18 @@ inline fmt::FormattedArgs<TApp, TArgs...> formatted(TApp&& app, TArgs&&... args)
   return fmt::FormattedArgs<TApp, TArgs...>{std::forward<TApp>(app), std::forward<TArgs>(args)...};
 }
 
+template<typename... TArgs>
+inline fmt::UnformattedArgs<TArgs...> unformatted(TArgs&&... args) {
+  return fmt::UnformattedArgs<TArgs...>{std::forward<TArgs>(args)...};
+}
+
 template<fmt::Applier TApp, typename... TArgs>
 inline auto opt_formatted(fmt::AnyFormatTag auto tag, [[maybe_unused]] TApp&& app,
                           TArgs&&... args) {
   if constexpr (tag) {
-    return fmt::FormattedArgs<TApp, TArgs...>{std::forward<TApp>(app),
-                                              std::forward<TArgs>(args)...};
+    return formatted(std::forward<TApp>(app), std::forward<TArgs>(args)...);
   } else {
-    return fmt::UnformattedArgs<TArgs...>{std::forward<TArgs>(args)...};
+    return unformatted(std::forward<TArgs>(args)...);
   }
 }
 } // namespace thes
