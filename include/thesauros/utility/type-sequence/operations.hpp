@@ -125,8 +125,8 @@ struct IndexFilteredTypeSeqTrait<tIdx, TypeSeq<THead, TTail...>, tIdxSeq> {
                                   typename Rec::template Prepended<THead>, Rec>;
 };
 
-template<typename T, auto tIdxSeq>
-using IndexFilteredTypeSeq = IndexFilteredTypeSeqTrait<0, T, tIdxSeq>::Type;
+template<AnyTypeSeq TSeq, auto tIdxSeq>
+using IndexFilteredTypeSeq = IndexFilteredTypeSeqTrait<0, TSeq, tIdxSeq>::Type;
 
 // unique type
 
@@ -145,8 +145,8 @@ struct UniqueTypeSeqTrait<TypeSeq<T, Ts...>> {
     UniqueTypeSeqTrait<FilteredTypeSeq<TypeSeq<Ts...>, Filter>>::Type::template Prepended<T>;
 };
 
-template<typename T>
-using UniqueTypeSeq = UniqueTypeSeqTrait<T>::Type;
+template<AnyTypeSeq TSeq>
+using UniqueTypeSeq = UniqueTypeSeqTrait<TSeq>::Type;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_UTILITY_TYPE_SEQUENCE_OPERATIONS_HPP

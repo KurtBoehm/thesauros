@@ -79,6 +79,16 @@ int main() {
     static_assert(star::get_at<4>(con) == 1);
   }
 
+  // generate
+  {
+    static constexpr auto con = star::generate<5>([] { return 1; });
+    using Range = decltype(con);
+
+    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::size<Range> == 5);
+    static_assert(star::get_at<4>(con) == 1);
+  }
+
   // iota
   {
     static constexpr auto con = star::iota<0, 5>;

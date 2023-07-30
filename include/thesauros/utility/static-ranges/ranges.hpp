@@ -4,6 +4,7 @@
 #include "ranges/constant.hpp" // IWYU pragma: export
 #include "ranges/enumerate.hpp" // IWYU pragma: export
 #include "ranges/filter.hpp" // IWYU pragma: export
+#include "ranges/generate.hpp" // IWYU pragma: export
 #include "ranges/iota.hpp" // IWYU pragma: export
 #include "ranges/join.hpp" // IWYU pragma: export
 #include "ranges/postfix-product-inclusive.hpp" // IWYU pragma: export
