@@ -34,18 +34,19 @@ USER_DEFINED_LITERALS(u8, u8);
 
 #undef USER_DEFINED_LITERALS
 
-consteval f32 operator""_f32(long double v) {
-  return static_cast<f32>(v);
-}
-consteval f32 operator""_f32(unsigned long long v) {
-  return static_cast<f32>(v);
-}
-consteval f64 operator""_f64(long double v) {
-  return static_cast<f64>(v);
-}
-consteval f64 operator""_f64(unsigned long long v) {
-  return static_cast<f64>(v);
-}
+#define USER_DEFINED_LITERALS(WIDTH) \
+  consteval f##WIDTH operator""_f##WIDTH(long double v) { \
+    return static_cast<f##WIDTH>(v); \
+  } \
+  consteval f##WIDTH operator""_f##WIDTH(unsigned long long v) { \
+    return static_cast<f##WIDTH>(v); \
+  }
+
+USER_DEFINED_LITERALS(16)
+USER_DEFINED_LITERALS(32)
+USER_DEFINED_LITERALS(64)
+
+#undef USER_DEFINED_LITERALS
 } // namespace thes::literals
 
 #endif // INCLUDE_THESAUROS_UTILITY_LITERALS_HPP

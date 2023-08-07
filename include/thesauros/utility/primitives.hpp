@@ -20,6 +20,8 @@ using i128 = __int128;
 using u128 = unsigned __int128;
 #pragma GCC diagnostic pop
 
+using f16 = _Float16;
+static_assert(sizeof(f16) == 2);
 using f32 = float;
 static_assert(std::numeric_limits<f32>::is_iec559 && sizeof(f32) == 4);
 using f64 = double;
