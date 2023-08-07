@@ -2,6 +2,8 @@
 #define INCLUDE_THESAUROS_UTILITY_VOID_STORAGE_HPP
 
 #include "thesauros/utility/empty.hpp"
+#include <concepts>
+#include <type_traits>
 
 namespace thes {
 template<typename T>
@@ -26,6 +28,9 @@ inline constexpr VoidStorageTrait<T>::Rvalue
 void_storage_rvalue(const typename VoidStorageTrait<T>::Type& value) {
   return value;
 }
+
+template<typename T>
+using UnVoidStorage = std::conditional_t<std::same_as<T, thes::Empty>, void, T>;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_UTILITY_VOID_STORAGE_HPP
