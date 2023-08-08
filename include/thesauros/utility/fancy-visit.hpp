@@ -18,25 +18,26 @@ inline constexpr FancyVisitorIgnore fancy_visitor_ignore{};
 template<bool tRemoveIgnored, bool tFlatten, bool tWithMaker, typename TVisitor,
          typename... TVariants>
 struct FancyVisitor {
-  template<typename T>
-  struct VariantHandler {
-    using Tuple = TypeSeq<T>;
+  template<typename TRaw, typename TDecayed>
+  struct VariantHandlerImpl {
+    using Tuple = TypeSeq<TRaw>;
+    using Base = std::remove_reference_t<TRaw>;
 
-    template<typename TValue>
-    requires(std::same_as<std::decay_t<TValue>, T>)
-    static constexpr auto pack(TValue& value) {
-      using RefWrap = std::reference_wrapper<TValue>;
+    static constexpr auto pack(TRaw& value)
+    requires(std::is_lvalue_reference_v<TRaw>)
+    {
+      using RefWrap = std::reference_wrapper<Base>;
       return std::variant<RefWrap>{RefWrap(value)};
     }
 
-    template<typename TValue>
-    requires(std::same_as<std::decay_t<TValue>, T>)
-    static constexpr auto pack(TValue&& value) {
-      return std::variant<T>{std::forward<TValue>(value)};
+    static constexpr auto pack(TRaw&& value)
+    requires(!std::is_lvalue_reference_v<TRaw>)
+    {
+      return std::variant<TRaw>{std::move(value)};
     }
   };
-  template<typename... Ts>
-  struct VariantHandler<std::variant<Ts...>> {
+  template<typename TRaw, typename... Ts>
+  struct VariantHandlerImpl<TRaw, std::variant<Ts...>> {
     using Type = std::variant<Ts...>;
     using Tuple = TypeSeq<Ts...>;
 
@@ -46,6 +47,8 @@ struct FancyVisitor {
       return std::forward<TVar>(value);
     }
   };
+  template<typename TRaw>
+  using VariantHandler = VariantHandlerImpl<TRaw, std::decay_t<TRaw>>;
 
   template<typename TSeq>
   struct BareFunReturnType;
@@ -103,7 +106,7 @@ struct FancyVisitor {
     }
   };
 
-  using Params = CartesianTypeSeq<typename VariantHandler<std::decay_t<TVariants>>::Tuple...>;
+  using Params = CartesianTypeSeq<typename VariantHandler<TVariants>::Tuple...>;
 
   using RawReturnSeq = TransformedTypeSeq<Params, FunReturnType>;
 
@@ -119,7 +122,7 @@ struct FancyVisitor {
   static constexpr Maker<ReturnSeq> construct_in_place{};
 
   template<typename... TArgs>
-  static constexpr auto call(auto maker, TVisitor&& visitor, TArgs&&... args) {
+  static constexpr decltype(auto) call(auto maker, TVisitor&& visitor, TArgs&&... args) {
     if constexpr (tWithMaker) {
       return visitor(maker, unwrap(std::forward<TArgs>(args))...);
     } else {
@@ -135,7 +138,8 @@ struct FancyVisitor {
   };
 
   template<typename TReturn, typename TMaker>
-  static constexpr auto visit_impl(TMaker maker, TVisitor&& visitor, TVariants&&... vars) {
+  static constexpr decltype(auto) visit_impl(TMaker maker, TVisitor&& visitor,
+                                             TVariants&&... vars) {
     return std::visit(
       [&]<typename... TArgs>(TArgs&&... args) -> TReturn {
         if constexpr (tRemoveIgnored && ignore<TMaker, TArgs...>) {
@@ -145,7 +149,7 @@ struct FancyVisitor {
           return call(maker, std::forward<TVisitor>(visitor), std::forward<TArgs>(args)...);
         }
       },
-      VariantHandler<std::decay_t<TVariants>>::pack(std::forward<TVariants>(vars))...);
+      VariantHandler<TVariants>::pack(std::forward<TVariants>(vars))...);
   }
 
   static constexpr auto visit(TVisitor&& visitor, TVariants&&... vars) {
