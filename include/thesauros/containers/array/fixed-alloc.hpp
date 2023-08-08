@@ -138,17 +138,17 @@ struct FixedAllocArray {
     }
   }
   template<typename... TArgs>
-  void emplace_back(TArgs&&... args) {
+  Value& emplace_back(TArgs&&... args) {
     assert(data_end_ != allocation_.end());
-
     new (data_end_) TValue(std::forward<TArgs>(args)...);
     ++data_end_;
+    return *(data_end_ - 1);
   }
-  void push_back(TValue&& value) {
-    emplace_back(std::forward<TValue>(value));
+  Value& push_back(TValue&& value) {
+    return emplace_back(std::forward<TValue>(value));
   }
-  void push_back(const TValue& value) {
-    emplace_back(TValue(value));
+  Value& push_back(const TValue& value) {
+    return emplace_back(TValue(value));
   }
 
   constexpr void clear() {

@@ -208,7 +208,7 @@ struct DynamicArray {
   }
 
   template<typename... TArgs>
-  constexpr void emplace_back(TArgs&&... args) {
+  constexpr Value& emplace_back(TArgs&&... args) {
     const Size old_size = size();
     const Size new_size = old_size + 1;
     if (new_size <= allocation_.size()) {
@@ -220,12 +220,13 @@ struct DynamicArray {
       });
       data_end_ = allocation_.begin() + new_size;
     }
+    return *(data_end_ - 1);
   }
-  constexpr void push_back(Value&& value) {
-    emplace_back(std::forward<Value>(value));
+  constexpr Value& push_back(Value&& value) {
+    return emplace_back(std::forward<Value>(value));
   }
-  constexpr void push_back(const Value& value) {
-    emplace_back(value);
+  constexpr Value& push_back(const Value& value) {
+    return emplace_back(value);
   }
   constexpr void pop_back() {
     assert(!empty());
@@ -239,7 +240,7 @@ struct DynamicArray {
     std::move(pos + 1, data_end_, pos);
     std::destroy_at(data_end_);
     --data_end_;
-    return pos ;
+    return pos;
   }
   constexpr iterator erase(iterator first, iterator last) {
     assert(first != data_end_);
