@@ -90,4 +90,6 @@ int main() {
                       thes::json_print(s)));
   }
   THES_ASSERT(test::string_eq("\"θησαυρός\"", thes::json_print("θησαυρός"sv)));
+
+  THES_ASSERT(test::string_eq("true", thes::json_print(true)));
 }

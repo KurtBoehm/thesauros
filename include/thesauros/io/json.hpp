@@ -95,6 +95,13 @@ inline auto json_print(T&& value, Indentation indent = {}) {
   return JsonPrinter<T>{std::forward<T>(value), indent};
 }
 
+template<>
+struct JsonWriter<bool> {
+  static auto write(auto out_it, const bool value, Indentation /*indent*/ = {}) {
+    const std::string_view str = value ? "true" : "false";
+    return std::copy(str.begin(), str.end(), out_it);
+  }
+};
 template<typename T>
 requires std::integral<T> || std::floating_point<T>
 struct JsonWriter<T> {
