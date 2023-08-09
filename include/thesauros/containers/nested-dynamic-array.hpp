@@ -183,7 +183,9 @@ public:
   };
 
   NestedDynamicArrayBase(SizeStorage&& offsets, Storage&& values)
-      : offsets_(std::forward<SizeStorage>(offsets)), values_(std::forward<Storage>(values)) {}
+      : offsets_(std::forward<SizeStorage>(offsets)), values_(std::forward<Storage>(values)) {
+    assert(!offsets_.empty());
+  }
 
   [[nodiscard]] Size group_num() const {
     assert(!offsets_.empty());
