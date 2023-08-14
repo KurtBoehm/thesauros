@@ -39,7 +39,15 @@ struct FancyVisitor {
   template<typename TRaw, typename... Ts>
   struct VariantHandlerImpl<TRaw, std::variant<Ts...>> {
     using Type = std::variant<Ts...>;
-    using Tuple = TypeSeq<Ts...>;
+    static constexpr bool is_lvalue_ref = std::is_lvalue_reference_v<TRaw>;
+    static constexpr bool is_const = std::is_const_v<std::remove_reference_t<TRaw>>;
+
+    template<typename T>
+    using Constant = std::conditional_t<is_const, const T, T>;
+    template<typename T>
+    using Transformed = std::conditional_t<is_lvalue_ref, Constant<T>&, Constant<T>>;
+
+    using Tuple = TypeSeq<Transformed<Ts>...>;
 
     template<typename TVar>
     requires(std::same_as<std::decay_t<TVar>, Type>)
@@ -80,7 +88,10 @@ struct FancyVisitor {
   };
   template<typename... Ts>
   struct MakeReturn<TypeSeq<Ts...>> {
-    using Type = std::variant<Ts...>;
+    template<typename T>
+    using Transformed = std::conditional_t<std::is_reference_v<T>,
+                                           std::reference_wrapper<std::remove_reference_t<T>>, T>;
+    using Type = std::variant<Transformed<Ts>...>;
   };
 
   template<typename TSeq>
@@ -152,13 +163,14 @@ struct FancyVisitor {
       VariantHandler<TVariants>::pack(std::forward<TVariants>(vars))...);
   }
 
-  static constexpr auto visit(TVisitor&& visitor, TVariants&&... vars) {
+  static constexpr decltype(auto) visit(TVisitor&& visitor, TVariants&&... vars) {
     return visit_impl<Return>(construct_in_place, std::forward<TVisitor>(visitor),
                               std::forward<TVariants>(vars)...);
   }
 
   template<typename TMaker>
-  static constexpr auto visit_with_maker(TMaker maker, TVisitor&& visitor, TVariants&&... vars) {
+  static constexpr decltype(auto) visit_with_maker(TMaker maker, TVisitor&& visitor,
+                                                   TVariants&&... vars) {
     if constexpr (requires { typename TMaker::Return; }) {
       return visit_impl<typename TMaker::Return>(maker, std::forward<TVisitor>(visitor),
                                                  std::forward<TVariants>(vars)...);
@@ -169,31 +181,32 @@ struct FancyVisitor {
 };
 
 template<typename TVisitor, typename... TVars>
-inline constexpr auto fancy_visit(TVisitor&& visitor, TVars&&... vars) {
+inline constexpr decltype(auto) fancy_visit(TVisitor&& visitor, TVars&&... vars) {
   return FancyVisitor<false, false, false, TVisitor, TVars...>::visit(
     std::forward<TVisitor>(visitor), std::forward<TVars>(vars)...);
 }
 
 template<typename TVisitor, typename... TVars>
-inline constexpr auto fancy_filter_visit(TVisitor&& visitor, TVars&&... vars) {
+inline constexpr decltype(auto) fancy_filter_visit(TVisitor&& visitor, TVars&&... vars) {
   return FancyVisitor<true, false, false, TVisitor, TVars...>::visit(
     std::forward<TVisitor>(visitor), std::forward<TVars>(vars)...);
 }
 
 template<typename TVisitor, typename... TVars>
-inline constexpr auto fancy_maker_visit(TVisitor&& visitor, TVars&&... vars) {
+inline constexpr decltype(auto) fancy_maker_visit(TVisitor&& visitor, TVars&&... vars) {
   return FancyVisitor<true, false, true, TVisitor, TVars...>::visit(std::forward<TVisitor>(visitor),
                                                                     std::forward<TVars>(vars)...);
 }
 
 template<typename TVisitor, typename... TVars>
-inline constexpr auto fancy_flat_visit(TVisitor&& visitor, TVars&&... vars) {
+inline constexpr decltype(auto) fancy_flat_visit(TVisitor&& visitor, TVars&&... vars) {
   return FancyVisitor<true, true, true, TVisitor, TVars...>::visit(std::forward<TVisitor>(visitor),
                                                                    std::forward<TVars>(vars)...);
 }
 
 template<typename TMaker, typename TVisitor, typename... TVars>
-inline constexpr auto fancy_visit_with_maker(TMaker maker, TVisitor&& visitor, TVars&&... vars) {
+inline constexpr decltype(auto) fancy_visit_with_maker(TMaker maker, TVisitor&& visitor,
+                                                       TVars&&... vars) {
   return FancyVisitor<true, true, true, TVisitor, TVars...>::visit_with_maker(
     maker, std::forward<TVisitor>(visitor), std::forward<TVars>(vars)...);
 }

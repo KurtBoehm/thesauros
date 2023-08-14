@@ -1,7 +1,7 @@
 Language: Cpp
 
 AlignEscapedNewlines: DontAlign
-AllowAllArgumentsOnNextLine: false
+AlignTrailingComments: false
 AllowShortCaseLabelsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: Empty
 AlwaysBreakTemplateDeclarations: Yes
@@ -13,6 +13,6 @@ PointerAlignment: Left
 QualifierAlignment: Custom
 QualifierOrder: ["static", "inline", "constexpr", "const", "type"]
 RequiresClausePosition: OwnLine
+RequiresExpressionIndentation: OuterScope
 SpaceAfterTemplateKeyword: false
-Standard: c++20
 UseTab: Never

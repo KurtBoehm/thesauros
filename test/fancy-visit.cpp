@@ -83,4 +83,10 @@ inline constexpr auto v4 = thes::fancy_flat_visit(
   },
   t6);
 
+inline constexpr std::variant<float, int> in5{1.F};
+inline constexpr decltype(auto) v5a =
+  thes::fancy_visit([](auto& v) -> decltype(auto) { return v; }, in5);
+inline constexpr decltype(auto) v5b = std::get<0>(v5a).get();
+static_assert(v5b == 1.F);
+
 int main() {}
