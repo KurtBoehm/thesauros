@@ -4,6 +4,7 @@
 #include <cassert>
 #include <cstddef>
 #include <initializer_list>
+#include <iterator>
 #include <memory>
 #include <utility>
 
@@ -23,6 +24,8 @@ struct FixedAllocArray {
 
   using iterator = Data::iterator;
   using const_iterator = Data::const_iterator;
+  using reverse_iterator = std::reverse_iterator<iterator>;
+  using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
   constexpr FixedAllocArray() = delete;
   explicit constexpr FixedAllocArray(const Allocator& alloc) : allocation_(alloc) {}
@@ -84,6 +87,19 @@ struct FixedAllocArray {
   }
   [[nodiscard]] constexpr const_iterator end() const noexcept {
     return data_end_;
+  }
+
+  [[nodiscard]] constexpr reverse_iterator rbegin() noexcept {
+    return reverse_iterator{begin()};
+  }
+  [[nodiscard]] constexpr const_reverse_iterator rbegin() const noexcept {
+    return const_reverse_iterator{begin()};
+  }
+  [[nodiscard]] constexpr reverse_iterator rend() noexcept {
+    return reverse_iterator{end()};
+  }
+  [[nodiscard]] constexpr const_reverse_iterator rend() const noexcept {
+    return const_reverse_iterator{end()};
   }
 
   [[nodiscard]] constexpr Value& operator[](Size index) {
