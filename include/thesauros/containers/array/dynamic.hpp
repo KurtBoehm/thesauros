@@ -230,9 +230,7 @@ struct DynamicArray {
   }
   constexpr void pop_back() {
     assert(!empty());
-
-    std::destroy_at(data_end_);
-    --data_end_;
+    std::destroy_at(--data_end_);
   }
 
   constexpr iterator erase(iterator pos) {

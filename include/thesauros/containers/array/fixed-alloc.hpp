@@ -127,6 +127,11 @@ struct FixedAllocArray {
     return emplace_back(TValue(value));
   }
 
+  void pop_back() {
+    assert(!empty());
+    std::destroy_at(--data_end_);
+  }
+
   constexpr void clear() {
     destroy();
     data_end_ = allocation_.begin();
