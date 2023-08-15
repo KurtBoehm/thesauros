@@ -24,12 +24,13 @@ struct FixedAllocArray {
   using iterator = Data::iterator;
   using const_iterator = Data::const_iterator;
 
-  constexpr FixedAllocArray() = default;
+  constexpr FixedAllocArray() = delete;
   explicit constexpr FixedAllocArray(const Allocator& alloc) : allocation_(alloc) {}
   explicit constexpr FixedAllocArray(Allocator&& alloc)
       : allocation_(std::forward<Allocator>(alloc)) {}
 
-  constexpr FixedAllocArray(std::initializer_list<Value> init) : allocation_(init.size()) {
+  constexpr FixedAllocArray(std::initializer_list<Value> init)
+      : allocation_(init.size()), data_end_(allocation_.data() + init.size()) {
     std::uninitialized_copy(init.begin(), init.end(), begin());
   }
 
@@ -37,33 +38,15 @@ struct FixedAllocArray {
       : allocation_(std::move(other.allocation_)), data_end_(other.data_end_) {
     other.data_end_ = nullptr;
   }
-  // WARNING Only valid if the data is fully initialized!
   constexpr FixedAllocArray(const FixedAllocArray& other)
       : allocation_(other.allocation_.size(), other.allocation_),
-        data_end_(allocation_.begin() + other.size()) {
+        data_end_(allocation_.data() + other.size()) {
     std::uninitialized_copy(other.allocation_.begin(), other.allocation_.end(),
                             allocation_.begin());
   }
 
-  constexpr FixedAllocArray& operator=(FixedAllocArray&& other) noexcept {
-    destroy();
-    allocation_.move_to_destroyed(std::move(other.allocation_));
-    data_end_ = other.data_end_;
-    other.data_end_ = nullptr;
-    return *this;
-  }
-  // WARNING Only valid if the data is fully initialized!
-  constexpr FixedAllocArray& operator=(const FixedAllocArray& other) {
-    if (this != &other) {
-      destroy();
-      allocation_.reallocate_to_destroyed(other.allocation_);
-      const_iterator other_begin = other.allocation_.begin();
-      const_iterator other_data_end = other.data_end_;
-      std::uninitialized_copy(other_begin, other_data_end, allocation_.begin());
-      data_end_ = allocation_.begin() + other.size();
-    }
-    return *this;
-  }
+  FixedAllocArray& operator=(const FixedAllocArray&) = delete;
+  FixedAllocArray& operator=(FixedAllocArray&&) = delete;
 
   static constexpr FixedAllocArray create_with_capacity(std::size_t capacity) {
     return FixedAllocArray(std::in_place_type<Data>, capacity);
@@ -130,13 +113,6 @@ struct FixedAllocArray {
     return *(data_end_ - 1);
   }
 
-  constexpr void reserve(Size new_alloc) {
-    if (new_alloc > allocation_.size()) {
-      const Size current_size = size();
-      allocation_.expand(new_alloc, data_end_);
-      data_end_ = allocation_.begin() + current_size;
-    }
-  }
   template<typename... TArgs>
   Value& emplace_back(TArgs&&... args) {
     assert(data_end_ != allocation_.end());
@@ -157,7 +133,6 @@ struct FixedAllocArray {
   }
 
 private:
-  // WARNING Only valid if the data is fully initialized!
   constexpr void destroy() {
     std::destroy(allocation_.begin(), data_end_);
   }

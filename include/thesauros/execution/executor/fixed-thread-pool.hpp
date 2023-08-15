@@ -17,11 +17,11 @@
 
 namespace thes {
 struct FixedThreadPool {
+  using Threads = FixedAllocArray<std::thread>;
   using Task = std::function<void(std::size_t)>;
   using TaskID = std::size_t;
 
-  explicit FixedThreadPool(std::size_t size) {
-    threads_.reserve(size);
+  explicit FixedThreadPool(std::size_t size) : threads_(Threads::create_with_capacity(size)) {
     for (const std::size_t i : range(size)) {
       threads_.emplace_back([this, i] {
         TaskID last_id{0};
@@ -94,7 +94,7 @@ private:
   mutable std::condition_variable start_work_{};
   mutable std::condition_variable end_work_{};
 
-  FixedAllocArray<std::thread> threads_{};
+  Threads threads_;
 };
 } // namespace thes
 
