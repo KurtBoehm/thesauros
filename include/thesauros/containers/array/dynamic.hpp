@@ -75,7 +75,9 @@ struct DynamicArray {
   constexpr DynamicArray(const DynamicArray& other)
       : allocation_(other.allocation_.size(), other.allocation_),
         data_end_(allocation_.begin() + other.size()) {
-    std::uninitialized_copy(other.allocation_.begin(), other.data_end_, allocation_.begin());
+    const Value* other_begin = other.allocation_.begin();
+    const Value* other_end = other.data_end_;
+    std::uninitialized_copy(other_begin, other_end, allocation_.begin());
   }
 
   constexpr DynamicArray& operator=(DynamicArray&& other) noexcept {

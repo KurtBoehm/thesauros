@@ -14,7 +14,7 @@ namespace test = thes::test;
 
 using ByteInt = thes::ByteInteger<3>;
 using UInt = ByteInt::Unsigned;
-using Mbi = thes::MultiByteIntegers<ByteInt, 4>;
+using Mbi = thes::MultiByteIntegers<ByteInt, 13>;
 
 inline constexpr UInt modulus = UInt{1} << (CHAR_BIT * ByteInt::byte_num);
 

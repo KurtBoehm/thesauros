@@ -249,7 +249,7 @@ struct MultiByteIntegers {
 
   void push_back(Value value) {
     const Size size = byte_size(size_);
-    assert(data_.size() == size + int_bytes);
+    assert(data_.size() == size + padding_bytes);
 
     data_.expand(data_.size() + element_bytes);
     ++size_;
