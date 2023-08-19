@@ -14,12 +14,12 @@ struct LimitedArray {
 
   using Array = std::array<Value, capacity>;
 
-  explicit LimitedArray(std::size_t size) : size_(size) {
+  explicit constexpr LimitedArray(std::size_t size) : size_(size) {
     assert(size_ <= capacity);
   }
   template<typename... Ts>
   requires(sizeof...(Ts) <= tCapacity)
-  explicit LimitedArray(Ts... values) : size_(sizeof...(Ts)), data_{values...} {
+  explicit constexpr LimitedArray(Ts... values) : size_(sizeof...(Ts)), data_{values...} {
     assert(size_ <= capacity);
   }
 
