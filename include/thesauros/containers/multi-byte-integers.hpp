@@ -209,7 +209,7 @@ struct MultiByteIntegers {
     return mbi;
   }
 
-  MultiByteIntegers() : data_(int_bytes){};
+  MultiByteIntegers() : data_(padding_bytes){};
   explicit MultiByteIntegers(Value size) : data_(effective_allocation(size)), size_(size) {}
   MultiByteIntegers(std::initializer_list<Value> init)
       : data_(effective_allocation(init.size())), size_(init.size()) {

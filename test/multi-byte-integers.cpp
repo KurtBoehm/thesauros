@@ -18,9 +18,9 @@ using Mbi = thes::MultiByteIntegers<ByteInt, 13>;
 
 inline constexpr UInt modulus = UInt{1} << (CHAR_BIT * ByteInt::byte_num);
 
-int main() {
-  Mbi integers{13};
-  std::vector<UInt> vec{13};
+void body(auto... values) {
+  Mbi integers{values...};
+  std::vector<UInt> vec{values...};
 
   auto elem_assert = [&integers, &vec] {
     std::cout << '{' << thes::range_print(integers) << "}, [" << thes::range_print(vec) << ']'
@@ -97,4 +97,9 @@ int main() {
     pop_back();
     elem_assert();
   }
+}
+
+int main() {
+  body();
+  body(UInt{13});
 }
