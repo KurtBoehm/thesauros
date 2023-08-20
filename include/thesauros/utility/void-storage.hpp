@@ -1,9 +1,10 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_VOID_STORAGE_HPP
 #define INCLUDE_THESAUROS_UTILITY_VOID_STORAGE_HPP
 
-#include "thesauros/utility/empty.hpp"
 #include <concepts>
 #include <type_traits>
+
+#include "thesauros/utility/empty.hpp"
 
 namespace thes {
 template<typename T>
