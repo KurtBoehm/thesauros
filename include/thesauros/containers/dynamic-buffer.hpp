@@ -2,6 +2,7 @@
 #define INCLUDE_THESAUROS_CONTAINERS_DYNAMIC_BUFFER_HPP
 
 #include <cstddef>
+#include <cstdint>
 #include <cstdlib>
 #include <span>
 
@@ -28,6 +29,9 @@ struct DynamicBuffer {
 
   [[nodiscard]] std::byte* data() {
     return begin_;
+  }
+  [[nodiscard]] std::uint8_t* data_u8() {
+    return reinterpret_cast<std::uint8_t*>(begin_);
   }
 
   [[nodiscard]] std::byte operator[](std::size_t index) const {
