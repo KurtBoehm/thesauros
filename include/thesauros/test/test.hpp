@@ -5,9 +5,7 @@
 #include <cstdlib>
 #include <functional>
 #include <iostream>
-#include <sstream>
 #include <string_view>
-#include <utility>
 
 #include "thesauros/format.hpp"
 #include "thesauros/io.hpp"

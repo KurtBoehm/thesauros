@@ -58,6 +58,7 @@ struct ValueTrait<TRange> {
 };
 
 template<typename TRange>
+requires(sizeof(ValueTrait<TRange>) > 0)
 using Value = ValueTrait<TRange>::Type;
 
 template<typename TRange>
