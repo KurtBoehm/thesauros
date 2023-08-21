@@ -2,7 +2,6 @@
 #define INCLUDE_THESAUROS_CONTAINERS_DYNAMIC_BUFFER_HPP
 
 #include <cstddef>
-#include <cstdint>
 #include <cstdlib>
 #include <span>
 
@@ -10,7 +9,7 @@ namespace thes {
 struct DynamicBuffer {
   DynamicBuffer() = default;
   explicit DynamicBuffer(std::size_t size)
-      : begin_(static_cast<std::uint8_t*>(std::malloc(size))), size_(size) {}
+      : begin_(static_cast<std::byte*>(std::malloc(size))), size_(size) {}
   DynamicBuffer(const DynamicBuffer&) = delete;
   DynamicBuffer(DynamicBuffer&&) = delete;
   DynamicBuffer& operator=(const DynamicBuffer&) = delete;
@@ -23,18 +22,18 @@ struct DynamicBuffer {
     if (new_size == size_) {
       return;
     }
-    begin_ = static_cast<std::uint8_t*>(std::realloc(begin_, new_size));
+    begin_ = static_cast<std::byte*>(std::realloc(begin_, new_size));
     size_ = new_size;
   }
 
-  [[nodiscard]] std::uint8_t* data() {
+  [[nodiscard]] std::byte* data() {
     return begin_;
   }
 
-  [[nodiscard]] std::uint8_t operator[](std::size_t index) const {
+  [[nodiscard]] std::byte operator[](std::size_t index) const {
     return begin_[index];
   }
-  [[nodiscard]] std::uint8_t& operator[](std::size_t index) {
+  [[nodiscard]] std::byte& operator[](std::size_t index) {
     return begin_[index];
   }
 
@@ -42,15 +41,15 @@ struct DynamicBuffer {
     return size_;
   }
 
-  [[nodiscard]] std::span<std::uint8_t> span() {
+  [[nodiscard]] std::span<std::byte> span() {
     return {begin_, size_};
   }
-  [[nodiscard]] std::span<const std::uint8_t> span() const {
+  [[nodiscard]] std::span<const std::byte> span() const {
     return {begin_, size_};
   }
 
 private:
-  std::uint8_t* begin_{};
+  std::byte* begin_{};
   std::size_t size_{};
 };
 } // namespace thes
