@@ -33,6 +33,9 @@ struct DynamicBuffer {
   [[nodiscard]] std::uint8_t* data_u8() {
     return reinterpret_cast<std::uint8_t*>(begin_);
   }
+  [[nodiscard]] char* data_char() {
+    return reinterpret_cast<char*>(begin_);
+  }
 
   [[nodiscard]] std::byte operator[](std::size_t index) const {
     return begin_[index];

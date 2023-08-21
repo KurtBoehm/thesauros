@@ -75,14 +75,14 @@ inline constexpr std::optional<T> parse_integer(std::string_view src) {
         return T{0};
       }
       char c = number.front();
-      if (c == 'x' or c == 'X') {
+      if (c == 'x' || c == 'X') {
         return parse_base(number.substr(1), index_tag<16>);
       }
-      if (c == 'b' or c == 'B') {
+      if (c == 'b' || c == 'B') {
         return parse_base(number.substr(1), index_tag<2>);
       }
       if constexpr (tFromString) {
-        if (c == 'o' or c == 'O') {
+        if (c == 'o' || c == 'O') {
           return parse_base(number.substr(1), index_tag<8>);
         }
       } else {
