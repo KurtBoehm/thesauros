@@ -21,20 +21,4 @@ int main() {
     static_assert(map.get<3>() == 2);
     static_assert(map.get<4>() == 3);
   }
-  {
-    using namespace thes::literals;
-
-    static constexpr thes::StaticMap map{"a"_key = 2, "bc"_key = 4};
-    using Map = decltype(map);
-
-    static_assert(!Map::only_keys<"a"_ssv>);
-    static_assert(Map::only_keys<"a"_ssv, "bc"_ssv>);
-    static_assert(Map::only_keys<"a"_ssv, "bc"_ssv, "c"_ssv>);
-
-    static_assert(Map::contains<"a"_ssv>);
-    static_assert(!Map::contains<"b"_ssv>);
-
-    static_assert(map.get<"a"_ssv>() == 2);
-    static_assert(map.get<"bc"_ssv>() == 4);
-  }
 }

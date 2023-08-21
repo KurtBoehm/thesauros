@@ -5,7 +5,6 @@
 #include <utility>
 
 #include "thesauros/utility/static-ranges.hpp"
-#include "thesauros/utility/static-string/static-string.hpp"
 #include "thesauros/utility/tuple.hpp"
 #include "thesauros/utility/type-sequence.hpp"
 #include "thesauros/utility/value-tag.hpp"
@@ -30,13 +29,6 @@ struct StaticKey {
 
 template<auto tKey>
 inline constexpr StaticKey<tKey> static_key{};
-
-namespace literals {
-template<StaticString tString>
-inline constexpr StaticKey<tString.static_view()> operator""_key() {
-  return {};
-}
-} // namespace literals
 
 template<typename... TPairs>
 struct StaticMap;

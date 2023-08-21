@@ -53,7 +53,7 @@ int main() {
   {
     static constexpr auto r_base = thes::range(10);
     static constexpr auto r = thes::transform_range([](auto v) { return 2 * v; }, r_base);
-    static_assert(thes::test::range_eq<false>(r, std::array{0, 2, 4, 6, 8, 10, 12, 14, 16, 18}));
+    static_assert(thes::test::range_eq(r, std::array{0, 2, 4, 6, 8, 10, 12, 14, 16, 18}));
     static_assert(r.begin()[1] == 2);
   }
 
@@ -61,7 +61,7 @@ int main() {
     static constexpr auto r_base = thes::range(10);
     static constexpr auto r_trans = thes::transform_range([](auto v) { return 2 * v; }, r_base);
     static constexpr auto r = thes::value_range(r_trans.begin(), r_trans.end());
-    static_assert(thes::test::range_eq<false>(r, std::array{0, 2, 4, 6, 8, 10, 12, 14, 16, 18}));
+    static_assert(thes::test::range_eq(r, std::array{0, 2, 4, 6, 8, 10, 12, 14, 16, 18}));
     static_assert(r.begin()[1] == 2);
   }
 
@@ -69,7 +69,7 @@ int main() {
     static constexpr std::array base{8, 4, 6, 2};
     static constexpr auto enu = thes::enumerate<std::size_t>(base);
     using Value = decltype(enu)::Value;
-    static_assert(thes::test::range_eq<false>(
+    static_assert(thes::test::range_eq(
       enu, std::array{Value{0, base[0]}, Value{1, base[1]}, Value{2, base[2]}, Value{3, base[3]}}));
   }
 }

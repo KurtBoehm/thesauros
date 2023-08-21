@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <functional>
 #include <iostream>
+#include <sstream>
 #include <string_view>
 
 #include "thesauros/format.hpp"
@@ -122,6 +123,16 @@ inline bool string_eq(const std::string_view s1, const std::string_view s2, TStr
   }
 
   return eq;
+}
+
+template<bool tVerbose = true>
+inline bool string_eq(const std::string_view s1, const auto&... v) {
+  const auto s2 = (std::stringstream{} << ... << v).str();
+  if constexpr (tVerbose) {
+    return string_eq(s1, std::string_view{s2}, std::cout);
+  } else {
+    return string_eq(s1, std::string_view{s2});
+  }
 }
 } // namespace thes::test
 
