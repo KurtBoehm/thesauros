@@ -1,16 +1,18 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_STATIC_MAP_HPP
 #define INCLUDE_THESAUROS_UTILITY_STATIC_MAP_HPP
 
+#include <functional>
 #include <utility>
 
 #include "thesauros/utility/static-ranges.hpp"
+#include "thesauros/utility/static-string/static-string.hpp"
 #include "thesauros/utility/tuple.hpp"
 #include "thesauros/utility/type-sequence.hpp"
 #include "thesauros/utility/value-tag.hpp"
 
 namespace thes {
 template<auto tKey, typename TValue>
-struct KeyValuePair {
+struct StaticKeyValuePair {
   using Key = decltype(tKey);
   using Value = TValue;
   static constexpr Key key = tKey;
@@ -21,13 +23,20 @@ struct KeyValuePair {
 template<auto tKey>
 struct StaticKey {
   template<typename TValue>
-  constexpr KeyValuePair<tKey, TValue> operator=(TValue&& value) const {
+  constexpr StaticKeyValuePair<tKey, TValue> operator=(TValue&& value) const {
     return {std::forward<TValue>(value)};
   }
 };
 
 template<auto tKey>
 inline constexpr StaticKey<tKey> static_key{};
+
+namespace literals {
+template<StaticString tString>
+inline constexpr StaticKey<tString.static_view()> operator""_key() {
+  return {};
+}
+} // namespace literals
 
 template<typename... TPairs>
 struct StaticMap;
@@ -52,6 +61,12 @@ struct StaticMap<TPairs...> {
     };
     return impl(index_tag<0>, impl);
   }();
+
+  template<Key... tKeys>
+  static constexpr bool only_keys =
+    thes::Tuple{TPairs::key...} |
+    star::transform([](auto key) { return thes::Tuple{tKeys...} | star::contains(key); }) |
+    star::left_reduce(std::logical_and{}, true);
 
   explicit constexpr StaticMap(TPairs&&... pairs) : pairs_{std::forward<TPairs>(pairs)...} {}
 

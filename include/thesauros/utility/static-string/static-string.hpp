@@ -14,6 +14,19 @@
 #include "thesauros/utility/static-string/character-tools.hpp"
 
 namespace thes {
+struct StaticStringView {
+  const char* ptr;
+  std::size_t len;
+
+  [[nodiscard]] constexpr std::string_view view() const {
+    return {ptr, len};
+  }
+
+  friend constexpr bool operator==(const StaticStringView& s1, const StaticStringView& s2) {
+    return s1.view() == s2.view();
+  }
+};
+
 template<std::size_t tSize>
 struct StaticString {
   using Value = char;
@@ -37,6 +50,9 @@ struct StaticString {
   }
 
   [[nodiscard]] constexpr std::string_view view() const {
+    return {data.data(), size};
+  }
+  [[nodiscard]] constexpr StaticStringView static_view() const {
     return {data.data(), size};
   }
 
@@ -133,6 +149,10 @@ namespace literals {
 template<StaticString tString>
 inline constexpr auto operator""_sstr() {
   return tString;
+}
+template<StaticString tString>
+inline constexpr auto operator""_ssv() {
+  return tString.static_view();
 }
 } // namespace literals
 
