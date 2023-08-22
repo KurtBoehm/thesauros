@@ -16,16 +16,17 @@
 #include "thesauros/iterator/facades.hpp"
 #include "thesauros/utility/arrow-proxy.hpp"
 #include "thesauros/utility/inlining.hpp"
+#include "thesauros/utility/value-optional.hpp"
 
 namespace thes {
-template<typename TByteInt, std::size_t tPaddingBytes,
+template<typename TByteInt, std::size_t tPaddingBytes, bool tOptional,
          template<typename> typename TAllocator = std::allocator>
-struct MultiByteIntegers;
+struct MultiByteIntegersBase;
 
-template<typename TByteInt, std::size_t tPaddingBytes,
+template<typename TByteInt, std::size_t tPaddingBytes, bool tOptional,
          template<typename> typename TAllocator = std::allocator>
 struct MultiByteSubRange {
-  using Base = MultiByteIntegers<TByteInt, tPaddingBytes, TAllocator>;
+  using Base = MultiByteIntegersBase<TByteInt, tPaddingBytes, tOptional, TAllocator>;
   using Size = std::size_t;
   static constexpr std::size_t element_bytes = TByteInt::byte_num;
 
@@ -52,30 +53,32 @@ private:
   Size end_;
 };
 
-template<typename TByteInt, std::size_t tPaddingBytes, template<typename> typename TAllocator>
-struct MultiByteIntegers {
+template<typename TByteInt, std::size_t tPaddingBytes, bool tOptional,
+         template<typename> typename TAllocator>
+struct MultiByteIntegersBase {
   static_assert(std::endian::native == std::endian::little ||
                   std::endian::native == std::endian::big,
                 "Only big and little endian systems are supported!");
 
-  using Value = TByteInt::Unsigned;
+  using BaseValue = TByteInt::Unsigned;
+  static constexpr BaseValue int_bytes = sizeof(BaseValue);
+  static constexpr BaseValue mask = TByteInt::max;
+
+  using Value = std::conditional_t<tOptional, ValueOptional<BaseValue, mask>, BaseValue>;
   using Size = std::size_t;
 
   using value_type = Value;
   using size_type = Size;
 
-  static constexpr std::size_t element_bytes = TByteInt::byte_num;
   static constexpr std::size_t padding_bytes = tPaddingBytes;
-  static constexpr Value int_bytes = sizeof(Value);
+  static constexpr std::size_t element_bytes = TByteInt::byte_num;
+  static constexpr std::size_t overhead_bits = TByteInt::overhead_bit_num;
 
   using Allocator = TAllocator<std::byte>;
   using Data = DynamicArrayDefault<std::byte, Allocator>;
 
   static_assert(element_bytes <= int_bytes);
   static_assert(padding_bytes >= int_bytes);
-
-  static constexpr std::size_t overhead_bits = TByteInt::overhead_bit_num;
-  static constexpr Value mask = TByteInt::max;
 
   struct IntRef {
     explicit IntRef(std::byte* ptr) : ptr_(ptr) {}
@@ -182,7 +185,7 @@ struct MultiByteIntegers {
 
   template<bool tConst>
   struct Iterator : public IteratorFacade<Iterator<tConst>, IterProv<tConst>> {
-    using Container = MultiByteIntegers;
+    using Container = MultiByteIntegersBase;
     using Ptr = std::conditional_t<tConst, const std::byte, std::byte>*;
     friend IterProv<tConst>;
 
@@ -197,21 +200,32 @@ struct MultiByteIntegers {
     Ptr ptr_{nullptr};
   };
 
-  using ConstSubRange = MultiByteSubRange<TByteInt, tPaddingBytes, TAllocator>;
+  using ConstSubRange = MultiByteSubRange<TByteInt, tPaddingBytes, tOptional, TAllocator>;
 
   using iterator = Iterator<false>;
   using const_iterator = Iterator<true>;
 
-  static MultiByteIntegers all_set(Value size) {
-    MultiByteIntegers mbi(size);
+  static MultiByteIntegersBase create_all_set(std::size_t size)
+  requires(!tOptional)
+  {
+    MultiByteIntegersBase mbi(size);
+    std::uninitialized_fill_n(mbi.data_.data(), byte_size(mbi.size_),
+                              std::byte{std::numeric_limits<unsigned char>::max()});
+    return mbi;
+  }
+  static MultiByteIntegersBase create_empty(std::size_t size)
+  requires(tOptional)
+  {
+    MultiByteIntegersBase mbi(size);
     std::uninitialized_fill_n(mbi.data_.data(), byte_size(mbi.size_),
                               std::byte{std::numeric_limits<unsigned char>::max()});
     return mbi;
   }
 
-  MultiByteIntegers() : data_(padding_bytes){};
-  explicit MultiByteIntegers(Value size) : data_(effective_allocation(size)), size_(size) {}
-  MultiByteIntegers(std::initializer_list<Value> init)
+  MultiByteIntegersBase() : data_(padding_bytes){};
+  explicit MultiByteIntegersBase(std::size_t size)
+      : data_(effective_allocation(size)), size_(size) {}
+  MultiByteIntegersBase(std::initializer_list<Value> init)
       : data_(effective_allocation(init.size())), size_(init.size()) {
     std::copy(init.begin(), init.end(), begin());
   };
@@ -287,7 +301,7 @@ private:
   }
 
   static Value load(const std::byte* ptr) THES_ALWAYS_INLINE {
-    Value output;
+    BaseValue output;
     std::memcpy(&output, ptr, int_bytes);
     if constexpr (std::endian::native == std::endian::little) {
       return output & mask;
@@ -314,6 +328,13 @@ private:
   Data data_{};
   Size size_{0};
 };
+
+template<typename TByteInt, std::size_t tPaddingBytes,
+         template<typename> typename TAllocator = std::allocator>
+using MultiByteIntegers = MultiByteIntegersBase<TByteInt, tPaddingBytes, false, TAllocator>;
+template<typename TByteInt, std::size_t tPaddingBytes,
+         template<typename> typename TAllocator = std::allocator>
+using OptionalMultiByteIntegers = MultiByteIntegersBase<TByteInt, tPaddingBytes, true, TAllocator>;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_CONTAINERS_MULTI_BYTE_INTEGERS_HPP

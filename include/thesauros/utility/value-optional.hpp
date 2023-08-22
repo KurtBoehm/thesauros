@@ -11,8 +11,8 @@ struct ValueOptional {
   static constexpr Value empty_value = tEmpty;
 
   constexpr ValueOptional() = default;
-  explicit constexpr ValueOptional(const Value& value) : value_{value} {}
-  explicit constexpr ValueOptional(Value&& value) : value_{std::forward<Value>(value)} {}
+  constexpr ValueOptional(const Value& value) : value_{value} {}
+  constexpr ValueOptional(Value&& value) : value_{std::forward<Value>(value)} {}
 
   void clear() {
     value_ = empty_value;
@@ -38,7 +38,7 @@ struct ValueOptional {
 
   friend std::ostream& operator<<(std::ostream& stream, const ValueOptional& vo) {
     if (vo.has_value()) {
-      stream << vo.get();
+      stream << vo.value();
     } else {
       stream << "empty";
     }
