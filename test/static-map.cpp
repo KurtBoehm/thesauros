@@ -1,3 +1,4 @@
+#include "thesauros/math.hpp"
 #include "thesauros/utility.hpp"
 
 int main() {
@@ -36,5 +37,16 @@ int main() {
 
     static_assert(map.get<"a"_sstr>() == 2);
     static_assert(map.get<"bc"_sstr>() == 4);
+  }
+  {
+    using namespace thes::literals;
+
+    static constexpr float a = 0.1F;
+    static constexpr float b = 0.101F;
+
+    static_assert(!thes::is_close(a, b));
+    static_assert(thes::is_close(a, b, "rel_tol"_key = 1e-2F));
+    static_assert(thes::is_close(a, b, "abs_tol"_key = 1e-2F));
+    static_assert(thes::is_close(a, b, "rel_tol"_key = 1e-3F, "abs_tol"_key = 1e-2F));
   }
 }

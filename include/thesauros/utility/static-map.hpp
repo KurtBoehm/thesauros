@@ -76,12 +76,35 @@ struct StaticMap<TPairs...> {
     return get_impl<tKey>(*this);
   }
 
+  template<auto tKey>
+  [[nodiscard]] constexpr const auto& get(const auto& def) const {
+    return get_impl<tKey>(*this, def);
+  }
+  template<auto tKey>
+  [[nodiscard]] constexpr auto& get(auto& def) {
+    return get_impl<tKey>(*this, def);
+  }
+
 private:
   template<auto tKey>
   static constexpr auto& get_impl(auto& self) {
     auto impl = [&self](auto idx, auto rec) -> const auto& {
       static_assert(idx < sizeof...(TPairs), "The key is not known!");
       if constexpr (TupleElement<idx, Tuple>::key == tKey) {
+        return star::get_at<idx>(self.pairs_).value;
+      } else {
+        return rec(index_tag<idx + 1>, rec);
+      }
+    };
+    return impl(index_tag<0>, impl);
+  }
+
+  template<auto tKey>
+  static constexpr auto& get_impl(auto& self, auto& def) {
+    auto impl = [&](auto idx, auto rec) -> const auto& {
+      if constexpr (idx == sizeof...(TPairs)) {
+        return def;
+      } else if constexpr (TupleElement<idx, Tuple>::key == tKey) {
         return star::get_at<idx>(self.pairs_).value;
       } else {
         return rec(index_tag<idx + 1>, rec);
@@ -97,9 +120,20 @@ template<>
 struct StaticMap<> {
   template<auto tKey>
   static constexpr bool contains = false;
+  template<auto... tKeys>
+  static constexpr bool only_keys = true;
 
   template<auto tKey>
   constexpr auto get() const;
+
+  template<auto tKey>
+  [[nodiscard]] constexpr const auto& get(const auto& def) const {
+    return def;
+  }
+  template<auto tKey>
+  [[nodiscard]] constexpr auto& get(auto& def) {
+    return def;
+  }
 };
 
 template<typename... TPairs>
