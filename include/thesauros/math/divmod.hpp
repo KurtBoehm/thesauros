@@ -82,7 +82,7 @@ struct Divisor {
 private:
   Value divisor_;
   WideValue inverse_;
-  Value mask_{(inverse_ == 0) ? std::numeric_limits<Value>::max() : 0};
+  Value mask_{(inverse_ == 0) ? std::numeric_limits<Value>::max() : Value{0}};
 };
 
 template<typename T>

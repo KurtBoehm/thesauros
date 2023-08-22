@@ -58,7 +58,7 @@ struct ValueTrait<TRange> {
 };
 
 template<typename TRange>
-requires(sizeof(ValueTrait<TRange>) > 0)
+requires(detail::HasValue<TRange> || detail::HasTypeValue<TRange> || detail::HasElemType<TRange>)
 using Value = ValueTrait<TRange>::Type;
 
 template<typename TRange>
