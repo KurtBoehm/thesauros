@@ -5,8 +5,8 @@
 #include <utility>
 
 #include "thesauros/utility/static-ranges.hpp"
+#include "thesauros/utility/static-string/static-string.hpp"
 #include "thesauros/utility/tuple.hpp"
-#include "thesauros/utility/type-sequence.hpp"
 #include "thesauros/utility/value-tag.hpp"
 
 namespace thes {
@@ -30,17 +30,22 @@ struct StaticKey {
 template<auto tKey>
 inline constexpr StaticKey<tKey> static_key{};
 
+namespace literals {
+template<StaticString tString>
+inline constexpr StaticKey<tString> operator""_key() {
+  return {};
+}
+} // namespace literals
+
 template<typename... TPairs>
 struct StaticMap;
 
 template<typename... TPairs>
-requires(TypeSeq<typename TPairs::Key...>::is_unique &&
-         Tuple<typename TPairs::Key...>{TPairs::key...} | star::all_different)
+requires(Tuple<typename TPairs::Key...>{TPairs::key...} | star::all_different)
 struct StaticMap<TPairs...> {
   using Tuple = ::thes::Tuple<TPairs...>;
-  using Key = TypeSeq<typename TPairs::Key...>::Unique;
 
-  template<Key tKey>
+  template<auto tKey>
   static constexpr bool contains = [] {
     auto impl = [](auto idx, auto rec) {
       if constexpr (idx == sizeof...(TPairs)) {
@@ -54,7 +59,7 @@ struct StaticMap<TPairs...> {
     return impl(index_tag<0>, impl);
   }();
 
-  template<Key... tKeys>
+  template<auto... tKeys>
   static constexpr bool only_keys =
     thes::Tuple{TPairs::key...} |
     star::transform([](auto key) { return thes::Tuple{tKeys...} | star::contains(key); }) |
@@ -62,17 +67,17 @@ struct StaticMap<TPairs...> {
 
   explicit constexpr StaticMap(TPairs&&... pairs) : pairs_{std::forward<TPairs>(pairs)...} {}
 
-  template<Key tKey>
+  template<auto tKey>
   [[nodiscard]] constexpr const auto& get() const {
     return get_impl<tKey>(*this);
   }
-  template<Key tKey>
+  template<auto tKey>
   [[nodiscard]] constexpr auto& get() {
     return get_impl<tKey>(*this);
   }
 
 private:
-  template<Key tKey>
+  template<auto tKey>
   static constexpr auto& get_impl(auto& self) {
     auto impl = [&self](auto idx, auto rec) -> const auto& {
       static_assert(idx < sizeof...(TPairs), "The key is not known!");
