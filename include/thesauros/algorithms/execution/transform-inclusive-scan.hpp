@@ -18,8 +18,8 @@ inline void transform_inclusive_scan(TExecutionPolicy&& policy, TForwardIt1 firs
                                      TForwardIt2 d_first, TBinaryOperation binary_op,
                                      TUnaryOperation unary_op, T neutral) {
   const auto raw_size = std::distance(first, last);
-  using Size = std::make_unsigned_t<std::decay_t<decltype(raw_size)>>;
-  const auto size = static_cast<Size>(raw_size);
+  using Size = std::decay_t<TExecutionPolicy>::Size;
+  const auto size = *thes::safe_cast<Size>(raw_size);
 
   std::latch barrier{safe_cast<std::ptrdiff_t>(policy.size()).valid_value()};
   FixedArrayDefault<T> offsets(policy.size());

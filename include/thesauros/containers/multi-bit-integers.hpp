@@ -54,7 +54,7 @@ struct MultiBitIntegers {
 
   private:
     static constexpr Chunk update_chunk(Chunk chunk, std::size_t offset, Chunk value) {
-      return (chunk & ~(mask << offset)) | (value << offset);
+      return static_cast<Chunk>((chunk & ~(mask << offset)) | (value << offset));
     }
   };
 

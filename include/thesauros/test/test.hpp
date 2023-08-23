@@ -7,10 +7,12 @@
 #include <iostream>
 #include <sstream>
 #include <string_view>
+#include <type_traits>
 
 #include "thesauros/format.hpp"
 #include "thesauros/io.hpp"
 #include "thesauros/utility/empty.hpp"
+#include "thesauros/utility/type-transformations.hpp"
 
 namespace thes::test {
 #ifdef NDEBUG
@@ -87,12 +89,12 @@ inline constexpr bool range_eq(TRange1&& r1, TRange2&& r2, TEqual equal = {},
     return (it1 == end1) == (it2 == end2);
   }
   if constexpr (detail::AreAccessRanges<TRange1, TRange2>) {
-    const std::size_t size1{r1.size()};
-    const std::size_t size2{r2.size()};
+    const auto size1{r1.size()};
+    const auto size2{r2.size()};
     if (size1 != size2) {
       return false;
     }
-    for (std::size_t i = 0; i < size1; ++i) {
+    for (std::decay_t<decltype(size1)> i = 0; i < size1; ++i) {
       if (r1[i] != r2[i]) {
         return false;
       }

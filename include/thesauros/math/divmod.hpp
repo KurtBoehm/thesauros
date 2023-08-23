@@ -54,7 +54,7 @@ struct Divisor {
 
   // ceil(4^bit_num / d) for d > 0
   static constexpr WideValue invert(Value d) {
-    return std::numeric_limits<WideValue>::max() / d + 1;
+    return static_cast<WideValue>(std::numeric_limits<WideValue>::max() / d + 1);
   }
 
   explicit constexpr Divisor(T d) : divisor_(d), inverse_(invert(d)) {}
@@ -76,7 +76,7 @@ struct Divisor {
   }
 
   [[nodiscard]] constexpr inline Value get() const {
-    return (inverse_ == 0) ? 1 : divisor_;
+    return (inverse_ == 0) ? Value{1} : divisor_;
   }
 
 private:

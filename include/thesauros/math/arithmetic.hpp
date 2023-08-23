@@ -3,7 +3,6 @@
 
 #include <algorithm>
 #include <bit>
-#include <cassert>
 #include <concepts>
 #include <cstddef>
 #include <limits>
@@ -25,7 +24,7 @@ inline constexpr T sub_min(T arg1, T arg2, T minimum) {
 
 template<typename T>
 inline constexpr T div_ceil(const T dividend, const T divisor) {
-  return dividend / divisor + T{dividend % divisor != 0};
+  return static_cast<T>(dividend / divisor + T{dividend % divisor != 0});
 }
 
 template<typename TBase, std::unsigned_integral TUInt>
@@ -84,12 +83,12 @@ inline consteval unsigned abs_log_ceil(T base, T num) {
   return out + 1;
 }
 
-template<std::unsigned_integral T>
-inline constexpr T set_bit(T value, T bit_index, bool bit_value) {
-  return (value & T(~(T{1} << bit_index))) + (T{bit_value} << bit_index);
+template<std::unsigned_integral T, typename TIdx>
+inline constexpr T set_bit(T value, TIdx bit_index, bool bit_value) {
+  return static_cast<T>((value & T(~(T{1} << bit_index))) + (T{bit_value} << bit_index));
 }
-template<std::unsigned_integral T>
-inline constexpr bool get_bit(T value, T bit_index) {
+template<std::unsigned_integral T, typename TIdx>
+inline constexpr bool get_bit(T value, TIdx bit_index) {
   return value & T(T{1} << bit_index);
 }
 

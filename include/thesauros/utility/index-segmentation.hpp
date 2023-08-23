@@ -7,6 +7,7 @@
 
 #include "thesauros/math/divmod.hpp"
 #include "thesauros/ranges/iota.hpp"
+#include "thesauros/utility/safe-cast.hpp"
 #include "thesauros/utility/type-transformations.hpp"
 
 namespace thes {
@@ -17,11 +18,12 @@ struct UniformIndexSegmenter {
   using Shared = Union<Size, Segment>;
 
   UniformIndexSegmenter(Size size, Segment segment_num)
-      : size_(size), segment_num_(segment_num), div_(size / segment_num), mod_(size % segment_num) {
-  }
+      : size_(size), segment_num_(segment_num), div_(static_cast<Size>(size / segment_num)),
+        mod_(static_cast<Size>(size % segment_num)) {}
 
   [[nodiscard]] Size segment_start(const Segment segment) const {
-    return segment * div_ + std::min<Shared>(mod_, segment);
+    assert(segment <= segment_num_);
+    return static_cast<Size>(segment * div_ + std::min<Shared>(mod_, segment));
   }
   [[nodiscard]] Size segment_end(const Segment segment) const {
     return segment_start(segment + 1);
@@ -51,7 +53,7 @@ private:
   Size div_;
   Size mod_;
   OptDiv div_div_{div_ == 0 ? OptDiv{} : Div{div_}};
-  Div div_div1_{div_ + 1};
+  Div div_div1_{*safe_cast<Size>(div_ + 1)};
 };
 } // namespace thes
 
