@@ -45,6 +45,8 @@ int main() {
     static constexpr float b = 0.101F;
 
     static_assert(!thes::is_close(a, b));
+    static_assert(!thes::is_close(a, b, "rel_tol"_key = 1e-3F));
+    static_assert(!thes::is_close(a, b, "abs_tol"_key = 1e-3F));
     static_assert(thes::is_close(a, b, "rel_tol"_key = 1e-2F));
     static_assert(thes::is_close(a, b, "abs_tol"_key = 1e-2F));
     static_assert(thes::is_close(a, b, "rel_tol"_key = 1e-3F, "abs_tol"_key = 1e-2F));

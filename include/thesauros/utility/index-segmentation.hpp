@@ -5,7 +5,6 @@
 #include <cassert>
 #include <optional>
 
-#include "thesauros/math/arithmetic.hpp"
 #include "thesauros/math/divmod.hpp"
 #include "thesauros/ranges/iota.hpp"
 
@@ -50,42 +49,6 @@ private:
   Index mod_;
   OptDiv div_div_{div_ == 0 ? OptDiv{} : Div{div_}};
   Div div_div1_{div_ + 1};
-};
-
-template<typename TIndex>
-struct BlockedIndexSegmenter {
-  using Index = TIndex;
-
-  BlockedIndexSegmenter(Index size, Index segment_num, Index block_size)
-      : size_(size), segment_num_(segment_num), block_size_(block_size) {}
-
-  [[nodiscard]] Index segment_start(const Index segment) const {
-    return block_size_ * prod_div(block_num_, segment, segment_num_);
-  }
-  [[nodiscard]] Index segment_end(const Index segment) const {
-    return std::min(segment_start(segment + 1), size_);
-  }
-
-private:
-  Index size_;
-  Index segment_num_;
-  Index block_size_;
-  Index block_num_{div_ceil(size_, block_size_)};
-};
-
-template<typename TIndex>
-struct UniformIndexSegmenterWithBlock : public UniformIndexSegmenter<TIndex> {
-  using Index = TIndex;
-
-  UniformIndexSegmenterWithBlock(Index size, Index segment_num, Index block_size)
-      : UniformIndexSegmenter<Index>(size, segment_num), block_size_{block_size} {}
-
-  [[nodiscard]] Index block_size() const {
-    return block_size_;
-  }
-
-private:
-  Index block_size_;
 };
 } // namespace thes
 

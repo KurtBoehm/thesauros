@@ -28,16 +28,6 @@ inline constexpr T div_ceil(const T dividend, const T divisor) {
   return dividend / divisor + T{dividend % divisor != 0};
 }
 
-template<typename T>
-inline constexpr T prod_div(const T factor1, const T factor2, const T divisor) {
-  assert(divisor > 0);
-  assert(factor2 <= std::numeric_limits<T>::max() / divisor);
-
-  const T div = factor1 / divisor;
-  const T rem = factor1 % divisor;
-  return factor2 * div + (factor2 * rem) / divisor;
-}
-
 template<typename TBase, std::unsigned_integral TUInt>
 inline constexpr TBase pow(TBase x, const TUInt exponent) {
   const unsigned iter = std::bit_width(exponent);
