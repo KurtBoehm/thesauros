@@ -73,7 +73,7 @@ template<typename T>
 inline consteval unsigned abs_log_ceil(T base, T num) {
   unsigned out = 0;
   if (num < 0) {
-    const T nbase{-base};
+    const auto nbase = static_cast<T>(-base);
     for (; num <= nbase; ++out, num /= base) {
     }
   } else {
