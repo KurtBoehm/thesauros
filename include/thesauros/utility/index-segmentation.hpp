@@ -7,29 +7,32 @@
 
 #include "thesauros/math/divmod.hpp"
 #include "thesauros/ranges/iota.hpp"
+#include "thesauros/utility/type-transformations.hpp"
 
 namespace thes {
-template<typename TIndex>
+template<typename TSize, typename TSegment>
 struct UniformIndexSegmenter {
-  using Index = TIndex;
+  using Size = TSize;
+  using Segment = TSegment;
+  using Shared = Union<Size, Segment>;
 
-  UniformIndexSegmenter(Index size, Index segment_num)
+  UniformIndexSegmenter(Size size, Segment segment_num)
       : size_(size), segment_num_(segment_num), div_(size / segment_num), mod_(size % segment_num) {
   }
 
-  [[nodiscard]] Index segment_start(const Index segment) const {
-    return segment * div_ + std::min(mod_, segment);
+  [[nodiscard]] Size segment_start(const Segment segment) const {
+    return segment * div_ + std::min<Shared>(mod_, segment);
   }
-  [[nodiscard]] Index segment_end(const Index segment) const {
+  [[nodiscard]] Size segment_end(const Segment segment) const {
     return segment_start(segment + 1);
   }
 
-  [[nodiscard]] auto segment_range(const Index segment) const {
+  [[nodiscard]] auto segment_range(const Segment segment) const {
     return range(segment_start(segment), segment_start(segment + 1));
   }
 
-  [[nodiscard]] Index segment_of(Index index) const {
-    const Index ref = mod_ * (div_ + 1);
+  [[nodiscard]] Segment segment_of(Size index) const {
+    const Size ref = mod_ * (div_ + 1);
     if (index <= ref) {
       // index / (div + 1)
       return index / div_div1_;
@@ -40,13 +43,13 @@ struct UniformIndexSegmenter {
   }
 
 private:
-  using Div = Divisor<Index>;
+  using Div = Divisor<Size>;
   using OptDiv = std::optional<Div>;
 
-  Index size_;
-  Index segment_num_;
-  Index div_;
-  Index mod_;
+  Size size_;
+  Segment segment_num_;
+  Size div_;
+  Size mod_;
   OptDiv div_div_{div_ == 0 ? OptDiv{} : Div{div_}};
   Div div_div1_{div_ + 1};
 };

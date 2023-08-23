@@ -13,7 +13,7 @@ int main() {
   std::cout << "size: " << size << '\n';
   std::cout << '\n';
   {
-    const thes::UniformIndexSegmenter<std::size_t> seg(size, seg_num);
+    const thes::UniformIndexSegmenter seg(size, seg_num);
 
     std::size_t start = 0;
     std::size_t sum = 0;
@@ -38,7 +38,7 @@ int main() {
           // test_to_seg
           {
             const T block_num = num / blocks;
-            const thes::UniformIndexSegmenter<T> seg{num, blocks};
+            const thes::UniformIndexSegmenter seg{num, blocks};
             T sum = 0;
             for (const auto i : thes::range(blocks)) {
               const auto i1 = seg.segment_start(i);
@@ -53,7 +53,7 @@ int main() {
 
           // test_from_seg
           {
-            const thes::UniformIndexSegmenter<T> seg{num, blocks};
+            const thes::UniformIndexSegmenter seg{num, blocks};
             for (const auto i : thes::range(num)) {
               const auto s = seg.segment_of(i);
               THES_ASSERT(seg.segment_range(s).contains(i));
