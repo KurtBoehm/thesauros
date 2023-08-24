@@ -14,7 +14,7 @@ struct FloatFraction {
     return {f1.numerator * f2, f1.denominator};
   }
   friend constexpr FloatFraction operator*(Float f1, FloatFraction f2) {
-    return {f1.numerator * f2, f1.denominator};
+    return f2 * f1;
   }
 
   constexpr Float to_float() const {

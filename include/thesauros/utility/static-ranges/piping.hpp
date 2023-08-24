@@ -7,14 +7,12 @@
 #include "thesauros/utility/static-ranges/generators/combined.hpp"
 
 namespace thes::star {
-template<typename TRange, typename TRangeGen>
-requires(IsStaticRange<TRange> && IsPipeSink<TRangeGen>)
+template<AnyStaticRange TRange, IsPipeSink TRangeGen>
 inline constexpr decltype(auto) operator|(TRange&& range, TRangeGen&& gen) {
   return std::forward<TRangeGen>(gen)(std::forward<TRange>(range));
 }
 
-template<typename TRangeGen1, typename TRangeGen2>
-requires(IsRangeGenerator<TRangeGen1> && IsPipeSink<TRangeGen2>)
+template<IsRangeGenerator TRangeGen1, IsPipeSink TRangeGen2>
 inline constexpr decltype(auto) operator|(TRangeGen1&& gen1, TRangeGen2&& gen2) {
   return CombinedGenerator<TRangeGen1, TRangeGen2>{std::forward<TRangeGen1>(gen1),
                                                    std::forward<TRangeGen2>(gen2)};

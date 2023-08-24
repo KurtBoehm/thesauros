@@ -15,7 +15,7 @@ struct LinearExecutionPolicy {
   template<typename TSize, typename TOp>
   void execute_segmented(TSize size, TOp&& op) const {
     UniformIndexSegmenter segmenter(size, executor_.size());
-    executor_.execute([&op, &segmenter](TSize thread_idx) {
+    executor_.execute([&op, &segmenter](std::size_t thread_idx) {
       const auto begin = segmenter.segment_start(thread_idx);
       const auto end = segmenter.segment_end(thread_idx);
       op(thread_idx, begin, end);

@@ -8,7 +8,7 @@ int main() {
 
   static constexpr auto msg1 = "aBc"_sstr;
   static constexpr auto msg2 = "Łabędź żółty"_sstr;
-  static_assert(thes::star::IsStaticRange<decltype(msg2)>);
+  static_assert(thes::star::AnyStaticRange<decltype(msg2)>);
   std::cout << msg2.view() << '\n';
 
   static constexpr auto msg_arr_1 = msg1 | thes::star::to_array;

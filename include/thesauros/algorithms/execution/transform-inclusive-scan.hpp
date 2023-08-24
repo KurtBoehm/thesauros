@@ -18,13 +18,20 @@ inline void transform_inclusive_scan(TExecutionPolicy&& policy, TForwardIt1 firs
                                      TForwardIt2 d_first, TBinaryOperation binary_op,
                                      TUnaryOperation unary_op, T neutral) {
   const auto raw_size = std::distance(first, last);
-  using Size = std::decay_t<TExecutionPolicy>::Size;
-  const auto size = *thes::safe_cast<Size>(raw_size);
+  const auto size = [raw_size] {
+    using ExPo = std::decay_t<TExecutionPolicy>;
+    if constexpr (requires { typename ExPo::Size; }) {
+      return *safe_cast<typename ExPo::Size>(raw_size);
+    } else {
+      using Size = std::make_unsigned_t<std::decay_t<decltype(raw_size)>>;
+      return *safe_cast<Size>(raw_size);
+    }
+  }();
 
-  std::latch barrier{safe_cast<std::ptrdiff_t>(policy.size()).valid_value()};
+  std::latch barrier{*safe_cast<std::ptrdiff_t>(policy.size())};
   FixedArrayDefault<T> offsets(policy.size());
   std::forward<TExecutionPolicy>(policy).execute_segmented(
-    size, [=, &barrier, &offsets](std::size_t thread_idx, Size begin, Size end) {
+    size, [=, &barrier, &offsets](std::size_t thread_idx, auto begin, auto end) {
       auto thread_first = first;
       std::advance(thread_first, begin);
 

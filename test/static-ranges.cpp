@@ -23,14 +23,14 @@ int main() {
     using Range = std::array<int, 4>;
     static constexpr Range arr{0, 4, 3, 1};
 
-    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::TypedStaticRange<Range, int>);
     static_assert(star::size<Range> == 4);
     static_assert(star::get_at<3>(arr) == 1);
     static_assert(std::same_as<star::Value<Range>, int>);
   }
   {
     using Range = std::tuple<>;
-    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::AnyStaticRange<Range> && !star::AnyTypedStaticRange<Range>);
     static_assert(star::size<Range> == 0);
     static_assert(!star::HasValue<Range>);
   }
@@ -38,7 +38,7 @@ int main() {
     using Range = std::tuple<int>;
     static constexpr Range tup{1};
 
-    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::TypedStaticRange<Range, int>);
     static_assert(star::size<Range> == 1);
     static_assert(star::get_at<0>(tup) == 1);
     static_assert(star::HasValue<Range>);
@@ -47,14 +47,14 @@ int main() {
     using Range = std::tuple<int, float, double>;
     static constexpr Range tup{1, 2.0F, 3.0};
 
-    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::AnyStaticRange<Range> && !star::AnyTypedStaticRange<Range>);
     static_assert(star::size<Range> == 3);
     static_assert(star::get_at<1>(tup) == 2.0F);
     static_assert(!star::HasValue<Range>);
   }
   {
     using Range = std::vector<int>;
-    static_assert(!star::IsStaticRange<Range>);
+    static_assert(!star::AnyStaticRange<Range>);
   }
 
   // Tuple
@@ -63,7 +63,7 @@ int main() {
     static constexpr Range tup{1, 2.0F, 3.0};
     [[maybe_unused]] static constexpr thes::AutoTag<tup> sv{};
 
-    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::AnyStaticRange<Range> && !star::AnyTypedStaticRange<Range>);
     static_assert(star::size<Range> == 3);
     static_assert(star::get_at<1>(tup) == 2.0F);
     static_assert(!star::HasValue<Range>);
@@ -74,7 +74,7 @@ int main() {
     static constexpr auto con = star::constant<5>(1);
     using Range = decltype(con);
 
-    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::TypedStaticRange<Range, int>);
     static_assert(star::size<Range> == 5);
     static_assert(star::get_at<4>(con) == 1);
   }
@@ -84,7 +84,7 @@ int main() {
     static constexpr auto con = star::generate<5>([] { return 1; });
     using Range = decltype(con);
 
-    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::TypedStaticRange<Range, int>);
     static_assert(star::size<Range> == 5);
     static_assert(star::get_at<4>(con) == 1);
   }
@@ -94,7 +94,7 @@ int main() {
     static constexpr auto con = star::iota<0, 5>;
     using Range = decltype(con);
 
-    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::AnyStaticRange<Range> && !star::AnyTypedStaticRange<Range>);
     static_assert(star::size<Range> == 5);
     static_assert(star::get_at<4>(con) == 4);
   }
@@ -106,7 +106,7 @@ int main() {
     static constexpr auto ref = 1;
     using Range = decltype(enu);
 
-    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::AnyStaticRange<Range> && !star::AnyTypedStaticRange<Range>);
     static_assert(star::size<Range> == 4);
     static_assert(star::get_at<3>(enu) == std::make_pair(thes::index_tag<3>, std::cref(ref)));
     static_assert(!star::HasValue<Range>);
@@ -117,7 +117,7 @@ int main() {
     static constexpr auto ref = 2.0F;
     using Range = decltype(enu);
 
-    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::AnyStaticRange<Range> && !star::AnyTypedStaticRange<Range>);
     static_assert(star::size<Range> == 3);
     static_assert(star::get_at<1>(enu) == std::make_pair(thes::auto_tag<1>, std::cref(ref)));
     static_assert(!star::HasValue<Range>);
@@ -127,7 +127,7 @@ int main() {
     static constexpr auto enu = con | star::enumerate<int>;
     using Range = decltype(enu);
 
-    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::AnyStaticRange<Range> && !star::AnyTypedStaticRange<Range>);
     static_assert(star::size<Range> == 5);
     static_assert(star::get_at<4>(enu) == std::make_pair(thes::auto_tag<4>, 1));
   }
@@ -137,7 +137,7 @@ int main() {
     static constexpr auto map = star::iota<0, 4> | star::transform([](auto v) { return 2 * v; });
     using Range = decltype(map);
 
-    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::TypedStaticRange<Range, std::size_t>);
     static_assert(star::size<Range> == 4);
     static_assert(star::get_at<3>(map) == 6);
     static_assert(star::HasValue<Range>);
@@ -148,7 +148,7 @@ int main() {
       arr | star::transform([](auto v) { return 2 * v; }) | star::enumerate<int>;
     using Range = decltype(map);
 
-    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::AnyStaticRange<Range> && !star::AnyTypedStaticRange<Range>);
     static_assert(star::size<Range> == 4);
     static_assert(star::get_at<3>(map) == std::make_pair(thes::auto_tag<3>, 2));
     static_assert(!star::HasValue<Range>);
@@ -158,7 +158,7 @@ int main() {
     static constexpr auto map = tup | star::transform([](auto v) { return 2 * v; });
     using Range = decltype(map);
 
-    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::AnyStaticRange<Range> && !star::AnyTypedStaticRange<Range>);
     static_assert(star::size<Range> == 3);
     static_assert(star::get_at<1>(map) == 4.0F);
     static_assert(!star::HasValue<Range>);
@@ -175,7 +175,7 @@ int main() {
     static constexpr auto map = map2;
     using Range = decltype(map);
 
-    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::TypedStaticRange<Range, int>);
     static_assert(star::size<Range> == 4);
     static_assert(star::get_at<1>(map) == 8.0F);
     static_assert(star::HasValue<Range>);
@@ -186,7 +186,7 @@ int main() {
     static constexpr auto map = star::index_transform<4>([](auto v) { return v * v; });
     using Range = decltype(map);
 
-    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::TypedStaticRange<Range, std::size_t>);
     static_assert(star::size<Range> == 4);
     static_assert((map | star::to_array) == std::array{0_uz, 1_uz, 4_uz, 9_uz});
     static_assert(star::HasValue<Range>);
@@ -197,7 +197,7 @@ int main() {
       arr | (star::transform([](auto v) { return 2 * v; }) | star::enumerate<int>);
     using Range = decltype(map);
 
-    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::AnyStaticRange<Range> && !star::AnyTypedStaticRange<Range>);
     static_assert(star::size<Range> == 4);
     static_assert(star::get_at<3>(map) == std::make_pair(thes::auto_tag<3>, 2));
     static_assert(!star::HasValue<Range>);
@@ -209,7 +209,7 @@ int main() {
     static constexpr auto map = arr | star::only_idxs<0, 2>;
     using Range = decltype(map);
 
-    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::TypedStaticRange<Range, int>);
     static_assert(star::size<Range> == 2);
     static_assert(star::get_at<1>(map) == 3);
     static_assert(star::HasValue<Range>);
@@ -220,7 +220,7 @@ int main() {
       arr | star::only_idxs<0, 2> | star::transform([](auto v) { return 2 * v; });
     using Range = decltype(map);
 
-    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::TypedStaticRange<Range, int>);
     static_assert(star::size<Range> == 2);
     static_assert(star::get_at<1>(map) == 6);
     static_assert(star::HasValue<Range>);
@@ -230,7 +230,7 @@ int main() {
     static constexpr auto map = arr | star::only_range<std::array{2}>;
     using Range = decltype(map);
 
-    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::TypedStaticRange<Range, int>);
     static_assert(star::size<Range> == 1);
     static_assert(star::get_at<0>(map) == 3);
     static_assert(star::HasValue<Range>);
@@ -240,7 +240,7 @@ int main() {
     static constexpr auto map = arr | star::all_except_idxs<2>;
     using Range = decltype(map);
 
-    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::TypedStaticRange<Range, int>);
     static_assert(star::size<Range> == 3);
     static_assert((map | star::to_array) == std::array{0, 4, 1});
     static_assert(star::HasValue<Range>);
@@ -250,7 +250,7 @@ int main() {
     static constexpr auto map = arr | star::all_except_range<std::array{1}>;
     using Range = decltype(map);
 
-    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::TypedStaticRange<Range, int>);
     static_assert(star::size<Range> == 3);
     static_assert((map | star::to_array) == std::array{0, 3, 1});
     static_assert(star::HasValue<Range>);
@@ -260,7 +260,7 @@ int main() {
     static constexpr auto map = arr | star::sub_range<1, 3>;
     using Range = decltype(map);
 
-    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::TypedStaticRange<Range, int>);
     static_assert(star::size<Range> == 2);
     static_assert((map | star::to_array) == std::array{4, 3});
     static_assert(star::HasValue<Range>);
@@ -272,7 +272,7 @@ int main() {
       star::joined(std::array{0, 4, 3, 1}, std::array{4, 0}, std::array{3, 1});
     using Range = decltype(j);
 
-    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::TypedStaticRange<Range, int>);
     static_assert(star::size<Range> == 8);
     static_assert(star::get_at<1>(j) == 4);
     static_assert((j | star::to_array) == std::array{0, 4, 3, 1, 4, 0, 3, 1});
@@ -283,7 +283,7 @@ int main() {
       std::tuple{std::array{0, 4, 3, 1}, std::array{4, 0}, std::array{3, 1}} | star::join;
     using Range = decltype(j);
 
-    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::TypedStaticRange<Range, int>);
     static_assert(star::size<Range> == 8);
     static_assert(star::get_at<1>(j) == 4);
     static_assert((j | star::to_array) == std::array{0, 4, 3, 1, 4, 0, 3, 1});
@@ -296,7 +296,7 @@ int main() {
       star::flattened(std::tuple{std::array{0, 4, 3, 1}, std::array{4, 0}, std::array{3, 1}});
     using Range = decltype(j);
 
-    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::TypedStaticRange<Range, int>);
     static_assert(star::size<Range> == 8);
     static_assert(star::get_at<1>(j) == 4);
     static_assert((j | star::to_array) == std::array{0, 4, 3, 1, 4, 0, 3, 1});
@@ -310,7 +310,7 @@ int main() {
     static constexpr auto z = thes::star::zip(r1, r2);
     using Range = decltype(z);
 
-    static_assert(star::IsStaticRange<Range>);
+    static_assert(star::AnyStaticRange<Range> && !star::AnyTypedStaticRange<Range>);
     static_assert(star::size<Range> == 3);
     static_assert(star::get_at<1>(z) == thes::Tuple{std::get<1>(r1), std::get<1>(r2)});
     static_assert((z | star::to_tuple) ==
