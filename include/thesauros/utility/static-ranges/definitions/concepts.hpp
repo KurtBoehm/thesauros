@@ -24,6 +24,10 @@ template<typename TRange>
 concept AnyTypedStaticRange = AnyStaticRange<TRange> && HasValue<TRange>;
 template<typename TRange, typename T>
 concept TypedStaticRange = AnyTypedStaticRange<TRange> && std::same_as<Value<TRange>, T>;
+template<typename TRange, std::size_t tSize>
+concept SizedStaticRange = AnyStaticRange<TRange> && size<TRange> == tSize;
+template<typename TRange, typename T, std::size_t tSize>
+concept TypedSizedStaticRange = TypedStaticRange<TRange, T> && SizedStaticRange<TRange, tSize>;
 
 struct RangeGeneratorBase {};
 template<typename TGen>
