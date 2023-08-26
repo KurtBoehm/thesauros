@@ -30,7 +30,8 @@ struct FileWriter {
   FileWriter& operator=(const FileWriter&) = delete;
   FileWriter& operator=(FileWriter&&) = delete;
 
-  explicit FileWriter(const std::filesystem::path& path) : handle_(std::fopen(path.c_str(), "wb")) {
+  explicit FileWriter(std::filesystem::path path)
+      : path_(std::move(path)), handle_(std::fopen(path_.c_str(), "wb")) {
     if (handle_ == nullptr) {
       throw Exception("fopen failed: ", errno);
     }
@@ -39,6 +40,10 @@ struct FileWriter {
     if (handle_ != nullptr) {
       (void)std::fclose(handle_);
     }
+  }
+
+  [[nodiscard]] const std::filesystem::path& path() const {
+    return path_;
   }
 
   template<typename T>
@@ -51,6 +56,7 @@ struct FileWriter {
   }
 
 private:
+  std::filesystem::path path_;
   FILE* handle_;
 };
 } // namespace thes
