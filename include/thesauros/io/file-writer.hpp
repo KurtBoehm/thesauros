@@ -14,7 +14,8 @@ namespace thes {
 struct FileWriter {
   struct Exception : public std::exception {
     explicit Exception(std::string msg) : message_(std::move(msg)) {}
-    explicit Exception(auto&... args) : message_((std::stringstream{} << ... << args).str()) {}
+    explicit Exception(const auto&... args)
+        : message_((std::stringstream{} << ... << args).str()) {}
 
     [[nodiscard]] const char* what() const noexcept override {
       return message_.c_str();
