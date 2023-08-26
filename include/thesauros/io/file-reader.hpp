@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <exception>
 #include <filesystem>
+#include <span>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -16,7 +17,8 @@ namespace thes {
 struct FileReader {
   struct Exception : public std::exception {
     explicit Exception(std::string msg) : message_(std::move(msg)) {}
-    explicit Exception(auto&... args) : message_((std::stringstream{} << ... << args).str()) {}
+    explicit Exception(const auto&... args)
+        : message_((std::stringstream{} << ... << args).str()) {}
 
     [[nodiscard]] const char* what() const noexcept override {
       return message_.c_str();
@@ -43,20 +45,20 @@ struct FileReader {
 
   template<typename T>
   requires std::is_trivial_v<T>
-  void read(T* ptr, std::size_t size) {
-    const auto ret = std::fread(ptr, 1, size, handle_);
-    if (ret != size) {
-      throw Exception("fread failed: ", ret, " != ", size);
+  void read(std::span<T> span) {
+    const auto ret = std::fread(span.data(), 1, span.size(), handle_);
+    if (ret != span.size()) {
+      throw Exception("fread failed: ", ret, " != ", span.size());
     }
   }
   void read(DynamicBuffer& buf, std::size_t size) {
     buf.resize(size);
-    read(buf.data(), size);
+    read(std::span{buf.data(), buf.size()});
   }
   template<typename T, std::size_t tSize>
   requires std::is_trivial_v<T>
   void read(std::array<T, tSize>& array) {
-    read(array.data(), tSize);
+    read(std::span{array.data(), array.size()});
   }
 
   void seek(long offset, int whence) {
@@ -76,31 +78,31 @@ struct FileReader {
 
   template<typename T>
   requires std::is_trivial_v<T>
-  auto try_pread(T* ptr, std::size_t size, long offset) {
+  auto try_pread(std::span<T> span, long offset) {
     const auto pre = tell();
     seek(offset, SEEK_SET);
-    const auto ret = std::fread(ptr, 1, size, handle_);
+    const auto ret = std::fread(span.data(), 1, span.size(), handle_);
     seek(pre, SEEK_SET);
     return ret;
   }
   auto try_pread(DynamicBuffer& buf, std::size_t size, long offset) {
     buf.resize(size);
-    const auto ret = try_pread(buf.data(), size, offset);
+    const auto ret = try_pread(std::span{buf.data(), buf.size()}, offset);
     buf.resize(ret);
     return ret;
   }
 
   template<typename T>
   requires std::is_trivial_v<T>
-  void pread(T* ptr, std::size_t size, long offset) {
-    const auto ret = try_pread(ptr, size, offset);
-    if (ret != size) {
-      throw Exception("pread failed: ", ret, " != ", size);
+  void pread(std::span<T> span, long offset) {
+    const auto ret = try_pread(span, offset);
+    if (ret != span.size()) {
+      throw Exception("pread failed: ", ret, " != ", span.size());
     }
   }
   void pread(DynamicBuffer& buf, std::size_t size, long offset) {
     buf.resize(size);
-    pread(buf.data(), size, offset);
+    pread(std::span{buf.data(), buf.size()}, offset);
   }
 
   [[nodiscard]] std::size_t size() {

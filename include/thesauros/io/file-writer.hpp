@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <exception>
 #include <filesystem>
+#include <span>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -41,10 +42,10 @@ struct FileWriter {
 
   template<typename T>
   requires std::is_trivial_v<T>
-  void write(const T* data, std::size_t num) {
-    const auto written = std::fwrite(data, sizeof(T), num, handle_);
-    if (written != num) {
-      throw Exception("fwrite failed: ", written, " != ", num);
+  void write(std::span<const T> span) {
+    const auto written = std::fwrite(span.data(), sizeof(T), span.size(), handle_);
+    if (written != span.size()) {
+      throw Exception("fwrite failed: ", written, " != ", span.size());
     }
   }
 
