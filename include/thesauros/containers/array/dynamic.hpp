@@ -63,6 +63,10 @@ struct DynamicArray {
     initialize_all();
   }
 
+  explicit constexpr DynamicArray(Size size, const TValue& value) : allocation_(size) {
+    std::uninitialized_fill(begin(), end(), value);
+  }
+
   constexpr DynamicArray(std::initializer_list<Value> init) : allocation_(init.size()) {
     std::uninitialized_copy(init.begin(), init.end(), begin());
   }
