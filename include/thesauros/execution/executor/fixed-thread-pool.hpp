@@ -2,6 +2,7 @@
 #define INCLUDE_THESAUROS_EXECUTION_EXECUTOR_FIXED_THREAD_POOL_HPP
 
 #include <cassert>
+#include <concepts>
 #include <condition_variable>
 #include <cstddef>
 #include <functional>
@@ -14,6 +15,7 @@
 #include "thesauros/execution/system.hpp"
 #include "thesauros/execution/system/affinity.hpp"
 #include "thesauros/ranges/iota.hpp"
+#include "thesauros/utility/empty.hpp"
 
 namespace thes {
 struct FixedThreadPool {
@@ -21,7 +23,9 @@ struct FixedThreadPool {
   using Task = std::function<void(std::size_t)>;
   using TaskID = std::size_t;
 
-  explicit FixedThreadPool(std::size_t size) : threads_(Threads::create_with_capacity(size)) {
+  template<typename TCpuSets = Empty>
+  explicit FixedThreadPool(std::size_t size, const TCpuSets& cpu_sets = {})
+      : threads_(Threads::create_with_capacity(size)) {
     for (const std::size_t i : range(size)) {
       threads_.emplace_back([this, i] {
         TaskID last_id{0};
@@ -44,7 +48,11 @@ struct FixedThreadPool {
           end_work_.notify_all();
         }
       });
-      set_affinity(threads_[i], CPUSet::single_set(i));
+      if constexpr (std::same_as<TCpuSets, Empty>) {
+        set_affinity(threads_[i], CPUSet::single_set(i));
+      } else {
+        set_affinity(threads_[i], cpu_sets[i]);
+      }
       set_scheduler(threads_[i], Scheduler::FIFO);
     }
   }

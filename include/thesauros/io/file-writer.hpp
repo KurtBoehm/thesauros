@@ -55,6 +55,10 @@ struct FileWriter {
     }
   }
 
+  [[nodiscard]] FILE* handle() const {
+    return handle_;
+  }
+
 private:
   std::filesystem::path path_;
   FILE* handle_;

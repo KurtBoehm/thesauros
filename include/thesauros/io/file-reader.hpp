@@ -113,6 +113,10 @@ struct FileReader {
     return static_cast<std::size_t>(size);
   }
 
+  [[nodiscard]] FILE* handle() const {
+    return handle_;
+  }
+
 private:
   FILE* handle_;
 };

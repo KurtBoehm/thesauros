@@ -51,6 +51,12 @@ public:
     return const_iterator(op_, end_);
   }
 
+  decltype(auto) operator[](const auto& idx) const
+  requires requires { this->begin_[idx]; }
+  {
+    return op_(begin_[idx]);
+  }
+
 private:
   TOp op_;
   TIter begin_;
