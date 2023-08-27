@@ -205,9 +205,9 @@ struct TypedChunk : public TAllocator {
   }
 
   void to_file(FileWriter& writer) const {
-    const auto stored_size = size();
+    const Size stored_size = size();
     writer.write(std::span{&stored_size, 1});
-    writer.write(std::span{begin_, end_});
+    writer.write(span());
   }
 
 private:

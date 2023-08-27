@@ -27,13 +27,13 @@ struct NestedDynamicArrayBase {
   using value_type = Value;
   using size_type = Size;
 
-  using Storage = array::TypedChunk<TValue, Size, Allocator>;
   using SizeStorage = array::TypedChunk<Size, Size, SizeAllocator>;
+  using Storage = array::TypedChunk<TValue, Size, Allocator>;
 
-  static NestedDynamicArrayBase from_file(FileReader& reader) {
-    auto offsets = Storage::from_file(reader);
-    auto values = SizeStorage::from_file(reader);
-    return NestedDynamicArrayBase{std::move(offsets), std::move(values)};
+  static TDerived from_file(FileReader& reader) {
+    auto offsets = SizeStorage::from_file(reader);
+    auto values = Storage::from_file(reader);
+    return TDerived{std::move(offsets), std::move(values)};
   }
 
 private:
