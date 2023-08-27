@@ -8,6 +8,7 @@
 #include <span>
 #include <sstream>
 #include <string>
+#include <type_traits>
 #include <utility>
 
 namespace thes {
@@ -47,8 +48,8 @@ struct FileWriter {
   }
 
   template<typename T>
-  requires std::is_trivial_v<T>
-  void write(std::span<const T> span) {
+  requires std::is_trivial_v<std::decay_t<T>>
+  void write(std::span<T> span) {
     const auto written = std::fwrite(span.data(), sizeof(T), span.size(), handle_);
     if (written != span.size()) {
       throw Exception("fwrite failed: ", written, " != ", span.size());
