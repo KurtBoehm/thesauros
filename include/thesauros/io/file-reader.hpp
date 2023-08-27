@@ -89,7 +89,7 @@ struct FileReader {
   auto try_pread(std::span<T> span, long offset) {
     const auto pre = tell();
     seek(offset, SEEK_SET);
-    const auto ret = std::fread(span.data(), 1, span.size(), handle_);
+    const auto ret = std::fread(span.data(), sizeof(T), span.size(), handle_);
     seek(pre, SEEK_SET);
     return ret;
   }
