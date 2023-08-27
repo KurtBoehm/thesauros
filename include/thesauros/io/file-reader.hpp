@@ -47,7 +47,7 @@ struct FileReader {
   template<typename T>
   requires std::is_trivial_v<T>
   void read(std::span<T> span) {
-    const auto ret = std::fread(span.data(), 1, span.size(), handle_);
+    const auto ret = std::fread(span.data(), sizeof(T), span.size(), handle_);
     if (ret != span.size()) {
       throw Exception("fread failed: ", ret, " != ", span.size());
     }
