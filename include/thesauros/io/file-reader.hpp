@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "thesauros/containers/dynamic-buffer.hpp"
+#include "thesauros/utility/type-tag.hpp"
 
 namespace thes {
 struct FileReader {
@@ -59,6 +60,13 @@ struct FileReader {
   requires std::is_trivial_v<T>
   void read(std::array<T, tSize>& array) {
     read(std::span{array.data(), array.size()});
+  }
+  template<typename T>
+  requires std::is_trivial_v<T>
+  T read(TypeTag<T> /*tag*/) {
+    T value{};
+    read(std::span{&value, 1});
+    return value;
   }
 
   void seek(long offset, int whence) {

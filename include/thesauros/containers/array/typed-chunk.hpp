@@ -3,7 +3,10 @@
 
 #include <cassert>
 #include <memory>
+#include <span>
 #include <utility>
+
+#include "thesauros/io.hpp"
 
 namespace thes::array {
 // A helper class managing a typed chunk of memory.
@@ -19,6 +22,12 @@ struct TypedChunk : public TAllocator {
   using value_type = Value;
   using iterator = TValue*;
   using const_iterator = const TValue*;
+
+  static TypedChunk from_file(FileReader& reader) {
+    TypedChunk chunk(reader.read(type_tag<Size>));
+    reader.read(chunk.span());
+    return chunk;
+  }
 
   constexpr TypedChunk() = default;
   explicit constexpr TypedChunk(const Allocator& alloc) : Allocator(alloc) {}
@@ -186,6 +195,19 @@ struct TypedChunk : public TAllocator {
 
     begin_ = new_begin;
     end_ = new_begin + new_size;
+  }
+
+  std::span<const Value> span() const {
+    return std::span{begin_, end_};
+  }
+  std::span<Value> span() {
+    return std::span{begin_, end_};
+  }
+
+  void to_file(FileWriter& writer) const {
+    const auto stored_size = size();
+    writer.write(std::span{&stored_size, 1});
+    writer.write(std::span{begin_, end_});
   }
 
 private:

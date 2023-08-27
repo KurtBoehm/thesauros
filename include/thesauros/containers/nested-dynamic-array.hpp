@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "thesauros/containers/array/typed-chunk.hpp"
-#include "thesauros/io/printers.hpp"
+#include "thesauros/io.hpp"
 #include "thesauros/iterator/facades.hpp"
 #include "thesauros/iterator/provider-map.hpp"
 #include "thesauros/utility/type-transformations.hpp"
@@ -29,6 +29,12 @@ struct NestedDynamicArrayBase {
 
   using Storage = array::TypedChunk<TValue, Size, Allocator>;
   using SizeStorage = array::TypedChunk<Size, Size, SizeAllocator>;
+
+  static NestedDynamicArrayBase from_file(FileReader& reader) {
+    auto offsets = Storage::from_file(reader);
+    auto values = SizeStorage::from_file(reader);
+    return NestedDynamicArrayBase{std::move(offsets), std::move(values)};
+  }
 
 private:
   template<bool tConst>
@@ -193,6 +199,11 @@ public:
   }
   [[nodiscard]] Size element_num() const {
     return values_.size();
+  }
+
+  void to_file(FileWriter& writer) const {
+    offsets_.to_file(writer);
+    values_.to_file(writer);
   }
 
 private:

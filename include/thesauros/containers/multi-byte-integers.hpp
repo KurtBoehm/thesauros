@@ -13,9 +13,11 @@
 #include <type_traits>
 
 #include "thesauros/containers/array/dynamic.hpp"
+#include "thesauros/io.hpp"
 #include "thesauros/iterator/facades.hpp"
 #include "thesauros/utility/arrow-proxy.hpp"
 #include "thesauros/utility/inlining.hpp"
+#include "thesauros/utility/type-tag.hpp"
 #include "thesauros/utility/value-optional.hpp"
 
 namespace thes {
@@ -205,6 +207,12 @@ struct MultiByteIntegersBase {
   using iterator = Iterator<false>;
   using const_iterator = Iterator<true>;
 
+  static MultiByteIntegersBase from_file(FileReader& reader) {
+    MultiByteIntegersBase out(reader.read(type_tag<Size>));
+    reader.read(out.byte_span());
+    return out;
+  }
+
   static MultiByteIntegersBase create_all_set(std::size_t size)
   requires(!tOptional)
   {
@@ -290,6 +298,12 @@ struct MultiByteIntegersBase {
 
   ConstSubRange sub_range(Size begin, Size end) const {
     return ConstSubRange(*this, begin, end);
+  }
+
+  void to_file(FileWriter& writer) const {
+    const Size stored_size = size_;
+    writer.write(std::span{&stored_size, 1});
+    writer.write(byte_span());
   }
 
 private:
