@@ -44,6 +44,13 @@ struct MultiBitIntegers {
     constexpr void set_bit(Chunk index, bool value) {
       chunk = thes::set_bit<Chunk>(chunk, index + offset, value);
     }
+    constexpr void set_bit(Chunk index, bool value, std::memory_order mem_order) {
+      std::atomic_ref ref{chunk};
+      for (Chunk c = ref; !ref.compare_exchange_weak(
+             c, thes::set_bit<Chunk>(c, index + offset, value), mem_order);) {
+      }
+    }
+
     constexpr bool get_bit(Chunk index) {
       return thes::get_bit<Chunk>(chunk, index + offset);
     }
