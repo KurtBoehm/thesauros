@@ -5,6 +5,7 @@ args = options_sub.get_variable('all_args')
 foreach name, info : {
   'Arrays': [['arrays.cpp'], []],
   'BlockedDynamicArray': [['blocked-dynamic-array.cpp'], []],
+  'Divisor': [['divisor.cpp'], []],
   'DynamicBitset': [['dynamic-bitset.cpp'], []],
   'Empty': [['empty.cpp'], []],
   'Execution': [['execution.cpp'], []],

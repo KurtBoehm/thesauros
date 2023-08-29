@@ -75,14 +75,15 @@ struct Divisor {
     return n * inverse_ <= inverse_ - 1;
   }
 
-  [[nodiscard]] constexpr inline Value get() const {
-    return (inverse_ == 0) ? Value{1} : divisor_;
+  [[nodiscard]] constexpr inline Value mod_factor() const {
+    return mod_factor_;
   }
 
 private:
   Value divisor_;
   WideValue inverse_;
   Value mask_{(inverse_ == 0) ? std::numeric_limits<Value>::max() : Value{0}};
+  Value mod_factor_{(inverse_ == 0) ? Value{1} : divisor_};
 };
 
 template<typename T>
@@ -92,7 +93,7 @@ inline constexpr std::pair<T, T> divmod(T dividend, T divisor) {
 template<typename T>
 inline constexpr std::pair<T, T> divmod(T dividend, const Divisor<T>& divisor) {
   const auto div = dividend / divisor;
-  return {div, dividend - div * divisor.get()};
+  return {div, dividend - div * divisor.mod_factor()};
 }
 } // namespace thes
 
