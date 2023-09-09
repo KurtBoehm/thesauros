@@ -46,6 +46,17 @@ struct FileReader {
 
   template<typename T>
   requires std::is_trivial_v<T>
+  std::size_t try_read(std::span<T> span) {
+    const auto ret = std::fread(span.data(), sizeof(T), span.size(), handle_);
+    const auto err = std::ferror(handle_);
+    if (err) {
+      throw Exception("fread failed (", err, "), ret=", ret, ", size=", span.size());
+    }
+    return ret;
+  }
+
+  template<typename T>
+  requires std::is_trivial_v<T>
   void read(std::span<T> span) {
     const auto ret = std::fread(span.data(), sizeof(T), span.size(), handle_);
     if (ret != span.size()) {
@@ -119,6 +130,10 @@ struct FileReader {
     const auto size = tell();
     seek(prev, SEEK_SET);
     return static_cast<std::size_t>(size);
+  }
+
+  [[nodiscard]] bool end_of_file() const {
+    return std::feof(handle_) != 0;
   }
 
   [[nodiscard]] FILE* handle() const {
