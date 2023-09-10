@@ -12,7 +12,10 @@ struct DynamicBuffer {
   explicit DynamicBuffer(std::size_t size)
       : begin_(static_cast<std::byte*>(std::malloc(size))), size_(size) {}
   DynamicBuffer(const DynamicBuffer&) = delete;
-  DynamicBuffer(DynamicBuffer&&) = delete;
+  DynamicBuffer(DynamicBuffer&& other) noexcept : begin_(other.begin_), size_(other.size_) {
+    other.begin_ = nullptr;
+    other.size_ = 0;
+  }
   DynamicBuffer& operator=(const DynamicBuffer&) = delete;
   DynamicBuffer& operator=(DynamicBuffer&&) = delete;
   ~DynamicBuffer() {
@@ -30,6 +33,10 @@ struct DynamicBuffer {
   [[nodiscard]] std::byte* data() {
     return begin_;
   }
+  [[nodiscard]] const std::byte* data() const {
+    return begin_;
+  }
+
   [[nodiscard]] std::uint8_t* data_u8() {
     return reinterpret_cast<std::uint8_t*>(begin_);
   }
