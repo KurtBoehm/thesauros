@@ -10,7 +10,7 @@
 namespace thes {
 template<typename TStream>
 struct MutexStream {
-  MutexStream(TStream&& stream, std::mutex& mutex)
+  MutexStream(TStream&& stream, std::recursive_mutex& mutex)
       : stream_{std::forward<TStream>(stream)}, mutex_{mutex} {
     mutex_.lock();
   }
@@ -43,11 +43,11 @@ struct MutexStream {
 
 private:
   TStream stream_;
-  std::mutex& mutex_;
+  std::recursive_mutex& mutex_;
 };
 
-inline std::mutex& parallel_io_mutex() {
-  static std::mutex mutex{};
+inline std::recursive_mutex& parallel_io_mutex() {
+  static std::recursive_mutex mutex{};
   return mutex;
 }
 
