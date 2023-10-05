@@ -14,7 +14,7 @@ namespace thes::array {
 // Note that managing the lifetime of elements is the responsibility of the user — elements are
 // neither constructed or destroyed!
 template<typename TValue, typename TSize, typename TAllocator>
-struct TypedChunk : public TAllocator {
+struct TypedChunk {
   using Value = TValue;
   using Size = TSize;
   using Allocator = TAllocator;
@@ -30,19 +30,18 @@ struct TypedChunk : public TAllocator {
   }
 
   constexpr TypedChunk() = default;
-  explicit constexpr TypedChunk(const Allocator& alloc) : Allocator(alloc) {}
-  explicit constexpr TypedChunk(Allocator&& alloc) : Allocator(std::forward<Allocator>(alloc)) {}
+  explicit constexpr TypedChunk(const Allocator& alloc) : alloc_(alloc) {}
+  explicit constexpr TypedChunk(Allocator&& alloc) : alloc_(std::forward<Allocator>(alloc)) {}
 
-  explicit constexpr TypedChunk(Size size)
-      : begin_(allocate_memory(*this, size)), end_(begin_ + size) {}
+  explicit constexpr TypedChunk(Size size) : begin_(allocate_memory(size)), end_(begin_ + size) {}
   constexpr TypedChunk(Size size, Allocator&& alloc)
-      : Allocator(std::forward<Allocator>(alloc)), begin_(allocate_memory(*this, size)),
-        end_(begin_ + size) {}
+      : alloc_(std::forward<Allocator>(alloc)), begin_(allocate_memory(size)), end_(begin_ + size) {
+  }
   constexpr TypedChunk(Size size, const Allocator& alloc)
-      : Allocator(alloc), begin_(allocate_memory(*this, size)), end_(begin_ + size) {}
+      : alloc_(alloc), begin_(allocate_memory(size)), end_(begin_ + size) {}
 
   constexpr TypedChunk(TypedChunk&& other) noexcept
-      : Allocator(static_cast<Allocator&&>(other)), begin_(other.begin_), end_(other.end_) {
+      : alloc_(std::move(other.alloc_)), begin_(other.begin_), end_(other.end_) {
     other.begin_ = nullptr;
     other.end_ = nullptr;
   }
@@ -55,6 +54,13 @@ struct TypedChunk : public TAllocator {
   // WARNING Only deallocates — destruction of the elements has to be handled by the deriving class!
   constexpr ~TypedChunk() {
     deallocate();
+  }
+
+  friend void swap(TypedChunk& v1, TypedChunk& v2) noexcept {
+    using std::swap;
+    swap(v1.alloc_, v2.alloc_);
+    swap(v1.begin_, v2.begin_);
+    swap(v1.end_, v2.end_);
   }
 
   [[nodiscard]] constexpr TValue* data() {
@@ -112,12 +118,12 @@ struct TypedChunk : public TAllocator {
     return *(end_ - 1);
   }
 
-  [[nodiscard]] static constexpr TValue* allocate_memory(Allocator& allocator, const Size size) {
-    return std::allocator_traits<Allocator>::allocate(allocator, size);
+  [[nodiscard]] constexpr TValue* allocate_memory(const Size size) {
+    return std::allocator_traits<Allocator>::allocate(alloc_, size);
   }
   void allocate(const Size size) {
     assert(begin_ == nullptr && end_ == nullptr);
-    begin_ = allocate_memory(*this, size);
+    begin_ = allocate_memory(size);
     end_ = begin_ + size;
   }
 
@@ -128,21 +134,22 @@ struct TypedChunk : public TAllocator {
   constexpr void deallocate() {
     if (begin_ != nullptr) {
       assert(end_ != nullptr);
-      std::allocator_traits<Allocator>::deallocate(*this, begin_, static_cast<Size>(end_ - begin_));
+      std::allocator_traits<Allocator>::deallocate(alloc_, begin_,
+                                                   static_cast<Size>(end_ - begin_));
     } else {
       assert(end_ == nullptr);
     }
   }
 
   void copy_allocator(const Allocator& allocator) {
-    static_cast<Allocator&>(*this) = allocator;
+    alloc_ = allocator;
   }
 
   // WARNING Requires the data to be destroyed already!
   void move_to_destroyed(TypedChunk&& other) noexcept {
     deallocate();
 
-    static_cast<Allocator&>(*this) = static_cast<Allocator&&>(other);
+    alloc_ = std::move(other.alloc_);
     begin_ = other.begin_;
     other.begin_ = nullptr;
 
@@ -155,22 +162,22 @@ struct TypedChunk : public TAllocator {
 
     deallocate();
 
-    static_cast<Allocator&>(*this) = static_cast<const Allocator&>(other);
+    alloc_ = other.alloc_;
     const auto size = static_cast<Size>(other.end_ - other.begin_);
-    begin_ = allocate_memory(*this, size);
+    begin_ = allocate_memory(size);
     end_ = begin_ + size;
   }
 
   constexpr void allocate_to_empty(Size size) {
     assert(begin_ == nullptr && end_ == nullptr);
-    begin_ = allocate_memory(*this, size);
+    begin_ = allocate_memory(size);
     end_ = begin_ + size;
   }
   // WARNING Only valid if the data is fully initialized!
   constexpr void expand(Size new_size, auto&& mover) {
     assert(new_size > size());
 
-    Value* new_begin = allocate_memory(*this, new_size);
+    Value* new_begin = allocate_memory(new_size);
     mover(begin_, end_, new_begin);
     deallocate();
 
@@ -187,7 +194,7 @@ struct TypedChunk : public TAllocator {
   constexpr void shrink(Size new_size) {
     assert(new_size < size());
 
-    Value* new_begin = allocate_memory(*this, new_size);
+    Value* new_begin = allocate_memory(new_size);
     std::uninitialized_move(begin_, begin_ + new_size, new_begin);
 
     destroy_initialized();
@@ -211,6 +218,7 @@ struct TypedChunk : public TAllocator {
   }
 
 private:
+  [[no_unique_address]] TAllocator alloc_{};
   TValue* begin_{nullptr};
   TValue* end_{nullptr};
 };
