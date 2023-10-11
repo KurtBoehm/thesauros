@@ -74,14 +74,24 @@ struct IteratorFacade {
 
   // forward iter stuff
 
-  constexpr friend reference operator*(const TDerived& self) {
+  constexpr friend reference operator*(const TDerived& self)
+  requires(requires { TProvider::deref(state(self)); })
+  {
     return TProvider::deref(state(self));
   }
+  constexpr friend reference operator*(TDerived& self) {
+    return TProvider::deref(state(self));
+  }
+  constexpr friend reference operator*(TDerived&& self) {
+    return TProvider::deref(state(std::move(self)));
+  }
+
   constexpr pointer operator->() const
   requires(!std::same_as<pointer, void>)
   {
     return ArrowCreator<value_type, pointer>::create(TProvider::deref(state(derived())));
   }
+
   constexpr friend TDerived& operator++(TDerived& self) {
     TProvider::incr(state(self));
     return self;

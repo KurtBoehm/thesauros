@@ -18,7 +18,7 @@ private:
       using IterState = TIter;
     };
 
-    static constexpr Value deref(const auto& self) {
+    static constexpr Value deref(auto& self) {
       return self.op_(*self.it_);
     }
 
@@ -52,7 +52,12 @@ public:
   }
 
   decltype(auto) operator[](const auto& idx) const
-  requires requires { this->begin_[idx]; }
+  requires(requires { this->begin_[idx]; })
+  {
+    return op_(begin_[idx]);
+  }
+  decltype(auto) operator[](const auto& idx)
+  requires(requires { this->begin_[idx]; })
   {
     return op_(begin_[idx]);
   }

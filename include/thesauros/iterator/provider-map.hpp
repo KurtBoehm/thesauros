@@ -3,6 +3,7 @@
 
 #include <compare>
 #include <concepts>
+#include <utility>
 
 #include "concepts.hpp"
 
@@ -25,6 +26,12 @@ struct Map {
 
   static constexpr Ref deref(const auto& self) {
     return TStateProvider::deref(self);
+  }
+  static constexpr Ref deref(auto& self) {
+    return TStateProvider::deref(self);
+  }
+  static constexpr Ref deref(auto&& self) {
+    return TStateProvider::deref(std::forward<decltype(self)>(self));
   }
 
   static constexpr void incr(auto& self)
