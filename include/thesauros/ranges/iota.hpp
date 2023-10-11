@@ -99,6 +99,8 @@ public:
     return end_ - begin_;
   }
 
+  constexpr bool operator==(const IotaRange& other) const = default;
+
   auto transform(auto op) const {
     return IotaRange{op(begin_), op(end_)};
   }
