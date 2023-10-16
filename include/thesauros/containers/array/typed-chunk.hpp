@@ -127,6 +127,10 @@ struct TypedChunk {
     end_ = begin_ + size;
   }
 
+  const Allocator& allocator() const {
+    return alloc_;
+  }
+
   // WARNING Only valid if the data is fully initialized!
   constexpr void destroy_initialized() {
     std::destroy(begin_, end_);

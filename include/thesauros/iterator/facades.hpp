@@ -74,9 +74,7 @@ struct IteratorFacade {
 
   // forward iter stuff
 
-  constexpr friend reference operator*(const TDerived& self)
-  requires(requires { TProvider::deref(state(self)); })
-  {
+  constexpr friend reference operator*(const TDerived& self) {
     return TProvider::deref(state(self));
   }
   constexpr friend reference operator*(TDerived& self) {

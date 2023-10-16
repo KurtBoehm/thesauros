@@ -2,6 +2,7 @@
 #define INCLUDE_THESAUROS_CONTAINERS_ARRAY_FIXED_ALLOC_HPP
 
 #include <cassert>
+#include <concepts>
 #include <cstddef>
 #include <initializer_list>
 #include <iterator>
@@ -130,7 +131,9 @@ struct FixedAllocArray {
   }
 
   template<typename... TArgs>
-  Value& emplace_back(TArgs&&... args) {
+  Value& emplace_back(TArgs&&... args)
+  requires std::constructible_from<TValue, TArgs...>
+  {
     assert(data_end_ != allocation_.end());
     new (data_end_) TValue(std::forward<TArgs>(args)...);
     ++data_end_;
