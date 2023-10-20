@@ -37,10 +37,7 @@ concept IsIterRange = requires(TRange&& r) {
   std::end(r);
 };
 template<typename TRange>
-concept IsAccessRange = requires(TRange&& r, std::size_t i) {
-  r.size();
-  r[i];
-};
+concept IsAccessRange = requires(TRange&& r) { r[r.size()]; };
 
 template<typename TRange1, typename TRange2>
 concept AreIterRanges = IsIterRange<TRange1> && IsIterRange<TRange2>;
