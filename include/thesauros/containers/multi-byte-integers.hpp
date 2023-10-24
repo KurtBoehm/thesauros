@@ -293,25 +293,35 @@ struct MultiByteIntegersBase {
     data_.reserve(effective_allocation(allocation));
   }
 
-  template<typename TIt>
-  void insert(const_iterator pos, TIt first, TIt last) {
+  const_iterator insert_uninit(const_iterator pos, Size size) {
     const Size old_bsize = byte_size(size_);
     assert(data_.size() == old_bsize + padding_bytes);
 
-    const auto insize = *safe_cast<Size>(std::distance(first, last));
-    const Size new_bsize = old_bsize + byte_size(insize);
+    const Size new_bsize = old_bsize + byte_size(size);
     const std::ptrdiff_t offset = pos.raw() - data_.data();
 
     data_.expand(new_bsize + padding_bytes);
-    size_ += insize;
+    size_ += size;
 
     std::byte* new_begin = data_.data();
     std::byte* dst = new_begin + offset;
     std::move_backward(dst, new_begin + old_bsize, new_begin + new_bsize);
 
-    for (; first != last; ++first, dst += element_bytes) {
+    return const_iterator{dst};
+  }
+
+  template<typename TIt>
+  void copy_uninit(const_iterator pos, TIt first, TIt last) {
+    const std::ptrdiff_t offset = pos.raw() - data_.data();
+    for (std::byte* dst = data_.data() + offset; first != last; ++first, dst += element_bytes) {
       store(dst, *first);
     }
+  }
+
+  template<typename TIt>
+  void insert(const_iterator pos, TIt first, TIt last) {
+    const auto insize = *safe_cast<Size>(std::distance(first, last));
+    copy_uninit(insert_uninit(pos, insize), first, last);
   }
 
   [[nodiscard]] std::span<const std::byte> byte_span() const {
