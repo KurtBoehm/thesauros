@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "thesauros/containers.hpp"
+#include "thesauros/format.hpp"
 #include "thesauros/io.hpp"
 #include "thesauros/ranges.hpp"
 #include "thesauros/test.hpp"
@@ -23,8 +24,8 @@ void body(auto... values) {
   std::vector<UInt> vec{values...};
 
   auto elem_assert = [&integers, &vec] {
-    std::cout << '{' << thes::range_print(integers) << "}, [" << thes::range_print(vec) << ']'
-              << '\n';
+    std::cout << thes::formatted(thes::fmt::fg_green, thes::range_print(integers)) << ' '
+              << thes::formatted(thes::fmt::fg_blue, thes::range_print(vec)) << '\n';
     THES_ASSERT(test::range_eq(integers, vec));
   };
   auto push_back = [&integers, &vec](UInt v) {
@@ -38,6 +39,14 @@ void body(auto... values) {
   auto pop_back = [&integers, &vec]() {
     integers.pop_back();
     vec.pop_back();
+  };
+  auto prepend = [&integers, &vec](auto range) {
+    integers.insert(integers.begin(), range.begin(), range.end());
+    vec.insert(vec.begin(), range.begin(), range.end());
+  };
+  auto append = [&integers, &vec](auto range) {
+    integers.insert(integers.end(), range.begin(), range.end());
+    vec.insert(vec.end(), range.begin(), range.end());
   };
 
   elem_assert();
@@ -62,6 +71,12 @@ void body(auto... values) {
   for (auto& v : vec) {
     ++v;
   }
+  elem_assert();
+
+  prepend(std::vector<unsigned>{1, 2, 3});
+  elem_assert();
+
+  append(std::vector<unsigned>{11, 22, 33});
   elem_assert();
 
   {

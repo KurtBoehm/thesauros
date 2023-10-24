@@ -95,7 +95,7 @@ public:
     return begin_ == end_;
   }
 
-  [[nodiscard]] constexpr Value size() const {
+  [[nodiscard]] constexpr auto size() const {
     return end_ - begin_;
   }
 

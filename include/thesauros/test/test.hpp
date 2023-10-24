@@ -12,7 +12,6 @@
 #include "thesauros/format.hpp"
 #include "thesauros/io.hpp"
 #include "thesauros/utility/empty.hpp"
-#include "thesauros/utility/type-transformations.hpp"
 
 namespace thes::test {
 #ifdef NDEBUG
