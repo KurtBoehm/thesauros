@@ -139,10 +139,12 @@ struct Test7 {
 THES_CREATE_TYPE_EX(SNAKE_CASE(Test8), CONSTEXPR_CONSTRUCTOR,
                     MEMBERS((SNAKE_CASE(a), int), (SNAKE_CASE(b), bool)),
                     BODY(int test() const { return a; }))
-THES_CREATE_TYPE_EX(SNAKE_CASE(Test9), CONSTEXPR_CONSTRUCTOR, NAMESPACE(n1), NAMESPACE(n2),
+namespace n1::n2 {
+THES_CREATE_TYPE_EX(SNAKE_CASE(Test9), CONSTEXPR_CONSTRUCTOR,
                     TEMPLATE_PARAMS((int)tVal, (typename)TType),
                     MEMBERS((SNAKE_CASE(a), TType), (KEEP(b), char), (SNAKE_CASE(c), int)),
                     STATIC_MEMBERS(("value", tVal), ("type", thes::type_tag<TType>)))
+}
 
 using Type7a = Test7<Type2::A, int>;
 using Type7aInfo = thes::TypeInfo<Type7a>;
