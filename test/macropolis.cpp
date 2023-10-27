@@ -152,13 +152,15 @@ inline constexpr auto mems = Type7aInfo::members;
 inline constexpr auto stat_mems = Type7aInfo::static_members;
 inline constexpr auto mem0 = std::get<0>(stat_mems);
 inline constexpr auto mem1 = std::get<1>(stat_mems);
+using Mem0 = decltype(mem0);
+using Mem1 = decltype(mem1);
 
-static_assert(mem0.serial_name == "value"_sstr);
-static_assert(mem0.value == Type2::A);
-static_assert(mem1.serial_name == "type"_sstr);
+static_assert(Mem0::serial_name == "value"_sstr);
+static_assert(Mem0::value == Type2::A);
+static_assert(Mem1::serial_name == "type"_sstr);
 
-static_assert(thes::serial_value(mem0.value) == "a"_sstr.view());
-static_assert(thes::serial_value(mem1.value) == "i32");
+static_assert(thes::serial_value(Mem0::value) == "a"_sstr.view());
+static_assert(thes::serial_value(Mem1::value) == "i32");
 
 using Type7b = Test7<Type2::A, std::variant<int, double>>;
 using Type7c = Test7<Type2::B, std::optional<std::variant<int, Type7b>>>;

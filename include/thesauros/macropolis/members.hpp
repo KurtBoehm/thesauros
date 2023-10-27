@@ -2,6 +2,7 @@
 #define INCLUDE_THESAUROS_MACROPOLIS_MEMBERS_HPP
 
 #include <cstddef>
+#include <tuple>
 #include <utility>
 
 namespace thes {

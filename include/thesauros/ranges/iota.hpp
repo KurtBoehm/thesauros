@@ -1,6 +1,7 @@
 #ifndef INCLUDE_THESAUROS_RANGES_IOTA_HPP
 #define INCLUDE_THESAUROS_RANGES_IOTA_HPP
 
+#include <cassert>
 #include <cstddef>
 #include <ostream>
 #include <type_traits>
@@ -109,6 +110,11 @@ public:
     const T new_begin = std::max(r1.begin_, r2.begin_);
     const T new_end = std::min(r1.end_, r2.end_);
     return {new_begin, std::max(new_begin, new_end)};
+  }
+
+  friend IotaRange operator|(IotaRange r1, IotaRange r2) {
+    assert(r1.begin_ <= r2.end_ && r2.begin_ <= r1.end_);
+    return IotaRange{std::min(r1.begin_, r2.begin_), std::max(r1.end_, r2.end_)};
   }
 
   friend std::ostream& operator<<(std::ostream& stream, const IotaRange& range) {
