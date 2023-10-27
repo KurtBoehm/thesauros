@@ -15,10 +15,7 @@ struct Test1 {
   THES_DEFINE_TYPE(SNAKE_CASE(Test1), CONSTEXPR_CONSTRUCTOR, (KEEP(a), double), (KEEP(b), int))
 };
 
-struct Test2 {
-  THES_DEFINE_TYPE(SNAKE_CASE(Test2), CONSTEXPR_CONSTRUCTOR, (KEEP(c), std::string),
-                   (KEEP(d), Test1))
-};
+THES_CREATE_TYPE(SNAKE_CASE(Test2), CONSTEXPR_CONSTRUCTOR, (KEEP(c), std::string), (KEEP(d), Test1))
 
 int main() {
   using namespace std::string_view_literals;

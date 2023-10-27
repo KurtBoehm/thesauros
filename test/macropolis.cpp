@@ -11,6 +11,7 @@
 
 using namespace thes::literals;
 
+#if false
 struct Test1 {
   THES_DEFINE_TYPE(SNAKE_CASE(Test1), CONSTEXPR_CONSTRUCTOR, (SNAKE_CASE(CapitalName), int),
                    (KEEP(test), float, 2.F))
@@ -18,6 +19,11 @@ struct Test1 {
   Test1(Test1&&) noexcept = default;
   Test1(const Test1&) = delete;
 };
+#else
+THES_CREATE_TYPE_EX(SNAKE_CASE(Test1), CONSTEXPR_CONSTRUCTOR,
+                    MEMBERS((SNAKE_CASE(CapitalName), int), (KEEP(test), float, 2.F)),
+                    BODY(Test1(Test1&&) noexcept = default; Test1(const Test1&) = delete;))
+#endif
 
 inline constexpr Test1 test1{2};
 
