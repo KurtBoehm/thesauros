@@ -326,7 +326,7 @@ struct MultiByteIntegersBase {
     std::byte* dst = new_begin + offset;
     std::move_backward(dst, new_begin + old_bsize, new_begin + new_bsize);
 
-    return const_iterator{dst};
+    return iterator{dst};
   }
 
   template<typename TIt>
