@@ -202,6 +202,12 @@ int main() {
     static_assert(star::get_at<3>(map) == std::make_pair(thes::auto_tag<3>, 2));
     static_assert(!star::HasValue<Range>);
   }
+  {
+    static constexpr auto trans = std::tuple{} | star::transform<int>([](int a) { return a + 1; });
+    using Range = decltype(trans);
+    static_assert(star::HasValue<Range>);
+    static_assert(std::same_as<star::Value<Range>, int>);
+  }
 
   // filter
   {

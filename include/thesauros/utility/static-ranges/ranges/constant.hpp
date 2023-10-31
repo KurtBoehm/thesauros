@@ -7,6 +7,8 @@
 namespace thes::star {
 template<std::size_t tSize, typename T>
 struct Constant {
+  using Value = T;
+
   T value;
 
   static constexpr std::size_t size = tSize;
