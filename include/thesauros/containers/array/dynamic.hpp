@@ -254,6 +254,34 @@ struct DynamicArray {
     return last;
   }
 
+  constexpr iterator insert_uninit(const_iterator pos, Size add_size) {
+    const auto offset = pos - allocation_.begin();
+    iterator mut_pos = allocation_.begin() + offset;
+
+    const Size old_size = size();
+    const Size new_size = old_size + add_size;
+
+    if (new_size <= allocation_.size()) {
+      std::move_backward(mut_pos, data_end_, data_end_ + add_size);
+      data_end_ += add_size;
+      std::destroy(mut_pos, mut_pos + add_size);
+      return mut_pos;
+    }
+
+    allocation_.expand(grown_size(new_size),
+                       [&](iterator old_begin, iterator /*old_end*/, iterator new_begin) {
+                         iterator target = new_begin + offset;
+
+                         std::uninitialized_move(old_begin, mut_pos, new_begin);
+                         std::uninitialized_move(mut_pos, data_end_, target + add_size);
+
+                         std::destroy(old_begin, data_end_);
+                       });
+    data_end_ = allocation_.begin() + new_size;
+    return allocation_.begin() + offset;
+  }
+
+  // TODO Reduce duplication?
   constexpr iterator insert(iterator pos, Value value) {
     const auto offset = pos - allocation_.begin();
     iterator mut_pos = allocation_.begin() + offset;

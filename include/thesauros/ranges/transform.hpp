@@ -62,6 +62,12 @@ public:
     return op_(begin_[idx]);
   }
 
+  decltype(auto) size() const
+  requires(requires { this->end_ - this->begin_; })
+  {
+    return end_ - begin_;
+  }
+
 private:
   TOp op_;
   TIter begin_;

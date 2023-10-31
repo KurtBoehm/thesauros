@@ -26,21 +26,30 @@ template<typename TByteInt, std::size_t tPaddingBytes, bool tOptional,
          template<typename> typename TAllocator = std::allocator>
 struct MultiByteIntegersBase;
 
-template<typename TByteInt, std::size_t tPaddingBytes, bool tOptional,
+template<bool tIsConst, typename TByteInt, std::size_t tPaddingBytes, bool tOptional,
          template<typename> typename TAllocator = std::allocator>
 struct MultiByteSubRange {
   using Base = MultiByteIntegersBase<TByteInt, tPaddingBytes, tOptional, TAllocator>;
+  using CBase = std::conditional_t<tIsConst, const Base, Base>;
   using Size = std::size_t;
   static constexpr std::size_t element_bytes = TByteInt::byte_num;
 
-  MultiByteSubRange(const Base& base, Size begin, Size end)
-      : base_(&base), begin_(begin), end_(end) {}
+  MultiByteSubRange(CBase& base, Size begin, Size end) : base_(&base), begin_(begin), end_(end) {}
 
-  const Base& base() const {
+  CBase& base() const {
     return *base_;
   }
 
-  [[nodiscard]] std::span<const std::byte> byte_span() const {
+  [[nodiscard]] std::span<const std::byte> byte_span() const
+  requires(tIsConst)
+  {
+    const Size byte_begin = byte_size(begin_);
+    const Size byte_end = byte_size(end_);
+    return base_->byte_span().subspan(byte_begin, byte_end - byte_begin);
+  }
+  [[nodiscard]] std::span<std::byte> byte_span() const
+  requires(!tIsConst)
+  {
     const Size byte_begin = byte_size(begin_);
     const Size byte_end = byte_size(end_);
     return base_->byte_span().subspan(byte_begin, byte_end - byte_begin);
@@ -51,7 +60,7 @@ private:
     return size * element_bytes;
   }
 
-  const Base* base_;
+  CBase* base_;
   Size begin_;
   Size end_;
 };
@@ -206,7 +215,8 @@ struct MultiByteIntegersBase {
     Ptr ptr_{nullptr};
   };
 
-  using ConstSubRange = MultiByteSubRange<TByteInt, tPaddingBytes, tOptional, TAllocator>;
+  using ConstSubRange = MultiByteSubRange<true, TByteInt, tPaddingBytes, tOptional, TAllocator>;
+  using MutableSubRange = MultiByteSubRange<false, TByteInt, tPaddingBytes, tOptional, TAllocator>;
 
   using iterator = Iterator<false>;
   using const_iterator = Iterator<true>;
@@ -273,6 +283,15 @@ struct MultiByteIntegersBase {
     return IntRef{data_.data()};
   }
 
+  decltype(auto) back() const {
+    assert(size_ > 0);
+    return load(data_.data() + byte_size(size_ - 1));
+  }
+  decltype(auto) back() {
+    assert(size_ > 0);
+    return IntRef{data_.data() + byte_size(size_ - 1)};
+  }
+
   void push_back(Value value) {
     const Size size = byte_size(size_);
     assert(data_.size() == size + padding_bytes);
@@ -293,7 +312,7 @@ struct MultiByteIntegersBase {
     data_.reserve(effective_allocation(allocation));
   }
 
-  const_iterator insert_uninit(const_iterator pos, Size size) {
+  iterator insert_uninit(const_iterator pos, Size size) {
     const Size old_bsize = byte_size(size_);
     assert(data_.size() == old_bsize + padding_bytes);
 
@@ -333,6 +352,16 @@ struct MultiByteIntegersBase {
 
   ConstSubRange sub_range(Size begin, Size end) const {
     return ConstSubRange(*this, begin, end);
+  }
+  MutableSubRange sub_range(Size begin, Size end) {
+    return MutableSubRange(*this, begin, end);
+  }
+
+  ConstSubRange full_sub_range() const {
+    return sub_range(0, size());
+  }
+  MutableSubRange full_sub_range() {
+    return sub_range(0, size());
   }
 
   void to_file(FileWriter& writer) const {
