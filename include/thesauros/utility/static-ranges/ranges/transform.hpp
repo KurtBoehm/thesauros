@@ -30,7 +30,7 @@ template<typename TFun, typename TRet, typename... TArgRanges>
 requires(std::is_void_v<TRet> && (... && HasValue<std::decay_t<TArgRanges>>))
 struct ValueBase<TFun, TRet, TArgRanges...> {
   using Value =
-    decltype(std::declval<const TFun&>()(std::declval<star::Value<std::decay_t<TArgRanges>>>()...));
+    decltype(std::declval<const TFun&>()(std::declval<star::RawValue<std::decay_t<TArgRanges>>>()...));
 };
 } // namespace transform_impl
 
