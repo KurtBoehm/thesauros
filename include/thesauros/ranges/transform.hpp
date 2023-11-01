@@ -1,11 +1,14 @@
 #ifndef INCLUDE_THESAUROS_RANGES_TRANSFORM_HPP
 #define INCLUDE_THESAUROS_RANGES_TRANSFORM_HPP
 
+#include <cassert>
 #include <cstddef>
+#include <type_traits>
 #include <utility>
 
 #include "thesauros/iterator/facades.hpp"
 #include "thesauros/iterator/provider-map.hpp"
+#include "thesauros/utility/safe-cast.hpp"
 
 namespace thes {
 template<typename TOp, typename TIter>
@@ -62,10 +65,12 @@ public:
     return op_(begin_[idx]);
   }
 
-  decltype(auto) size() const
+  auto size() const
   requires(requires { this->end_ - this->begin_; })
   {
-    return end_ - begin_;
+    assert(end_ - begin_ >= 0);
+    using Signed = decltype(end_ - begin_);
+    return *thes::safe_cast<std::make_unsigned_t<Signed>>(end_ - begin_);
   }
 
 private:
