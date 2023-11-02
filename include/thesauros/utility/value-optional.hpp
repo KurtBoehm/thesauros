@@ -1,6 +1,10 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_VALUE_OPTIONAL_HPP
 #define INCLUDE_THESAUROS_UTILITY_VALUE_OPTIONAL_HPP
 
+#include <cassert>
+#include <concepts>
+#include <functional>
+#include <limits>
 #include <ostream>
 #include <utility>
 
@@ -36,6 +40,13 @@ struct ValueOptional {
     return value_ == empty_value;
   }
 
+  template<typename TF>
+  constexpr void value_run(TF&& f) {
+    if (this->has_value()) {
+      std::invoke(std::forward<TF>(f), **this);
+    }
+  }
+
   friend std::ostream& operator<<(std::ostream& stream, const ValueOptional& vo) {
     if (vo.has_value()) {
       stream << vo.value();
@@ -48,6 +59,9 @@ struct ValueOptional {
 private:
   Value value_{empty_value};
 };
+
+template<std::integral T>
+using MaxOptional = ValueOptional<T, std::numeric_limits<T>::max()>;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_UTILITY_VALUE_OPTIONAL_HPP
