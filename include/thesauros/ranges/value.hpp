@@ -6,6 +6,8 @@
 namespace thes {
 template<typename TIt>
 struct ValueRange {
+  using const_iterator = TIt;
+
   constexpr ValueRange(TIt begin, TIt end) : begin_(std::move(begin)), end_(std::move(end)) {}
 
   constexpr TIt begin() const {

@@ -7,6 +7,9 @@
 #include <string_view>
 #include <utility>
 
+#include "thesauros/io/delimiter.hpp"
+#include "thesauros/utility/static-ranges.hpp"
+
 namespace thes {
 namespace impl {
 template<typename T>
@@ -82,6 +85,22 @@ struct Printer<TRange> {
     return stream << RangePrinter{
              range_, []<typename T>(std::ostream& s1, const T& x) { s1 << Printer<const T&>{x}; },
              ", ", "[", "]"};
+  }
+
+private:
+  TRange range_;
+};
+
+template<star::AnyStaticRange TRange>
+struct Printer<TRange> {
+  explicit Printer(TRange&& range) : range_{std::forward<TRange>(range)} {}
+
+  std::ostream& print(std::ostream& stream) const {
+    thes::Delimiter delim{", "};
+    stream << '(';
+    range_ |
+      star::for_each([&]<typename T>(const T& v) { stream << delim << Printer<const T&>{v}; });
+    return stream << ')';
   }
 
 private:
