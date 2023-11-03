@@ -60,7 +60,7 @@ struct IteratorFacade {
   }())::Type;
 
   static_assert(iter_provider::ForwardIterProvider<State, TProvider>,
-                "The implementation assumes at least a forward iter!");
+                "The implementation assumes at least a forward iterator!");
   static constexpr bool is_forward_iter = true;
   static constexpr bool is_bidirectional_iter =
     iter_provider::BidirectionalIterProvider<State, TProvider>;

@@ -5,6 +5,7 @@
 
 #include "thesauros/ranges.hpp"
 #include "thesauros/test.hpp"
+#include "thesauros/utility.hpp"
 
 int main() {
   {
@@ -71,5 +72,14 @@ int main() {
     using Value = decltype(enu)::Value;
     static_assert(thes::test::range_eq(
       enu, std::array{Value{0, base[0]}, Value{1, base[1]}, Value{2, base[2]}, Value{3, base[3]}}));
+  }
+
+  {
+    static constexpr std::array v1{8, 4};
+    static constexpr std::array v2{6, 2};
+    static constexpr auto zip = thes::zip(v1, v2);
+    static_assert(zip.size() == 2);
+    static_assert(
+      thes::test::range_eq(zip, std::array{thes::Tuple{v1[0], v2[0]}, thes::Tuple{v1[1], v2[1]}}));
   }
 }

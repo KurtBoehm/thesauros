@@ -64,7 +64,7 @@ struct LCG {
   };
 
   struct const_iterator : public IteratorFacade<const_iterator, IterProvider> {
-    friend struct IterProvider;
+    friend IterProvider;
     constexpr const_iterator(const LCG& lcg, T index, T value)
         : lcg_(&lcg), index_(index), value_(value) {}
 

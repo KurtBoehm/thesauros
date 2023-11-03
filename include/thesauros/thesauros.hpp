@@ -67,6 +67,7 @@
 #include "ranges/reversed.hpp" // IWYU pragma: export
 #include "ranges/transform.hpp" // IWYU pragma: export
 #include "ranges/value.hpp" // IWYU pragma: export
+#include "ranges/zip.hpp" // IWYU pragma: export
 #include "test/test.hpp" // IWYU pragma: export
 #include "utility/arrow-proxy.hpp" // IWYU pragma: export
 #include "utility/as-expected.hpp" // IWYU pragma: export

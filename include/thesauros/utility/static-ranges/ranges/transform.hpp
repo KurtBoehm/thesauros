@@ -29,8 +29,8 @@ struct ValueBase<TFun, TRet, TArgRanges...> {
 template<typename TFun, typename TRet, typename... TArgRanges>
 requires(std::is_void_v<TRet> && (... && HasValue<std::decay_t<TArgRanges>>))
 struct ValueBase<TFun, TRet, TArgRanges...> {
-  using Value =
-    decltype(std::declval<const TFun&>()(std::declval<star::RawValue<std::decay_t<TArgRanges>>>()...));
+  using Value = decltype(std::declval<const TFun&>()(
+    std::declval<star::RawValue<std::decay_t<TArgRanges>>>()...));
 };
 } // namespace transform_impl
 
@@ -48,8 +48,9 @@ struct TransformView : public transform_impl::ValueBase<TFun, TRet, TArgRanges..
 
   template<std::size_t tIndex>
   constexpr decltype(auto) get() const {
-    return apply([this](const auto&... ranges) { return fun(get_at<tIndex>(ranges)...); })(
-      range_tup);
+    return apply([this](const auto&... ranges) -> decltype(auto) {
+      return fun(get_at<tIndex>(ranges)...);
+    })(range_tup);
   }
 };
 
