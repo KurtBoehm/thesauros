@@ -122,7 +122,8 @@ public:
   }
 
 private:
-  const T begin_, end_;
+  T begin_;
+  T end_;
 };
 template<typename T>
 IotaRange(T, T) -> IotaRange<T>;
