@@ -1,6 +1,7 @@
 #ifndef INCLUDE_THESAUROS_EXECUTION_HPP
 #define INCLUDE_THESAUROS_EXECUTION_HPP
 
+#include "execution/concurrency.hpp" // IWYU pragma: export
 #include "execution/execution-policy/linear.hpp" // IWYU pragma: export
 #include "execution/executor/fixed-thread-pool.hpp" // IWYU pragma: export
 #include "execution/executor/sequential.hpp" // IWYU pragma: export

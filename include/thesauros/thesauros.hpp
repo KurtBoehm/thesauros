@@ -25,6 +25,7 @@
 #include "containers/static-bitset.hpp" // IWYU pragma: export
 #include "containers/strongly-ordered-map.hpp" // IWYU pragma: export
 #include "containers/strongly-ordered-set.hpp" // IWYU pragma: export
+#include "execution/concurrency.hpp" // IWYU pragma: export
 #include "execution/execution-policy/linear.hpp" // IWYU pragma: export
 #include "execution/executor/fixed-thread-pool.hpp" // IWYU pragma: export
 #include "execution/executor/sequential.hpp" // IWYU pragma: export
