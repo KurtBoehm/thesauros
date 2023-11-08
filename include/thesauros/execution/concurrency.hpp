@@ -26,10 +26,8 @@ inline std::size_t physical_concurrency() noexcept {
 
     std::string_view line_view{line};
     std::string_view key = line_view.substr(0, key_size);
-    std::size_t end = key.size();
-    for (; end > 0 && key[end - 1] == '\t'; --end) {
+    for (; !key.empty() && key.back() == '\t'; key.remove_suffix(1)) {
     }
-    key.remove_suffix(key.size() - end);
 
     if (key == cpu_cores) {
       auto value_view = line_view.substr(key_size + 2);
