@@ -106,6 +106,13 @@ struct IndexPositionWrapper {
     assert((w1.idx_ == w2.idx_) == (w1.pos_ == w2.pos_));
     return w1.idx_ == w2.idx_;
   }
+  constexpr friend bool operator==(const IndexPositionWrapper& w, Size s) {
+    return w.idx_ == s;
+  }
+  constexpr friend bool operator==(Size s, const IndexPositionWrapper& w) {
+    return w.idx_ == s;
+  }
+
   constexpr friend std::strong_ordering operator<=>(const IndexPositionWrapper& w1,
                                                     const IndexPositionWrapper& w2) {
     assert(w1.dims_ == w2.dims_);

@@ -30,6 +30,7 @@ int main() {
   }
   {
     static constexpr IdPo orig{23, {3, 3, 3}};
+    static_assert(orig == 23);
     static_assert(orig.index() == 23);
     static_assert(orig.position() == Size3{2, 1, 2});
 
