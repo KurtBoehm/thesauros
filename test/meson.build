@@ -13,6 +13,7 @@ foreach name, info : {
   'FancyVisit': [['fancy-visit.cpp'], []],
   'FixedBitset': [['fixed-bitset.cpp'], []],
   'Format': [['format.cpp'], []],
+  'IndexPositionWrapper': [['index-position-wrapper.cpp'], []],
   'IndexSegmenter': [['index-segmenter.cpp'], []],
   'Json': [['json.cpp'], []],
   'Macropolis': [['macropolis.cpp'], []],

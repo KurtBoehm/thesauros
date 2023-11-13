@@ -39,10 +39,9 @@ inline constexpr u64 mul_frac_int(u128 a, u64 b) {
   // 1. p1 = a[:64] * b >> 64 (the lower bits cannot contribute carry bits)
   // 2. p2 = a[64:] * b (already effectively shifted down by 64 bits)
   // 3: result = (p1 + p2) >> 64
-  const auto p1 = ((a & std::numeric_limits<u64>::max()) * u128{b}) >> u128{64};
-  const auto p2 = (a >> u128{64}) * b;
-  const auto result = (p1 + p2) >> u128{64};
-  return static_cast<u64>(result);
+  const auto p1 = (static_cast<u64>(a) * u128{b}) >> u128{64};
+  const auto p2 = static_cast<u64>(a >> u128{64}) * u128{b};
+  return static_cast<u64>((p1 + p2) >> u128{64});
 }
 } // namespace detail
 

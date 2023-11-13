@@ -9,6 +9,7 @@
 #include "utility/empty.hpp" // IWYU pragma: export
 #include "utility/fancy-visit.hpp" // IWYU pragma: export
 #include "utility/fixed-size-integer.hpp" // IWYU pragma: export
+#include "utility/index-position-wrapper.hpp" // IWYU pragma: export
 #include "utility/index-segmentation.hpp" // IWYU pragma: export
 #include "utility/info-result.hpp" // IWYU pragma: export
 #include "utility/inlining.hpp" // IWYU pragma: export
