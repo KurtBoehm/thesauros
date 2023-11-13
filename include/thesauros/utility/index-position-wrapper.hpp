@@ -6,6 +6,7 @@
 #include <compare>
 #include <concepts>
 #include <cstddef>
+#include <functional>
 #include <ostream>
 #include <type_traits>
 
@@ -44,7 +45,8 @@ struct IndexPositionWrapper {
       std::get<idx>(pos_) = over ? 0 : pos_idx;
       std::get<idx - 1>(pos_) += Size{over};
     });
-    assert(std::get<0>(pos_) < std::get<0>(dims_));
+    assert(idx_ <= (dims_ | star::left_reduce(std::multiplies{})));
+    assert(star::index_to_position(idx_, divs_) == pos_);
 
     return *this;
   }
@@ -61,6 +63,7 @@ struct IndexPositionWrapper {
       std::get<idx - 1>(pos_) -= Size{under};
     });
     assert(std::get<0>(pos_) < std::get<0>(dims_));
+    assert(star::index_to_position(idx_, divs_) == pos_);
 
     return *this;
   }

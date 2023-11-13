@@ -40,5 +40,8 @@ int main() {
 
     static constexpr IdPo decr3 = -- -- --IdPo{incr3};
     static_assert(orig == decr3);
+
+    static constexpr IdPo after = ++IdPo{incr3};
+    static_assert(after.index() == 27);
   }
 }
