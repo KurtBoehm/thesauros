@@ -7,11 +7,12 @@
 #include <concepts>
 #include <cstddef>
 #include <ostream>
+#include <type_traits>
 
 #include "thesauros/algorithms/static-ranges.hpp"
-#include "thesauros/algorithms/static-ranges/index-to-position.hpp"
 #include "thesauros/io/printers.hpp"
 #include "thesauros/math.hpp"
+#include "thesauros/utility/safe-cast.hpp"
 #include "thesauros/utility/static-ranges.hpp"
 
 namespace thes {
@@ -19,16 +20,17 @@ template<std::unsigned_integral TSize, std::size_t tDimNum>
 struct IndexPositionWrapper {
   static constexpr std::size_t dimension_num = tDimNum;
   using Size = TSize;
-  using DimSize = std::array<Size, dimension_num>;
+  using SizeArr = std::array<Size, dimension_num>;
   using Div = thes::Divisor<Size>;
   using DivArr = std::array<Div, dimension_num>;
+  using Diff = std::make_signed_t<Size>;
 
-  constexpr IndexPositionWrapper(Size idx, DimSize pos, DimSize dims)
+  constexpr IndexPositionWrapper(Size idx, SizeArr pos, SizeArr dims)
       : dims_(dims), pos_(pos), idx_(idx) {}
-  constexpr IndexPositionWrapper(DimSize pos, DimSize dims)
+  constexpr IndexPositionWrapper(SizeArr pos, SizeArr dims)
       : dims_(dims), pos_(pos),
         idx_(star::position_to_index(pos, star::postfix_product_inclusive(dims))) {}
-  constexpr IndexPositionWrapper(Size idx, DimSize dims)
+  constexpr IndexPositionWrapper(Size idx, SizeArr dims)
       : dims_(dims), pos_(star::index_to_position(idx, divs_)), idx_(idx) {}
 
   constexpr IndexPositionWrapper& operator++() {
@@ -86,10 +88,16 @@ struct IndexPositionWrapper {
     return w -= off;
   }
 
+  friend constexpr Diff operator-(const IndexPositionWrapper& w1, const IndexPositionWrapper& w2) {
+    assert(w1.dims_ == w2.dims_);
+    assert((w1.idx_ == w2.idx_) == (w1.pos_ == w2.pos_));
+    return *safe_cast<Diff>(w1.idx_) - *safe_cast<Diff>(w2.idx_);
+  }
+
   [[nodiscard]] constexpr Size index() const {
     return idx_;
   }
-  [[nodiscard]] constexpr DimSize position() const {
+  [[nodiscard]] constexpr SizeArr position() const {
     return pos_;
   }
 
@@ -110,9 +118,9 @@ struct IndexPositionWrapper {
   }
 
 private:
-  DimSize dims_;
+  SizeArr dims_;
   DivArr divs_ = dims_ | star::transform([](auto dim) { return Div{dim}; }) | star::to_array;
-  DimSize pos_;
+  SizeArr pos_;
   Size idx_;
 };
 } // namespace thes

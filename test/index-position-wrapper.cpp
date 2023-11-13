@@ -20,6 +20,7 @@ int main() {
     static constexpr IdPo incr3 = ++(++IdPo{incr});
     static_assert(incr3 == orig + 3);
     static_assert(incr3 - 3 == orig);
+    static_assert(incr3 - orig == 3);
     static_assert(incr3.index() == 6);
     static_assert(incr3.position() == Size3{0, 2, 0});
     static_assert(orig < incr3);
