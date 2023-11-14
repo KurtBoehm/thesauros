@@ -6,7 +6,8 @@
 using Size = thes::u64;
 static constexpr std::size_t dimension_num = 3;
 using Size3 = std::array<Size, dimension_num>;
-using IdPo = thes::IndexPositionWrapper<Size, dimension_num>;
+using IdPo = thes::PosIndexWrapper<Size, dimension_num>;
+using DuIdPo = thes::DualPosIndexWrapper<Size, Size, dimension_num>;
 
 int main() {
   {
@@ -43,5 +44,41 @@ int main() {
 
     static constexpr IdPo after = ++IdPo{incr3};
     static_assert(after.index() == 27);
+  }
+  // Dual
+  {
+    static constexpr DuIdPo orig{0, {0, 1, 0}, {3, 3, 3}};
+    static_assert(orig.index() == 0);
+
+    static constexpr DuIdPo incr = ++DuIdPo{orig};
+    static_assert(incr.index() == 1);
+    static_assert(incr.position() == Size3{0, 1, 1});
+
+    static constexpr DuIdPo incr3 = ++(++DuIdPo{incr});
+    static_assert(incr3 == orig + 3);
+    static_assert(incr3 - 3 == orig);
+    static_assert(incr3 - orig == 3);
+    static_assert(incr3.index() == 3);
+    static_assert(incr3.position() == Size3{0, 2, 0});
+    static_assert(orig < incr3);
+
+    static constexpr DuIdPo decr3 = -- -- --DuIdPo{incr3};
+    static_assert(orig == decr3);
+  }
+  {
+    static constexpr DuIdPo orig{2, 23, {3, 3, 3}};
+    static_assert(orig == 2);
+    static_assert(orig.index() == 2);
+    static_assert(orig.position() == Size3{2, 1, 2});
+
+    static constexpr DuIdPo incr3 = ++ ++ ++DuIdPo{orig};
+    static_assert(incr3.index() == 5);
+    static_assert(incr3.position() == Size3{2, 2, 2});
+
+    static constexpr DuIdPo decr3 = -- -- --DuIdPo{incr3};
+    static_assert(orig == decr3);
+
+    static constexpr DuIdPo after = ++DuIdPo{incr3};
+    static_assert(after.index() == 6);
   }
 }
