@@ -28,6 +28,10 @@ int main() {
 
     static constexpr IdPo decr3 = -- -- --IdPo{incr3};
     static_assert(orig == decr3);
+
+    static constexpr IdPo next_row = orig + 9;
+    static_assert(next_row.index() == 12);
+    static_assert(next_row.position() == Size3{1, 1, 0});
   }
   {
     static constexpr IdPo orig{23, {3, 3, 3}};
@@ -41,9 +45,11 @@ int main() {
 
     static constexpr IdPo decr3 = -- -- --IdPo{incr3};
     static_assert(orig == decr3);
+    static_assert(decr3.position() == Size3{2, 1, 2});
 
     static constexpr IdPo after = ++IdPo{incr3};
     static_assert(after.index() == 27);
+    static_assert(after.position() == Size3{3, 0, 0});
   }
   // Dual
   {
