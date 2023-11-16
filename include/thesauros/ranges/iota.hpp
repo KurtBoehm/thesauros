@@ -109,7 +109,7 @@ public:
   friend IotaRange operator&(const IotaRange& r1, const IotaRange& r2) {
     const T new_begin = std::max(r1.begin_, r2.begin_);
     const T new_end = std::min(r1.end_, r2.end_);
-    return {new_begin, std::max(new_begin, new_end)};
+    return {std::min(new_begin, new_end), new_end};
   }
 
   friend IotaRange operator|(IotaRange r1, IotaRange r2) {
