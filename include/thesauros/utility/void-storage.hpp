@@ -12,8 +12,8 @@ struct VoidTypeTrait {
   using Type = T;
   using Cref = const T&;
   using StorageCref = const T&;
-  using Cptr = const T&;
-  using StorageCptr = const T&;
+  using Cptr = const std::decay_t<T>*;
+  using StorageCptr = const std::decay_t<T>*;
 };
 template<>
 struct VoidTypeTrait<void> {
@@ -41,6 +41,14 @@ using UnVoidStorage = std::conditional_t<std::same_as<T, thes::Empty>, void, T>;
 template<typename T>
 inline constexpr VoidStorageCref<UnVoidStorage<T>> void_storage_cref(const T& value) {
   return value;
+}
+template<typename T>
+inline constexpr VoidStorageCptr<UnVoidStorage<T>> void_storage_cptr(const T& value) {
+  if constexpr (std::is_void_v<UnVoidStorage<T>>) {
+    return value;
+  } else {
+    return &value;
+  }
 }
 } // namespace thes
 
