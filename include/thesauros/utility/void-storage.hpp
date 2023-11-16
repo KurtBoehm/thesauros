@@ -12,12 +12,16 @@ struct VoidTypeTrait {
   using Type = T;
   using Cref = const T&;
   using StorageCref = const T&;
+  using Cptr = const T&;
+  using StorageCptr = const T&;
 };
 template<>
 struct VoidTypeTrait<void> {
   using Type = thes::Empty;
   using Cref = void;
   using StorageCref = thes::Empty;
+  using Cptr = void;
+  using StorageCptr = thes::Empty;
 };
 
 template<typename T>
@@ -26,6 +30,11 @@ template<typename T>
 using VoidCref = VoidTypeTrait<T>::Cref;
 template<typename T>
 using VoidStorageCref = VoidTypeTrait<T>::StorageCref;
+template<typename T>
+using VoidCptr = VoidTypeTrait<T>::Cptr;
+template<typename T>
+using VoidStorageCptr = VoidTypeTrait<T>::StorageCptr;
+
 template<typename T>
 using UnVoidStorage = std::conditional_t<std::same_as<T, thes::Empty>, void, T>;
 

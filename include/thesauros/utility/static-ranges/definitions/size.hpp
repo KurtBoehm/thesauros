@@ -1,6 +1,7 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_DEFINITIONS_SIZE_HPP
 #define INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_DEFINITIONS_SIZE_HPP
 
+#include <concepts>
 #include <cstddef>
 #include <type_traits>
 #include <utility>
@@ -8,7 +9,9 @@
 namespace thes::star {
 namespace impl {
 template<typename TRange>
-concept HasMemberSize = requires { TRange::size; };
+concept HasMemberSize = requires {
+  { TRange::size } -> std::convertible_to<std::size_t>;
+};
 
 template<typename TRange>
 concept HasTupleSize = requires(const TRange& c) { sizeof(std::tuple_size<TRange>); };
