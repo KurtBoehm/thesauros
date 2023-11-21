@@ -79,29 +79,24 @@ int main() {
     thes::for_each_tile_vectorized<tag>(
       ms.sizes(), tile_sizes,
       [&](auto... args) {
-        // std::cout << "full: " << thes::print(thes::Tuple{args...}) << '\n';
-        thes::iterate_tile_full<tag>(
+        thes::iterate_tile<tag>(
           ms, std::array{args...},
           [&](auto pos) {
-            // std::cout << "ff" << pos.index << '\n';
             idxs.insert({pos.index, pos.index + 1});
           },
-          tag2);
+          thes::NoOp{}, tag2, thes::false_tag);
       },
       [&](auto... args) {
-        // std::cout << "part: " << thes::print(thes::Tuple{args...}) << '\n';
-        thes::iterate_tile_part<tag>(
+        thes::iterate_tile<tag>(
           ms, std::array{args...},
           [&](auto pos) {
-            // std::cout << "pf" << pos.index << '\n';
             idxs.insert({pos.index, pos.index + 1});
           },
           [&](auto pos, auto part) {
-            // std::cout << "pp" << pos.index << '\n';
             assert(part == 1);
             idxs.insert({pos.index});
           },
-          tag2);
+          tag2, thes::true_tag);
       },
       tag2);
 
@@ -109,6 +104,5 @@ int main() {
   };
 
   lambda(thes::auto_tag<thes::IterDirection::FORWARD>);
-  // std::cout << '\n';
   lambda(thes::auto_tag<thes::IterDirection::BACKWARD>);
 }

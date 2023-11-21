@@ -148,8 +148,9 @@ inline constexpr void iterate_tile(const auto& multi_size, const TRanges& ranges
 }
 
 template<IterDirection tDirection, typename TRanges>
-inline constexpr void iterate_tile_full(const auto& multi_size, const TRanges& ranges,
-                                        auto&& full_fun, AnyIndexTag auto vec_size) {
+inline constexpr void iterate_tile(const auto& multi_size, const TRanges& ranges, auto&& full_fun,
+                                   auto&& part_fun, AnyIndexTag auto vec_size,
+                                   AnyBoolTag auto has_part) {
   using Range = star::Value<TRanges>;
   using Size = star::Value<Range>;
   constexpr std::size_t dim_num = star::size<TRanges>;
@@ -165,52 +166,19 @@ inline constexpr void iterate_tile_full(const auto& multi_size, const TRanges& r
           rec(index_tag<dim + 1>, rec, index + i * factor, args..., i);
         }
       } else {
-        assert((end - begin) % vec_size == 0);
-        for (Size i = begin; i < end; i += vec_size) {
-          full_fun(IndexPos{{args..., i}, index + i});
-        }
-      }
-    } else {
-      if constexpr (dim + 1 < dim_num) {
-        for (Size i = end; i > begin; --i) {
-          const auto factor = multi_size.after_size(dim);
-          rec(index_tag<dim + 1>, rec, index + (i - 1) * factor, args..., i - 1);
-        }
-      } else {
-        assert((end - begin) % vec_size == 0);
-        for (Size i = end; i > begin; i -= vec_size) {
-          const Size idx = i - vec_size;
-          full_fun(IndexPos{{args..., idx}, index + idx});
-        }
-      }
-    }
-  };
-  impl(index_tag<0>, impl, Size{0});
-}
-template<IterDirection tDirection, typename TRanges>
-inline constexpr void iterate_tile_part(const auto& multi_size, const TRanges& ranges,
-                                        auto&& full_fun, auto&& part_fun,
-                                        AnyIndexTag auto vec_size) {
-  using Range = star::Value<TRanges>;
-  using Size = star::Value<Range>;
-  constexpr std::size_t dim_num = star::size<TRanges>;
-  using IndexPos = IndexPosition<Size, dim_num>;
-
-  auto impl = [&](auto dim, auto rec, auto index, auto... args) THES_ALWAYS_INLINE {
-    const auto [begin, end] = star::get_at<dim>(ranges);
-    if constexpr (tDirection == IterDirection::FORWARD) {
-      if constexpr (dim + 1 < dim_num) {
-        for (Size i = begin; i < end; ++i) {
-          const auto factor = multi_size.after_size(dim);
-          rec(index_tag<dim + 1>, rec, index + i * factor, args..., i);
-        }
-      } else {
-        Size i = begin;
-        for (; i + vec_size < end; i += vec_size) {
-          full_fun(IndexPos{{args..., i}, index + i});
-        }
-        if (i != end) {
-          part_fun(IndexPos{{args..., i}, index + i}, end - i);
+        if constexpr (has_part) {
+          Size i = begin;
+          for (; i + vec_size < end; i += vec_size) {
+            full_fun(IndexPos{{args..., i}, index + i});
+          }
+          if (i != end) {
+            part_fun(IndexPos{{args..., i}, index + i}, end - i);
+          }
+        } else {
+          assert((end - begin) % vec_size == 0);
+          for (Size i = begin; i < end; i += vec_size) {
+            full_fun(IndexPos{{args..., i}, index + i});
+          }
         }
       }
     } else {
@@ -221,13 +189,21 @@ inline constexpr void iterate_tile_part(const auto& multi_size, const TRanges& r
           rec(index_tag<dim + 1>, rec, index + idx * factor, args..., idx);
         }
       } else {
-        const Size full_vec_end = end - ((end - begin) % vec_size);
-        if (full_vec_end != end) {
-          part_fun(IndexPos{{args..., full_vec_end}, index + full_vec_end}, end - full_vec_end);
-        }
-        for (Size i = full_vec_end; i > begin; i -= vec_size) {
-          const Size idx = i - vec_size;
-          full_fun(IndexPos{{args..., idx}, index + idx});
+        if constexpr (has_part) {
+          const Size full_vec_end = end - ((end - begin) % vec_size);
+          if (full_vec_end != end) {
+            part_fun(IndexPos{{args..., full_vec_end}, index + full_vec_end}, end - full_vec_end);
+          }
+          for (Size i = full_vec_end; i > begin; i -= vec_size) {
+            const Size idx = i - vec_size;
+            full_fun(IndexPos{{args..., idx}, index + idx});
+          }
+        } else {
+          assert((end - begin) % vec_size == 0);
+          for (Size i = end; i > begin; i -= vec_size) {
+            const Size idx = i - vec_size;
+            full_fun(IndexPos{{args..., idx}, index + idx});
+          }
         }
       }
     }
