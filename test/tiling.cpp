@@ -15,6 +15,9 @@
 static constexpr auto forward = thes::auto_tag<thes::IterDirection::FORWARD>;
 static constexpr auto backward = thes::auto_tag<thes::IterDirection::BACKWARD>;
 
+static constexpr auto def_pairs =
+  thes::star::transform([](auto s) { return std::make_pair(std::size_t{0}, s); });
+
 int main() {
   using namespace thes::literals;
   namespace star = thes::star;
@@ -24,20 +27,20 @@ int main() {
   static constexpr auto tile_sizes = star::constant<3>(4_uz);
   static_assert([] {
     std::size_t num = 0;
-    thes::for_each_tile<thes::IterDirection::FORWARD>(sizes, tile_sizes, thes::StaticMap{},
-                                                      [&num](auto, auto, auto) { ++num; });
+    thes::for_each_tile<thes::IterDirection::FORWARD>(
+      sizes | def_pairs, tile_sizes, thes::StaticMap{}, [&num](auto, auto, auto) { ++num; });
     return num;
   }() == 24);
   static constexpr auto tiles = [] {
     std::size_t num = 0;
     std::array<std::pair<std::size_t, std::size_t>, 24_uz * 3_uz> arr{};
-    thes::for_each_tile<thes::IterDirection::FORWARD>(sizes, tile_sizes, thes::StaticMap{},
-                                                      [&arr, &num](auto t1, auto t2, auto t3) {
-                                                        arr[3 * num + 0] = t1;
-                                                        arr[3 * num + 1] = t2;
-                                                        arr[3 * num + 2] = t3;
-                                                        ++num;
-                                                      });
+    thes::for_each_tile<thes::IterDirection::FORWARD>(
+      sizes | def_pairs, tile_sizes, thes::StaticMap{}, [&arr, &num](auto t1, auto t2, auto t3) {
+        arr[3 * num + 0] = t1;
+        arr[3 * num + 1] = t2;
+        arr[3 * num + 2] = t3;
+        ++num;
+      });
     return arr;
   }();
   static_assert(tiles[27] == std::make_pair(4_uz, 8_uz));
@@ -113,8 +116,7 @@ int main() {
 
   {
     static constexpr thes::MultiSize ms{std::array{15_uz, 8_uz, 13_uz}};
-    static constexpr auto ranges =
-      ms.sizes() | thes::star::transform([](auto s) { return std::make_pair(0_uz, s); });
+    static constexpr auto ranges = ms.sizes() | def_pairs;
     lambda(forward, ms, ranges, thes::StaticMap{});
     lambda(backward, ms, ranges, thes::StaticMap{});
     lambda(forward, ms, ranges, thes::StaticMap{thes::static_key<0_uz> = 1_uz});

@@ -27,11 +27,11 @@ struct IndexPosition {
 };
 
 // Create tiles
-template<IterDirection tDirection, typename TSizes, typename TFixedAxes>
-inline constexpr void for_each_tile(const TSizes& sizes, const auto& tile_sizes,
+template<IterDirection tDirection, typename TRanges, typename TFixedAxes>
+inline constexpr void for_each_tile(const TRanges& ranges, const auto& tile_sizes,
                                     const TFixedAxes& fixed_axes, auto&& fun) {
-  using Size = star::Value<TSizes>;
-  constexpr std::size_t dim_num = star::size<TSizes>;
+  using Size = star::Value<star::Value<TRanges>>;
+  constexpr std::size_t dim_num = star::size<TRanges>;
 
   if constexpr (dim_num == 0) {
     return;
@@ -43,16 +43,17 @@ inline constexpr void for_each_tile(const TSizes& sizes, const auto& tile_sizes,
       } else if constexpr (TFixedAxes::contains(dim)) {
         rec(index_tag<dim + 1>, rec, args..., fixed_axes.get(dim));
       } else {
-        const Size size = star::get_at<dim>(sizes);
+        const auto [begin, end] = star::get_at<dim>(ranges);
         const Size tile_size = star::get_at<dim>(tile_sizes);
         if constexpr (tDirection == IterDirection::FORWARD) {
-          for (Size i = 0; i < size; i += tile_size) {
-            rec(index_tag<dim + 1>, rec, args..., std::make_pair(i, std::min(i + tile_size, size)));
+          for (Size i = begin; i < end; i += tile_size) {
+            rec(index_tag<dim + 1>, rec, args..., std::make_pair(i, std::min(i + tile_size, end)));
           }
         } else {
-          const Size end_tile = div_ceil(size, tile_size) * tile_size;
-          for (Size i = end_tile; i > 0; i -= tile_size) {
-            rec(index_tag<dim + 1>, rec, args..., std::make_pair(i - tile_size, std::min(i, size)));
+          const Size size = end - begin;
+          const Size size_tile = div_ceil(size, tile_size) * tile_size;
+          for (Size i = begin + size_tile; i > 0; i -= tile_size) {
+            rec(index_tag<dim + 1>, rec, args..., std::make_pair(i - tile_size, std::min(i, end)));
           }
         }
       }
@@ -107,8 +108,8 @@ inline constexpr void for_each_tile_vectorized(const TRanges& ranges, const auto
             rec(index_tag<dim + 1>, rec, args..., std::make_pair(i, std::min(i + tile_size, end)));
           }
         } else {
-          const Size s = end - begin;
-          const Size size_tile = div_ceil(s, tile_size) * tile_size;
+          const Size size = end - begin;
+          const Size size_tile = div_ceil(size, tile_size) * tile_size;
           for (Size i = begin + size_tile; i > begin; i -= tile_size) {
             rec(index_tag<dim + 1>, rec, args..., std::make_pair(i - tile_size, std::min(i, end)));
           }
