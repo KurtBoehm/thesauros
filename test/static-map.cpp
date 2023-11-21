@@ -5,22 +5,22 @@ int main() {
   {
     static constexpr thes::StaticMap map{};
     using Map = decltype(map);
-    static_assert(!Map::contains<2>);
+    static_assert(!Map::contains(thes::auto_tag<2>));
   }
   {
     static constexpr thes::StaticMap map{thes::static_key<4> = 3};
     using Map = decltype(map);
-    static_assert(!Map::contains<2>);
-    static_assert(Map::contains<4>);
-    static_assert(map.get<4>() == 3);
+    static_assert(!Map::contains(thes::auto_tag<2>));
+    static_assert(Map::contains(thes::auto_tag<4>));
+    static_assert(map.get(thes::auto_tag<4>) == 3);
   }
   {
     static constexpr thes::StaticMap map{thes::static_key<4> = 3, thes::static_key<3> = 2};
     using Map = decltype(map);
-    static_assert(!Map::contains<2>);
-    static_assert(Map::contains<4>);
-    static_assert(map.get<3>() == 2);
-    static_assert(map.get<4>() == 3);
+    static_assert(!Map::contains(thes::auto_tag<2>));
+    static_assert(Map::contains(thes::auto_tag<4>));
+    static_assert(map.get(thes::auto_tag<3>) == 2);
+    static_assert(map.get(thes::auto_tag<4>) == 3);
   }
   {
     using namespace thes::literals;
@@ -32,11 +32,11 @@ int main() {
     static_assert(Map::only_keys<"a"_sstr, "bc"_sstr>);
     static_assert(Map::only_keys<"a"_sstr, "bc"_sstr, "c"_sstr>);
 
-    static_assert(Map::contains<"a"_sstr>);
-    static_assert(!Map::contains<"b"_sstr>);
+    static_assert(Map::contains(thes::auto_tag<"a"_sstr>));
+    static_assert(!Map::contains(thes::auto_tag<"b"_sstr>));
 
-    static_assert(map.get<"a"_sstr>() == 2);
-    static_assert(map.get<"bc"_sstr>() == 4);
+    static_assert(map.get(thes::auto_tag<"a"_sstr>) == 2);
+    static_assert(map.get(thes::auto_tag<"bc"_sstr>) == 4);
   }
   {
     using namespace thes::literals;

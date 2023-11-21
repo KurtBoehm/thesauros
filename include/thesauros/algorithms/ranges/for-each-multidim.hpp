@@ -22,8 +22,8 @@ multidim_for_each(const TRanges& ranges, const TFixedAxes& fixed_axes, auto&& op
     static_assert(index <= size);
     if constexpr (index == size) {
       op(std::move(vals)...);
-    } else if constexpr (TFixedAxes::template contains<index>) {
-      self(self, std::move(vals)..., fixed_axes.template get<index>());
+    } else if constexpr (TFixedAxes::contains(auto_tag<index>)) {
+      self(self, std::move(vals)..., fixed_axes.get(auto_tag<index>));
     } else {
       for (auto&& value : star::get_at<index>(ranges)) {
         self(self, vals..., std::move(value));

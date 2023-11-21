@@ -45,19 +45,18 @@ requires(Tuple<typename TPairs::Key...>{TPairs::key...} | star::all_different)
 struct StaticMap<TPairs...> {
   using Tuple = ::thes::Tuple<TPairs...>;
 
-  template<auto tKey>
-  static constexpr bool contains = [] {
-    auto impl = [](auto idx, auto rec) {
+  static constexpr bool contains(AnyValueTag auto key) {
+    auto impl = [key](auto idx, auto rec) {
       if constexpr (idx == sizeof...(TPairs)) {
         return false;
-      } else if constexpr (TupleElement<idx, Tuple>::key == tKey) {
+      } else if constexpr (TupleElement<idx, Tuple>::key == key.value) {
         return true;
       } else {
         return rec(index_tag<idx + 1>, rec);
       }
     };
     return impl(index_tag<0>, impl);
-  }();
+  }
 
   template<auto... tKeys>
   static constexpr bool only_keys =
@@ -67,22 +66,18 @@ struct StaticMap<TPairs...> {
 
   explicit constexpr StaticMap(TPairs&&... pairs) : pairs_{std::forward<TPairs>(pairs)...} {}
 
-  template<auto tKey>
-  [[nodiscard]] constexpr const auto& get() const {
-    return get_impl<tKey>(*this);
+  [[nodiscard]] constexpr const auto& get(AnyValueTag auto key) const {
+    return get_impl<key.value>(*this);
   }
-  template<auto tKey>
-  [[nodiscard]] constexpr auto& get() {
-    return get_impl<tKey>(*this);
+  [[nodiscard]] constexpr auto& get(AnyValueTag auto key) {
+    return get_impl<key.value>(*this);
   }
 
-  template<auto tKey>
-  [[nodiscard]] constexpr const auto& get(const auto& def) const {
-    return get_impl<tKey>(*this, def);
+  [[nodiscard]] constexpr const auto& get(AnyValueTag auto key, const auto& def) const {
+    return get_impl<key.value>(*this, def);
   }
-  template<auto tKey>
-  [[nodiscard]] constexpr auto& get(auto& def) {
-    return get_impl<tKey>(*this, def);
+  [[nodiscard]] constexpr auto& get(AnyValueTag auto key, auto& def) {
+    return get_impl<key.value>(*this, def);
   }
 
 private:
@@ -118,20 +113,18 @@ private:
 
 template<>
 struct StaticMap<> {
-  template<auto tKey>
-  static constexpr bool contains = false;
+  static constexpr bool contains(AnyValueTag auto /*key*/) {
+    return false;
+  }
   template<auto... tKeys>
   static constexpr bool only_keys = true;
 
-  template<auto tKey>
-  constexpr auto get() const;
+  constexpr auto get(AnyValueTag auto key) const;
 
-  template<auto tKey>
-  [[nodiscard]] constexpr const auto& get(const auto& def) const {
+  [[nodiscard]] constexpr const auto& get(AnyValueTag auto /*key*/, const auto& def) const {
     return def;
   }
-  template<auto tKey>
-  [[nodiscard]] constexpr auto& get(auto& def) {
+  [[nodiscard]] constexpr auto& get(AnyValueTag auto /*key*/, auto& def) {
     return def;
   }
 };
