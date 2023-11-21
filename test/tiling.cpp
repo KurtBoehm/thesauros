@@ -2,11 +2,13 @@
 #include <array>
 #include <cassert>
 #include <cstddef>
+#include <iostream>
 #include <optional>
 #include <set>
 #include <utility>
 
 #include "thesauros/algorithms.hpp"
+#include "thesauros/io.hpp"
 #include "thesauros/test.hpp"
 #include "thesauros/utility.hpp"
 
@@ -71,13 +73,13 @@ int main() {
     static_assert(index_pos.position == std::array{5_uz, 4_uz, 0_uz});
   }
 
-  auto lambda = [&](auto tag) {
+  auto lambda = [&](auto tag, auto map) {
     static constexpr thes::MultiSize ms{std::array{15_uz, 8_uz, 13_uz}};
     static constexpr auto tag2 = thes::index_tag<2>;
 
     std::set<std::size_t> idxs{};
     thes::for_each_tile_vectorized<tag>(
-      ms.sizes(), tile_sizes,
+      ms.sizes(), tile_sizes, map,
       [&](auto... args) {
         thes::iterate_tile<tag>(
           ms, std::array{args...},
@@ -100,9 +102,15 @@ int main() {
       },
       tag2);
 
-    THES_ASSERT(*std::ranges::max_element(idxs) + 1 == idxs.size());
+    std::cout << thes::print(idxs) << '\n';
+    THES_ASSERT(*std::ranges::max_element(idxs) + 1 - *std::ranges::min_element(idxs) ==
+                idxs.size());
   };
 
-  lambda(thes::auto_tag<thes::IterDirection::FORWARD>);
-  lambda(thes::auto_tag<thes::IterDirection::BACKWARD>);
+  lambda(thes::auto_tag<thes::IterDirection::FORWARD>, thes::StaticMap{});
+  lambda(thes::auto_tag<thes::IterDirection::BACKWARD>, thes::StaticMap{});
+  lambda(thes::auto_tag<thes::IterDirection::FORWARD>,
+         thes::StaticMap{thes::static_key<0_uz> = 1_uz});
+  lambda(thes::auto_tag<thes::IterDirection::BACKWARD>,
+         thes::StaticMap{thes::static_key<0_uz> = 1_uz});
 }

@@ -62,10 +62,10 @@ inline constexpr void for_each_tile(const TSizes& sizes, const auto& tile_sizes,
 }
 
 // Create tiles
-template<IterDirection tDirection, typename TSizes>
+template<IterDirection tDirection, typename TSizes, typename TFixedAxes>
 inline constexpr void for_each_tile_vectorized(const TSizes& sizes, const auto& tile_sizes,
-                                               auto&& full_fun, auto&& part_fun,
-                                               AnyIndexTag auto vec_size) {
+                                               const TFixedAxes& fixed_axes, auto&& full_fun,
+                                               auto&& part_fun, AnyIndexTag auto vec_size) {
   using Size = star::Value<TSizes>;
   constexpr std::size_t dim_num = star::size<TSizes>;
 
@@ -78,6 +78,7 @@ inline constexpr void for_each_tile_vectorized(const TSizes& sizes, const auto& 
       const Size tile_size = star::get_at<dim>(tile_sizes);
 
       if constexpr (dim + 1 == dim_num) {
+        static_assert(!TFixedAxes::contains(dim));
         assert(tile_size % vec_size == 0);
 
         if constexpr (tDirection == IterDirection::FORWARD) {
@@ -97,6 +98,9 @@ inline constexpr void for_each_tile_vectorized(const TSizes& sizes, const auto& 
             full_fun(args..., std::make_pair(i - tile_size, i));
           }
         }
+      } else if constexpr (TFixedAxes::contains(dim)) {
+        const auto idx = fixed_axes.get(dim);
+        rec(index_tag<dim + 1>, rec, args..., std::make_pair(idx, idx + 1));
       } else {
         if constexpr (tDirection == IterDirection::FORWARD) {
           for (Size i = 0; i < size; i += tile_size) {
