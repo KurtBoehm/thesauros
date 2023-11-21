@@ -211,7 +211,7 @@ int main() {
   {
     static int a = 1;
     static constexpr auto trans =
-      std::tuple<int&>{a} | star::transform([](int& a) { return a + 1; });
+      std::tuple<int&>{a} | star::transform([](int& i) { return i + 1; });
     using Range = decltype(trans);
     static_assert(star::HasValue<Range>);
     static_assert(std::same_as<star::RawValue<Range>, int>);

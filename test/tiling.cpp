@@ -1,12 +1,14 @@
+#include <algorithm>
 #include <array>
+#include <cassert>
 #include <cstddef>
 #include <optional>
+#include <set>
 #include <utility>
 
 #include "thesauros/algorithms.hpp"
-#include "thesauros/algorithms/ranges/for-each-tile.hpp"
+#include "thesauros/test.hpp"
 #include "thesauros/utility.hpp"
-#include "thesauros/utility/static-map.hpp"
 
 int main() {
   using namespace thes::literals;
@@ -68,4 +70,45 @@ int main() {
     static_assert(multi_size.index_to_pos(index_pos.index) == index_pos.position);
     static_assert(index_pos.position == std::array{5_uz, 4_uz, 0_uz});
   }
+
+  auto lambda = [&](auto tag) {
+    static constexpr thes::MultiSize ms{std::array{15_uz, 8_uz, 13_uz}};
+    static constexpr auto tag2 = thes::index_tag<2>;
+
+    std::set<std::size_t> idxs{};
+    thes::for_each_tile_vectorized<tag>(
+      ms.sizes(), tile_sizes,
+      [&](auto... args) {
+        // std::cout << "full: " << thes::print(thes::Tuple{args...}) << '\n';
+        thes::iterate_tile_full<tag>(
+          ms, std::array{args...},
+          [&](auto pos) {
+            // std::cout << "ff" << pos.index << '\n';
+            idxs.insert({pos.index, pos.index + 1});
+          },
+          tag2);
+      },
+      [&](auto... args) {
+        // std::cout << "part: " << thes::print(thes::Tuple{args...}) << '\n';
+        thes::iterate_tile_part<tag>(
+          ms, std::array{args...},
+          [&](auto pos) {
+            // std::cout << "pf" << pos.index << '\n';
+            idxs.insert({pos.index, pos.index + 1});
+          },
+          [&](auto pos, auto part) {
+            // std::cout << "pp" << pos.index << '\n';
+            assert(part == 1);
+            idxs.insert({pos.index});
+          },
+          tag2);
+      },
+      tag2);
+
+    THES_ASSERT(*std::ranges::max_element(idxs) + 1 == idxs.size());
+  };
+
+  lambda(thes::auto_tag<thes::IterDirection::FORWARD>);
+  // std::cout << '\n';
+  lambda(thes::auto_tag<thes::IterDirection::BACKWARD>);
 }

@@ -57,8 +57,8 @@ private:
   std::string_view delimiter_, prefix_, suffix_;
 };
 template<typename TRange, typename TOp>
-RangePrinter(TRange&&, TOp, std::string_view, std::string_view, std::string_view)
-  -> RangePrinter<TRange, TOp>;
+RangePrinter(TRange&&, TOp, std::string_view, std::string_view,
+             std::string_view) -> RangePrinter<TRange, TOp>;
 
 template<typename T>
 struct Printer;
@@ -76,8 +76,8 @@ private:
 template<typename T>
 Printer(T&&) -> Printer<T>;
 
-template<typename TRange>
-requires(!impl::SupportsOStream<TRange> && impl::IsRange<TRange>)
+template<impl::IsRange TRange>
+requires(!impl::SupportsOStream<TRange> && !star::AnyStaticRange<TRange>)
 struct Printer<TRange> {
   explicit Printer(TRange&& range) : range_{std::forward<TRange>(range)} {}
 
