@@ -7,6 +7,7 @@
 
 #include "thesauros/math/arithmetic.hpp"
 #include "thesauros/utility/inlining.hpp"
+#include "thesauros/utility/no-op.hpp"
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
 #include "thesauros/utility/static-ranges/definitions/type-traits.hpp"
 #include "thesauros/utility/value-tag.hpp"
@@ -61,12 +62,10 @@ inline constexpr void for_each_tile(const TRanges& ranges, const auto& tile_size
     impl(index_tag<0>, impl);
   }
 }
-
-// Create tiles
 template<IterDirection tDirection, typename TRanges, typename TFixedAxes>
-inline constexpr void for_each_tile_vectorized(const TRanges& ranges, const auto& tile_sizes,
-                                               const TFixedAxes& fixed_axes, auto&& full_fun,
-                                               auto&& part_fun, AnyIndexTag auto vec_size) {
+inline constexpr void for_each_tile(const TRanges& ranges, const auto& tile_sizes,
+                                    const TFixedAxes& fixed_axes, auto&& full_fun, auto&& part_fun,
+                                    AnyIndexTag auto vec_size) {
   using Size = star::Value<star::Value<TRanges>>;
   constexpr std::size_t dim_num = star::size<TRanges>;
 
@@ -120,8 +119,9 @@ inline constexpr void for_each_tile_vectorized(const TRanges& ranges, const auto
   }
 }
 
+// Iterate over a tile
 template<IterDirection tDirection, typename TRanges>
-inline constexpr void iterate_tile(const auto& multi_size, const TRanges& ranges, auto&& fun) {
+inline constexpr void tile_for_each(const auto& multi_size, const TRanges& ranges, auto&& fun) {
   using Range = star::Value<TRanges>;
   using Size = star::Value<Range>;
   constexpr std::size_t dim_num = star::size<TRanges>;
@@ -154,9 +154,9 @@ inline constexpr void iterate_tile(const auto& multi_size, const TRanges& ranges
 }
 
 template<IterDirection tDirection, typename TRanges>
-inline constexpr void iterate_tile(const auto& multi_size, const TRanges& ranges, auto&& full_fun,
-                                   auto&& part_fun, AnyIndexTag auto vec_size,
-                                   AnyBoolTag auto has_part) {
+inline constexpr void tile_for_each(const auto& multi_size, const TRanges& ranges, auto&& full_fun,
+                                    auto&& part_fun, AnyIndexTag auto vec_size,
+                                    AnyBoolTag auto has_part) {
   using Range = star::Value<TRanges>;
   using Size = star::Value<Range>;
   constexpr std::size_t dim_num = star::size<TRanges>;
@@ -215,6 +215,23 @@ inline constexpr void iterate_tile(const auto& multi_size, const TRanges& ranges
     }
   };
   impl(index_tag<0>, impl, Size{0});
+}
+
+template<IterDirection tDirection, typename TRanges, typename TFixedAxes>
+inline constexpr void tiled_for_each(const auto& multi_size, const TRanges& ranges,
+                                     const auto& tile_sizes, const TFixedAxes& fixed_axes,
+                                     auto&& full_fun, auto&& part_fun, AnyIndexTag auto vec_size) {
+  thes::for_each_tile<tDirection>(
+    ranges, tile_sizes, fixed_axes,
+    [&](auto... args) {
+      thes::tile_for_each<tDirection>(multi_size, std::array{args...}, full_fun, thes::NoOp{},
+                                      vec_size, thes::false_tag);
+    },
+    [&](auto... args) {
+      thes::tile_for_each<tDirection>(multi_size, std::array{args...}, full_fun, part_fun, vec_size,
+                                      thes::true_tag);
+    },
+    vec_size);
 }
 } // namespace thes
 

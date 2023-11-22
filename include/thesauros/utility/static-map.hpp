@@ -2,6 +2,7 @@
 #define INCLUDE_THESAUROS_UTILITY_STATIC_MAP_HPP
 
 #include <functional>
+#include <type_traits>
 #include <utility>
 
 #include "thesauros/utility/static-ranges.hpp"
@@ -29,6 +30,8 @@ struct StaticKey {
 
 template<auto tKey>
 inline constexpr StaticKey<tKey> static_key{};
+template<auto tKey, auto tValue>
+inline constexpr StaticKeyValuePair<tKey, decltype(tValue)> static_kv{tValue};
 
 namespace literals {
 template<StaticString tString>
@@ -64,7 +67,7 @@ struct StaticMap<TPairs...> {
     star::transform([](auto key) { return thes::Tuple{tKeys...} | star::contains(key); }) |
     star::left_reduce(std::logical_and{}, true);
 
-  explicit constexpr StaticMap(TPairs&&... pairs) : pairs_{std::forward<TPairs>(pairs)...} {}
+  explicit constexpr StaticMap(TPairs&&... pairs) : _pairs{std::forward<TPairs>(pairs)...} {}
 
   [[nodiscard]] constexpr const auto& get(AnyValueTag auto key) const {
     return get_impl<key.value>(*this);
@@ -80,13 +83,16 @@ struct StaticMap<TPairs...> {
     return get_impl<key.value>(*this, def);
   }
 
+  // _pairs must be public for StaticMap to be a structural type!
+  Tuple _pairs;
+
 private:
   template<auto tKey>
   static constexpr auto& get_impl(auto& self) {
     auto impl = [&self](auto idx, auto rec) -> const auto& {
       static_assert(idx < sizeof...(TPairs), "The key is not known!");
       if constexpr (TupleElement<idx, Tuple>::key == tKey) {
-        return star::get_at<idx>(self.pairs_).value;
+        return star::get_at<idx>(self._pairs).value;
       } else {
         return rec(index_tag<idx + 1>, rec);
       }
@@ -100,15 +106,13 @@ private:
       if constexpr (idx == sizeof...(TPairs)) {
         return def;
       } else if constexpr (TupleElement<idx, Tuple>::key == tKey) {
-        return star::get_at<idx>(self.pairs_).value;
+        return star::get_at<idx>(self._pairs).value;
       } else {
         return rec(index_tag<idx + 1>, rec);
       }
     };
     return impl(index_tag<0>, impl);
   }
-
-  Tuple pairs_;
 };
 
 template<>
@@ -131,6 +135,10 @@ struct StaticMap<> {
 
 template<typename... TPairs>
 StaticMap(TPairs&&... pairs) -> StaticMap<TPairs...>;
+
+template<auto... tPairs>
+inline constexpr auto static_map_tag =
+  thes::auto_tag<StaticMap((std::decay_t<decltype(tPairs)>(tPairs))...)>;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_UTILITY_STATIC_MAP_HPP

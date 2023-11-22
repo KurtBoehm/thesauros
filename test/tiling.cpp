@@ -4,10 +4,12 @@
 #include <cstddef>
 #include <iostream>
 #include <optional>
-#include <set>
+#include <type_traits>
 #include <utility>
+#include <vector>
 
 #include "thesauros/algorithms.hpp"
+#include "thesauros/algorithms/ranges/for-each-tile.hpp"
 #include "thesauros/io.hpp"
 #include "thesauros/test.hpp"
 #include "thesauros/utility.hpp"
@@ -18,13 +20,34 @@ static constexpr auto backward = thes::auto_tag<thes::IterDirection::BACKWARD>;
 static constexpr auto def_pairs =
   thes::star::transform([](auto s) { return std::make_pair(std::size_t{0}, s); });
 
-int main() {
-  using namespace thes::literals;
-  namespace star = thes::star;
+static constexpr auto tiled_base(auto tag, auto sizes, auto ranges, auto tile_sizes, auto map) {
+  std::vector<std::size_t> idxs{};
+  thes::tiled_for_each<tag>(
+    thes::MultiSize{sizes}, ranges, tile_sizes, map,
+    [&](auto pos) {
+      idxs.insert(idxs.end(), {pos.index, pos.index + 1});
+    },
+    [&](auto pos, auto part) {
+      assert(part == 1);
+      idxs.push_back(pos.index);
+    },
+    thes::index_tag<2>);
 
+  const auto min = *std::ranges::min_element(idxs);
+  const auto max = *std::ranges::max_element(idxs);
+  if (!std::is_constant_evaluated()) {
+    std::cout << thes::print(idxs) << ": [" << min << ", " << max << "] → " << (max - min) << ", "
+              << idxs.size() << "\n\n";
+  }
+  THES_ASSERT(max + 1 - min == idxs.size());
+}
+
+void test_scalar() {
+  using namespace thes::literals;
   static constexpr std::array sizes{16_uz, 8_uz, 12_uz};
   static constexpr thes::MultiSize multi_size{sizes};
-  static constexpr auto tile_sizes = star::constant<3>(4_uz);
+  static constexpr auto tile_sizes = thes::star::constant<3>(4_uz);
+
   static_assert([] {
     std::size_t num = 0;
     thes::for_each_tile<thes::IterDirection::FORWARD>(
@@ -51,13 +74,13 @@ int main() {
   static constexpr auto make_index_pos = [](std::size_t ref_idx, auto dir) {
     std::size_t index = 0;
     std::optional<thes::IndexPosition<std::size_t, 3>> out = std::nullopt;
-    thes::iterate_tile<dir>(multi_size, std::array{tiles[27], tiles[28], tiles[29]},
-                            [ref_idx, &index, &out](auto index_pos) {
-                              if (index == ref_idx) {
-                                out = index_pos;
-                              }
-                              ++index;
-                            });
+    thes::tile_for_each<dir>(multi_size, std::array{tiles[27], tiles[28], tiles[29]},
+                             [ref_idx, &index, &out](auto index_pos) {
+                               if (index == ref_idx) {
+                                 out = index_pos;
+                               }
+                               ++index;
+                             });
     return out.value();
   };
   {
@@ -78,58 +101,38 @@ int main() {
     static_assert(multi_size.index_to_pos(index_pos.index) == index_pos.position);
     static_assert(index_pos.position == std::array{5_uz, 4_uz, 0_uz});
   }
+}
 
-  auto lambda = [&](auto tag, auto ms, auto ranges, auto map) {
-    static constexpr auto tag2 = thes::index_tag<2>;
+int main() {
+  using namespace thes::literals;
+  static constexpr auto tile_sizes = thes::star::constant<3>(4_uz);
 
-    std::set<std::size_t> idxs{};
-    thes::for_each_tile_vectorized<tag>(
-      ranges, tile_sizes, map,
-      [&](auto... args) {
-        thes::iterate_tile<tag>(
-          ms, std::array{args...},
-          [&](auto pos) {
-            idxs.insert({pos.index, pos.index + 1});
-          },
-          thes::NoOp{}, tag2, thes::false_tag);
-      },
-      [&](auto... args) {
-        thes::iterate_tile<tag>(
-          ms, std::array{args...},
-          [&](auto pos) {
-            idxs.insert({pos.index, pos.index + 1});
-          },
-          [&](auto pos, auto part) {
-            assert(part == 1);
-            idxs.insert({pos.index});
-          },
-          tag2, thes::true_tag);
-      },
-      tag2);
-
-    const auto min = *std::ranges::min_element(idxs);
-    const auto max = *std::ranges::max_element(idxs);
-    std::cout << thes::print(idxs) << ": [" << min << ", " << max << "] → " << (max - min) << ", "
-              << idxs.size() << "\n\n";
-    THES_ASSERT(max + 1 - min == idxs.size());
+  auto tiled_consteval = [&](auto tag, auto sizes, auto ranges, auto map) consteval {
+    tiled_base(tag, sizes, ranges, tile_sizes, map);
+  };
+  auto tiled = [&](auto tag, auto sizes, auto ranges, auto map) {
+    tiled_base(tag, sizes.value, ranges.value, tile_sizes, map.value);
+    tiled_consteval(tag, sizes.value, ranges.value, map.value);
   };
 
   {
-    static constexpr thes::MultiSize ms{std::array{15_uz, 8_uz, 13_uz}};
-    static constexpr auto ranges = ms.sizes() | def_pairs;
-    lambda(forward, ms, ranges, thes::StaticMap{});
-    lambda(backward, ms, ranges, thes::StaticMap{});
-    lambda(forward, ms, ranges, thes::StaticMap{thes::static_key<0_uz> = 1_uz});
-    lambda(backward, ms, ranges, thes::StaticMap{thes::static_key<0_uz> = 1_uz});
+    static constexpr auto sizes = thes::auto_tag<std::array{15_uz, 8_uz, 13_uz}>;
+    static constexpr auto ranges = thes::auto_tag<decltype(sizes)::value | def_pairs>;
+
+    tiled(forward, sizes, ranges, thes::static_map_tag<>);
+    tiled(backward, sizes, ranges, thes::static_map_tag<>);
+    tiled(forward, sizes, ranges, thes::static_map_tag<thes::static_kv<0_uz, 1_uz>>);
+    tiled(backward, sizes, ranges, thes::static_map_tag<thes::static_kv<0_uz, 1_uz>>);
   }
   {
-    static constexpr thes::MultiSize ms{std::array{15_uz, 8_uz, 13_uz}};
-    static constexpr auto ranges = thes::star::index_transform<3>([](auto idx) {
-      return std::make_pair(std::size_t{idx == 0} * 4, ms.axis_size(thes::index_tag<idx>));
-    });
-    lambda(forward, ms, ranges, thes::StaticMap{});
-    lambda(backward, ms, ranges, thes::StaticMap{});
-    lambda(forward, ms, ranges, thes::StaticMap{thes::static_key<0_uz> = 1_uz});
-    lambda(backward, ms, ranges, thes::StaticMap{thes::static_key<0_uz> = 1_uz});
+    static constexpr auto sizes = thes::auto_tag<std::array{15_uz, 8_uz, 13_uz}>;
+    static constexpr auto ranges = thes::auto_tag<thes::star::index_transform<3>([](auto idx) {
+      return std::make_pair(std::size_t{idx == 0} * 4, std::get<idx>(decltype(sizes)::value));
+    })>;
+
+    tiled(forward, sizes, ranges, thes::static_map_tag<>);
+    tiled(backward, sizes, ranges, thes::static_map_tag<>);
+    tiled(forward, sizes, ranges, thes::static_map_tag<thes::static_kv<0_uz, 1_uz>>);
+    tiled(backward, sizes, ranges, thes::static_map_tag<thes::static_kv<0_uz, 1_uz>>);
   }
 }
