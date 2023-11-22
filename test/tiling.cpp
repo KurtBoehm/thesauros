@@ -101,10 +101,23 @@ void test_scalar() {
     static_assert(multi_size.index_to_pos(index_pos.index) == index_pos.position);
     static_assert(index_pos.position == std::array{5_uz, 4_uz, 0_uz});
   }
+
+  auto lambda = [](auto tag, auto ranges, auto map) {
+    std::vector<std::size_t> idxs{};
+    thes::tiled_for_each<tag>(thes::MultiSize{sizes}, ranges, tile_sizes, map,
+                              [&](auto pos) { idxs.push_back(pos.index); });
+
+    const auto min = *std::ranges::min_element(idxs);
+    const auto max = *std::ranges::max_element(idxs);
+    return max + 1 - min == idxs.size();
+  };
+  static_assert(lambda(forward, sizes | def_pairs, thes::StaticMap{}));
+  static_assert(lambda(backward, sizes | def_pairs, thes::StaticMap{}));
 }
 
-int main() {
+void test_vectorized() {
   using namespace thes::literals;
+  static constexpr auto sizes = thes::auto_tag<std::array{15_uz, 8_uz, 13_uz}>;
   static constexpr auto tile_sizes = thes::star::constant<3>(4_uz);
 
   auto tiled_consteval = [&](auto tag, auto sizes, auto ranges, auto map) consteval {
@@ -116,7 +129,6 @@ int main() {
   };
 
   {
-    static constexpr auto sizes = thes::auto_tag<std::array{15_uz, 8_uz, 13_uz}>;
     static constexpr auto ranges = thes::auto_tag<decltype(sizes)::value | def_pairs>;
 
     tiled(forward, sizes, ranges, thes::static_map_tag<>);
@@ -125,7 +137,6 @@ int main() {
     tiled(backward, sizes, ranges, thes::static_map_tag<thes::static_kv<0_uz, 1_uz>>);
   }
   {
-    static constexpr auto sizes = thes::auto_tag<std::array{15_uz, 8_uz, 13_uz}>;
     static constexpr auto ranges = thes::auto_tag<thes::star::index_transform<3>([](auto idx) {
       return std::make_pair(std::size_t{idx == 0} * 4, std::get<idx>(decltype(sizes)::value));
     })>;
@@ -135,4 +146,9 @@ int main() {
     tiled(forward, sizes, ranges, thes::static_map_tag<thes::static_kv<0_uz, 1_uz>>);
     tiled(backward, sizes, ranges, thes::static_map_tag<thes::static_kv<0_uz, 1_uz>>);
   }
+}
+
+int main() {
+  test_scalar();
+  test_vectorized();
 }

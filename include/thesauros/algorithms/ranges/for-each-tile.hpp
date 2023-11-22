@@ -220,6 +220,14 @@ inline constexpr void tile_for_each(const auto& multi_size, const TRanges& range
 template<IterDirection tDirection, typename TRanges, typename TFixedAxes>
 inline constexpr void tiled_for_each(const auto& multi_size, const TRanges& ranges,
                                      const auto& tile_sizes, const TFixedAxes& fixed_axes,
+                                     auto&& fun) {
+  thes::for_each_tile<tDirection>(ranges, tile_sizes, fixed_axes, [&](auto... args) {
+    thes::tile_for_each<tDirection>(multi_size, std::array{args...}, fun);
+  });
+}
+template<IterDirection tDirection, typename TRanges, typename TFixedAxes>
+inline constexpr void tiled_for_each(const auto& multi_size, const TRanges& ranges,
+                                     const auto& tile_sizes, const TFixedAxes& fixed_axes,
                                      auto&& full_fun, auto&& part_fun, AnyIndexTag auto vec_size) {
   thes::for_each_tile<tDirection>(
     ranges, tile_sizes, fixed_axes,
