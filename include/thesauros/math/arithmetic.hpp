@@ -7,19 +7,16 @@
 #include <cstddef>
 #include <limits>
 
-#include "thesauros/math/overflow.hpp"
 #include "thesauros/utility/inlining.hpp"
 
 namespace thes {
 template<std::unsigned_integral T>
-inline constexpr T add_max(T arg1, T arg2, T maximum) {
-  const auto v = overflow_add(arg1, arg2);
-  return v.is_valid() ? std::min(*v, maximum) : maximum;
+inline constexpr T add_max(T a, T b, T max) {
+  return std::min(a + std::min(b, std::numeric_limits<T>::max() - a), max);
 }
 template<std::unsigned_integral T>
-inline constexpr T sub_min(T arg1, T arg2, T minimum) {
-  const auto v = overflow_subtract(arg1, arg2);
-  return v.is_valid() ? std::max(*v, minimum) : minimum;
+inline constexpr T sub_min(T a, T b, T min) {
+  return std::max(a - std::min(a, b), min);
 }
 
 template<typename T>

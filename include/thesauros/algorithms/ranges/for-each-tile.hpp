@@ -27,7 +27,7 @@ struct IndexPosition {
   TSize index;
 };
 
-// Create tiles
+// Split the hypercube described by “ranges” into tiles and iterate over them
 template<IterDirection tDirection, typename TRanges, typename TFixedAxes>
 inline constexpr void for_each_tile(const TRanges& ranges, const auto& tile_sizes,
                                     const TFixedAxes& fixed_axes, auto&& fun) {
@@ -119,7 +119,7 @@ inline constexpr void for_each_tile(const TRanges& ranges, const auto& tile_size
   }
 }
 
-// Iterate over a tile
+// Iterate over the cells in a tile
 template<IterDirection tDirection, typename TRanges>
 inline constexpr void tile_for_each(const auto& multi_size, const TRanges& ranges, auto&& fun) {
   using Range = star::Value<TRanges>;
@@ -152,7 +152,6 @@ inline constexpr void tile_for_each(const auto& multi_size, const TRanges& range
   };
   impl(index_tag<0>, impl, Size{0});
 }
-
 template<IterDirection tDirection, typename TRanges>
 inline constexpr void tile_for_each(const auto& multi_size, const TRanges& ranges, auto&& full_fun,
                                     auto&& part_fun, AnyIndexTag auto vec_size,
@@ -217,6 +216,7 @@ inline constexpr void tile_for_each(const auto& multi_size, const TRanges& range
   impl(index_tag<0>, impl, Size{0});
 }
 
+// Iterate over the elements described by “ranges” in a tiled fashion
 template<IterDirection tDirection, typename TRanges, typename TFixedAxes>
 inline constexpr void tiled_for_each(const auto& multi_size, const TRanges& ranges,
                                      const auto& tile_sizes, const TFixedAxes& fixed_axes,
@@ -231,13 +231,15 @@ inline constexpr void tiled_for_each(const auto& multi_size, const TRanges& rang
                                      auto&& full_fun, auto&& part_fun, AnyIndexTag auto vec_size) {
   thes::for_each_tile<tDirection>(
     ranges, tile_sizes, fixed_axes,
+    /*full_fun=*/
     [&](auto... args) {
       thes::tile_for_each<tDirection>(multi_size, std::array{args...}, full_fun, thes::NoOp{},
-                                      vec_size, thes::false_tag);
+                                      vec_size, /*has_part=*/thes::false_tag);
     },
+    /*part_fun=*/
     [&](auto... args) {
       thes::tile_for_each<tDirection>(multi_size, std::array{args...}, full_fun, part_fun, vec_size,
-                                      thes::true_tag);
+                                      /*has_part=*/thes::true_tag);
     },
     vec_size);
 }
