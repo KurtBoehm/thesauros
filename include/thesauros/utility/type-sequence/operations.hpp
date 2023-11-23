@@ -38,7 +38,7 @@ inline constexpr auto join(TSeqs... seqs) {
   return join_type_seqs(seqs...);
 }
 
-// cartesian produce
+// Cartesian product
 
 template<typename T, AnyTypeSeq... TSeqs>
 inline constexpr auto cartesian_product(TypeSeq<T> /*seq*/) {
@@ -109,6 +109,20 @@ struct FilteredTypeSeqTrait<TypeSeq<THead, TTail...>, TFilter> {
 
 template<AnyTypeSeq TSeq, template<typename> typename TFilter>
 using FilteredTypeSeq = FilteredTypeSeqTrait<TSeq, TFilter>::Type;
+
+namespace detail {
+template<typename TFun>
+struct FunFilterTlax {
+  template<typename T>
+  struct Filter {
+    static constexpr bool value = TFun{}(type_tag<T>);
+  };
+};
+} // namespace detail
+
+inline constexpr auto filter(AnyTypeSeq auto seq, auto filter) {
+  return FilteredTypeSeq<decltype(seq), detail::FunFilterTlax<decltype(filter)>::template Filter>{};
+}
 
 // index filter
 

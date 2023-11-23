@@ -46,6 +46,10 @@ struct IsTypeSeqTrait<TypeSeq<Ts...>> : public std::true_type {};
 template<typename T>
 concept AnyTypeSeq = IsTypeSeqTrait<T>::value;
 
+inline consteval bool operator==(AnyTypeSeq auto seq1, AnyTypeSeq auto seq2) {
+  return std::same_as<decltype(seq1), decltype(seq2)>;
+}
+
 namespace impl {
 template<typename T>
 struct AsTypeSeq {

@@ -30,6 +30,7 @@ foreach name, info : {
   'StronglyOrdered': [['strongly-ordered.cpp'], []],
   'SwapOrEqual': [['swap-or-equal.cpp'], []],
   'Tiling': [['tiling.cpp'], []],
+  'TypeSeq': [['type-seq.cpp'], []],
   'TypeTraits': [['type-traits.cpp'], []],
   'ValueTag': [['value-tag.cpp'], []],
 }

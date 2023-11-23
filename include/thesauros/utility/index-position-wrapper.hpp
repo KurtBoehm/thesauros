@@ -24,7 +24,7 @@ struct SingleIndexManager {
   using IdxSize = Size;
   using PosSize = Size;
 
-  constexpr explicit SingleIndexManager(Size idx) : idx_(idx) {}
+  explicit constexpr SingleIndexManager(Size idx) : idx_(idx) {}
 
   constexpr Size index() const {
     return idx_;

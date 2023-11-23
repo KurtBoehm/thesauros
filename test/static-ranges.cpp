@@ -16,6 +16,7 @@
 #include "thesauros/utility/static-ranges.hpp"
 
 int main() {
+  using namespace thes::literals;
   namespace star = thes::star;
 
   // std::array, std::tuple, !std::vector
@@ -278,6 +279,16 @@ int main() {
     static_assert(star::size<Range> == 2);
     static_assert((map | star::to_array) == std::array{4, 3});
     static_assert(star::HasValue<Range>);
+  }
+  {
+    static constexpr auto rng =
+      star::iota<3, 10> |
+      star::filter<[](auto /*idx*/, auto type) { return type.construct() % 2 == 0; }>;
+    using Range = decltype(rng);
+    static_assert(!star::AnyTypedStaticRange<Range>);
+    static_assert(star::size<Range> == 3);
+    static_assert((rng | star::transform([](auto i) { return i.value; }) | star::to_array) ==
+                  std::array{4_uz, 6_uz, 8_uz});
   }
 
   // join
