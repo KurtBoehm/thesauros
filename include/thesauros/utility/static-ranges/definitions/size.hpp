@@ -32,8 +32,11 @@ struct SizeTrait<TRange> {
 };
 
 template<typename TRange>
-requires(requires { sizeof(SizeTrait<std::decay_t<TRange>>); })
+concept HasSize = requires { sizeof(SizeTrait<std::decay_t<TRange>>); };
+template<HasSize TRange>
 inline constexpr std::size_t size = SizeTrait<std::decay_t<TRange>>::value;
+template<HasSize TRange>
+inline constexpr bool is_empty = size<TRange> == 0;
 } // namespace thes::star
 
 #endif // INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_DEFINITIONS_SIZE_HPP
