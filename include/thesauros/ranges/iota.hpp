@@ -38,9 +38,6 @@ private:
   };
 
 public:
-  constexpr IotaRange() : begin_{}, end_{} {}
-  constexpr IotaRange(T begin, T end) : begin_{begin}, end_{end} {}
-
   struct const_iterator
       : public IteratorFacade<const_iterator, iter_provider::Map<IterProv, const_iterator>> {
     friend IterProv;
@@ -63,6 +60,9 @@ public:
   private:
     Value value_;
   };
+
+  constexpr IotaRange() : begin_{}, end_{} {}
+  constexpr IotaRange(T begin, T end) : begin_{begin}, end_{end} {}
 
   [[nodiscard]] constexpr Value begin_value() const {
     return begin_;
