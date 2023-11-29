@@ -4,12 +4,14 @@
 #include <array>
 #include <cassert>
 #include <cstddef>
+#include <type_traits>
 
 #include "thesauros/math/arithmetic.hpp"
 #include "thesauros/utility/inlining.hpp"
 #include "thesauros/utility/no-op.hpp"
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
 #include "thesauros/utility/static-ranges/definitions/type-traits.hpp"
+#include "thesauros/utility/type-tag.hpp"
 #include "thesauros/utility/value-tag.hpp"
 
 namespace thes {
@@ -23,9 +25,20 @@ struct IndexPosition {
     return index;
   }
 
+  friend TSize operator+(IndexPosition lhs, TSize rhs) {
+    return lhs.index + rhs;
+  }
+
   std::array<TSize, dimension_num> position;
   TSize index;
 };
+
+template<typename>
+struct AnyIndexPositionTrait : public std::false_type {};
+template<typename TSize, std::size_t tDimNum>
+struct AnyIndexPositionTrait<IndexPosition<TSize, tDimNum>> : public std::true_type {};
+template<typename T>
+concept AnyIndexPosition = AnyIndexPositionTrait<T>::value;
 
 // Split the hypercube described by “ranges” into tiles and iterate over them
 template<IterDirection tDirection, typename TRanges, typename TFixedAxes>
@@ -120,8 +133,10 @@ inline constexpr void for_each_tile(const TRanges& ranges, const auto& tile_size
 }
 
 // Iterate over the cells in a tile
-template<IterDirection tDirection, typename TRanges>
-inline constexpr void tile_for_each(const auto& multi_size, const TRanges& ranges, auto&& fun) {
+template<IterDirection tDirection, typename TRanges,
+         typename TIdx = star::Value<star::Value<TRanges>>>
+inline constexpr void tile_for_each(const auto& multi_size, const TRanges& ranges, auto&& fun,
+                                    TypeTag<TIdx> /*tag*/ = {}) {
   using Range = star::Value<TRanges>;
   using Size = star::Value<Range>;
   constexpr std::size_t dim_num = star::size<TRanges>;
@@ -136,7 +151,7 @@ inline constexpr void tile_for_each(const auto& multi_size, const TRanges& range
           const auto factor = multi_size.after_size(dim);
           rec(index_tag<dim + 1>, rec, index + i * factor, args..., i);
         } else {
-          fun(IndexPos{{args..., i}, index + i});
+          fun(IndexPos{{args..., i}, TIdx{index + i}});
         }
       }
     } else {
@@ -145,21 +160,22 @@ inline constexpr void tile_for_each(const auto& multi_size, const TRanges& range
           const auto factor = multi_size.after_size(dim);
           rec(index_tag<dim + 1>, rec, index + (i - 1) * factor, args..., i - 1);
         } else {
-          fun(IndexPos{{args..., i - 1}, index + (i - 1)});
+          fun(IndexPos{{args..., i - 1}, TIdx{index + (i - 1)}});
         }
       }
     }
   };
   impl(index_tag<0>, impl, Size{0});
 }
-template<IterDirection tDirection, typename TRanges>
+template<IterDirection tDirection, typename TRanges,
+         typename TIdx = star::Value<star::Value<TRanges>>>
 inline constexpr void tile_for_each(const auto& multi_size, const TRanges& ranges, auto&& full_fun,
                                     auto&& part_fun, AnyIndexTag auto vec_size,
-                                    AnyBoolTag auto has_part) {
+                                    AnyBoolTag auto has_part, TypeTag<TIdx> /*tag*/ = {}) {
   using Range = star::Value<TRanges>;
   using Size = star::Value<Range>;
   constexpr std::size_t dim_num = star::size<TRanges>;
-  using IndexPos = IndexPosition<Size, dim_num>;
+  using IndexPos = IndexPosition<TIdx, dim_num>;
 
   auto impl = [&](auto dim, auto rec, auto index, auto... args) THES_ALWAYS_INLINE {
     const auto [begin, end] = star::get_at<dim>(ranges);
@@ -217,29 +233,32 @@ inline constexpr void tile_for_each(const auto& multi_size, const TRanges& range
 }
 
 // Iterate over the elements described by “ranges” in a tiled fashion
-template<IterDirection tDirection, typename TRanges, typename TFixedAxes>
+template<IterDirection tDirection, typename TRanges, typename TFixedAxes,
+         typename TIdx = star::Value<star::Value<TRanges>>>
 inline constexpr void tiled_for_each(const auto& multi_size, const TRanges& ranges,
                                      const auto& tile_sizes, const TFixedAxes& fixed_axes,
-                                     auto&& fun) {
+                                     auto&& fun, TypeTag<TIdx> tag = {}) {
   thes::for_each_tile<tDirection>(ranges, tile_sizes, fixed_axes, [&](auto... args) {
-    thes::tile_for_each<tDirection>(multi_size, std::array{args...}, fun);
+    thes::tile_for_each<tDirection>(multi_size, std::array{args...}, fun, tag);
   });
 }
-template<IterDirection tDirection, typename TRanges, typename TFixedAxes>
+template<IterDirection tDirection, typename TRanges, typename TFixedAxes,
+         typename TIdx = star::Value<star::Value<TRanges>>>
 inline constexpr void tiled_for_each(const auto& multi_size, const TRanges& ranges,
                                      const auto& tile_sizes, const TFixedAxes& fixed_axes,
-                                     auto&& full_fun, auto&& part_fun, AnyIndexTag auto vec_size) {
+                                     auto&& full_fun, auto&& part_fun, AnyIndexTag auto vec_size,
+                                     TypeTag<TIdx> tag = {}) {
   thes::for_each_tile<tDirection>(
     ranges, tile_sizes, fixed_axes,
     /*full_fun=*/
     [&](auto... args) {
       thes::tile_for_each<tDirection>(multi_size, std::array{args...}, full_fun, thes::NoOp{},
-                                      vec_size, /*has_part=*/thes::false_tag);
+                                      vec_size, /*has_part=*/thes::false_tag, tag);
     },
     /*part_fun=*/
     [&](auto... args) {
       thes::tile_for_each<tDirection>(multi_size, std::array{args...}, full_fun, part_fun, vec_size,
-                                      /*has_part=*/thes::true_tag);
+                                      /*has_part=*/thes::true_tag, tag);
     },
     vec_size);
 }

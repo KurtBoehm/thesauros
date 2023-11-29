@@ -12,11 +12,14 @@
 namespace thes {
 template<std::unsigned_integral T>
 inline constexpr T add_max(T a, T b, T max) {
-  return std::min(a + std::min(b, std::numeric_limits<T>::max() - a), max);
+  const T ub = std::numeric_limits<T>::max() - a;
+  const T satsum = a + std::min(b, ub);
+  return std::min(satsum, max);
 }
 template<std::unsigned_integral T>
 inline constexpr T sub_min(T a, T b, T min) {
-  return std::max(a - std::min(a, b), min);
+  const T satdif = a - std::min(a, b);
+  return std::max(satdif, min);
 }
 
 template<typename T>
