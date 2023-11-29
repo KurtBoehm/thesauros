@@ -17,13 +17,13 @@
 namespace thes {
 enum struct IterDirection : bool { FORWARD, BACKWARD };
 
-template<typename TSize, typename TPos>
+template<typename TIdx, typename TPos>
 struct IndexPosition {
-  using Size = TSize;
+  using Index = TIdx;
   using Position = TPos;
   static constexpr std::size_t dimension_num = thes::star::size<Position>;
 
-  explicit operator Size() const {
+  explicit operator Index() const {
     return index;
   }
 
@@ -33,7 +33,7 @@ struct IndexPosition {
     return lhs.index + rhs;
   }
 
-  Size index;
+  Index index;
   Position position;
 };
 
@@ -155,7 +155,7 @@ inline constexpr void tile_for_each(const auto& multi_size, const TRanges& range
           const auto factor = multi_size.after_size(dim);
           rec(index_tag<dim + 1>, rec, index + i * factor, args..., i);
         } else {
-          fun(IndexPos{{args..., i}, TIdx{index + i}});
+          fun(IndexPos{TIdx{index + i}, {args..., i}});
         }
       }
     } else {
@@ -164,7 +164,7 @@ inline constexpr void tile_for_each(const auto& multi_size, const TRanges& range
           const auto factor = multi_size.after_size(dim);
           rec(index_tag<dim + 1>, rec, index + (i - 1) * factor, args..., i - 1);
         } else {
-          fun(IndexPos{{args..., i - 1}, TIdx{index + (i - 1)}});
+          fun(IndexPos{TIdx{index + (i - 1)}, {args..., i - 1}});
         }
       }
     }
@@ -194,15 +194,15 @@ inline constexpr void tile_for_each(const auto& multi_size, const TRanges& range
         if constexpr (has_part) {
           Size i = begin;
           for (; i + vec_size < end; i += vec_size) {
-            full_fun(IndexPos{{args..., i}, TIdx{index + i}});
+            full_fun(IndexPos{TIdx{index + i}, {args..., i}});
           }
           if (i != end) {
-            part_fun(IndexPos{{args..., i}, TIdx{index + i}}, end - i);
+            part_fun(IndexPos{TIdx{index + i}, {args..., i}}, end - i);
           }
         } else {
           assert((end - begin) % vec_size == 0);
           for (Size i = begin; i < end; i += vec_size) {
-            full_fun(IndexPos{{args..., i}, TIdx{index + i}});
+            full_fun(IndexPos{TIdx{index + i}, {args..., i}});
           }
         }
       }
@@ -217,18 +217,18 @@ inline constexpr void tile_for_each(const auto& multi_size, const TRanges& range
         if constexpr (has_part) {
           const Size full_vec_end = end - ((end - begin) % vec_size);
           if (full_vec_end != end) {
-            part_fun(IndexPos{{args..., full_vec_end}, TIdx{index + full_vec_end}},
+            part_fun(IndexPos{TIdx{index + full_vec_end}, {args..., full_vec_end}},
                      end - full_vec_end);
           }
           for (Size i = full_vec_end; i > begin; i -= vec_size) {
             const Size idx = i - vec_size;
-            full_fun(IndexPos{{args..., idx}, TIdx{index + idx}});
+            full_fun(IndexPos{TIdx{index + idx}, {args..., idx}});
           }
         } else {
           assert((end - begin) % vec_size == 0);
           for (Size i = end; i > begin; i -= vec_size) {
             const Size idx = i - vec_size;
-            full_fun(IndexPos{{args..., idx}, TIdx{index + idx}});
+            full_fun(IndexPos{TIdx{index + idx}, {args..., idx}});
           }
         }
       }

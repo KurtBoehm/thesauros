@@ -15,7 +15,7 @@
 #include "thesauros/utility.hpp"
 
 struct Idx {
-  constexpr explicit Idx(size_t idx) : idx(idx) {}
+  constexpr explicit Idx(size_t pidx) : idx(pidx) {}
   size_t idx;
 };
 
@@ -123,34 +123,33 @@ void test_scalar() {
 
 void test_vectorized() {
   using namespace thes::literals;
-  static constexpr auto sizes = thes::auto_tag<std::array{15_uz, 8_uz, 13_uz}>;
+  static constexpr auto sizes = std::array{15_uz, 8_uz, 13_uz};
   static constexpr auto tile_sizes = thes::star::constant<3>(4_uz);
 
-  auto tiled_consteval = [&](auto tag, auto sizes, auto ranges, auto map) consteval {
+  auto tiled_consteval = [&](auto tag, auto ranges, auto map) consteval {
     tiled_base(tag, sizes, ranges, tile_sizes, map);
   };
-  auto tiled = [&](auto tag, auto sizes, auto ranges, auto map) {
-    tiled_base(tag, sizes.value, ranges.value, tile_sizes, map.value);
-    tiled_consteval(tag, sizes.value, ranges.value, map.value);
+  auto tiled = [&](auto tag, auto ranges, auto map) {
+    tiled_base(tag, sizes, ranges.value, tile_sizes, map.value);
+    tiled_consteval(tag, ranges.value, map.value);
   };
 
   {
-    static constexpr auto ranges = thes::auto_tag<decltype(sizes)::value | def_pairs>;
+    static constexpr auto ranges = thes::auto_tag<sizes | def_pairs>;
 
-    tiled(forward, sizes, ranges, thes::static_map_tag<>);
-    tiled(backward, sizes, ranges, thes::static_map_tag<>);
-    tiled(forward, sizes, ranges, thes::static_map_tag<thes::static_kv<0_uz, 1_uz>>);
-    tiled(backward, sizes, ranges, thes::static_map_tag<thes::static_kv<0_uz, 1_uz>>);
+    tiled(forward, ranges, thes::static_map_tag<>);
+    tiled(backward, ranges, thes::static_map_tag<>);
+    tiled(forward, ranges, thes::static_map_tag<thes::static_kv<0_uz, 1_uz>>);
+    tiled(backward, ranges, thes::static_map_tag<thes::static_kv<0_uz, 1_uz>>);
   }
   {
-    static constexpr auto ranges = thes::auto_tag<thes::star::index_transform<3>([](auto idx) {
-      return std::make_pair(std::size_t{idx == 0} * 4, std::get<idx>(decltype(sizes)::value));
-    })>;
+    static constexpr auto ranges = thes::auto_tag<thes::star::index_transform<3>(
+      [](auto idx) { return std::make_pair(std::size_t{idx == 0} * 4, std::get<idx>(sizes)); })>;
 
-    tiled(forward, sizes, ranges, thes::static_map_tag<>);
-    tiled(backward, sizes, ranges, thes::static_map_tag<>);
-    tiled(forward, sizes, ranges, thes::static_map_tag<thes::static_kv<0_uz, 1_uz>>);
-    tiled(backward, sizes, ranges, thes::static_map_tag<thes::static_kv<0_uz, 1_uz>>);
+    tiled(forward, ranges, thes::static_map_tag<>);
+    tiled(backward, ranges, thes::static_map_tag<>);
+    tiled(forward, ranges, thes::static_map_tag<thes::static_kv<0_uz, 1_uz>>);
+    tiled(backward, ranges, thes::static_map_tag<thes::static_kv<0_uz, 1_uz>>);
   }
 }
 
