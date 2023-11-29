@@ -30,13 +30,13 @@ static constexpr auto tiled_base(auto tag, auto sizes, auto ranges, auto tile_si
   thes::tiled_for_each<tag>(
     thes::MultiSize{sizes}, ranges, tile_sizes, map,
     [&](auto pos) {
-      idxs.insert(idxs.end(), {pos.index, pos.index + 1});
+      idxs.insert(idxs.end(), {pos.index.idx, pos.index.idx + 1});
     },
     [&](auto pos, auto part) {
       assert(part == 1);
-      idxs.push_back(pos.index);
+      idxs.push_back(pos.index.idx);
     },
-    thes::index_tag<2>);
+    thes::index_tag<2>, thes::type_tag<Idx>);
 
   const auto min = *std::ranges::min_element(idxs);
   const auto max = *std::ranges::max_element(idxs);
