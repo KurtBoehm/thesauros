@@ -19,18 +19,22 @@ enum struct IterDirection : bool { FORWARD, BACKWARD };
 
 template<typename TSize, typename TPos>
 struct IndexPosition {
-  static constexpr std::size_t dimension_num = thes::star::size<TPos>;
+  using Size = TSize;
+  using Position = TPos;
+  static constexpr std::size_t dimension_num = thes::star::size<Position>;
 
-  explicit operator TSize() const {
+  explicit operator Size() const {
     return index;
   }
 
-  friend TSize operator+(IndexPosition lhs, TSize rhs) {
+  friend decltype(auto) operator+(IndexPosition lhs, auto rhs)
+  requires(requires { lhs.index + rhs; })
+  {
     return lhs.index + rhs;
   }
 
-  TPos position;
-  TSize index;
+  Size index;
+  Position position;
 };
 
 template<typename>
