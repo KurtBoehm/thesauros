@@ -14,6 +14,11 @@
 #include "thesauros/test.hpp"
 #include "thesauros/utility.hpp"
 
+struct Idx {
+  constexpr explicit Idx(size_t idx) : idx(idx) {}
+  size_t idx;
+};
+
 static constexpr auto forward = thes::auto_tag<thes::IterDirection::FORWARD>;
 static constexpr auto backward = thes::auto_tag<thes::IterDirection::BACKWARD>;
 
@@ -73,7 +78,7 @@ void test_scalar() {
   // Returns the index-position of the ref_idx-th position in the iteration order specified by dir
   static constexpr auto make_index_pos = [](std::size_t ref_idx, auto dir) {
     std::size_t index = 0;
-    std::optional<thes::IndexPosition<std::size_t, 3>> out = std::nullopt;
+    std::optional<thes::IndexPosition<std::size_t, std::array<std::size_t, 3>>> out = std::nullopt;
     thes::tile_for_each<dir>(multi_size, std::array{tiles[27], tiles[28], tiles[29]},
                              [ref_idx, &index, &out](auto index_pos) {
                                if (index == ref_idx) {
@@ -104,8 +109,9 @@ void test_scalar() {
 
   auto lambda = [](auto tag, auto ranges, auto map) {
     std::vector<std::size_t> idxs{};
-    thes::tiled_for_each<tag>(thes::MultiSize{sizes}, ranges, tile_sizes, map,
-                              [&](auto pos) { idxs.push_back(pos.index); });
+    thes::tiled_for_each<tag>(
+      thes::MultiSize{sizes}, ranges, tile_sizes, map,
+      [&](auto pos) { idxs.push_back(pos.index.idx); }, thes::type_tag<Idx>);
 
     const auto min = *std::ranges::min_element(idxs);
     const auto max = *std::ranges::max_element(idxs);

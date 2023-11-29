@@ -17,9 +17,9 @@
 namespace thes {
 enum struct IterDirection : bool { FORWARD, BACKWARD };
 
-template<typename TSize, std::size_t tDimNum>
+template<typename TSize, typename TPos>
 struct IndexPosition {
-  static constexpr std::size_t dimension_num = tDimNum;
+  static constexpr std::size_t dimension_num = thes::star::size<TPos>;
 
   explicit operator TSize() const {
     return index;
@@ -29,14 +29,14 @@ struct IndexPosition {
     return lhs.index + rhs;
   }
 
-  std::array<TSize, dimension_num> position;
+  TPos position;
   TSize index;
 };
 
 template<typename>
 struct AnyIndexPositionTrait : public std::false_type {};
-template<typename TSize, std::size_t tDimNum>
-struct AnyIndexPositionTrait<IndexPosition<TSize, tDimNum>> : public std::true_type {};
+template<typename TSize, typename TPos>
+struct AnyIndexPositionTrait<IndexPosition<TSize, TPos>> : public std::true_type {};
 template<typename T>
 concept AnyIndexPosition = AnyIndexPositionTrait<T>::value;
 
@@ -140,7 +140,7 @@ inline constexpr void tile_for_each(const auto& multi_size, const TRanges& range
   using Range = star::Value<TRanges>;
   using Size = star::Value<Range>;
   constexpr std::size_t dim_num = star::size<TRanges>;
-  using IndexPos = IndexPosition<Size, dim_num>;
+  using IndexPos = IndexPosition<TIdx, std::array<Size, dim_num>>;
 
   auto impl = [&](auto dim, auto rec, auto index, auto... args) THES_ALWAYS_INLINE {
     const auto [begin, end] = star::get_at<dim>(ranges);
@@ -175,7 +175,7 @@ inline constexpr void tile_for_each(const auto& multi_size, const TRanges& range
   using Range = star::Value<TRanges>;
   using Size = star::Value<Range>;
   constexpr std::size_t dim_num = star::size<TRanges>;
-  using IndexPos = IndexPosition<TIdx, dim_num>;
+  using IndexPos = IndexPosition<TIdx, std::array<Size, dim_num>>;
 
   auto impl = [&](auto dim, auto rec, auto index, auto... args) THES_ALWAYS_INLINE {
     const auto [begin, end] = star::get_at<dim>(ranges);
