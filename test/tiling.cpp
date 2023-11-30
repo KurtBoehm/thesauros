@@ -14,6 +14,8 @@
 #include "thesauros/test.hpp"
 #include "thesauros/utility.hpp"
 
+#define COMPILE_TIME true
+
 struct Idx {
   constexpr explicit Idx(size_t pidx) : idx(pidx) {}
   size_t idx;
@@ -126,12 +128,16 @@ void test_vectorized() {
   static constexpr auto sizes = std::array{15_uz, 8_uz, 13_uz};
   static constexpr auto tile_sizes = thes::star::constant<3>(4_uz);
 
+#if COMPILE_TIME
   auto tiled_consteval = [&](auto tag, auto ranges, auto map) consteval {
     tiled_base(tag, sizes, ranges, tile_sizes, map);
   };
+#endif
   auto tiled = [&](auto tag, auto ranges, auto map) {
     tiled_base(tag, sizes, ranges.value, tile_sizes, map.value);
+#if COMPILE_TIME
     tiled_consteval(tag, ranges.value, map.value);
+#endif
   };
 
   {
@@ -153,7 +159,34 @@ void test_vectorized() {
   }
 }
 
+constexpr void test_small() {
+  using namespace thes::literals;
+  // tiled_base(forward, std::array{4_u32, 9_u32, 7_u32},
+  //            std::array{std::pair{2_u32, 4_u32}, std::pair{0_u32, 9_u32}, std::pair{0_u32,
+  //            7_u32}}, std::array{8_u32, 8_u32, 8_u32}, thes::StaticMap{});
+
+  std::vector<thes::u32> idxs{};
+  thes::tiled_for_each<backward>(
+    thes::MultiSize{std::array{4_u32, 9_u32, 7_u32}},
+    std::array{std::pair{2_u32, 4_u32}, std::pair{0_u32, 9_u32}, std::pair{0_u32, 7_u32}},
+    std::array{8_u32, 8_u32, 8_u32}, thes::StaticMap{},
+    [&](auto pos) { idxs.push_back(pos.index); });
+
+  const auto min = *std::ranges::min_element(idxs);
+  const auto max = *std::ranges::max_element(idxs);
+  if (!std::is_constant_evaluated()) {
+    std::cout << thes::print(idxs) << ": [" << min << ", " << max << "] → " << (max - min) << ", "
+              << idxs.size() << "\n\n";
+  }
+  THES_ASSERT(max + 1 - min == idxs.size());
+}
+
 int main() {
   test_scalar();
   test_vectorized();
+
+#if COMPILE_TIME
+  []() consteval { test_small(); }();
+#endif
+  test_small();
 }

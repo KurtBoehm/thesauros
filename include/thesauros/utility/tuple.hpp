@@ -13,7 +13,9 @@ template<std::size_t tIdx, typename T>
 struct TupleLeaf {
   T data;
 
-  constexpr bool operator==(const TupleLeaf&) const = default;
+  constexpr friend bool operator==(const TupleLeaf& a, const TupleLeaf& b) {
+    return a.data == b.data;
+  }
 };
 
 template<typename TIdxSeq, typename... Ts>
