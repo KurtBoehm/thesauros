@@ -61,6 +61,8 @@ struct BasicMultiSize {
     return star::position_to_index(pos, postfix_prod_incl_);
   }
 
+  bool operator==(const BasicMultiSize&) const = default;
+
 private:
   AxisSize sizes_;
   ExAxisSize postfix_prod_incl_;

@@ -56,6 +56,18 @@ struct LimitedArray {
     return data_;
   }
 
+  constexpr friend bool operator==(const LimitedArray& a1, const LimitedArray& a2) {
+    if (a1.size_ != a2.size_) {
+      return false;
+    }
+    for (std::size_t i = 0; i < a1.size_; ++i) {
+      if (a1[i] != a2[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
 private:
   std::size_t size_;
   Array data_{};
