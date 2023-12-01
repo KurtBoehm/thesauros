@@ -70,8 +70,10 @@ inline constexpr void for_each_tile(const TRanges& ranges, const auto& tile_size
         } else {
           const Size size = end - begin;
           const Size size_tile = div_ceil(size, tile_size) * tile_size;
-          for (Size i = begin + size_tile; i >= tile_size; i -= tile_size) {
-            rec(index_tag<dim + 1>, rec, args..., std::make_pair(i - tile_size, std::min(i, end)));
+          for (Size i = size_tile; i > 0; i -= tile_size) {
+            const Size idx = i + begin;
+            rec(index_tag<dim + 1>, rec, args...,
+                std::make_pair(idx - tile_size, std::min(idx, end)));
           }
         }
       }
