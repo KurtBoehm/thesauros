@@ -4,25 +4,32 @@
 #include <cstdlib>
 #include <memory>
 #include <string>
+#include <typeindex>
 
 #include <cxxabi.h>
 
 namespace thes {
-template<typename T>
-std::string type_name() {
+inline std::string demangle(const char* name) {
   using CSmartPtr = std::unique_ptr<char[], decltype([](auto* p) { std::free(p); })>;
 
   int status{};
-  CSmartPtr ptr{abi::__cxa_demangle(typeid(T).name(), nullptr, nullptr, &status)};
+  CSmartPtr ptr{abi::__cxa_demangle(name, nullptr, nullptr, &status)};
   if (status != 0) {
-    return std::string(typeid(T).name());
+    return name;
   }
-  return std::string(ptr.get());
+  return ptr.get();
+}
+inline std::string demangle(std::type_index ti) {
+  return demangle(ti.name());
 }
 
 template<typename T>
-std::string type_name(T&& /*value*/) {
-  return type_name<T>();
+inline std::string type_name() {
+  return demangle(typeid(T).name());
+}
+template<typename T>
+inline std::string type_name(T&& /*value*/) {
+  return demangle(typeid(T).name());
 }
 } // namespace thes
 
