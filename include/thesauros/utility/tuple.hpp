@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "thesauros/utility/type-tag.hpp"
+#include "thesauros/utility/value-tag.hpp"
 
 namespace thes {
 namespace detail {
@@ -68,6 +69,8 @@ struct Tuple : public detail::Tuple<std::index_sequence_for<Ts...>, Ts...> {
 };
 template<typename... Ts>
 Tuple(Ts&&...) -> Tuple<Ts...>;
+template<auto... tValues>
+inline constexpr Tuple<AutoTag<tValues>...> tag_tuple{};
 
 template<std::size_t tIdx, typename T>
 TypeTag<T> tuple_element_tag(const detail::TupleLeaf<tIdx, T>&);

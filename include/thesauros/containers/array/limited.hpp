@@ -33,26 +33,26 @@ struct LimitedArray {
     }
   }
 
-  const T& operator[](std::size_t idx) const {
+  constexpr const T& operator[](std::size_t idx) const {
     assert(idx < capacity);
     return data_[idx];
   }
 
-  [[nodiscard]] const T* begin() const {
+  [[nodiscard]] constexpr const T* begin() const {
     return data_.begin();
   }
-  [[nodiscard]] const T* end() const {
+  [[nodiscard]] constexpr const T* end() const {
     return data_.begin() + size_;
   }
 
-  [[nodiscard]] const T* data() const {
+  [[nodiscard]] constexpr const T* data() const {
     return data_.data();
   }
-  [[nodiscard]] T* data() {
+  [[nodiscard]] constexpr T* data() {
     return data_.data();
   }
 
-  [[nodiscard]] const Array& as_array() const {
+  [[nodiscard]] constexpr const Array& as_array() const {
     return data_;
   }
 
