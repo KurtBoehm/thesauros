@@ -6,6 +6,7 @@
 #include "algorithms/ranges/for-each-tile.hpp" // IWYU pragma: export
 #include "algorithms/static-ranges/index-to-position.hpp" // IWYU pragma: export
 #include "algorithms/static-ranges/position-to-index.hpp" // IWYU pragma: export
+#include "concepts/type-traits.hpp" // IWYU pragma: export
 #include "containers/array/dynamic.hpp" // IWYU pragma: export
 #include "containers/array/fixed-alloc.hpp" // IWYU pragma: export
 #include "containers/array/fixed.hpp" // IWYU pragma: export
