@@ -5,11 +5,16 @@
 #include <iostream>
 #include <mutex>
 #include <ostream>
+#include <type_traits>
 #include <utility>
 
 namespace thes {
 template<typename TStream>
 struct MutexStream {
+  using Stream = std::decay_t<TStream>;
+  using char_type = Stream::char_type;
+  using traits_type = Stream::traits_type;
+
   MutexStream(TStream&& stream, std::recursive_mutex& mutex)
       : stream_{std::forward<TStream>(stream)}, mutex_{mutex} {
     mutex_.lock();
