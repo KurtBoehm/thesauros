@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <iterator>
 #include <limits>
 #include <numbers>
@@ -16,6 +17,9 @@ struct Test1 {
 };
 
 THES_CREATE_TYPE(SNAKE_CASE(Test2), CONSTEXPR_CONSTRUCTOR, (KEEP(c), std::string), (KEEP(d), Test1))
+
+THES_CREATE_TYPE(SNAKE_CASE(Test3), NORMAL_CONSTRUCTOR, (KEEP(p), std::filesystem::path),
+                 (KEEP(d), Test1))
 
 int main() {
   using namespace std::string_view_literals;
@@ -62,6 +66,23 @@ int main() {
                               "3.141592653589793,\n    \"b\": -1\n  }\n}",
                               thes::json_print(t2, {0, 2})));
 
+  Test3 t3{"Zażółć gęślą jaźń", t1};
+  THES_ASSERT(test::string_eq("{\n  \"p\": \"Zażółć gęślą jaźń\",\n  \"d\": {\n    \"a\": "
+                              "3.141592653589793,\n    \"b\": -1\n  }\n}",
+                              thes::json_print(t3, {0, 2})));
+
+  {
+    std::string s = "Władca Pierścieni — Drużyna Pierścienia, Dwie Wieże, Powrót Króla";
+    THES_ASSERT(
+      test::string_eq("\"Władca Pierścieni — Drużyna Pierścienia, Dwie Wieże, Powrót Króla\"",
+                      thes::json_print(s)));
+  }
+  THES_ASSERT(test::string_eq("\"θησαυρός\"", thes::json_print("θησαυρός"sv)));
+
+  THES_ASSERT(test::string_eq("true", thes::json_print(true)));
+
+  // thes::write_json
+
   {
     std::string s{};
     thes::write_json(std::back_inserter(s), t2);
@@ -73,20 +94,16 @@ int main() {
       s));
   }
   {
-    std::string s(100, '*');
+    std::string s(80, '*');
     thes::write_json(s.begin(), t2);
-    THES_ASSERT(test::string_eq("{ \"c\": \"Świętość\\u0007\", \"d\": { \"a\": 3.141592653589793, "
-                                "\"b\": -1 } }*****************************",
-                                s));
+    THES_ASSERT(test::string_eq(
+      "{ \"c\": \"Świętość\\u0007\", \"d\": { \"a\": 3.141592653589793, \"b\": -1 } }*********",
+      s));
   }
-
   {
-    std::string s = "Władca Pierścieni — Drużyna Pierścienia, Dwie Wieże, Powrót Króla";
-    THES_ASSERT(
-      test::string_eq("\"Władca Pierścieni — Drużyna Pierścienia, Dwie Wieże, Powrót Króla\"",
-                      thes::json_print(s)));
+    std::string s(80, '*');
+    thes::write_json(s.begin(), t3);
+    THES_ASSERT(test::string_eq(
+      "{ \"p\": \"Zażółć gęślą jaźń\", \"d\": { \"a\": 3.141592653589793, \"b\": -1 } }*", s));
   }
-  THES_ASSERT(test::string_eq("\"θησαυρός\"", thes::json_print("θησαυρός"sv)));
-
-  THES_ASSERT(test::string_eq("true", thes::json_print(true)));
 }

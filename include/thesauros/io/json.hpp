@@ -3,6 +3,7 @@
 
 #include <concepts>
 #include <cstddef>
+#include <filesystem>
 #include <iterator>
 #include <optional>
 #include <ostream>
@@ -111,8 +112,8 @@ struct JsonWriter<T> {
   }
 };
 
-template<>
-struct JsonWriter<std::string_view> {
+template<typename T>
+struct JsonWriter<std::basic_string_view<T>> {
   static auto write(auto out_it, std::string_view value, Indentation /*indent*/ = {}) {
     *out_it++ = '"';
     out_it = escape_string(value, out_it);
@@ -120,10 +121,18 @@ struct JsonWriter<std::string_view> {
     return out_it;
   }
 };
-template<std::size_t tSize>
-struct JsonWriter<char[tSize]> : public JsonWriter<std::string_view> {};
+template<typename TChar, std::size_t tSize>
+struct JsonWriter<TChar[tSize]> : public JsonWriter<std::basic_string_view<TChar>> {};
+template<typename TChar>
+struct JsonWriter<std::basic_string<TChar>> : public JsonWriter<std::basic_string_view<TChar>> {};
+
 template<>
-struct JsonWriter<std::string> : public JsonWriter<std::string_view> {};
+struct JsonWriter<std::filesystem::path> {
+  using Path = std::filesystem::path;
+  static auto write(auto out_it, const std::filesystem::path& p, Indentation indent = {}) {
+    return JsonWriter<Path::string_type>::write(out_it, p.native(), indent);
+  }
+};
 
 template<typename T>
 requires(requires { sizeof(TypeInfo<T>); })
