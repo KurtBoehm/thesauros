@@ -13,6 +13,7 @@ struct LimitedArray {
   static constexpr std::size_t capacity = tCapacity;
 
   using Array = std::array<Value, capacity>;
+  using const_iterator = const T*;
 
   explicit constexpr LimitedArray(std::size_t size) : size_(size) {
     assert(size_ <= capacity);
