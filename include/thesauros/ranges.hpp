@@ -3,6 +3,7 @@
 
 #include "ranges/enumerate.hpp" // IWYU pragma: export
 #include "ranges/iota.hpp" // IWYU pragma: export
+#include "ranges/reduce.hpp" // IWYU pragma: export
 #include "ranges/reversed.hpp" // IWYU pragma: export
 #include "ranges/transform.hpp" // IWYU pragma: export
 #include "ranges/value.hpp" // IWYU pragma: export

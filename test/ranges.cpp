@@ -1,5 +1,6 @@
 #include <array>
 #include <cstddef>
+#include <functional>
 #include <iostream>
 #include <numeric>
 
@@ -81,5 +82,11 @@ int main() {
     static_assert(zip.size() == 2);
     static_assert(
       thes::test::range_eq(zip, std::array{thes::Tuple{v1[0], v2[0]}, thes::Tuple{v1[1], v2[1]}}));
+  }
+
+  {
+    static constexpr auto r_base = thes::range(10);
+    static constexpr auto r = thes::transform_range([](auto v) { return 2 * v; }, r_base);
+    static_assert(thes::reduce(r, 0, std::plus{}) == 90);
   }
 }
