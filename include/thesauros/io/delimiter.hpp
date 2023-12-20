@@ -2,12 +2,19 @@
 #define INCLUDE_THESAUROS_IO_DELIMITER_HPP
 
 #include <ostream>
+#include <string_view>
 #include <utility>
 
 namespace thes {
-template<typename TStr>
 struct Delimiter {
-  explicit constexpr Delimiter(TStr str) : str_(std::forward<TStr>(str)) {}
+  using Raw = std::string_view;
+
+  explicit constexpr Delimiter(Raw str) : str_(std::forward<Raw>(str)) {}
+
+  template<typename TIt>
+  TIt write_to(TIt it, char sep) const {
+    return write_to_impl(it, [&] { *it++ = sep; });
+  }
 
   friend std::ostream& operator<<(std::ostream& s, const Delimiter& delim) {
     if (delim.first_) {
@@ -19,7 +26,20 @@ struct Delimiter {
   }
 
 private:
-  TStr str_;
+  template<typename TIt>
+  TIt write_to_impl(TIt it, auto op) const {
+    if (first_) {
+      first_ = false;
+    } else {
+      for (char i : str_) {
+        *it++ = i;
+      }
+      op();
+    }
+    return it;
+  }
+
+  Raw str_;
   mutable bool first_ = true;
 };
 } // namespace thes

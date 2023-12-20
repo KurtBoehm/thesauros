@@ -11,7 +11,9 @@
 #include <string_view>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
+#include "thesauros/io/delimiter.hpp"
 #include "thesauros/macropolis/members.hpp"
 #include "thesauros/macropolis/serial-value.hpp"
 #include "thesauros/utility/numeric-string.hpp"
@@ -54,6 +56,12 @@ struct Indentation {
 
   [[nodiscard]] char separator() const {
     return state_.has_value() ? '\n' : ' ';
+  }
+
+  void reduced_separator(auto op) const {
+    if (state_.has_value()) {
+      op('\n');
+    }
   }
 
 private:
@@ -131,6 +139,28 @@ struct JsonWriter<std::filesystem::path> {
   using Path = std::filesystem::path;
   static auto write(auto out_it, const std::filesystem::path& p, Indentation indent = {}) {
     return JsonWriter<Path::string_type>::write(out_it, p.native(), indent);
+  }
+};
+
+template<typename T, typename TAlloc>
+struct JsonWriter<std::vector<T, TAlloc>> {
+  static auto write(auto out_it, const std::vector<T, TAlloc>& vec, Indentation indent = {}) {
+    const auto indent1 = indent + 1;
+
+    *out_it++ = '[';
+    indent.reduced_separator([&](auto c) { *out_it++ = c; });
+
+    for (Delimiter delim{","}; const T& v : vec) {
+      delim.write_to(out_it, indent1.separator());
+      out_it = indent1.write_to(out_it);
+      out_it = write_json(out_it, serial_value(v), indent1);
+    }
+
+    indent.reduced_separator([&](auto c) { *out_it++ = c; });
+    out_it = indent.write_to(out_it);
+    *out_it++ = ']';
+
+    return out_it;
   }
 };
 
