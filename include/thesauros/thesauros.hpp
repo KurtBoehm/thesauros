@@ -64,6 +64,7 @@
 #include "quantity/quantity.hpp" // IWYU pragma: export
 #include "random/lcg.hpp" // IWYU pragma: export
 #include "random/randomize-range.hpp" // IWYU pragma: export
+#include "ranges/concepts.hpp" // IWYU pragma: export
 #include "ranges/enumerate.hpp" // IWYU pragma: export
 #include "ranges/iota.hpp" // IWYU pragma: export
 #include "ranges/reduce.hpp" // IWYU pragma: export

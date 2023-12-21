@@ -4,6 +4,7 @@
 #include <numbers>
 #include <string>
 #include <string_view>
+#include <unordered_map>
 #include <vector>
 
 #include "thesauros/io.hpp"
@@ -22,8 +23,10 @@ THES_CREATE_TYPE(SNAKE_CASE(Test2), CONSTEXPR_CONSTRUCTOR, (KEEP(c), std::string
 THES_CREATE_TYPE(SNAKE_CASE(Test3), NORMAL_CONSTRUCTOR, (KEEP(p), std::filesystem::path),
                  (KEEP(d), Test1))
 
-THES_CREATE_TYPE(SNAKE_CASE(Test4), CONSTEXPR_CONSTRUCTOR, (KEEP(a), int),
+THES_CREATE_TYPE(SNAKE_CASE(Test4), NORMAL_CONSTRUCTOR, (KEEP(a), int),
                  (KEEP(b), std::vector<double>))
+THES_CREATE_TYPE(SNAKE_CASE(Test4b), NORMAL_CONSTRUCTOR, (KEEP(a), int),
+                 (KEEP(b), (std::unordered_map<std::string, double>)))
 
 int main() {
   using namespace std::string_view_literals;
@@ -85,10 +88,15 @@ int main() {
 
   THES_ASSERT(test::string_eq("true", thes::json_print(true)));
 
+  THES_ASSERT(test::string_eq(R"({ "a": 0, "b": [1, 2] })", thes::json_print(Test4{0, {1, 2}})));
+  THES_ASSERT(test::string_eq("{\n  \"a\": 0,\n  \"b\": [\n    1,\n    2\n  ]\n}",
+                              thes::json_print(Test4{0, {1, 2}}, thes::Indentation{2})));
+
+  THES_ASSERT(test::string_eq(R"({ "a": 0, "b": { "b": 3, "a": 2 } })",
+                              thes::json_print(Test4b{0, {{"a", 2}, {"b", 3}}})));
   THES_ASSERT(
-    test::string_eq(R"({ "a": 0, "b": [1, 2, 3] })", thes::json_print(Test4{0, {1, 2, 3}})));
-  THES_ASSERT(test::string_eq("{\n  \"a\": 0,\n  \"b\": [\n    1,\n    2,\n    3\n  ]\n}",
-                              thes::json_print(Test4{0, {1, 2, 3}}, thes::Indentation{2})));
+    test::string_eq("{\n  \"a\": 0,\n  \"b\": {\n    \"b\": 3,\n    \"a\": 2\n  }\n}",
+                    thes::json_print(Test4b{0, {{"a", 2}, {"b", 3}}}, thes::Indentation{2})));
 
   // thes::write_json
 

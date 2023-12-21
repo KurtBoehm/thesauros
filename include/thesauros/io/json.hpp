@@ -11,11 +11,11 @@
 #include <string_view>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "thesauros/io/delimiter.hpp"
 #include "thesauros/macropolis/members.hpp"
 #include "thesauros/macropolis/serial-value.hpp"
+#include "thesauros/ranges/concepts.hpp"
 #include "thesauros/utility/numeric-string.hpp"
 #include "thesauros/utility/static-ranges.hpp"
 #include "thesauros/utility/string-escape.hpp"
@@ -142,15 +142,45 @@ struct JsonWriter<std::filesystem::path> {
   }
 };
 
-template<typename T, typename TAlloc>
-struct JsonWriter<std::vector<T, TAlloc>> {
-  static auto write(auto out_it, const std::vector<T, TAlloc>& vec, Indentation indent = {}) {
+template<MapRange TMap>
+struct JsonWriter<TMap> {
+  static auto write(auto out_it, const TMap& map, Indentation indent = {}) {
+    const auto indent1 = indent + 1;
+
+    *out_it++ = '{';
+    *out_it++ = indent.separator();
+
+    for (Delimiter delim{","}; const auto& [k, v] : map) {
+      delim.write_to(out_it, indent1.separator());
+      out_it = indent1.write_to(out_it);
+
+      *out_it++ = '"';
+      out_it = escape_string(k, out_it);
+      *out_it++ = '"';
+      *out_it++ = ':';
+      *out_it++ = ' ';
+
+      out_it = write_json(out_it, serial_value(v), indent1);
+    }
+
+    *out_it++ = indent1.separator();
+    out_it = indent.write_to(out_it);
+    *out_it++ = '}';
+
+    return out_it;
+  }
+};
+
+template<typename TRange>
+requires(AnyRange<TRange> && !MapRange<TRange>)
+struct JsonWriter<TRange> {
+  static auto write(auto out_it, const TRange& rng, Indentation indent = {}) {
     const auto indent1 = indent + 1;
 
     *out_it++ = '[';
     indent.reduced_separator([&](auto c) { *out_it++ = c; });
 
-    for (Delimiter delim{","}; const T& v : vec) {
+    for (Delimiter delim{","}; const auto& v : rng) {
       delim.write_to(out_it, indent1.separator());
       out_it = indent1.write_to(out_it);
       out_it = write_json(out_it, serial_value(v), indent1);

@@ -1,6 +1,7 @@
 #ifndef INCLUDE_THESAUROS_RANGES_HPP
 #define INCLUDE_THESAUROS_RANGES_HPP
 
+#include "ranges/concepts.hpp" // IWYU pragma: export
 #include "ranges/enumerate.hpp" // IWYU pragma: export
 #include "ranges/iota.hpp" // IWYU pragma: export
 #include "ranges/reduce.hpp" // IWYU pragma: export
