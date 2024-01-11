@@ -7,6 +7,9 @@
 #include <utility>
 #include <variant>
 
+#include "boost/preprocessor.hpp"
+#include "thesauros/utility/fancy-visit.hpp"
+
 namespace thes {
 namespace impl {
 template<typename T1, typename T2>
