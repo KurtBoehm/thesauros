@@ -1,13 +1,15 @@
 #ifndef INCLUDE_THESAUROS_MATH_HPP
 #define INCLUDE_THESAUROS_MATH_HPP
 
-#include "math/arithmetic.hpp" // IWYU pragma: export
-#include "math/bit.hpp" // IWYU pragma: export
-#include "math/divmod.hpp" // IWYU pragma: export
-#include "math/fast.hpp" // IWYU pragma: export
-#include "math/float-fraction.hpp" // IWYU pragma: export
-#include "math/is-close.hpp" // IWYU pragma: export
-#include "math/overflow.hpp" // IWYU pragma: export
-#include "math/safe-integer.hpp" // IWYU pragma: export
+// IWYU pragma: begin_exports
+#include "math/arithmetic.hpp"
+#include "math/bit.hpp"
+#include "math/divmod.hpp"
+#include "math/fast.hpp"
+#include "math/float-fraction.hpp"
+#include "math/is-close.hpp"
+#include "math/overflow.hpp"
+#include "math/safe-integer.hpp"
+// IWYU pragma: end_exports
 
 #endif // INCLUDE_THESAUROS_MATH_HPP

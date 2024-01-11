@@ -1,6 +1,8 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_GENERATORS_HPP
 #define INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_GENERATORS_HPP
 
-#include "generators/combined.hpp" // IWYU pragma: export
+// IWYU pragma: begin_exports
+#include "generators/combined.hpp"
+// IWYU pragma: end_exports
 
 #endif // INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_GENERATORS_HPP

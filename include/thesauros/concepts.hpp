@@ -1,6 +1,8 @@
 #ifndef INCLUDE_THESAUROS_CONCEPTS_HPP
 #define INCLUDE_THESAUROS_CONCEPTS_HPP
 
-#include "concepts/type-traits.hpp" // IWYU pragma: export
+// IWYU pragma: begin_exports
+#include "concepts/type-traits.hpp"
+// IWYU pragma: end_exports
 
 #endif // INCLUDE_THESAUROS_CONCEPTS_HPP

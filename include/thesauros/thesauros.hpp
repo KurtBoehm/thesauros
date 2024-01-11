@@ -1,148 +1,22 @@
 #ifndef INCLUDE_THESAUROS_THESAUROS_HPP
 #define INCLUDE_THESAUROS_THESAUROS_HPP
 
-#include "algorithms/execution/transform-inclusive-scan.hpp" // IWYU pragma: export
-#include "algorithms/ranges/for-each-multidim.hpp" // IWYU pragma: export
-#include "algorithms/ranges/for-each-tile.hpp" // IWYU pragma: export
-#include "algorithms/static-ranges/index-to-position.hpp" // IWYU pragma: export
-#include "algorithms/static-ranges/position-to-index.hpp" // IWYU pragma: export
-#include "concepts/type-traits.hpp" // IWYU pragma: export
-#include "containers/array/dynamic.hpp" // IWYU pragma: export
-#include "containers/array/fixed-alloc.hpp" // IWYU pragma: export
-#include "containers/array/fixed.hpp" // IWYU pragma: export
-#include "containers/array/growth-policy.hpp" // IWYU pragma: export
-#include "containers/array/initialization-policy.hpp" // IWYU pragma: export
-#include "containers/array/limited.hpp" // IWYU pragma: export
-#include "containers/array/typed-chunk.hpp" // IWYU pragma: export
-#include "containers/blocked-dynamic-array.hpp" // IWYU pragma: export
-#include "containers/dynamic-bitset.hpp" // IWYU pragma: export
-#include "containers/dynamic-buffer.hpp" // IWYU pragma: export
-#include "containers/fixed-bitset.hpp" // IWYU pragma: export
-#include "containers/index-marker.hpp" // IWYU pragma: export
-#include "containers/multi-bit-integers.hpp" // IWYU pragma: export
-#include "containers/multi-byte-integers.hpp" // IWYU pragma: export
-#include "containers/nested-dynamic-array.hpp" // IWYU pragma: export
-#include "containers/set-algorithms.hpp" // IWYU pragma: export
-#include "containers/static-bitset.hpp" // IWYU pragma: export
-#include "containers/strongly-ordered-map.hpp" // IWYU pragma: export
-#include "containers/strongly-ordered-set.hpp" // IWYU pragma: export
-#include "execution/concurrency.hpp" // IWYU pragma: export
-#include "execution/execution-policy/linear.hpp" // IWYU pragma: export
-#include "execution/executor/fixed-thread-pool.hpp" // IWYU pragma: export
-#include "execution/executor/sequential.hpp" // IWYU pragma: export
-#include "execution/mutex-io.hpp" // IWYU pragma: export
-#include "execution/system/affinity.hpp" // IWYU pragma: export
-#include "execution/system/scheduler.hpp" // IWYU pragma: export
-#include "format/format.hpp" // IWYU pragma: export
-#include "format/manip.hpp" // IWYU pragma: export
-#include "format/style.hpp" // IWYU pragma: export
-#include "functional/binary.hpp" // IWYU pragma: export
-#include "io/delimiter.hpp" // IWYU pragma: export
-#include "io/file-reader.hpp" // IWYU pragma: export
-#include "io/file-writer.hpp" // IWYU pragma: export
-#include "io/json.hpp" // IWYU pragma: export
-#include "io/printers.hpp" // IWYU pragma: export
-#include "iterator/concepts.hpp" // IWYU pragma: export
-#include "iterator/facades.hpp" // IWYU pragma: export
-#include "iterator/provider-map.hpp" // IWYU pragma: export
-#include "iterator/provider-reverse.hpp" // IWYU pragma: export
-#include "macropolis/enum.hpp" // IWYU pragma: export
-#include "macropolis/flatten-type.hpp" // IWYU pragma: export
-#include "macropolis/helpers.hpp" // IWYU pragma: export
-#include "macropolis/members.hpp" // IWYU pragma: export
-#include "macropolis/serial-value.hpp" // IWYU pragma: export
-#include "math/arithmetic.hpp" // IWYU pragma: export
-#include "math/bit.hpp" // IWYU pragma: export
-#include "math/divmod.hpp" // IWYU pragma: export
-#include "math/fast.hpp" // IWYU pragma: export
-#include "math/float-fraction.hpp" // IWYU pragma: export
-#include "math/is-close.hpp" // IWYU pragma: export
-#include "math/overflow.hpp" // IWYU pragma: export
-#include "math/safe-integer.hpp" // IWYU pragma: export
-#include "quantity/convert.hpp" // IWYU pragma: export
-#include "quantity/io.hpp" // IWYU pragma: export
-#include "quantity/quantity.hpp" // IWYU pragma: export
-#include "random/lcg.hpp" // IWYU pragma: export
-#include "random/randomize-range.hpp" // IWYU pragma: export
-#include "ranges/concepts.hpp" // IWYU pragma: export
-#include "ranges/enumerate.hpp" // IWYU pragma: export
-#include "ranges/iota.hpp" // IWYU pragma: export
-#include "ranges/reduce.hpp" // IWYU pragma: export
-#include "ranges/reversed.hpp" // IWYU pragma: export
-#include "ranges/transform.hpp" // IWYU pragma: export
-#include "ranges/value.hpp" // IWYU pragma: export
-#include "ranges/zip.hpp" // IWYU pragma: export
-#include "test/test.hpp" // IWYU pragma: export
-#include "utility/arrow-proxy.hpp" // IWYU pragma: export
-#include "utility/as-expected.hpp" // IWYU pragma: export
-#include "utility/byte-integer.hpp" // IWYU pragma: export
-#include "utility/byte-read.hpp" // IWYU pragma: export
-#include "utility/check-variant.hpp" // IWYU pragma: export
-#include "utility/empty.hpp" // IWYU pragma: export
-#include "utility/fancy-visit.hpp" // IWYU pragma: export
-#include "utility/fixed-size-integer.hpp" // IWYU pragma: export
-#include "utility/index-position-wrapper.hpp" // IWYU pragma: export
-#include "utility/index-segmentation.hpp" // IWYU pragma: export
-#include "utility/info-result.hpp" // IWYU pragma: export
-#include "utility/inlining.hpp" // IWYU pragma: export
-#include "utility/literals.hpp" // IWYU pragma: export
-#include "utility/move-detector.hpp" // IWYU pragma: export
-#include "utility/multi-bit-reference.hpp" // IWYU pragma: export
-#include "utility/multi-size.hpp" // IWYU pragma: export
-#include "utility/no-op.hpp" // IWYU pragma: export
-#include "utility/numeric-info.hpp" // IWYU pragma: export
-#include "utility/numeric-string.hpp" // IWYU pragma: export
-#include "utility/optional.hpp" // IWYU pragma: export
-#include "utility/parse-integer.hpp" // IWYU pragma: export
-#include "utility/primitives.hpp" // IWYU pragma: export
-#include "utility/resource-usage.hpp" // IWYU pragma: export
-#include "utility/safe-cast.hpp" // IWYU pragma: export
-#include "utility/static-capacity-string.hpp" // IWYU pragma: export
-#include "utility/static-map.hpp" // IWYU pragma: export
-#include "utility/static-ranges/definitions/concepts.hpp" // IWYU pragma: export
-#include "utility/static-ranges/definitions/get-at.hpp" // IWYU pragma: export
-#include "utility/static-ranges/definitions/size.hpp" // IWYU pragma: export
-#include "utility/static-ranges/definitions/type-traits.hpp" // IWYU pragma: export
-#include "utility/static-ranges/generators/combined.hpp" // IWYU pragma: export
-#include "utility/static-ranges/piping.hpp" // IWYU pragma: export
-#include "utility/static-ranges/ranges/constant.hpp" // IWYU pragma: export
-#include "utility/static-ranges/ranges/enumerate.hpp" // IWYU pragma: export
-#include "utility/static-ranges/ranges/filter.hpp" // IWYU pragma: export
-#include "utility/static-ranges/ranges/generate.hpp" // IWYU pragma: export
-#include "utility/static-ranges/ranges/iota.hpp" // IWYU pragma: export
-#include "utility/static-ranges/ranges/join.hpp" // IWYU pragma: export
-#include "utility/static-ranges/ranges/postfix-product-inclusive.hpp" // IWYU pragma: export
-#include "utility/static-ranges/ranges/reversed.hpp" // IWYU pragma: export
-#include "utility/static-ranges/ranges/transform.hpp" // IWYU pragma: export
-#include "utility/static-ranges/ranges/zip.hpp" // IWYU pragma: export
-#include "utility/static-ranges/sinks/all-different.hpp" // IWYU pragma: export
-#include "utility/static-ranges/sinks/apply.hpp" // IWYU pragma: export
-#include "utility/static-ranges/sinks/contains.hpp" // IWYU pragma: export
-#include "utility/static-ranges/sinks/first-value.hpp" // IWYU pragma: export
-#include "utility/static-ranges/sinks/for-each.hpp" // IWYU pragma: export
-#include "utility/static-ranges/sinks/reduce.hpp" // IWYU pragma: export
-#include "utility/static-ranges/sinks/to-array.hpp" // IWYU pragma: export
-#include "utility/static-ranges/sinks/to-container.hpp" // IWYU pragma: export
-#include "utility/static-ranges/sinks/to-static-bitset.hpp" // IWYU pragma: export
-#include "utility/static-ranges/sinks/to-tuple.hpp" // IWYU pragma: export
-#include "utility/static-ranges/sinks/unique-value.hpp" // IWYU pragma: export
-#include "utility/static-string/character-tools.hpp" // IWYU pragma: export
-#include "utility/static-string/static-string.hpp" // IWYU pragma: export
-#include "utility/string-escape.hpp" // IWYU pragma: export
-#include "utility/swap-or-equal.hpp" // IWYU pragma: export
-#include "utility/tuple.hpp" // IWYU pragma: export
-#include "utility/type-name.hpp" // IWYU pragma: export
-#include "utility/type-sequence/operations.hpp" // IWYU pragma: export
-#include "utility/type-sequence/type-sequence.hpp" // IWYU pragma: export
-#include "utility/type-tag.hpp" // IWYU pragma: export
-#include "utility/type-traits.hpp" // IWYU pragma: export
-#include "utility/type-transformations.hpp" // IWYU pragma: export
-#include "utility/typed-integer.hpp" // IWYU pragma: export
-#include "utility/unicode.hpp" // IWYU pragma: export
-#include "utility/unwrap.hpp" // IWYU pragma: export
-#include "utility/value-optional.hpp" // IWYU pragma: export
-#include "utility/value-tag.hpp" // IWYU pragma: export
-#include "utility/void-macros.hpp" // IWYU pragma: export
-#include "utility/void-storage.hpp" // IWYU pragma: export
+// IWYU pragma: begin_exports
+#include "algorithms.hpp"
+#include "concepts.hpp"
+#include "containers.hpp"
+#include "execution.hpp"
+#include "format.hpp"
+#include "functional.hpp"
+#include "io.hpp"
+#include "iterator.hpp"
+#include "macropolis.hpp"
+#include "math.hpp"
+#include "quantity.hpp"
+#include "random.hpp"
+#include "ranges.hpp"
+#include "test.hpp"
+#include "utility.hpp"
+// IWYU pragma: end_exports
 
 #endif // INCLUDE_THESAUROS_THESAUROS_HPP

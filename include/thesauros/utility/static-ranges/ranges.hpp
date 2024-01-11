@@ -1,15 +1,17 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_RANGES_HPP
 #define INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_RANGES_HPP
 
-#include "ranges/constant.hpp" // IWYU pragma: export
-#include "ranges/enumerate.hpp" // IWYU pragma: export
-#include "ranges/filter.hpp" // IWYU pragma: export
-#include "ranges/generate.hpp" // IWYU pragma: export
-#include "ranges/iota.hpp" // IWYU pragma: export
-#include "ranges/join.hpp" // IWYU pragma: export
-#include "ranges/postfix-product-inclusive.hpp" // IWYU pragma: export
-#include "ranges/reversed.hpp" // IWYU pragma: export
-#include "ranges/transform.hpp" // IWYU pragma: export
-#include "ranges/zip.hpp" // IWYU pragma: export
+// IWYU pragma: begin_exports
+#include "ranges/constant.hpp"
+#include "ranges/enumerate.hpp"
+#include "ranges/filter.hpp"
+#include "ranges/generate.hpp"
+#include "ranges/iota.hpp"
+#include "ranges/join.hpp"
+#include "ranges/postfix-product-inclusive.hpp"
+#include "ranges/reversed.hpp"
+#include "ranges/transform.hpp"
+#include "ranges/zip.hpp"
+// IWYU pragma: end_exports
 
 #endif // INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_RANGES_HPP

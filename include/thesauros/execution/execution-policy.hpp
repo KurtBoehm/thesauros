@@ -1,6 +1,8 @@
 #ifndef INCLUDE_THESAUROS_EXECUTION_EXECUTION_POLICY_HPP
 #define INCLUDE_THESAUROS_EXECUTION_EXECUTION_POLICY_HPP
 
-#include "execution-policy/linear.hpp" // IWYU pragma: export
+// IWYU pragma: begin_exports
+#include "execution-policy/linear.hpp"
+// IWYU pragma: end_exports
 
 #endif // INCLUDE_THESAUROS_EXECUTION_EXECUTION_POLICY_HPP

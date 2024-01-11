@@ -1,10 +1,12 @@
 #ifndef INCLUDE_THESAUROS_MACROPOLIS_HPP
 #define INCLUDE_THESAUROS_MACROPOLIS_HPP
 
-#include "macropolis/enum.hpp" // IWYU pragma: export
-#include "macropolis/flatten-type.hpp" // IWYU pragma: export
-#include "macropolis/helpers.hpp" // IWYU pragma: export
-#include "macropolis/members.hpp" // IWYU pragma: export
-#include "macropolis/serial-value.hpp" // IWYU pragma: export
+// IWYU pragma: begin_exports
+#include "macropolis/enum.hpp"
+#include "macropolis/flatten-type.hpp"
+#include "macropolis/helpers.hpp"
+#include "macropolis/members.hpp"
+#include "macropolis/serial-value.hpp"
+// IWYU pragma: end_exports
 
 #endif // INCLUDE_THESAUROS_MACROPOLIS_HPP
