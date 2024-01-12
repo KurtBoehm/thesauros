@@ -50,16 +50,6 @@ inline consteval bool operator==(AnyTypeSeq auto seq1, AnyTypeSeq auto seq2) {
   return std::same_as<decltype(seq1), decltype(seq2)>;
 }
 
-template<typename>
-struct IsUniqueTypeSeqTrait : public std::false_type {};
-template<>
-struct IsUniqueTypeSeqTrait<TypeSeq<>> : public std::false_type {};
-template<typename T, typename... TOthers>
-struct IsUniqueTypeSeqTrait<TypeSeq<T, TOthers...>>
-    : public std::bool_constant<(... && std::same_as<T, TOthers>)> {};
-template<typename T>
-concept IsUniqueTypeSeq = IsUniqueTypeSeqTrait<T>::value;
-
 namespace impl {
 template<typename T>
 struct AsTypeSeq {
