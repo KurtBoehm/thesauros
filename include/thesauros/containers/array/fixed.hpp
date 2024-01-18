@@ -62,8 +62,7 @@ struct FixedArray {
 
   constexpr FixedArray(FixedArray&& other) noexcept : allocation_(std::move(other.allocation_)) {}
   // WARNING Only valid if the data is fully initialized!
-  constexpr FixedArray(const FixedArray& other)
-      : allocation_(other.allocation_.size(), other.allocation_) {
+  constexpr FixedArray(const FixedArray& other) : allocation_(other.allocation_.size()) {
     std::uninitialized_copy(other.allocation_.begin(), other.allocation_.end(),
                             allocation_.begin());
   }
