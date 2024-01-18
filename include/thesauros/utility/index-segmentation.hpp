@@ -5,6 +5,7 @@
 #include <cassert>
 #include <optional>
 
+#include "thesauros/math/arithmetic.hpp"
 #include "thesauros/math/divmod.hpp"
 #include "thesauros/ranges/iota.hpp"
 #include "thesauros/utility/safe-cast.hpp"
@@ -54,6 +55,32 @@ private:
   Size mod_;
   OptDiv div_div_{div_ == 0 ? OptDiv{} : Div{div_}};
   Div div_div1_{*safe_cast<Size>(div_ + 1)};
+};
+
+template<typename TSize, typename TSegment>
+struct BlockedIndexSegmenter {
+  using Size = TSize;
+  using Segment = TSegment;
+  using Shared = Union<Size, Segment>;
+
+  BlockedIndexSegmenter(Size size, Segment segment_num, Size block_size)
+      : size_(size), block_size_(block_size),
+        block_seg_(thes::div_ceil(size, block_size), segment_num) {}
+
+  [[nodiscard]] Size segment_start(const Segment segment) const {
+    return block_size_ * block_seg_.segment_start(segment);
+  }
+  [[nodiscard]] Size segment_end(const Segment segment) const {
+    return std::min(block_size_ * block_seg_.segment_end(segment), size_);
+  }
+  [[nodiscard]] auto segment_range(const Segment segment) const {
+    return range(segment_start(segment), segment_start(segment + 1));
+  }
+
+private:
+  Size size_;
+  Size block_size_;
+  UniformIndexSegmenter<TSize, TSegment> block_seg_;
 };
 } // namespace thes
 
