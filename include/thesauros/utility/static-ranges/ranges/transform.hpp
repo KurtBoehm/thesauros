@@ -61,8 +61,14 @@ struct TransformGenerator : public RangeGeneratorBase {
   explicit constexpr TransformGenerator(TFun&& f) : fun(std::forward<TFun>(f)) {}
 
   template<typename... TArgRanges>
-  constexpr auto operator()(TArgRanges&&... ranges) const {
-    return TransformView<TFun, TRet, TArgRanges...>{TFun{fun}, std::forward<TArgRanges>(ranges)...};
+  constexpr auto operator()(TArgRanges&&... ranges) const& {
+    return TransformView<const TFun&, TRet, TArgRanges...>{fun,
+                                                           std::forward<TArgRanges>(ranges)...};
+  }
+  template<typename... TArgRanges>
+  constexpr auto operator()(TArgRanges&&... ranges) && {
+    return TransformView<TFun, TRet, TArgRanges...>{std::forward<TFun>(fun),
+                                                    std::forward<TArgRanges>(ranges)...};
   }
 };
 

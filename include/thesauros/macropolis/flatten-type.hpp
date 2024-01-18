@@ -8,6 +8,7 @@
 #include <variant>
 
 #include "boost/preprocessor.hpp"
+
 #include "thesauros/utility/fancy-visit.hpp"
 
 namespace thes {

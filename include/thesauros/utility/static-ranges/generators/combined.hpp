@@ -13,8 +13,13 @@ struct CombinedGenerator {
   TRangeGen2 gen2;
 
   template<typename... TRanges>
-  constexpr auto operator()(TRanges&&... ranges) const {
+  constexpr auto operator()(TRanges&&... ranges) const& {
     return gen2(gen1(std::forward<TRanges>(ranges)...));
+  }
+  template<typename... TRanges>
+  constexpr auto operator()(TRanges&&... ranges) && {
+    return std::forward<TRangeGen2>(gen2)(
+      std::forward<TRangeGen1>(gen1)(std::forward<TRanges>(ranges)...));
   }
 };
 
