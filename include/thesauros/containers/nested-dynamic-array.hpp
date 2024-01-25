@@ -96,9 +96,11 @@ public:
   }
 
   std::span<Value> operator[](Size index) {
+    assert(index + 1 < offsets_.size());
     return span_impl<false>(values_.begin(), offsets_.begin() + index);
   }
   std::span<const Value> operator[](Size index) const {
+    assert(index + 1 < offsets_.size());
     return span_impl<true>(values_.begin(), offsets_.begin() + index);
   }
 
@@ -210,6 +212,7 @@ private:
   template<bool tConst>
   static std::span<ConditionalConst<tConst, Value>>
   span_impl(ConditionalConst<tConst, Value>* value_begin, const Size* offset_current) {
+    assert(offset_current[0] <= offset_current[1]);
     return std::span<ConditionalConst<tConst, Value>>(value_begin + offset_current[0],
                                                       value_begin + offset_current[1]);
   }
