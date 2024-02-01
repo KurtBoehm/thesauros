@@ -10,6 +10,7 @@ namespace thes {
 template<typename T, std::size_t tCapacity>
 struct LimitedArray {
   using Value = T;
+  using value_type = Value;
   static constexpr std::size_t capacity = tCapacity;
 
   using Array = std::array<Value, capacity>;
