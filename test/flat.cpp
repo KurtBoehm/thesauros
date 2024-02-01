@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <iostream>
+#include <utility>
 #include <vector>
 
 #include "thesauros/containers.hpp"
@@ -9,8 +10,8 @@
 namespace test = thes::test;
 
 int main() {
-  thes::StronglyOrderedMap<int, int> map{};
-  std::vector<thes::strong_order::Pair<int, int>> ref{};
+  thes::FlatMap<int, int> map{};
+  std::vector<std::pair<int, int>> ref{};
 
   auto assert_eq = [&] {
     std::cout << thes::range_print(map) << '\n';
@@ -20,7 +21,7 @@ int main() {
   auto insert = [&](int key, int value) {
     const auto res1 = map.insert(key, value);
 
-    auto it = std::find_if(ref.begin(), ref.end(), [&](auto e) { return e.key() == key; });
+    auto it = std::find_if(ref.begin(), ref.end(), [&](auto e) { return e.first == key; });
     const auto res2 = it == ref.end();
     if (res2) {
       ref.emplace_back(key, value);
@@ -35,7 +36,7 @@ int main() {
   auto erase = [&](int key) {
     const auto res1 = map.erase(key);
 
-    auto it = std::find_if(ref.begin(), ref.end(), [&](auto e) { return e.key() == key; });
+    auto it = std::find_if(ref.begin(), ref.end(), [&](auto e) { return e.first == key; });
     const auto res2 = it != ref.end();
     if (res2) {
       ref.erase(it);
