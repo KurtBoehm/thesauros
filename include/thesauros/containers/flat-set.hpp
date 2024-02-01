@@ -4,13 +4,13 @@
 #include <algorithm>
 #include <cstddef>
 #include <functional>
-#include <vector>
 
+#include "thesauros/containers/array/dynamic.hpp"
 #include "thesauros/containers/set-algorithms.hpp"
 
 namespace thes {
 template<typename TValue, typename TCompare = std::less<TValue>,
-         typename TEqual = std::equal_to<TValue>, typename TContainer = std::vector<TValue>>
+         typename TEqual = std::equal_to<TValue>, typename TContainer = DynamicArrayDefault<TValue>>
 struct FlatSet {
   using Value = TValue;
   using Container = TContainer;

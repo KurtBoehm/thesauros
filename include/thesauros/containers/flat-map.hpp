@@ -4,14 +4,14 @@
 #include <cstddef>
 #include <functional>
 #include <utility>
-#include <vector>
 
+#include "thesauros/containers/array/dynamic.hpp"
 #include "thesauros/containers/set-algorithms.hpp"
 
 namespace thes {
 template<typename TKey, typename TMapped, typename TKeyCompare = std::less<TKey>,
          typename TKeyEqual = std::equal_to<TKey>,
-         typename TContainer = std::vector<std::pair<TKey, TMapped>>>
+         typename TContainer = DynamicArrayDefault<std::pair<TKey, TMapped>>>
 struct FlatMap {
   using Key = TKey;
   using Mapped = TMapped;
