@@ -1,63 +1,31 @@
-#ifndef INCLUDE_THESAUROS_CONTAINERS_STRONGLY_ORDERED_MAP_HPP
-#define INCLUDE_THESAUROS_CONTAINERS_STRONGLY_ORDERED_MAP_HPP
+#ifndef INCLUDE_THESAUROS_CONTAINERS_FLAT_MAP_HPP
+#define INCLUDE_THESAUROS_CONTAINERS_FLAT_MAP_HPP
 
 #include <cstddef>
 #include <functional>
-#include <memory>
-#include <ostream>
 #include <utility>
+#include <vector>
 
-#include "thesauros/containers/array/dynamic.hpp"
 #include "thesauros/containers/set-algorithms.hpp"
 
 namespace thes {
-namespace strong_order {
-template<typename TKey, typename TValue>
-struct Pair {
-  constexpr Pair(TKey key, TValue value) : key_{std::move(key)}, value_{std::move(value)} {}
-
-  constexpr const TKey& key() const {
-    return key_;
-  }
-
-  constexpr TValue& value() {
-    return value_;
-  }
-  constexpr const TValue& value() const {
-    return value_;
-  }
-
-  friend std::ostream& operator<<(std::ostream& stream, const Pair& value) {
-    return stream << value.key() << "→" << value.value();
-  }
-
-  constexpr bool operator==(const Pair& other) const = default;
-  constexpr auto operator<=>(const Pair& other) const = default;
-
-private:
-  TKey key_;
-  TValue value_;
-};
-} // namespace strong_order
-
 template<typename TKey, typename TMapped, typename TKeyCompare = std::less<TKey>,
          typename TKeyEqual = std::equal_to<TKey>,
-         typename TAllocator = std::allocator<strong_order::Pair<TKey, TMapped>>>
-struct StronglyOrderedMap {
+         typename TContainer = std::vector<std::pair<TKey, TMapped>>>
+struct FlatMap {
   using Key = TKey;
   using Mapped = TMapped;
-  using Allocator = TAllocator;
   using KeyCompare = TKeyCompare;
   using KeyEqual = TKeyEqual;
 
-  using Value = strong_order::Pair<Key, Mapped>;
-  using Data = DynamicArrayDefault<Value, TAllocator>;
+  using Value = std::pair<Key, Mapped>;
+  using Container = TContainer;
 
   using value_type = Value;
-  using iterator = Data::iterator;
-  using const_iterator = Data::const_iterator;
+  using iterator = Container::iterator;
+  using const_iterator = Container::const_iterator;
 
-  StronglyOrderedMap() = default;
+  FlatMap() = default;
 
   iterator begin() {
     return data_.begin();
@@ -97,27 +65,27 @@ struct StronglyOrderedMap {
   }
 
   iterator lower_bound(const auto& key) {
-    return std::lower_bound(data_.begin(), data_.end(), key, PairCompare{});
+    return std::lower_bound(data_.begin(), data_.end(), key, PairCompare{compare_});
   }
   const_iterator lower_bound(const auto& key) const {
-    return std::lower_bound(data_.begin(), data_.end(), key, PairCompare{});
+    return std::lower_bound(data_.begin(), data_.end(), key, PairCompare{compare_});
   }
 
   bool contains(const auto& key) const {
     const auto it{lower_bound(key)};
-    return it != end() && PairEqual{}(*it, key);
+    return it != end() && PairEqual{equal_}(*it, key);
   }
 
   iterator find(const auto& key) {
     const auto it{lower_bound(key)};
-    if (it != end() && PairEqual{}(*it, key)) {
+    if (it != end() && PairEqual{equal_}(*it, key)) {
       return it;
     }
     return end();
   }
   const_iterator find(const auto& key) const {
     const auto it{lower_bound(key)};
-    if (it != end() && PairEqual{}(*it, key)) {
+    if (it != end() && PairEqual{equal_}(*it, key)) {
       return it;
     }
     return end();
@@ -125,7 +93,7 @@ struct StronglyOrderedMap {
 
   bool insert(const Key& key, const Mapped& value) {
     const auto it{lower_bound(key)};
-    if (it != end() && PairEqual{}(*it, key)) {
+    if (it != end() && PairEqual{equal_}(*it, key)) {
       return false;
     }
     data_.insert(it, Value{key, value});
@@ -134,7 +102,7 @@ struct StronglyOrderedMap {
 
   Mapped& get_or_insert(const Key& key, Mapped&& value) {
     const auto iter = lower_bound(key);
-    if (iter != end() && PairEqual{}(*iter, key)) {
+    if (iter != end() && PairEqual{equal_}(*iter, key)) {
       return *iter;
     }
     return *data_.insert(iter, Value{key, value});
@@ -142,7 +110,7 @@ struct StronglyOrderedMap {
   template<typename TTrans, typename TCreate>
   void transform_or_create(const Key& key, TTrans&& transform, TCreate&& create) {
     const auto iter = lower_bound(key);
-    if (iter != end() && PairEqual{}(*iter, key)) {
+    if (iter != end() && PairEqual{equal_}(*iter, key)) {
       std::forward<TTrans>(transform)(iter->value());
       return;
     }
@@ -151,7 +119,7 @@ struct StronglyOrderedMap {
 
   bool erase(const auto& key) {
     const auto it{lower_bound(key)};
-    if (it != end() && PairEqual{}(*it, key)) {
+    if (it != end() && PairEqual{equal_}(*it, key)) {
       data_.erase(it);
       return true;
     }
@@ -177,7 +145,7 @@ struct StronglyOrderedMap {
 
   template<typename TOther>
   void set_union(const TOther& other) {
-    thes::set_union(data_, other, PairCompare{}, PairEqual{});
+    thes::set_union(data_, other, PairCompare{compare_}, PairEqual{equal_});
   }
 
   void clear() {
@@ -187,25 +155,29 @@ struct StronglyOrderedMap {
 private:
   template<typename TOp>
   struct PairOp {
+    [[no_unique_address]] TOp op_{};
+
     bool operator()(const Value& first, const Value& second) const {
-      return TOp{}(first.key(), second.key());
+      return op_(first.first, second.first);
     }
     bool operator()(const Key& first, const Value& second) const {
-      return TOp{}(first, second.key());
+      return op_(first, second.first);
     }
     bool operator()(const Value& first, const Key& second) const {
-      return TOp{}(first.key(), second);
+      return op_(first.first, second);
     }
     bool operator()(const Key& first, const Key& second) const {
-      return TOp{}(first, second);
+      return op_(first, second);
     }
   };
 
   using PairCompare = PairOp<KeyCompare>;
   using PairEqual = PairOp<KeyEqual>;
 
-  Data data_{};
+  Container data_{};
+  [[no_unique_address]] TKeyCompare compare_{};
+  [[no_unique_address]] TKeyEqual equal_{};
 };
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_CONTAINERS_STRONGLY_ORDERED_MAP_HPP
+#endif // INCLUDE_THESAUROS_CONTAINERS_FLAT_MAP_HPP

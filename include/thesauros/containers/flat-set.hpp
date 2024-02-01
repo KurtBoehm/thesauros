@@ -1,26 +1,24 @@
-#ifndef INCLUDE_THESAUROS_CONTAINERS_STRONGLY_ORDERED_SET_HPP
-#define INCLUDE_THESAUROS_CONTAINERS_STRONGLY_ORDERED_SET_HPP
+#ifndef INCLUDE_THESAUROS_CONTAINERS_FLAT_SET_HPP
+#define INCLUDE_THESAUROS_CONTAINERS_FLAT_SET_HPP
 
 #include <algorithm>
 #include <cstddef>
 #include <functional>
-#include <memory>
+#include <vector>
 
-#include "thesauros/containers/array/dynamic.hpp"
 #include "thesauros/containers/set-algorithms.hpp"
 
 namespace thes {
-template<typename TValue, typename TKeyCompare = std::less<TValue>,
-         typename TKeyEqual = std::equal_to<TValue>, typename TAllocator = std::allocator<TValue>>
-struct StronglyOrderedSet {
+template<typename TValue, typename TCompare = std::less<TValue>,
+         typename TEqual = std::equal_to<TValue>, typename TContainer = std::vector<TValue>>
+struct FlatSet {
   using Value = TValue;
-  using Data = DynamicArrayDefault<TValue, TAllocator>;
-  using DataIterator = Data::iterator;
+  using Container = TContainer;
 
   using value_type = Value;
-  using const_iterator = Data::const_iterator;
+  using const_iterator = Container::const_iterator;
 
-  StronglyOrderedSet() = default;
+  FlatSet() = default;
 
   const_iterator begin() const {
     return data_.begin();
@@ -51,25 +49,25 @@ struct StronglyOrderedSet {
   }
 
   const_iterator lower_bound(const auto& value) const {
-    return std::lower_bound(data_.begin(), data_.end(), value, TKeyCompare{});
+    return std::lower_bound(data_.begin(), data_.end(), value, compare_);
   }
 
   bool contains(const auto& value) const {
     const auto it{lower_bound(value)};
-    return it != end() && TKeyEqual{}(*it, value);
+    return it != end() && equal_(*it, value);
   }
 
   const_iterator find(const auto& value) const {
     const auto it{lower_bound(value)};
-    if (it != end() && TKeyEqual{}(*it, value)) {
+    if (it != end() && equal_(*it, value)) {
       return it;
     }
     return end();
   }
 
   void insert(const TValue& value) {
-    DataIterator it = lower_bound(value);
-    if (it != end() && TKeyEqual{}(*it, value)) {
+    auto it = lower_bound(value);
+    if (it != end() && equal_(*it, value)) {
       return;
     }
     data_.insert(it, value);
@@ -77,7 +75,7 @@ struct StronglyOrderedSet {
 
   bool erase(const auto& value) {
     const auto it{lower_bound(value)};
-    if (it != end() && TKeyEqual{}(*it, value)) {
+    if (it != end() && equal_(*it, value)) {
       data_.erase(it);
       return true;
     }
@@ -96,7 +94,7 @@ struct StronglyOrderedSet {
 
   template<typename TOther>
   void set_union(const TOther& other) {
-    thes::set_union(data_, other, TKeyCompare{}, TKeyEqual{});
+    thes::set_union(data_, other, compare_, equal_);
   }
 
   void clear() {
@@ -104,12 +102,14 @@ struct StronglyOrderedSet {
   }
 
 private:
-  DataIterator lower_bound(const auto& value) {
-    return std::lower_bound(data_.begin(), data_.end(), value, TKeyCompare{});
+  auto lower_bound(const auto& value) {
+    return std::lower_bound(data_.begin(), data_.end(), value, compare_);
   }
 
-  Data data_{};
+  Container data_{};
+  [[no_unique_address]] TCompare compare_{};
+  [[no_unique_address]] TEqual equal_{};
 };
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_CONTAINERS_STRONGLY_ORDERED_SET_HPP
+#endif // INCLUDE_THESAUROS_CONTAINERS_FLAT_SET_HPP
