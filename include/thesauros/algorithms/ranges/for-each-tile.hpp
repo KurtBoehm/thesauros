@@ -21,7 +21,7 @@ template<typename TIdx, typename TPos>
 struct IndexPosition {
   using Index = TIdx;
   using Position = TPos;
-  static constexpr std::size_t dimension_num = thes::star::size<Position>;
+  static constexpr std::size_t dimension_num = star::size<Position>;
 
   explicit operator Index() const {
     return index;
@@ -247,8 +247,8 @@ template<IterDirection tDirection, typename TRanges, typename TFixedAxes,
 THES_ALWAYS_INLINE inline constexpr void
 tiled_for_each(const auto& multi_size, const TRanges& ranges, const auto& tile_sizes,
                const TFixedAxes& fixed_axes, auto&& fun, TypeTag<TIdx> tag = {}) {
-  thes::for_each_tile<tDirection>(ranges, tile_sizes, fixed_axes, [&](auto... args) {
-    thes::tile_for_each<tDirection>(multi_size, std::array{args...}, fun, tag);
+  for_each_tile<tDirection>(ranges, tile_sizes, fixed_axes, [&](auto... args) {
+    tile_for_each<tDirection>(multi_size, std::array{args...}, fun, tag);
   });
 }
 template<IterDirection tDirection, typename TRanges, typename TFixedAxes,
@@ -257,17 +257,17 @@ THES_ALWAYS_INLINE inline constexpr void
 tiled_for_each(const auto& multi_size, const TRanges& ranges, const auto& tile_sizes,
                const TFixedAxes& fixed_axes, auto&& full_fun, auto&& part_fun,
                AnyIndexTag auto vec_size, TypeTag<TIdx> tag = {}) {
-  thes::for_each_tile<tDirection>(
+  for_each_tile<tDirection>(
     ranges, tile_sizes, fixed_axes,
     /*full_fun=*/
     [&](auto... args) {
-      thes::tile_for_each<tDirection>(multi_size, std::array{args...}, full_fun, thes::NoOp{},
-                                      vec_size, /*has_part=*/thes::false_tag, tag);
+      tile_for_each<tDirection>(multi_size, std::array{args...}, full_fun, NoOp{}, vec_size,
+                                /*has_part=*/false_tag, tag);
     },
     /*part_fun=*/
     [&](auto... args) {
-      thes::tile_for_each<tDirection>(multi_size, std::array{args...}, full_fun, part_fun, vec_size,
-                                      /*has_part=*/thes::true_tag, tag);
+      tile_for_each<tDirection>(multi_size, std::array{args...}, full_fun, part_fun, vec_size,
+                                /*has_part=*/true_tag, tag);
     },
     vec_size);
 }
