@@ -18,20 +18,20 @@ struct UniformIndexSegmenter {
   using Segment = TSegment;
   using Shared = Union<Size, Segment>;
 
-  UniformIndexSegmenter(Size size, Segment segment_num)
+  constexpr UniformIndexSegmenter(Size size, Segment segment_num)
       : size_(size), segment_num_(segment_num), div_(static_cast<Size>(size / segment_num)),
         mod_(static_cast<Size>(size % segment_num)) {}
 
-  [[nodiscard]] Size segment_start(const Segment segment) const {
+  [[nodiscard]] constexpr Size segment_start(const Segment segment) const {
     assert(segment <= segment_num_);
     return static_cast<Size>(segment * div_ + std::min<Shared>(mod_, segment));
   }
-  [[nodiscard]] Size segment_end(const Segment segment) const {
+  [[nodiscard]] constexpr Size segment_end(const Segment segment) const {
     return segment_start(segment + 1);
   }
 
-  [[nodiscard]] auto segment_range(const Segment segment) const {
-    return range(segment_start(segment), segment_start(segment + 1));
+  [[nodiscard]] constexpr auto segment_range(const Segment segment) const {
+    return range(segment_start(segment), segment_end(segment));
   }
 
   [[nodiscard]] Segment segment_of(Size index) const {
@@ -63,18 +63,18 @@ struct BlockedIndexSegmenter {
   using Segment = TSegment;
   using Shared = Union<Size, Segment>;
 
-  BlockedIndexSegmenter(Size size, Segment segment_num, Size block_size)
+  constexpr BlockedIndexSegmenter(Size size, Segment segment_num, Size block_size)
       : size_(size), block_size_(block_size),
         block_seg_(thes::div_ceil(size, block_size), segment_num) {}
 
-  [[nodiscard]] Size segment_start(const Segment segment) const {
+  [[nodiscard]] constexpr Size segment_start(const Segment segment) const {
     return block_size_ * block_seg_.segment_start(segment);
   }
-  [[nodiscard]] Size segment_end(const Segment segment) const {
+  [[nodiscard]] constexpr Size segment_end(const Segment segment) const {
     return std::min(block_size_ * block_seg_.segment_end(segment), size_);
   }
-  [[nodiscard]] auto segment_range(const Segment segment) const {
-    return range(segment_start(segment), segment_start(segment + 1));
+  [[nodiscard]] constexpr auto segment_range(const Segment segment) const {
+    return range(segment_start(segment), segment_end(segment));
   }
 
 private:

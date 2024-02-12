@@ -3,6 +3,7 @@
 #include <iostream>
 #include <limits>
 
+#include "thesauros/ranges.hpp"
 #include "thesauros/test.hpp"
 #include "thesauros/utility.hpp"
 
@@ -64,5 +65,19 @@ int main() {
     };
     impl(thes::type_tag<std::uint32_t>);
     impl(thes::type_tag<std::uint64_t>);
+  }
+
+  {
+    using I = unsigned long;
+    constexpr thes::BlockedIndexSegmenter<I, I> seg{362, 8, 4};
+
+    static_assert(seg.segment_range(0) == thes::range<I>(0, 48));
+    static_assert(seg.segment_range(1) == thes::range<I>(48, 96));
+    static_assert(seg.segment_range(2) == thes::range<I>(96, 144));
+    static_assert(seg.segment_range(3) == thes::range<I>(144, 188));
+    static_assert(seg.segment_range(4) == thes::range<I>(188, 232));
+    static_assert(seg.segment_range(5) == thes::range<I>(232, 276));
+    static_assert(seg.segment_range(6) == thes::range<I>(276, 320));
+    static_assert(seg.segment_range(7) == thes::range<I>(320, 362));
   }
 }
