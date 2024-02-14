@@ -34,7 +34,7 @@ struct UniformIndexSegmenter {
     return range(segment_start(segment), segment_end(segment));
   }
 
-  [[nodiscard]] Segment segment_of(Size index) const {
+  [[nodiscard]] constexpr Segment segment_of(Size index) const {
     const Size ref = mod_ * (div_ + 1);
     if (index <= ref) {
       // index / (div + 1)
@@ -43,6 +43,13 @@ struct UniformIndexSegmenter {
     // mod + (index - ref) / div
     assert(div_div_.has_value());
     return mod_ + (index - ref) / *div_div_;
+  }
+
+  [[nodiscard]] constexpr Size size() const {
+    return size_;
+  }
+  [[nodiscard]] constexpr Segment segment_num() const {
+    return segment_num_;
   }
 
 private:
@@ -61,7 +68,6 @@ template<typename TSize, typename TSegment>
 struct BlockedIndexSegmenter {
   using Size = TSize;
   using Segment = TSegment;
-  using Shared = Union<Size, Segment>;
 
   constexpr BlockedIndexSegmenter(Size size, Segment segment_num, Size block_size)
       : size_(size), block_size_(block_size),
@@ -75,6 +81,16 @@ struct BlockedIndexSegmenter {
   }
   [[nodiscard]] constexpr auto segment_range(const Segment segment) const {
     return range(segment_start(segment), segment_end(segment));
+  }
+
+  [[nodiscard]] constexpr Size size() const {
+    return size_;
+  }
+  [[nodiscard]] constexpr Size block_size() const {
+    return block_size_;
+  }
+  [[nodiscard]] constexpr Segment segment_num() const {
+    return block_seg_.segment_num();
   }
 
 private:
