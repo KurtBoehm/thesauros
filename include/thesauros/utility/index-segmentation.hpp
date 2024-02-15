@@ -74,10 +74,10 @@ struct BlockedIndexSegmenter {
         block_seg_(thes::div_ceil(size, block_size), segment_num) {}
 
   [[nodiscard]] constexpr Size segment_start(const Segment segment) const {
-    return block_size_ * block_seg_.segment_start(segment);
+    return std::min(block_size_ * block_seg_.segment_start(segment), size_);
   }
   [[nodiscard]] constexpr Size segment_end(const Segment segment) const {
-    return std::min(block_size_ * block_seg_.segment_end(segment), size_);
+    return segment_start(segment + 1);
   }
   [[nodiscard]] constexpr auto segment_range(const Segment segment) const {
     return range(segment_start(segment), segment_end(segment));
@@ -86,11 +86,11 @@ struct BlockedIndexSegmenter {
   [[nodiscard]] constexpr Size size() const {
     return size_;
   }
-  [[nodiscard]] constexpr Size block_size() const {
-    return block_size_;
-  }
   [[nodiscard]] constexpr Segment segment_num() const {
     return block_seg_.segment_num();
+  }
+  [[nodiscard]] constexpr Size block_size() const {
+    return block_size_;
   }
 
 private:
