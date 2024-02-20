@@ -19,54 +19,77 @@
 #include "thesauros/utility/arrow-proxy.hpp"
 #include "thesauros/utility/inlining.hpp"
 #include "thesauros/utility/type-tag.hpp"
+#include "thesauros/utility/type-transformations.hpp"
 #include "thesauros/utility/value-optional.hpp"
 
 namespace thes {
-template<typename TByteInt, std::size_t tPaddingBytes, bool tOptional,
-         template<typename> typename TAllocator = std::allocator>
-struct MultiByteIntegersBase;
-
-template<bool tIsConst, typename TByteInt, std::size_t tPaddingBytes, bool tOptional,
-         template<typename> typename TAllocator = std::allocator>
-struct MultiByteSubRange {
-  using Base = MultiByteIntegersBase<TByteInt, tPaddingBytes, tOptional, TAllocator>;
-  using CBase = std::conditional_t<tIsConst, const Base, Base>;
+namespace impl {
+template<typename TByteInt, std::size_t tPaddingBytes, template<typename> typename TAllocator>
+struct ArrayStorage {
   using Size = std::size_t;
+
+  static constexpr std::size_t padding_bytes = tPaddingBytes;
   static constexpr std::size_t element_bytes = TByteInt::byte_num;
 
-  MultiByteSubRange(CBase& base, Size begin, Size end) : base_(&base), begin_(begin), end_(end) {}
+  using Data = DynamicArrayDefault<std::byte, TAllocator<std::byte>>;
 
-  CBase& base() const {
-    return *base_;
+  ArrayStorage() : data_(padding_bytes){};
+  explicit ArrayStorage(std::size_t size) : data_(effective_allocation(size)), size_(size) {}
+
+  [[nodiscard]] Data& data() {
+    return data_;
+  }
+  [[nodiscard]] const Data& data() const {
+    return data_;
   }
 
-  [[nodiscard]] std::span<const std::byte> byte_span() const
-  requires(tIsConst)
-  {
-    const Size byte_begin = byte_size(begin_);
-    const Size byte_end = byte_size(end_);
-    return base_->byte_span().subspan(byte_begin, byte_end - byte_begin);
+  [[nodiscard]] Size& size() {
+    return size_;
   }
-  [[nodiscard]] std::span<std::byte> byte_span() const
-  requires(!tIsConst)
-  {
-    const Size byte_begin = byte_size(begin_);
-    const Size byte_end = byte_size(end_);
-    return base_->byte_span().subspan(byte_begin, byte_end - byte_begin);
+  [[nodiscard]] Size size() const {
+    return size_;
+  }
+
+  static Size effective_allocation(Size allocation) THES_ALWAYS_INLINE {
+    return allocation * element_bytes + padding_bytes;
   }
 
 private:
-  static Size byte_size(Size size) THES_ALWAYS_INLINE {
-    return size * element_bytes;
-  }
-
-  CBase* base_;
-  Size begin_;
-  Size end_;
+  Data data_{};
+  Size size_{0};
 };
 
-template<typename TByteInt, std::size_t tPaddingBytes, bool tOptional,
-         template<typename> typename TAllocator>
+template<bool tIsConst>
+struct ViewStorage {
+  using CByte = thes::ConditionalConst<tIsConst, std::byte>;
+  using Size = std::size_t;
+
+  ViewStorage(CByte* data, Size size) : data_(data), size_(size) {}
+
+  [[nodiscard]] std::span<std::byte> data()
+  requires(!tIsConst)
+  {
+    return {data_, size_};
+  }
+  [[nodiscard]] std::span<const std::byte> data() const {
+    return {data_, size_};
+  }
+
+  [[nodiscard]] Size size() const {
+    return size_;
+  }
+
+private:
+  CByte* data_{};
+  Size size_{0};
+};
+} // namespace impl
+
+template<bool tIsConst, typename TByteInt, std::size_t tPaddingBytes, bool tOptional>
+struct MultiByteSubRange;
+
+template<typename TDerived, typename TByteInt, std::size_t tPaddingBytes, bool tOptional,
+         typename TStorage>
 struct MultiByteIntegersBase {
   static_assert(std::endian::native == std::endian::little ||
                   std::endian::native == std::endian::big,
@@ -86,8 +109,7 @@ struct MultiByteIntegersBase {
   static constexpr std::size_t element_bytes = TByteInt::byte_num;
   static constexpr std::size_t overhead_bits = TByteInt::overhead_bit_num;
 
-  using Allocator = TAllocator<std::byte>;
-  using Data = DynamicArrayDefault<std::byte, Allocator>;
+  using Storage = std::decay_t<TStorage>;
 
   static_assert(element_bytes <= int_bytes);
   static_assert(padding_bytes >= int_bytes);
@@ -197,7 +219,7 @@ struct MultiByteIntegersBase {
 
   template<bool tConst>
   struct Iterator : public IteratorFacade<Iterator<tConst>, IterProv<tConst>> {
-    using Container = MultiByteIntegersBase;
+    using Container = TDerived;
     using Ptr = std::conditional_t<tConst, const std::byte, std::byte>*;
     friend IterProv<tConst>;
 
@@ -215,146 +237,70 @@ struct MultiByteIntegersBase {
     Ptr ptr_{nullptr};
   };
 
-  using ConstSubRange = MultiByteSubRange<true, TByteInt, tPaddingBytes, tOptional, TAllocator>;
-  using MutableSubRange = MultiByteSubRange<false, TByteInt, tPaddingBytes, tOptional, TAllocator>;
+  using ConstSubRange = MultiByteSubRange<true, TByteInt, tPaddingBytes, tOptional>;
+  using MutableSubRange = MultiByteSubRange<false, TByteInt, tPaddingBytes, tOptional>;
 
   using iterator = Iterator<false>;
   using const_iterator = Iterator<true>;
 
-  static MultiByteIntegersBase from_file(FileReader& reader) {
-    MultiByteIntegersBase out(reader.read(type_tag<Size>));
-    reader.read(out.byte_span());
-    return out;
-  }
-
-  static MultiByteIntegersBase create_all_set(std::size_t size)
-  requires(!tOptional)
-  {
-    MultiByteIntegersBase mbi(size);
-    std::uninitialized_fill_n(mbi.data_.data(), byte_size(mbi.size_),
-                              std::byte{std::numeric_limits<unsigned char>::max()});
-    return mbi;
-  }
-  static MultiByteIntegersBase create_empty(std::size_t size)
-  requires(tOptional)
-  {
-    MultiByteIntegersBase mbi(size);
-    std::uninitialized_fill_n(mbi.data_.data(), byte_size(mbi.size_),
-                              std::byte{std::numeric_limits<unsigned char>::max()});
-    return mbi;
-  }
-
-  MultiByteIntegersBase() : data_(padding_bytes){};
-  explicit MultiByteIntegersBase(std::size_t size)
-      : data_(effective_allocation(size)), size_(size) {}
-  MultiByteIntegersBase(std::initializer_list<Value> init)
-      : data_(effective_allocation(init.size())), size_(init.size()) {
-    std::copy(init.begin(), init.end(), begin());
-  };
+  explicit MultiByteIntegersBase(TStorage&& strg) : strg_(std::forward<TStorage>(strg)){};
 
   iterator begin() {
-    return iterator(data_.data());
+    return iterator(data().data());
   }
   const_iterator begin() const {
-    return const_iterator(data_.data());
+    return const_iterator(data().data());
   }
   iterator end() {
-    return iterator(data_.data() + byte_size(size_));
+    return iterator(data().data() + byte_size(strg_.size()));
   }
   const_iterator end() const {
-    return const_iterator(data_.data() + byte_size(size_));
+    return const_iterator(data().data() + byte_size(strg_.size()));
   }
 
   [[nodiscard]] Size size() const {
-    return size_;
+    return strg_.size();
   }
 
   decltype(auto) operator[](Size i) const {
-    return load(data_.data() + byte_size(i));
+    return load(data().data() + byte_size(i));
   }
-  decltype(auto) operator[](Size i) {
-    return IntRef{data_.data() + byte_size(i)};
+  decltype(auto) operator[](Size i)
+  requires(!std::is_const_v<std::remove_pointer_t<decltype(this->data().data())>>)
+  {
+    return IntRef{data().data() + byte_size(i)};
   }
 
   decltype(auto) front() const {
-    return load(data_.data());
+    return load(data().data());
   }
   decltype(auto) front() {
-    return IntRef{data_.data()};
+    return IntRef{data().data()};
   }
 
   decltype(auto) back() const {
-    assert(size_ > 0);
-    return load(data_.data() + byte_size(size_ - 1));
+    assert(strg_.size() > 0);
+    return load(data().data() + byte_size(strg_.size() - 1));
   }
   decltype(auto) back() {
-    assert(size_ > 0);
-    return IntRef{data_.data() + byte_size(size_ - 1)};
-  }
-
-  void push_back(Value value) {
-    const Size size = byte_size(size_);
-    assert(data_.size() == size + padding_bytes);
-
-    data_.expand(data_.size() + element_bytes);
-    ++size_;
-
-    store_full(data_.begin() + size, value);
-  }
-
-  void pop_back() {
-    assert(data_.size() == effective_allocation(size_));
-    --size_;
-    data_.shrink(data_.size() - element_bytes);
-  }
-
-  void reserve(Size allocation) {
-    data_.reserve(effective_allocation(allocation));
-  }
-
-  iterator insert_uninit(const_iterator pos, Size size) {
-    const Size old_bsize = byte_size(size_);
-    assert(data_.size() == old_bsize + padding_bytes);
-
-    const Size new_bsize = old_bsize + byte_size(size);
-    const std::ptrdiff_t offset = pos.raw() - data_.data();
-
-    data_.expand(new_bsize + padding_bytes);
-    size_ += size;
-
-    std::byte* new_begin = data_.data();
-    std::byte* dst = new_begin + offset;
-    std::move_backward(dst, new_begin + old_bsize, new_begin + new_bsize);
-
-    return iterator{dst};
-  }
-
-  template<typename TIt>
-  void copy_uninit(const_iterator pos, TIt first, TIt last) {
-    const std::ptrdiff_t offset = pos.raw() - data_.data();
-    for (std::byte* dst = data_.data() + offset; first != last; ++first, dst += element_bytes) {
-      store(dst, *first);
-    }
-  }
-
-  template<typename TIt>
-  void insert(const_iterator pos, TIt first, TIt last) {
-    const auto insize = *safe_cast<Size>(std::distance(first, last));
-    copy_uninit(insert_uninit(pos, insize), first, last);
+    assert(strg_.size() > 0);
+    return IntRef{data().data() + byte_size(strg_.size() - 1)};
   }
 
   [[nodiscard]] std::span<const std::byte> byte_span() const {
-    return std::span{data_.begin(), byte_size(size_)};
+    return std::span{data().begin(), byte_size(strg_.size())};
   }
   [[nodiscard]] std::span<std::byte> byte_span() {
-    return std::span{data_.begin(), byte_size(size_)};
+    return std::span{data().begin(), byte_size(strg_.size())};
   }
 
   ConstSubRange sub_range(Size begin, Size end) const {
-    return ConstSubRange(*this, begin, end);
+    assert(end >= begin);
+    return ConstSubRange(data().data() + begin, end - begin);
   }
   MutableSubRange sub_range(Size begin, Size end) {
-    return MutableSubRange(*this, begin, end);
+    assert(end >= begin);
+    return MutableSubRange(data().data() + begin, end - begin);
   }
 
   ConstSubRange full_sub_range() const {
@@ -365,15 +311,12 @@ struct MultiByteIntegersBase {
   }
 
   void to_file(FileWriter& writer) const {
-    const Size stored_size = size_;
+    const Size stored_size = strg_.size();
     writer.write(std::span{&stored_size, 1});
     writer.write(byte_span());
   }
 
-private:
-  static Size effective_allocation(Size allocation) THES_ALWAYS_INLINE {
-    return byte_size(allocation) + padding_bytes;
-  }
+protected:
   static Size byte_size(Size size) THES_ALWAYS_INLINE {
     return size * element_bytes;
   }
@@ -403,16 +346,154 @@ private:
     std::memcpy(ptr, &store_transform(value), int_bytes);
   }
 
-  Data data_{};
-  Size size_{0};
+  Storage& strg() {
+    return strg_;
+  }
+  const Storage& strg() const {
+    return strg_;
+  }
+
+  [[nodiscard]] decltype(auto) data() const {
+    return strg_.data();
+  }
+  [[nodiscard]] decltype(auto) data() {
+    return strg_.data();
+  }
+
+private:
+  TStorage strg_;
+};
+
+template<bool tIsConst, typename TByteInt, std::size_t tPaddingBytes, bool tOptional>
+struct MultiByteSubRange
+    : public MultiByteIntegersBase<MultiByteSubRange<tIsConst, TByteInt, tPaddingBytes, tOptional>,
+                                   TByteInt, tPaddingBytes, tOptional,
+                                   impl::ViewStorage<tIsConst>> {
+  using Storage = impl::ViewStorage<tIsConst>;
+  using Base =
+    MultiByteIntegersBase<MultiByteSubRange, TByteInt, tPaddingBytes, tOptional, Storage>;
+
+  using Size = Base::Size;
+  using CByte = Storage::CByte;
+
+  MultiByteSubRange(CByte* data, Size size) : Base(Storage{data, size}) {}
+};
+
+template<typename TByteInt, std::size_t tPaddingBytes, bool tOptional,
+         template<typename> typename TAllocator>
+struct MultiByteIntegerArray
+    : public MultiByteIntegersBase<
+        MultiByteIntegerArray<TByteInt, tPaddingBytes, tOptional, TAllocator>, TByteInt,
+        tPaddingBytes, tOptional, impl::ArrayStorage<TByteInt, tPaddingBytes, TAllocator>> {
+  using Storage = impl::ArrayStorage<TByteInt, tPaddingBytes, TAllocator>;
+  using Base =
+    MultiByteIntegersBase<MultiByteIntegerArray, TByteInt, tPaddingBytes, tOptional, Storage>;
+
+  using Size = Base::Size;
+  using Value = Base::Value;
+  using iterator = Base::iterator;
+  using const_iterator = Base::const_iterator;
+  using Base::element_bytes;
+  using Base::padding_bytes;
+
+  static MultiByteIntegerArray from_file(FileReader& reader) {
+    MultiByteIntegerArray out(reader.read(type_tag<Size>));
+    reader.read(out.byte_span());
+    return out;
+  }
+
+  static MultiByteIntegerArray create_all_set(std::size_t size)
+  requires(!tOptional)
+  {
+    MultiByteIntegerArray mbi(size);
+    std::uninitialized_fill_n(mbi.data().data(), byte_size(mbi.size()),
+                              std::byte{std::numeric_limits<unsigned char>::max()});
+    return mbi;
+  }
+  static MultiByteIntegerArray create_empty(std::size_t size)
+  requires(tOptional)
+  {
+    MultiByteIntegerArray mbi(size);
+    std::uninitialized_fill_n(mbi.data().data(), byte_size(mbi.size()),
+                              std::byte{std::numeric_limits<unsigned char>::max()});
+    return mbi;
+  }
+
+  MultiByteIntegerArray() : Base(Storage{}){};
+  explicit MultiByteIntegerArray(std::size_t size) : Base(Storage{size}) {}
+  MultiByteIntegerArray(std::initializer_list<Value> init) : Base(Storage{init.size()}) {
+    std::copy(init.begin(), init.end(), this->begin());
+  };
+
+  void push_back(Value value) {
+    const Size size = byte_size(strg().size());
+    assert(data().size() == size + padding_bytes);
+
+    data().expand(data().size() + element_bytes);
+    ++strg().size();
+
+    this->store_full(data().begin() + size, value);
+  }
+
+  void pop_back() {
+    assert(data().size() == Storage::effective_allocation(strg().size()));
+    --strg().size();
+    data().shrink(data().size() - element_bytes);
+  }
+
+  void reserve(Size allocation) {
+    data().reserve(Storage::effective_allocation(allocation));
+  }
+
+  iterator insert_uninit(const_iterator pos, Size size) {
+    const Size old_bsize = byte_size(strg().size());
+    assert(data().size() == old_bsize + padding_bytes);
+
+    const Size new_bsize = old_bsize + byte_size(size);
+    const std::ptrdiff_t offset = pos.raw() - data().data();
+
+    data().expand(new_bsize + padding_bytes);
+    strg().size() += size;
+
+    std::byte* new_begin = data().data();
+    std::byte* dst = new_begin + offset;
+    std::move_backward(dst, new_begin + old_bsize, new_begin + new_bsize);
+
+    return iterator{dst};
+  }
+
+  template<typename TIt>
+  void copy_uninit(const_iterator pos, TIt first, TIt last) {
+    const std::ptrdiff_t offset = pos.raw() - data().data();
+    for (std::byte* dst = data().data() + offset; first != last; ++first, dst += element_bytes) {
+      this->store(dst, *first);
+    }
+  }
+
+  template<typename TIt>
+  void insert(const_iterator pos, TIt first, TIt last) {
+    const auto insize = *safe_cast<Size>(std::distance(first, last));
+    copy_uninit(insert_uninit(pos, insize), first, last);
+  }
+
+private:
+  using Base::byte_size;
+  using Base::strg;
+
+  [[nodiscard]] decltype(auto) data() const {
+    return strg().data();
+  }
+  [[nodiscard]] decltype(auto) data() {
+    return strg().data();
+  }
 };
 
 template<typename TByteInt, std::size_t tPaddingBytes,
          template<typename> typename TAllocator = std::allocator>
-using MultiByteIntegers = MultiByteIntegersBase<TByteInt, tPaddingBytes, false, TAllocator>;
+using MultiByteIntegers = MultiByteIntegerArray<TByteInt, tPaddingBytes, false, TAllocator>;
 template<typename TByteInt, std::size_t tPaddingBytes,
          template<typename> typename TAllocator = std::allocator>
-using OptionalMultiByteIntegers = MultiByteIntegersBase<TByteInt, tPaddingBytes, true, TAllocator>;
+using OptionalMultiByteIntegers = MultiByteIntegerArray<TByteInt, tPaddingBytes, true, TAllocator>;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_CONTAINERS_MULTI_BYTE_INTEGERS_HPP
