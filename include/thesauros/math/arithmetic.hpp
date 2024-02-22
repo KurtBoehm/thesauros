@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <bit>
+#include <cassert>
 #include <concepts>
 #include <cstddef>
 #include <limits>
@@ -54,13 +55,13 @@ inline constexpr T pow(const T& value) {
   }
 }
 
-template<typename T>
-inline constexpr int log2_floor(const T n) {
-  return std::bit_width(n) - 1;
+inline constexpr unsigned log2_floor(const auto n) {
+  assert(n != 0);
+  return static_cast<unsigned>(std::bit_width(n) - 1);
 }
-template<typename T>
-inline constexpr int log2_ceil(const T n) {
-  return std::bit_width(n - 1);
+inline constexpr unsigned log2_ceil(const auto n) {
+  assert(n != 0);
+  return static_cast<unsigned>(std::bit_width(n - 1));
 }
 
 template<typename T>
