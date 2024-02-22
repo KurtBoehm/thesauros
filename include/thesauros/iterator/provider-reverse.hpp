@@ -36,7 +36,7 @@ struct Reverse {
   {
     TForwardProvider::incr(self);
   }
-  static constexpr void iadd(auto& self, Diff diff)
+  static constexpr void iadd(auto& self, auto diff)
   requires iter_provider::InPlaceAdd<TDerived, TForwardProvider>
   {
     if constexpr (iter_provider::InPlaceSub<TDerived, TForwardProvider>) {
@@ -45,7 +45,7 @@ struct Reverse {
       TForwardProvider::iadd(self, -diff);
     }
   }
-  static constexpr void isub(auto& self, Diff diff)
+  static constexpr void isub(auto& self, auto diff)
   requires iter_provider::InPlaceAdd<TDerived, TForwardProvider>
   {
     TForwardProvider::iadd(self, diff);

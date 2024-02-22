@@ -51,13 +51,17 @@ struct IteratorFacade {
   using difference_type = IterTypes::IterDiff;
 
   static constexpr bool has_state = requires { typename TProvider::FacadeState; };
-  using State = decltype([] {
-    if constexpr (has_state) {
-      return type_tag<typename TProvider::FacadeState>;
-    } else {
-      return type_tag<TDerived>;
-    }
-  }())::Type;
+  template<bool tState, typename = void>
+  struct StateTrait;
+  template<typename TDummy>
+  struct StateTrait<true, TDummy> {
+    using Type = TProvider::FacadeState;
+  };
+  template<typename TDummy>
+  struct StateTrait<false, TDummy> {
+    using Type = TDerived;
+  };
+  using State = StateTrait<has_state>::Type;
 
   static_assert(iter_provider::ForwardIterProvider<State, TProvider>,
                 "The implementation assumes at least a forward iterator!");
@@ -123,26 +127,26 @@ struct IteratorFacade {
 
   // random-access iter stuff
 
-  constexpr friend TDerived& operator+=(TDerived& self, difference_type n)
+  constexpr friend TDerived& operator+=(TDerived& self, auto n)
   requires iter_provider::InPlaceAdd<State, TProvider>
   {
     TProvider::iadd(state(self), n);
     return self;
   }
-  constexpr friend TDerived operator+(const TDerived& self, difference_type n)
+  constexpr friend TDerived operator+(const TDerived& self, auto n)
   requires iter_provider::InPlaceAdd<State, TProvider>
   {
     TDerived tmp = self;
     TProvider::iadd(state(tmp), n);
     return tmp;
   }
-  constexpr friend TDerived operator+(difference_type n, const TDerived& self)
+  constexpr friend TDerived operator+(auto n, const TDerived& self)
   requires iter_provider::InPlaceAdd<State, TProvider>
   {
     return self + n;
   }
 
-  constexpr friend TDerived& operator-=(TDerived& self, difference_type n)
+  constexpr friend TDerived& operator-=(TDerived& self, auto n)
   requires iter_provider::InPlaceAdd<TDerived, TProvider>
   {
     if constexpr (iter_provider::InPlaceSub<State, TProvider>) {
@@ -153,7 +157,7 @@ struct IteratorFacade {
     return self;
   }
 
-  constexpr friend TDerived operator-(const TDerived& self, difference_type n)
+  constexpr friend TDerived operator-(const TDerived& self, auto n)
   requires iter_provider::InPlaceAdd<State, TProvider>
   {
     TDerived tmp = self;
@@ -165,7 +169,7 @@ struct IteratorFacade {
     return tmp;
   }
 
-  constexpr reference operator[](difference_type n) const
+  constexpr reference operator[](auto n) const
   requires iter_provider::InPlaceAdd<State, TProvider>
   {
     if constexpr (iter_provider::GetItem<State, TProvider>) {

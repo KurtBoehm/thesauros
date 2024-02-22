@@ -5,7 +5,8 @@
 #include <concepts>
 #include <utility>
 
-#include "concepts.hpp"
+#include "thesauros/iterator/concepts.hpp"
+#include "thesauros/utility/safe-cast.hpp"
 
 namespace thes::iter_provider {
 // `StateProvider` needs to provide three static member functions:
@@ -45,20 +46,20 @@ struct Map {
     --TStateProvider::state(self);
   }
 
-  static constexpr void iadd(auto& self, Diff d)
-  requires iter::InPlaceAdd<State, Diff>
+  static constexpr void iadd(auto& self, auto d)
+  requires iter::InPlaceAdd<State, decltype(d)>
   {
     if constexpr (std::integral<State>) {
-      TStateProvider::state(self) += static_cast<State>(d);
+      TStateProvider::state(self) += *safe_cast<State>(d);
     } else {
       TStateProvider::state(self) += d;
     }
   }
-  static constexpr void isub(auto& self, Diff d)
-  requires iter::InPlaceSub<State, Diff>
+  static constexpr void isub(auto& self, auto d)
+  requires iter::InPlaceSub<State, decltype(d)>
   {
     if constexpr (std::integral<State>) {
-      TStateProvider::state(self) -= static_cast<State>(d);
+      TStateProvider::state(self) -= *safe_cast<State>(d);
     } else {
       TStateProvider::state(self) -= d;
     }
@@ -81,12 +82,7 @@ struct Map {
   requires iter::Sub<State, Diff>
   {
     test_if_cmp(i1, i2);
-    if constexpr (std::integral<State>) {
-      return static_cast<Diff>(TStateProvider::state(i1)) -
-             static_cast<Diff>(TStateProvider::state(i2));
-    } else {
-      return TStateProvider::state(i1) - TStateProvider::state(i2);
-    }
+    return *safe_cast<Diff>(TStateProvider::state(i1) - TStateProvider::state(i2));
   }
 
 private:

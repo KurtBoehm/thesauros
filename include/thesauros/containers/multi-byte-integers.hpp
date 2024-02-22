@@ -18,6 +18,7 @@
 #include "thesauros/iterator/facades.hpp"
 #include "thesauros/utility/arrow-proxy.hpp"
 #include "thesauros/utility/inlining.hpp"
+#include "thesauros/utility/integral-value.hpp"
 #include "thesauros/utility/type-tag.hpp"
 #include "thesauros/utility/type-transformations.hpp"
 #include "thesauros/utility/value-optional.hpp"
@@ -190,10 +191,10 @@ struct MultiByteIntegersBase {
       self.ptr_ -= element_bytes;
     }
 
-    static void iadd(auto& self, Diff d) {
+    static void iadd(auto& self, auto d) {
       self.ptr_ += byte_size(d);
     }
-    static void isub(auto& self, Diff d) {
+    static void isub(auto& self, auto d) {
       self.ptr_ -= byte_size(d);
     }
 
@@ -212,8 +213,9 @@ struct MultiByteIntegersBase {
     }
 
   private:
-    static Diff byte_size(Diff d) {
-      return d * Diff{element_bytes};
+    template<typename T>
+    static IntegralValue<T> byte_size(T d) {
+      return d * IntegralValue<T>{element_bytes};
     }
   };
 
