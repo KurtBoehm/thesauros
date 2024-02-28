@@ -1,10 +1,20 @@
 #ifndef INCLUDE_THESAUROS_CONCEPTS_TYPE_TRAITS_HPP
 #define INCLUDE_THESAUROS_CONCEPTS_TYPE_TRAITS_HPP
 
+#include <concepts>
 #include <cstddef>
 #include <type_traits>
 
 namespace thes {
+template<typename T>
+concept CharacterType =
+  std::same_as<T, signed char> || std::same_as<T, unsigned char> || std::same_as<T, char> ||
+  std::same_as<T, wchar_t> || std::same_as<T, char8_t> || std::same_as<T, char16_t> ||
+  std::same_as<T, char32_t>;
+
+template<typename T>
+concept ConstAccess = std::is_const_v<std::remove_reference_t<T>>;
+
 template<typename T, std::size_t tSize = 1>
 struct IsCompleteTrait : public std::false_type {};
 

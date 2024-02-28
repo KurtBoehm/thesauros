@@ -12,6 +12,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "thesauros/concepts/type-traits.hpp"
 #include "thesauros/io/delimiter.hpp"
 #include "thesauros/macropolis/members.hpp"
 #include "thesauros/macropolis/serial-value.hpp"
@@ -111,17 +112,17 @@ struct JsonWriter<bool> {
     return std::copy(str.begin(), str.end(), out_it);
   }
 };
-template<typename T>
-requires std::integral<T> || std::floating_point<T>
-struct JsonWriter<T> {
-  static auto write(auto out_it, const T value, Indentation /*indent*/ = {}) {
+template<typename TNum>
+requires std::integral<TNum> || std::floating_point<TNum>
+struct JsonWriter<TNum> {
+  static auto write(auto out_it, const TNum value, Indentation /*indent*/ = {}) {
     const auto str = numeric_string(value).value();
     return std::copy(str.begin(), str.end(), out_it);
   }
 };
 
-template<typename T>
-struct JsonWriter<std::basic_string_view<T>> {
+template<CharacterType TChar>
+struct JsonWriter<std::basic_string_view<TChar>> {
   static auto write(auto out_it, std::string_view value, Indentation /*indent*/ = {}) {
     *out_it++ = '"';
     out_it = escape_string(value, out_it);
@@ -129,9 +130,11 @@ struct JsonWriter<std::basic_string_view<T>> {
     return out_it;
   }
 };
-template<typename TChar, std::size_t tSize>
+template<CharacterType TChar, std::size_t tSize>
 struct JsonWriter<TChar[tSize]> : public JsonWriter<std::basic_string_view<TChar>> {};
-template<typename TChar>
+template<CharacterType TChar>
+struct JsonWriter<TChar*> : public JsonWriter<std::basic_string_view<TChar>> {};
+template<CharacterType TChar>
 struct JsonWriter<std::basic_string<TChar>> : public JsonWriter<std::basic_string_view<TChar>> {};
 
 template<>
