@@ -12,7 +12,7 @@ struct SequentialExecutor {
   }
 
   constexpr void execute(auto task) const {
-    task(0);
+    task(std::size_t{0});
   }
 };
 } // namespace thes
