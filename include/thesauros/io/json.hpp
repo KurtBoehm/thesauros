@@ -135,6 +135,8 @@ struct JsonWriter<TChar[tSize]> : public JsonWriter<std::basic_string_view<TChar
 template<CharacterType TChar>
 struct JsonWriter<TChar*> : public JsonWriter<std::basic_string_view<TChar>> {};
 template<CharacterType TChar>
+struct JsonWriter<const TChar*> : public JsonWriter<std::basic_string_view<TChar>> {};
+template<CharacterType TChar>
 struct JsonWriter<std::basic_string<TChar>> : public JsonWriter<std::basic_string_view<TChar>> {};
 
 template<>
