@@ -82,7 +82,12 @@ struct Map {
   requires iter::Sub<State, Diff>
   {
     test_if_cmp(i1, i2);
-    return *safe_cast<Diff>(TStateProvider::state(i1) - TStateProvider::state(i2));
+    if constexpr (std::integral<State>) {
+      return *safe_cast<Diff>(TStateProvider::state(i1)) -
+             *safe_cast<Diff>(TStateProvider::state(i2));
+    } else {
+      return TStateProvider::state(i1) - TStateProvider::state(i2);
+    }
   }
 
 private:
