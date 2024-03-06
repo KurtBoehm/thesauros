@@ -35,8 +35,10 @@ inline constexpr IndexTag<tValue> index_tag{};
 template<bool tValue>
 inline constexpr BoolTag<tValue> bool_tag{};
 
-inline constexpr BoolTag<true> true_tag{};
-inline constexpr BoolTag<false> false_tag{};
+using TrueTag = BoolTag<true>;
+inline constexpr TrueTag true_tag{};
+using FalseTag = BoolTag<false>;
+inline constexpr FalseTag false_tag{};
 
 template<typename TValueTag>
 struct AnyValueTagTrait : public std::false_type {};
