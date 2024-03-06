@@ -1,6 +1,8 @@
 #ifndef INCLUDE_THESAUROS_MACROPOLIS_HELPERS_HPP
 #define INCLUDE_THESAUROS_MACROPOLIS_HELPERS_HPP
 
+#include "boost/preprocessor.hpp"
+
 #include "thesauros/utility/static-string/static-string.hpp"
 
 namespace thes {

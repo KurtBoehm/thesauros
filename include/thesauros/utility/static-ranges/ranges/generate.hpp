@@ -18,26 +18,29 @@ struct ValueBase<TRet, TFun> {
 };
 } // namespace generate_impl
 
-template<std::size_t tSize, typename TRet, std::invocable<> TFun>
-struct Generate : public generate_impl::ValueBase<TRet, TFun> {
-  TFun fun;
+template<std::size_t tSize, typename TRet, std::invocable<> TGen>
+struct Generate : public generate_impl::ValueBase<TRet, TGen> {
+  explicit Generate(TGen&& gen) : gen_{std::forward<TGen>(gen)} {}
 
   static constexpr std::size_t size = tSize;
 
   template<std::size_t tIndex>
   requires(tIndex < tSize)
   constexpr auto get() const {
-    return fun();
+    return gen_();
   }
+
+private:
+  TGen gen_;
 };
 
-template<std::size_t tSize, std::invocable<> TFun>
-inline constexpr auto generate(TFun&& fun) {
-  return Generate<tSize, void, TFun>{.fun = std::forward<TFun>(fun)};
+template<std::size_t tSize, std::invocable<> TGen>
+inline constexpr auto generate(TGen&& gen) {
+  return Generate<tSize, void, TGen>{std::forward<TGen>(gen)};
 }
-template<typename TRet, std::size_t tSize, std::invocable<> TFun>
-inline constexpr auto generate(TFun&& fun) {
-  return Generate<tSize, TRet, TFun>{.fun = std::forward<TFun>(fun)};
+template<typename TRet, std::size_t tSize, std::invocable<> TGen>
+inline constexpr auto generate(TGen&& gen) {
+  return Generate<tSize, TRet, TGen>{std::forward<TGen>(gen)};
 }
 } // namespace thes::star
 
