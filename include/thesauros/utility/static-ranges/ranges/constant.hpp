@@ -4,6 +4,8 @@
 #include <cstddef>
 #include <utility>
 
+#include "thesauros/utility/inlining.hpp"
+
 namespace thes::star {
 template<std::size_t tSize, typename T>
 struct Constant {
@@ -15,13 +17,13 @@ struct Constant {
 
   template<std::size_t tIndex>
   requires(tIndex < tSize)
-  constexpr auto get() const {
+  THES_ALWAYS_INLINE constexpr auto get() const {
     return value;
   }
 };
 
 template<std::size_t tSize, typename T>
-inline constexpr auto constant(T&& value) {
+THES_ALWAYS_INLINE inline constexpr auto constant(T&& value) {
   return Constant<tSize, T>{std::forward<T>(value)};
 }
 } // namespace thes::star

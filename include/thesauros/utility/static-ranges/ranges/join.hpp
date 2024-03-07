@@ -7,6 +7,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "thesauros/utility/inlining.hpp"
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
 #include "thesauros/utility/static-ranges/definitions/type-traits.hpp"
@@ -25,11 +26,11 @@ struct JoinView {
 
   template<std::size_t tIndex>
   requires(tIndex < size)
-  constexpr auto get() const {
-    constexpr auto pair = []() {
+  THES_ALWAYS_INLINE constexpr auto get() const {
+    constexpr auto pair = []() THES_ALWAYS_INLINE {
       std::size_t sum = 0;
       std::optional<std::pair<std::size_t, std::size_t>> out{};
-      star::for_each([&](auto idx) {
+      star::for_each([&](auto idx) THES_ALWAYS_INLINE {
         constexpr std::size_t idx_size = star::size<std::decay_t<Element<idx, TRanges>>>;
         if (sum <= tIndex && tIndex < sum + idx_size) {
           if (out.has_value()) {
@@ -49,18 +50,18 @@ JoinView(TRanges&&...) -> JoinView<TRanges...>;
 
 template<typename... TRanges>
 requires(sizeof...(TRanges) > 0)
-inline constexpr auto joined(TRanges&&... ranges) {
+THES_ALWAYS_INLINE inline constexpr auto joined(TRanges&&... ranges) {
   return JoinView{Tuple{std::forward<TRanges>(ranges)...}};
 }
 
 template<typename TRangeRange>
-inline constexpr auto flattened(TRangeRange&& ranges) {
+THES_ALWAYS_INLINE inline constexpr auto flattened(TRangeRange&& ranges) {
   return JoinView{std::forward<TRangeRange>(ranges)};
 }
 
 struct JoinGenerator : public RangeGeneratorBase {
   template<typename TRanges>
-  constexpr JoinView<TRanges> operator()(TRanges&& range) const {
+  THES_ALWAYS_INLINE constexpr JoinView<TRanges> operator()(TRanges&& range) const {
     return {std::forward<TRanges>(range)};
   }
 };

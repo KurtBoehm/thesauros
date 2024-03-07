@@ -5,6 +5,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "thesauros/utility/inlining.hpp"
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"
 #include "thesauros/utility/static-ranges/definitions/get-at.hpp"
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
@@ -18,14 +19,14 @@ struct ReversedView {
   static constexpr std::size_t size = thes::star::size<Inner>;
 
   template<std::size_t tIndex>
-  constexpr auto get() const {
+  THES_ALWAYS_INLINE constexpr auto get() const {
     return get_at<size - tIndex - 1>(inner);
   }
 };
 
 struct ReversedGenerator : public RangeGeneratorBase {
   template<typename TRange>
-  constexpr ReversedView<TRange> operator()(TRange&& range) const {
+  THES_ALWAYS_INLINE constexpr ReversedView<TRange> operator()(TRange&& range) const {
     return {std::forward<TRange>(range)};
   }
 };

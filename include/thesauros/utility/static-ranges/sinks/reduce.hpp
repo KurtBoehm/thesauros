@@ -21,7 +21,7 @@ struct InitReduceGenerator : public ConsumerGeneratorBase {
       : binary_op(std::forward<TBinOp>(op)), initial(std::forward<TInit>(init)) {}
 
   template<typename TRange>
-  constexpr auto operator()(TRange&& range) const {
+  THES_ALWAYS_INLINE constexpr auto operator()(TRange&& range) const {
     constexpr std::size_t size = thes::star::size<TRange>;
     if constexpr (!tRight) {
       auto impl = [&](auto& self, auto idx, auto value) THES_ALWAYS_INLINE {
@@ -52,7 +52,7 @@ struct ReduceGenerator : public ConsumerGeneratorBase {
   explicit constexpr ReduceGenerator(TBinOp&& op) : binary_op(std::forward<TBinOp>(op)) {}
 
   template<typename TRange>
-  constexpr auto operator()(TRange&& range) const {
+  THES_ALWAYS_INLINE constexpr auto operator()(TRange&& range) const {
     constexpr std::size_t size = thes::star::size<TRange>;
     if constexpr (!tRight) {
       auto impl = [&](auto& self, auto idx, auto value) THES_ALWAYS_INLINE {

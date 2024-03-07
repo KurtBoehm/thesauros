@@ -5,6 +5,7 @@
 #include <cstddef>
 
 #include "thesauros/math/arithmetic.hpp"
+#include "thesauros/utility/inlining.hpp"
 #include "thesauros/utility/value-tag.hpp"
 
 namespace thes::star {
@@ -14,7 +15,7 @@ struct IotaView {
 
   template<std::size_t tIndex>
   requires(tBegin + tIndex * tStep < tEnd)
-  constexpr decltype(auto) get() const {
+  THES_ALWAYS_INLINE constexpr decltype(auto) get() const {
     return value_tag<TSize, tBegin + TSize{tIndex} * tStep>;
   }
 };

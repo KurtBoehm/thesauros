@@ -5,6 +5,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "thesauros/utility/inlining.hpp"
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
 #include "thesauros/utility/value-tag.hpp"
@@ -18,7 +19,8 @@ struct EnumerateView {
   static constexpr std::size_t size = thes::star::size<Inner>;
 
   template<std::size_t tIndex>
-  constexpr std::pair<ValueTag<TSize, tIndex>, decltype(get_at<tIndex>(inner))> get() const {
+  THES_ALWAYS_INLINE constexpr std::pair<ValueTag<TSize, tIndex>, decltype(get_at<tIndex>(inner))>
+  get() const {
     return {value_tag<TSize, tIndex>, get_at<tIndex>(inner)};
   }
 };
@@ -26,7 +28,7 @@ struct EnumerateView {
 template<typename TSize>
 struct EnumerateGenerator : public RangeGeneratorBase {
   template<typename TRange>
-  constexpr EnumerateView<TSize, TRange> operator()(TRange&& range) const {
+  THES_ALWAYS_INLINE constexpr EnumerateView<TSize, TRange> operator()(TRange&& range) const {
     return {std::forward<TRange>(range)};
   }
 };

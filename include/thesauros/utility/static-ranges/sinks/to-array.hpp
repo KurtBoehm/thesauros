@@ -6,6 +6,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "thesauros/utility/inlining.hpp"
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
 #include "thesauros/utility/static-ranges/definitions/type-traits.hpp"
@@ -14,7 +15,7 @@
 namespace thes::star {
 struct ToArrayGenerator : public ConsumerGeneratorBase {
   template<typename TRange>
-  constexpr auto operator()(TRange&& range) const {
+  THES_ALWAYS_INLINE constexpr auto operator()(TRange&& range) const {
     using Range = std::decay_t<TRange>;
     using Value = star::Value<Range>;
     constexpr std::size_t size = thes::star::size<Range>;

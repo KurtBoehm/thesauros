@@ -3,17 +3,18 @@
 
 #include <utility>
 
+#include "thesauros/utility/inlining.hpp"
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"
 #include "thesauros/utility/static-ranges/generators/combined.hpp"
 
 namespace thes::star {
 template<AnyStaticRange TRange, IsPipeSink TRangeGen>
-inline constexpr decltype(auto) operator|(TRange&& range, TRangeGen&& gen) {
+THES_ALWAYS_INLINE inline constexpr decltype(auto) operator|(TRange&& range, TRangeGen&& gen) {
   return std::forward<TRangeGen>(gen)(std::forward<TRange>(range));
 }
 
 template<IsRangeGenerator TRangeGen1, IsPipeSink TRangeGen2>
-inline constexpr decltype(auto) operator|(TRangeGen1&& gen1, TRangeGen2&& gen2) {
+THES_ALWAYS_INLINE inline constexpr decltype(auto) operator|(TRangeGen1&& gen1, TRangeGen2&& gen2) {
   return CombinedGenerator<TRangeGen1, TRangeGen2>{std::forward<TRangeGen1>(gen1),
                                                    std::forward<TRangeGen2>(gen2)};
 }

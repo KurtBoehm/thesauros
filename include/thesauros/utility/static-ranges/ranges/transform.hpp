@@ -6,6 +6,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "thesauros/utility/inlining.hpp"
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"
 #include "thesauros/utility/static-ranges/definitions/get-at.hpp"
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
@@ -47,8 +48,8 @@ struct TransformView : public transform_impl::ValueBase<TFun, TRet, TArgRanges..
     star::unique_value(std::array{star::size<TArgRanges>...}).value();
 
   template<std::size_t tIndex>
-  constexpr decltype(auto) get() const {
-    return apply([this](const auto&... ranges) -> decltype(auto) {
+  THES_ALWAYS_INLINE constexpr decltype(auto) get() const {
+    return apply([this](const auto&... ranges) THES_ALWAYS_INLINE -> decltype(auto) {
       return fun(get_at<tIndex>(ranges)...);
     })(range_tup);
   }
@@ -61,56 +62,56 @@ struct TransformGenerator : public RangeGeneratorBase {
   explicit constexpr TransformGenerator(TFun&& f) : fun(std::forward<TFun>(f)) {}
 
   template<typename... TArgRanges>
-  constexpr auto operator()(TArgRanges&&... ranges) const& {
+  THES_ALWAYS_INLINE constexpr auto operator()(TArgRanges&&... ranges) const& {
     return TransformView<const TFun&, TRet, TArgRanges...>{fun,
                                                            std::forward<TArgRanges>(ranges)...};
   }
   template<typename... TArgRanges>
-  constexpr auto operator()(TArgRanges&&... ranges) && {
+  THES_ALWAYS_INLINE constexpr auto operator()(TArgRanges&&... ranges) && {
     return TransformView<TFun, TRet, TArgRanges...>{std::forward<TFun>(fun),
                                                     std::forward<TArgRanges>(ranges)...};
   }
 };
 
 template<typename TFun>
-inline constexpr auto transform(TFun&& f) {
+THES_ALWAYS_INLINE inline constexpr auto transform(TFun&& f) {
   return TransformGenerator<TFun>{std::forward<TFun>(f)};
 };
 template<typename TRet, typename TFun>
-inline constexpr auto transform(TFun&& f) {
+THES_ALWAYS_INLINE inline constexpr auto transform(TFun&& f) {
   return TransformGenerator<TFun, TRet>{std::forward<TFun>(f)};
 };
 
 template<typename TFun, typename... TArgRanges>
 requires(sizeof...(TArgRanges) > 0)
-inline constexpr auto transform(TFun&& f, TArgRanges&&... ranges) {
+THES_ALWAYS_INLINE inline constexpr auto transform(TFun&& f, TArgRanges&&... ranges) {
   return TransformView<TFun, void, TArgRanges...>{std::forward<TFun>(f),
                                                   std::forward<TArgRanges>(ranges)...};
 }
 template<typename TRet, typename TFun, typename... TArgRanges>
 requires(sizeof...(TArgRanges) > 0)
-inline constexpr auto transform(TFun&& f, TArgRanges&&... ranges) {
+THES_ALWAYS_INLINE inline constexpr auto transform(TFun&& f, TArgRanges&&... ranges) {
   return TransformView<TFun, TRet, TArgRanges...>{std::forward<TFun>(f),
                                                   std::forward<TArgRanges>(ranges)...};
 }
 
 template<std::size_t tSize, typename TFun>
-inline constexpr auto index_transform(TFun&& f) {
+THES_ALWAYS_INLINE inline constexpr auto index_transform(TFun&& f) {
   using View = TransformView<TFun, void, IotaView<std::size_t, 0, tSize, 1>>;
   return View{std::forward<TFun>(f), {}};
 };
 template<std::size_t tBegin, std::size_t tEnd, typename TFun>
-inline constexpr auto index_transform(TFun&& f) {
+THES_ALWAYS_INLINE inline constexpr auto index_transform(TFun&& f) {
   using View = TransformView<TFun, void, IotaView<std::size_t, tBegin, tEnd, 1>>;
   return View{std::forward<TFun>(f), {}};
 };
 template<typename TSize, TSize tSize, typename TFun>
-inline constexpr auto index_transform(TFun&& f) {
+THES_ALWAYS_INLINE inline constexpr auto index_transform(TFun&& f) {
   using View = TransformView<TFun, void, IotaView<TSize, 0, tSize, 1>>;
   return View{std::forward<TFun>(f), {}};
 };
 template<typename TSize, TSize tBegin, TSize tEnd, typename TFun>
-inline constexpr auto index_transform(TFun&& f) {
+THES_ALWAYS_INLINE inline constexpr auto index_transform(TFun&& f) {
   using View = TransformView<TFun, void, IotaView<TSize, tBegin, tEnd, 1>>;
   return View{std::forward<TFun>(f), {}};
 };

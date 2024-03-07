@@ -1,6 +1,7 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_RANGES_GENERATE_HPP
 #define INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_RANGES_GENERATE_HPP
 
+#include "thesauros/utility/inlining.hpp"
 #include <concepts>
 #include <cstddef>
 #include <type_traits>
@@ -26,7 +27,7 @@ struct Generate : public generate_impl::ValueBase<TRet, TGen> {
 
   template<std::size_t tIndex>
   requires(tIndex < tSize)
-  constexpr auto get() const {
+  THES_ALWAYS_INLINE constexpr auto get() const {
     return gen_();
   }
 
@@ -35,11 +36,11 @@ private:
 };
 
 template<std::size_t tSize, std::invocable<> TGen>
-inline constexpr auto generate(TGen&& gen) {
+THES_ALWAYS_INLINE inline constexpr auto generate(TGen&& gen) {
   return Generate<tSize, void, TGen>{std::forward<TGen>(gen)};
 }
 template<typename TRet, std::size_t tSize, std::invocable<> TGen>
-inline constexpr auto generate(TGen&& gen) {
+THES_ALWAYS_INLINE inline constexpr auto generate(TGen&& gen) {
   return Generate<tSize, TRet, TGen>{std::forward<TGen>(gen)};
 }
 } // namespace thes::star

@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <utility>
 
+#include "thesauros/utility/inlining.hpp"
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
 
@@ -11,7 +12,7 @@ namespace thes::star {
 template<typename TContainer>
 struct ToContainerGenerator : public ConsumerGeneratorBase {
   template<typename TRange>
-  constexpr auto operator()(TRange&& range) const {
+  THES_ALWAYS_INLINE constexpr auto operator()(TRange&& range) const {
     return [&]<std::size_t... tIdxs>(std::index_sequence<tIdxs...> /*idxd*/) {
       return TContainer{get_at<tIdxs>(range)...};
     }(std::make_index_sequence<size<TRange>>{});
