@@ -96,11 +96,23 @@ inline constexpr auto transform(TFun&& f, TArgRanges&&... ranges) {
 
 template<std::size_t tSize, typename TFun>
 inline constexpr auto index_transform(TFun&& f) {
-  return TransformView<TFun, void, IotaView<0, tSize, 1>>{std::forward<TFun>(f), {}};
+  using View = TransformView<TFun, void, IotaView<std::size_t, 0, tSize, 1>>;
+  return View{std::forward<TFun>(f), {}};
 };
 template<std::size_t tBegin, std::size_t tEnd, typename TFun>
 inline constexpr auto index_transform(TFun&& f) {
-  return TransformView<TFun, void, IotaView<tBegin, tEnd, 1>>{std::forward<TFun>(f), {}};
+  using View = TransformView<TFun, void, IotaView<std::size_t, tBegin, tEnd, 1>>;
+  return View{std::forward<TFun>(f), {}};
+};
+template<typename TSize, TSize tSize, typename TFun>
+inline constexpr auto index_transform(TFun&& f) {
+  using View = TransformView<TFun, void, IotaView<TSize, 0, tSize, 1>>;
+  return View{std::forward<TFun>(f), {}};
+};
+template<typename TSize, TSize tBegin, TSize tEnd, typename TFun>
+inline constexpr auto index_transform(TFun&& f) {
+  using View = TransformView<TFun, void, IotaView<TSize, tBegin, tEnd, 1>>;
+  return View{std::forward<TFun>(f), {}};
 };
 } // namespace thes::star
 
