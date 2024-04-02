@@ -9,6 +9,7 @@
 #include <utility>
 #include <variant>
 
+#include "thesauros/utility/inlining.hpp"
 #include "thesauros/utility/value-tag.hpp"
 
 namespace thes::star {
@@ -26,7 +27,7 @@ struct GetAtTrait;
 template<std::size_t tIndex, typename TRange>
 requires impl::HasMemberGet<tIndex, TRange>
 struct GetAtTrait<tIndex, TRange> {
-  static constexpr decltype(auto) get_at(TRange&& range) {
+  THES_ALWAYS_INLINE static constexpr decltype(auto) get_at(TRange&& range) {
     return std::forward<TRange>(range).template get<tIndex>();
   }
 };
@@ -34,14 +35,15 @@ struct GetAtTrait<tIndex, TRange> {
 template<std::size_t tIndex, typename TRange>
 requires(!impl::HasMemberGet<tIndex, TRange> && impl::HasFreeGet<tIndex, TRange>)
 struct GetAtTrait<tIndex, TRange> {
-  static constexpr decltype(auto) get_at(TRange&& range) {
+  THES_ALWAYS_INLINE static constexpr decltype(auto) get_at(TRange&& range) {
     return std::get<tIndex>(std::forward<TRange>(range));
   }
 };
 
 template<std::size_t tIndex, typename TRange>
 requires(requires { sizeof(GetAtTrait<tIndex, TRange>); })
-inline constexpr decltype(auto) get_at(TRange&& r, IndexTag<tIndex> /*tag*/ = {}) {
+THES_ALWAYS_INLINE inline constexpr decltype(auto) get_at(TRange&& r,
+                                                          IndexTag<tIndex> /*tag*/ = {}) {
   return GetAtTrait<tIndex, TRange>::get_at(std::forward<TRange>(r));
 }
 } // namespace thes::star

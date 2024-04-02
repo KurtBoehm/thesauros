@@ -13,7 +13,7 @@ template<typename TContainer>
 struct ToContainerGenerator : public ConsumerGeneratorBase {
   template<typename TRange>
   THES_ALWAYS_INLINE constexpr auto operator()(TRange&& range) const {
-    return [&]<std::size_t... tIdxs>(std::index_sequence<tIdxs...> /*idxd*/) {
+    return [&]<std::size_t... tIdxs>(std::index_sequence<tIdxs...> /*idxd*/) THES_ALWAYS_INLINE {
       return TContainer{get_at<tIdxs>(range)...};
     }(std::make_index_sequence<size<TRange>>{});
   }

@@ -3,6 +3,8 @@
 
 #include <cstddef>
 
+#include "thesauros/utility/inlining.hpp"
+
 namespace thes {
 struct SequentialExecutor {
   explicit constexpr SequentialExecutor() = default;
@@ -11,7 +13,7 @@ struct SequentialExecutor {
     return 1;
   }
 
-  constexpr void execute(auto task) const {
+  THES_ALWAYS_INLINE constexpr void execute(auto task) const {
     task(std::size_t{0});
   }
 };

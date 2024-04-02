@@ -45,7 +45,7 @@ template<typename T>
 concept AnyIndexPosition = AnyIndexPositionTrait<T>::value;
 
 // Split the hypercube described by “ranges” into tiles and iterate over them
-template<IterDirection tDirection, typename TRanges, typename TFixedAxes>
+template<IterDirection tDir, typename TRanges, typename TFixedAxes>
 THES_ALWAYS_INLINE inline constexpr void for_each_tile(const TRanges& ranges,
                                                        const auto& tile_sizes,
                                                        const TFixedAxes& fixed_axes, auto&& fun) {
@@ -64,7 +64,7 @@ THES_ALWAYS_INLINE inline constexpr void for_each_tile(const TRanges& ranges,
       } else {
         const auto [begin, end] = star::get_at<dim>(ranges);
         const Size tile_size = star::get_at<dim>(tile_sizes);
-        if constexpr (tDirection == IterDirection::FORWARD) {
+        if constexpr (tDir == IterDirection::FORWARD) {
           for (Size i = begin; i < end; i += tile_size) {
             rec(index_tag<dim + 1>, rec, args..., std::make_pair(i, std::min(i + tile_size, end)));
           }
@@ -82,7 +82,7 @@ THES_ALWAYS_INLINE inline constexpr void for_each_tile(const TRanges& ranges,
     impl(index_tag<0>, impl);
   }
 }
-template<IterDirection tDirection, typename TRanges, typename TFixedAxes>
+template<IterDirection tDir, typename TRanges, typename TFixedAxes>
 THES_ALWAYS_INLINE inline constexpr void
 for_each_tile(const TRanges& ranges, const auto& tile_sizes, const TFixedAxes& fixed_axes,
               auto&& full_fun, auto&& part_fun, [[maybe_unused]] AnyIndexTag auto vec_size) {
@@ -101,7 +101,7 @@ for_each_tile(const TRanges& ranges, const auto& tile_sizes, const TFixedAxes& f
         static_assert(!TFixedAxes::contains(dim));
         assert(tile_size % vec_size == 0);
 
-        if constexpr (tDirection == IterDirection::FORWARD) {
+        if constexpr (tDir == IterDirection::FORWARD) {
           Size i = begin;
           for (; i + tile_size <= end; i += tile_size) {
             full_fun(args..., std::make_pair(i, i + tile_size));
@@ -122,7 +122,7 @@ for_each_tile(const TRanges& ranges, const auto& tile_sizes, const TFixedAxes& f
         const auto idx = fixed_axes.get(dim);
         rec(index_tag<dim + 1>, rec, args..., std::make_pair(idx, idx + 1));
       } else {
-        if constexpr (tDirection == IterDirection::FORWARD) {
+        if constexpr (tDir == IterDirection::FORWARD) {
           for (Size i = begin; i < end; i += tile_size) {
             rec(index_tag<dim + 1>, rec, args..., std::make_pair(i, std::min(i + tile_size, end)));
           }
@@ -140,8 +140,7 @@ for_each_tile(const TRanges& ranges, const auto& tile_sizes, const TFixedAxes& f
 }
 
 // Iterate over the cells in a tile
-template<IterDirection tDirection, typename TRanges,
-         typename TIdx = star::Value<star::Value<TRanges>>>
+template<IterDirection tDir, typename TRanges, typename TIdx = star::Value<star::Value<TRanges>>>
 THES_ALWAYS_INLINE inline constexpr void tile_for_each(const auto& multi_size,
                                                        const TRanges& ranges, auto&& fun,
                                                        TypeTag<TIdx> /*tag*/ = {}) {
@@ -153,7 +152,7 @@ THES_ALWAYS_INLINE inline constexpr void tile_for_each(const auto& multi_size,
   auto impl = [&](auto dim, auto rec, auto index, auto... args) THES_ALWAYS_INLINE {
     const auto [begin, end] = star::get_at<dim>(ranges);
 
-    if constexpr (tDirection == IterDirection::FORWARD) {
+    if constexpr (tDir == IterDirection::FORWARD) {
       for (Size i = begin; i < end; ++i) {
         if constexpr (dim + 1 < dim_num) {
           const auto factor = multi_size.after_size(dim);
@@ -175,8 +174,7 @@ THES_ALWAYS_INLINE inline constexpr void tile_for_each(const auto& multi_size,
   };
   impl(index_tag<0>, impl, Size{0});
 }
-template<IterDirection tDirection, typename TRanges,
-         typename TIdx = star::Value<star::Value<TRanges>>>
+template<IterDirection tDir, typename TRanges, typename TIdx = star::Value<star::Value<TRanges>>>
 THES_ALWAYS_INLINE inline constexpr void
 tile_for_each(const auto& multi_size, const TRanges& ranges, auto&& full_fun, auto&& part_fun,
               AnyIndexTag auto vec_size, AnyBoolTag auto has_part, TypeTag<TIdx> /*tag*/ = {}) {
@@ -188,7 +186,7 @@ tile_for_each(const auto& multi_size, const TRanges& ranges, auto&& full_fun, au
   auto impl = [&](auto dim, auto rec, auto index, auto... args) THES_ALWAYS_INLINE {
     const auto [begin, end] = star::get_at<dim>(ranges);
 
-    if constexpr (tDirection == IterDirection::FORWARD) {
+    if constexpr (tDir == IterDirection::FORWARD) {
       if constexpr (dim + 1 < dim_num) {
         for (Size i = begin; i < end; ++i) {
           const auto factor = multi_size.after_size(dim);
@@ -242,32 +240,30 @@ tile_for_each(const auto& multi_size, const TRanges& ranges, auto&& full_fun, au
 }
 
 // Iterate over the elements described by “ranges” in a tiled fashion
-template<IterDirection tDirection, typename TRanges, typename TFixedAxes,
-         typename TIdx = star::Value<star::Value<TRanges>>>
+template<IterDirection tDir, typename TRanges, typename TIdx = star::Value<star::Value<TRanges>>>
 THES_ALWAYS_INLINE inline constexpr void
 tiled_for_each(const auto& multi_size, const TRanges& ranges, const auto& tile_sizes,
-               const TFixedAxes& fixed_axes, auto&& fun, TypeTag<TIdx> tag = {}) {
-  for_each_tile<tDirection>(ranges, tile_sizes, fixed_axes, [&](auto... args) {
-    tile_for_each<tDirection>(multi_size, std::array{args...}, fun, tag);
+               const auto& fixed_axes, auto&& fun, TypeTag<TIdx> tag = {}) {
+  for_each_tile<tDir>(ranges, tile_sizes, fixed_axes, [&](auto... args) THES_ALWAYS_INLINE {
+    tile_for_each<tDir>(multi_size, std::array{args...}, fun, tag);
   });
 }
-template<IterDirection tDirection, typename TRanges, typename TFixedAxes,
-         typename TIdx = star::Value<star::Value<TRanges>>>
+template<IterDirection tDir, typename TRanges, typename TIdx = star::Value<star::Value<TRanges>>>
 THES_ALWAYS_INLINE inline constexpr void
 tiled_for_each(const auto& multi_size, const TRanges& ranges, const auto& tile_sizes,
-               const TFixedAxes& fixed_axes, auto&& full_fun, auto&& part_fun,
-               AnyIndexTag auto vec_size, TypeTag<TIdx> tag = {}) {
-  for_each_tile<tDirection>(
+               const auto& fixed_axes, auto&& full_fun, auto&& part_fun, AnyIndexTag auto vec_size,
+               TypeTag<TIdx> tag = {}) {
+  for_each_tile<tDir>(
     ranges, tile_sizes, fixed_axes,
     /*full_fun=*/
-    [&](auto... args) {
-      tile_for_each<tDirection>(multi_size, std::array{args...}, full_fun, NoOp{}, vec_size,
-                                /*has_part=*/false_tag, tag);
+    [&](auto... args) THES_ALWAYS_INLINE {
+      tile_for_each<tDir>(multi_size, std::array{args...}, full_fun, NoOp{}, vec_size,
+                          /*has_part=*/false_tag, tag);
     },
     /*part_fun=*/
-    [&](auto... args) {
-      tile_for_each<tDirection>(multi_size, std::array{args...}, full_fun, part_fun, vec_size,
-                                /*has_part=*/true_tag, tag);
+    [&](auto... args) THES_ALWAYS_INLINE {
+      tile_for_each<tDir>(multi_size, std::array{args...}, full_fun, part_fun, vec_size,
+                          /*has_part=*/true_tag, tag);
     },
     vec_size);
 }

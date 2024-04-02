@@ -16,7 +16,7 @@ struct ApplyGenerator : public ConsumerGeneratorBase {
   explicit constexpr ApplyGenerator(TFun&& f) : fun(std::forward<TFun>(f)) {}
 
   template<typename TRange>
-  constexpr decltype(auto) operator()(TRange&& range) const {
+  THES_ALWAYS_INLINE constexpr decltype(auto) operator()(TRange&& range) const {
     constexpr std::size_t size = thes::star::size<TRange>;
     return [&]<std::size_t... tIdxs>(std::index_sequence<tIdxs...> /*idxs*/)
              THES_ALWAYS_INLINE -> decltype(auto) {
@@ -26,7 +26,7 @@ struct ApplyGenerator : public ConsumerGeneratorBase {
 };
 
 template<typename TOp>
-inline constexpr auto apply(TOp&& op) {
+THES_ALWAYS_INLINE inline constexpr auto apply(TOp&& op) {
   return ApplyGenerator<TOp>{std::forward<TOp>(op)};
 }
 } // namespace thes::star
