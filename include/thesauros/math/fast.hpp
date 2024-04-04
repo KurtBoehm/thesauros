@@ -60,7 +60,7 @@ inline __m128d to_sse(double x) {
   asm("" : "=x"(retval) : "0"(x));
   return retval;
 #elif defined(__clang__)
-  double data[4];
+  double data[2];
   data[0] = x;
   return _mm_load_pd(data);
 #else
