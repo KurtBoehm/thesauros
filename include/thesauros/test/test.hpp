@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <functional>
 #include <iostream>
+#include <source_location>
 #include <sstream>
 #include <string_view>
 #include <type_traits>
@@ -17,14 +18,14 @@ namespace thes::test {
 #ifdef NDEBUG
 #define THES_ASSERT(expr)
 #else
-#define THES_ASSERT(expr) \
-  ((expr) ? void(0) : ::thes::test::assert_fail(#expr, __FILE__, __LINE__, __func__, [] {}))
+#define THES_ASSERT(expr) ((expr) ? void(0) : ::thes::test::assert_fail(#expr, [] {}))
 #endif
 
-inline void assert_fail(const char* assertion, const char* file, unsigned int line,
-                        const char* function, auto fun) {
-  std::cerr << "Assertion “" << assertion << "” failed (" << function << " @ " << file << ":"
-            << line << ")" << '\n';
+inline void assert_fail(const char* assertion, auto fun,
+                        const std::source_location location = std::source_location::current()) {
+  std::cerr << "Assertion “" << assertion << "” failed (" << location.function_name() << " @ "
+            << location.file_name() << ":" << location.line() << ":" << location.column() << ")"
+            << '\n';
   fun();
   std::abort();
 }

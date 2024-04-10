@@ -7,43 +7,55 @@
 #include "thesauros/utility/empty.hpp"
 
 namespace thes {
+template<typename T, template<typename> typename... TTrans>
+struct ApplyTypeTransformationsTrait;
 template<typename T>
-struct VoidTypeTrait {
+struct ApplyTypeTransformationsTrait<T> {
   using Type = T;
-  using Cref = const T&;
-  using StorageCref = const T&;
-  using Cptr = const std::decay_t<T>*;
-  using StorageCptr = const std::decay_t<T>*;
 };
-template<>
-struct VoidTypeTrait<void> {
-  using Type = thes::Empty;
-  using Cref = void;
-  using StorageCref = thes::Empty;
-  using Cptr = void;
-  using StorageCptr = thes::Empty;
+template<typename T, template<typename> typename TTrans, template<typename> typename... TOtherTrans>
+struct ApplyTypeTransformationsTrait<T, TTrans, TOtherTrans...> {
+  using Type = ApplyTypeTransformationsTrait<typename TTrans<T>::type, TOtherTrans...>::Type;
+};
+
+template<typename T, template<typename> typename... TTrans>
+struct VoidTypeTrait {
+  using Type = ApplyTypeTransformationsTrait<T, TTrans...>::Type;
+  using Storage = Type;
+};
+template<template<typename> typename... TTrans>
+struct VoidTypeTrait<void, TTrans...> {
+  using Type = void;
+  using Storage = thes::Empty;
 };
 
 template<typename T>
-using VoidStorage = VoidTypeTrait<T>::Type;
+using VoidStorage = VoidTypeTrait<T>::Storage;
+
 template<typename T>
-using VoidCref = VoidTypeTrait<T>::Cref;
+using VoidRvalRef = VoidTypeTrait<T, std::add_rvalue_reference>::Type;
 template<typename T>
-using VoidStorageCref = VoidTypeTrait<T>::StorageCref;
+using VoidStorageRvalRef = VoidTypeTrait<T, std::add_rvalue_reference>::Storage;
+
 template<typename T>
-using VoidCptr = VoidTypeTrait<T>::Cptr;
+using VoidConstLvalRef = VoidTypeTrait<T, std::add_const, std::add_lvalue_reference>::Type;
 template<typename T>
-using VoidStorageCptr = VoidTypeTrait<T>::StorageCptr;
+using VoidStorageConstLvalRef = VoidTypeTrait<T, std::add_const, std::add_lvalue_reference>::Storage;
+
+template<typename T>
+using VoidConstPtr = VoidTypeTrait<T, std::add_const, std::add_pointer>::Type;
+template<typename T>
+using VoidStorageConstPtr = VoidTypeTrait<T, std::add_const, std::add_pointer>::Storage;
 
 template<typename T>
 using UnVoidStorage = std::conditional_t<std::same_as<std::decay_t<T>, thes::Empty>, void, T>;
 
 template<typename T>
-inline constexpr VoidStorageCref<UnVoidStorage<T>> void_storage_cref(const T& value) {
+inline constexpr VoidStorageConstLvalRef<UnVoidStorage<T>> void_storage_cref(const T& value) {
   return value;
 }
 template<typename T>
-inline constexpr VoidStorageCptr<UnVoidStorage<T>> void_storage_cptr(const T& value) {
+inline constexpr VoidStorageConstPtr<UnVoidStorage<T>> void_storage_cptr(const T& value) {
   if constexpr (std::is_void_v<UnVoidStorage<T>>) {
     return value;
   } else {
