@@ -2,15 +2,16 @@
 #include <array>
 #include <cassert>
 #include <cstddef>
-#include <iostream>
 #include <optional>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
+#include <fmt/core.h>
+#include <fmt/ranges.h>
+
 #include "thesauros/algorithms.hpp"
 #include "thesauros/algorithms/ranges/for-each-tile.hpp"
-#include "thesauros/io.hpp"
 #include "thesauros/test.hpp"
 #include "thesauros/utility.hpp"
 
@@ -31,9 +32,7 @@ static constexpr auto tiled_base(auto tag, auto sizes, auto ranges, auto tile_si
   std::vector<std::size_t> idxs{};
   thes::tiled_for_each<tag>(
     thes::MultiSize{sizes}, ranges, tile_sizes, map,
-    [&](auto pos) {
-      idxs.insert(idxs.end(), {pos.index.idx, pos.index.idx + 1});
-    },
+    [&](auto pos) { idxs.insert(idxs.end(), {pos.index.idx, pos.index.idx + 1}); },
     [&](auto pos, auto part) {
       assert(part == 1);
       idxs.push_back(pos.index.idx);
@@ -43,8 +42,7 @@ static constexpr auto tiled_base(auto tag, auto sizes, auto ranges, auto tile_si
   const auto min = *std::ranges::min_element(idxs);
   const auto max = *std::ranges::max_element(idxs);
   if (!std::is_constant_evaluated()) {
-    std::cout << thes::print(idxs) << ": [" << min << ", " << max << "] → " << (max - min) << ", "
-              << idxs.size() << "\n\n";
+    fmt::print("{}: [{}, {}] → {}, {}\n\n", idxs, min, max, max - min, idxs.size());
   }
   THES_ASSERT(max + 1 - min == idxs.size());
 }
@@ -175,8 +173,7 @@ constexpr void test_small() {
   const auto min = *std::ranges::min_element(idxs);
   const auto max = *std::ranges::max_element(idxs);
   if (!std::is_constant_evaluated()) {
-    std::cout << thes::print(idxs) << ": [" << min << ", " << max << "] → " << (max - min) << ", "
-              << idxs.size() << "\n\n";
+    fmt::print("{}: [{}, {}] → {}, {}\n\n", idxs, min, max, max - min, idxs.size());
   }
   THES_ASSERT(max + 1 - min == idxs.size());
 }

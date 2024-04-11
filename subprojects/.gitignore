@@ -3,4 +3,5 @@
 /packagecache/
 
 /expected-*/
+/fmt-*/
 /preprocessor-boost-*/

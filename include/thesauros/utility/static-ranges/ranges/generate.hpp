@@ -1,11 +1,12 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_RANGES_GENERATE_HPP
 #define INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_RANGES_GENERATE_HPP
 
-#include "thesauros/utility/inlining.hpp"
 #include <concepts>
 #include <cstddef>
 #include <type_traits>
 #include <utility>
+
+#include "thesauros/utility/inlining.hpp"
 
 namespace thes::star {
 namespace generate_impl {
@@ -21,7 +22,7 @@ struct ValueBase<TRet, TFun> {
 
 template<std::size_t tSize, typename TRet, std::invocable<> TGen>
 struct Generate : public generate_impl::ValueBase<TRet, TGen> {
-  explicit Generate(TGen&& gen) : gen_{std::forward<TGen>(gen)} {}
+  explicit constexpr Generate(TGen&& gen) : gen_{std::forward<TGen>(gen)} {}
 
   static constexpr std::size_t size = tSize;
 

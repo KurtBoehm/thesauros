@@ -11,9 +11,6 @@
 #include "thesauros/algorithms.hpp"
 #include "thesauros/ranges.hpp"
 #include "thesauros/utility.hpp"
-#include "thesauros/utility/multi-size.hpp"
-#include "thesauros/utility/static-map.hpp"
-#include "thesauros/utility/static-ranges.hpp"
 
 int main() {
   using namespace thes::literals;

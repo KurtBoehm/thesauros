@@ -6,10 +6,11 @@ project(
 
 boost_preprocessor_dep = dependency('boost-preprocessor')
 expected_dep = dependency('expected')
+fmt_dep = dependency('fmt')
 
 thesauros_dep = declare_dependency(
   include_directories: include_directories('include'),
-  dependencies: [boost_preprocessor_dep, expected_dep],
+  dependencies: [boost_preprocessor_dep, expected_dep, fmt_dep],
 )
 
 install_subdir('include', install_dir: 'include')

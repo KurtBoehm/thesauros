@@ -1,8 +1,10 @@
 #include <array>
 #include <cstddef>
 #include <functional>
-#include <iostream>
 #include <numeric>
+
+#include <fmt/core.h>
+#include <fmt/ranges.h>
 
 #include "thesauros/ranges.hpp"
 #include "thesauros/test.hpp"
@@ -13,9 +15,7 @@ int main() {
     static constexpr auto r = thes::range(10);
     static_assert(r.contains(9));
 
-    for (auto it = r.begin(); it != r.end(); ++it) {
-      std::cout << *it << '\n';
-    }
+    fmt::println("{}", r);
 
     static_assert([] {
       auto it = r.begin();
@@ -34,9 +34,7 @@ int main() {
   {
     static constexpr auto r = thes::reversed(thes::range(10));
 
-    for (auto it = r.begin(); it != r.end(); ++it) {
-      std::cout << *it << '\n';
-    }
+    fmt::println("{}", r);
 
     static_assert([] {
       auto it = r.begin();
