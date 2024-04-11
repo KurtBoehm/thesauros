@@ -5,6 +5,7 @@
 #include "format/format.hpp"
 #include "format/manip.hpp"
 #include "format/style.hpp"
+#include "format/value-optional.hpp"
 // IWYU pragma: end_exports
 
 #endif // INCLUDE_THESAUROS_FORMAT_HPP

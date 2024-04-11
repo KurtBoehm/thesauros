@@ -1,12 +1,13 @@
 #include <algorithm>
 #include <climits>
 #include <cstddef>
-#include <iostream>
 #include <vector>
 
+#include <fmt/color.h>
+#include <fmt/core.h>
+#include <fmt/ranges.h>
+
 #include "thesauros/containers.hpp"
-#include "thesauros/format.hpp"
-#include "thesauros/io.hpp"
 #include "thesauros/ranges.hpp"
 #include "thesauros/test.hpp"
 #include "thesauros/utility.hpp"
@@ -24,8 +25,8 @@ void body(auto... values) {
   std::vector<UInt> vec{values...};
 
   auto elem_assert = [&integers, &vec] {
-    std::cout << thes::formatted(thes::fmt::fg_green, thes::range_print(integers)) << ' '
-              << thes::formatted(thes::fmt::fg_blue, thes::range_print(vec)) << '\n';
+    fmt::println("{} {}", fmt::styled(integers, fmt::fg(fmt::terminal_color::green)),
+                 fmt::styled(vec, fmt::fg(fmt::terminal_color::blue)));
     THES_ASSERT(test::range_eq(integers, vec));
   };
   auto push_back = [&integers, &vec](UInt v) {
