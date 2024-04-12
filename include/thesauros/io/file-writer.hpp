@@ -6,26 +6,25 @@
 #include <exception>
 #include <filesystem>
 #include <span>
-#include <sstream>
 #include <string>
 #include <type_traits>
 #include <utility>
 
+#include <fmt/core.h>
+
 namespace thes {
+struct FileWriterException : public std::exception {
+  explicit FileWriterException(std::string msg) : message_(std::move(msg)) {}
+
+  [[nodiscard]] const char* what() const noexcept override {
+    return message_.c_str();
+  }
+
+private:
+  std::string message_;
+};
+
 struct FileWriter {
-  struct Exception : public std::exception {
-    explicit Exception(std::string msg) : message_(std::move(msg)) {}
-    explicit Exception(const auto&... args)
-        : message_((std::stringstream{} << ... << args).str()) {}
-
-    [[nodiscard]] const char* what() const noexcept override {
-      return message_.c_str();
-    }
-
-  private:
-    std::string message_;
-  };
-
   FileWriter(const FileWriter&) = delete;
   FileWriter(FileWriter&&) = delete;
   FileWriter& operator=(const FileWriter&) = delete;
@@ -34,7 +33,7 @@ struct FileWriter {
   explicit FileWriter(std::filesystem::path path)
       : path_(std::move(path)), handle_(std::fopen(path_.c_str(), "wb")) {
     if (handle_ == nullptr) {
-      throw Exception("fopen failed: ", errno);
+      throw FileWriterException(fmt::format("fopen failed: {}", errno));
     }
   }
   ~FileWriter() {
@@ -52,7 +51,7 @@ struct FileWriter {
   void write(std::span<T> span) {
     const auto written = std::fwrite(span.data(), sizeof(T), span.size(), handle_);
     if (written != span.size()) {
-      throw Exception("fwrite failed: ", written, " != ", span.size());
+      throw FileWriterException(fmt::format("fwrite failed: {} != {}", written, span.size()));
     }
   }
 
