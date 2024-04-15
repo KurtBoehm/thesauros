@@ -4,11 +4,11 @@
 int main() {
   int a = 5;
   int b = 6;
-  fmt::println("{}; {}", a, b);
+  fmt::print("{}; {}\n", a, b);
 
   thes::swap_or_equal<int>(a, b);
-  fmt::println("{}; {}", a, b);
+  fmt::print("{}; {}\n", a, b);
 
   thes::swap_or_equal<int&>(a, a);
-  fmt::println("{}; {}", a, b);
+  fmt::print("{}; {}\n", a, b);
 }

@@ -26,7 +26,7 @@ constexpr int run() {
 
   auto assert_eq = [&] {
     if (!std::is_constant_evaluated()) {
-      fmt::println("{}", bitset);
+      fmt::print("{}\n", bitset);
     }
     THES_ASSERT(test::range_eq(bitset, ref));
   };
@@ -46,7 +46,7 @@ constexpr int run() {
     const bool v2 = ref[idx];
     THES_ASSERT(v1 == v2);
     if (!std::is_constant_evaluated()) {
-      fmt::println("@{}: {}", idx, v1);
+      fmt::print("@{}: {}\n", idx, v1);
     }
   };
   auto countr_one = [&] {
@@ -63,7 +63,7 @@ constexpr int run() {
     }();
     THES_ASSERT(v1 == v2);
     if (!std::is_constant_evaluated()) {
-      fmt::println("countr_one: {}", v1);
+      fmt::print("countr_one: {}\n", v1);
     }
   };
   auto countr_zero = [&] {
@@ -80,7 +80,7 @@ constexpr int run() {
     }();
     THES_ASSERT(v1 == v2);
     if (!std::is_constant_evaluated()) {
-      fmt::println("countr_zero: {}", v1);
+      fmt::print("countr_zero: {}\n", v1);
     }
   };
 

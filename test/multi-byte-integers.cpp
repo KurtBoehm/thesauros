@@ -22,8 +22,8 @@ void body(auto... values) {
   std::vector<UInt> vec{values...};
 
   auto elem_assert = [&integers, &vec] {
-    fmt::println("{} {}", fmt::styled(integers, fmt::fg(fmt::terminal_color::green)),
-                 fmt::styled(vec, fmt::fg(fmt::terminal_color::blue)));
+    fmt::print("{} {}\n", fmt::styled(integers, fmt::fg(fmt::terminal_color::green)),
+               fmt::styled(vec, fmt::fg(fmt::terminal_color::blue)));
     THES_ASSERT(test::range_eq(integers, vec));
   };
   auto push_back = [&integers, &vec](UInt v) {

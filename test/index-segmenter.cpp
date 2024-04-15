@@ -22,7 +22,7 @@ int main() {
       const auto j0 = seg.segment_start(i);
       const auto j1 = seg.segment_end(i);
 
-      fmt::println("{}→{}:{}", j0, j1, j1 - j0);
+      fmt::print("{}→{}:{}\n", j0, j1, j1 - j0);
 
       THES_ASSERT(j0 == start);
       start = j1;
@@ -30,11 +30,11 @@ int main() {
     }
     THES_ASSERT(sum == size);
   }
-  fmt::println("");
+  fmt::print("\n");
   {
     auto impl = []<typename T>(thes::TypeTag<T>) {
       for (const auto num : thes::range<T>(512)) {
-        fmt::println("num: {}", num);
+        fmt::print("num: {}\n", num);
         for (const auto blocks : thes::range<T>(1, 256)) {
           // test_to_seg
           {

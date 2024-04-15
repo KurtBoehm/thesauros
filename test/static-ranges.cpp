@@ -435,7 +435,7 @@ int main() {
   // format
   {
     static constexpr std::array arr{0, 4, 3, 1};
-    fmt::println("{}", arr | star::transform([](auto v) { return 2 * v; }) | star::format);
+    fmt::print("{}\n", arr | star::transform([](auto v) { return 2 * v; }) | star::format);
   }
 
   // first_value

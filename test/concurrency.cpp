@@ -5,5 +5,5 @@
 int main() {
   const auto phys = thes::physical_concurrency();
   THES_ASSERT(phys > 0);
-  fmt::println("{}", phys);
+  fmt::print("{}\n", phys);
 }

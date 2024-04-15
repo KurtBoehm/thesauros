@@ -32,15 +32,15 @@ int main() {
     thes::quantity_cast<thes::Quantity<double, thes::unit::gibibyte>>(rawmaxrss);
   const auto decmaxrss =
     thes::quantity_cast<thes::Quantity<double, thes::unit::gigabyte>>(rawmaxrss);
-  fmt::println("maxrss: {}, {}", binmaxrss, decmaxrss);
-  fmt::println("user time: {}", convert_time(usage.user_time()));
-  fmt::println("user time: {}", split_time(usage.user_time()));
-  fmt::println("system time: {}", convert_time(usage.system_time()));
-  fmt::println("overall time: {}", convert_time(usage.user_time() + usage.system_time()));
+  fmt::print("maxrss: {}, {}\n", binmaxrss, decmaxrss);
+  fmt::print("user time: {}\n", convert_time(usage.user_time()));
+  fmt::print("user time: {}\n", split_time(usage.user_time()));
+  fmt::print("system time: {}\n", convert_time(usage.system_time()));
+  fmt::print("overall time: {}\n", convert_time(usage.user_time() + usage.system_time()));
 
   const auto t2 = Clock::now();
   const auto q =
     quantity_cast<thes::Quantity<double, thes::unit::second>>(thes::duration_quantity(t2 - t1));
-  fmt::println("time: {}", q);
-  fmt::println("time: {}", split_time(q));
+  fmt::print("time: {}\n", q);
+  fmt::print("time: {}\n", split_time(q));
 }

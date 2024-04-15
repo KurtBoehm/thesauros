@@ -4,7 +4,6 @@
 
 #include "thesauros/containers.hpp"
 #include "thesauros/format.hpp"
-#include "thesauros/io.hpp"
 #include "thesauros/test.hpp"
 
 namespace test = thes::test;
@@ -14,7 +13,7 @@ int main() {
   std::vector<std::pair<int, int>> ref{};
 
   auto assert_eq = [&] {
-    fmt::println("{}", map);
+    fmt::print("{}\n", map);
     THES_ASSERT(test::range_eq(map, ref));
   };
 
@@ -29,7 +28,7 @@ int main() {
     }
 
     THES_ASSERT(res1 == res2);
-    fmt::println("{} {}", key, res1 ? "inserted" : "not inserted");
+    fmt::print("{} {}\n", key, res1 ? "inserted" : "not inserted");
     assert_eq();
   };
 
@@ -43,7 +42,7 @@ int main() {
     }
 
     THES_ASSERT(res1 == res2);
-    fmt::println("{} {}", key, res1 ? "found" : "not found");
+    fmt::print("{} {}\n", key, res1 ? "found" : "not found");
     assert_eq();
   };
 

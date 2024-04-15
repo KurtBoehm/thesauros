@@ -192,5 +192,5 @@ static_assert((thes::memory_layout_info<Type9> |
 
 int main() {
   thes::memory_layout_info<Type9> |
-    thes::star::for_each([](auto info) { fmt::println("{}: {}", info.name, info.offset); });
+    thes::star::for_each([](auto info) { fmt::print("{}: {}\n", info.name, info.offset); });
 }

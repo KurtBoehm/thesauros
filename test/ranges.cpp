@@ -13,7 +13,7 @@ int main() {
     static constexpr auto r = thes::range(10);
     static_assert(r.contains(9));
 
-    fmt::println("{}", r);
+    fmt::print("{}\n", r);
 
     static_assert([] {
       auto it = r.begin();
@@ -32,7 +32,7 @@ int main() {
   {
     static constexpr auto r = thes::reversed(thes::range(10));
 
-    fmt::println("{}", r);
+    fmt::print("{}\n", r);
 
     static_assert([] {
       auto it = r.begin();

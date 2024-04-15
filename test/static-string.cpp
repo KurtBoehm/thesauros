@@ -9,7 +9,7 @@ int main() {
   static constexpr auto msg1 = "aBc"_sstr;
   static constexpr auto msg2 = "Łabędź żółty"_sstr;
   static_assert(thes::star::AnyStaticRange<decltype(msg2)>);
-  fmt::println("{}", msg2.view());
+  fmt::print("{}\n", msg2);
 
   static constexpr auto msg_arr_1 = msg1 | thes::star::to_array;
   static_assert(msg_arr_1 == std::array{'a', 'B', 'c'});
