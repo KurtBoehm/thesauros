@@ -1,8 +1,8 @@
 #include <array>
 #include <cstddef>
-#include <iostream>
 
 #include "thesauros/containers.hpp"
+#include "thesauros/format.hpp"
 #include "thesauros/test.hpp"
 
 namespace test = thes::test;
@@ -24,7 +24,7 @@ int main() {
   };
 
   auto assert_eq = [&] {
-    std::cout << bitset << '\n';
+    fmt::println("{}", bitset);
     THES_ASSERT(test::range_eq(bitset, ref));
   };
 
@@ -42,7 +42,7 @@ int main() {
     const bool v1 = bitset.get(idx);
     const bool v2 = ref[idx];
     THES_ASSERT(v1 == v2);
-    std::cout << "@" << idx << ": " << v1 << '\n';
+    fmt::println("@{}: {}", idx, v1);
   };
   auto countr_one = [&] {
     const auto v1 = bitset.countr_one();
@@ -57,7 +57,7 @@ int main() {
       return count;
     }();
     THES_ASSERT(v1 == v2);
-    std::cout << "countr_one: " << v1 << '\n';
+    fmt::println("countr_one: {}", v1);
   };
   auto countr_zero = [&] {
     const auto v1 = bitset.countr_zero();
@@ -72,7 +72,7 @@ int main() {
       return count;
     }();
     THES_ASSERT(v1 == v2);
-    std::cout << "countr_zero: " << v1 << '\n';
+    fmt::println("countr_zero: {}", v1);
   };
 
   assert_eq();

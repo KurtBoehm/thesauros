@@ -83,7 +83,6 @@ inline auto escape_string(std::string_view in, auto out_it) {
   return out_it;
 }
 
-namespace detail {
 template<typename TString>
 struct StringEscape;
 template<std::size_t tSize>
@@ -104,17 +103,20 @@ struct EscapedPrinter {
     return stream;
   }
 
+  const T& value() const {
+    return value_;
+  }
+
 private:
   T value_;
 };
-} // namespace detail
 
 template<typename T>
 static constexpr auto escaped_string(T&& value) {
-  if constexpr (requires { sizeof(detail::StringEscape<T>); }) {
-    return detail::StringEscape<T>::escape(value);
+  if constexpr (requires { sizeof(StringEscape<T>); }) {
+    return StringEscape<T>::escape(value);
   } else {
-    return detail::EscapedPrinter<T>{std::forward<T>(value)};
+    return EscapedPrinter<T>{std::forward<T>(value)};
   }
 }
 } // namespace thes

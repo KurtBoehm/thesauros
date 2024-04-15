@@ -2,9 +2,9 @@
 #include <chrono>
 #include <cstddef>
 #include <cstdlib>
-#include <iostream>
 #include <vector>
 
+#include "thesauros/format.hpp"
 #include "thesauros/quantity.hpp"
 #include "thesauros/utility.hpp"
 
@@ -32,15 +32,15 @@ int main() {
     thes::quantity_cast<thes::Quantity<double, thes::unit::gibibyte>>(rawmaxrss);
   const auto decmaxrss =
     thes::quantity_cast<thes::Quantity<double, thes::unit::gigabyte>>(rawmaxrss);
-  std::cout << "maxrss: " << binmaxrss << ", " << decmaxrss << '\n';
-  std::cout << "user time: " << convert_time(usage.user_time()) << '\n';
-  std::cout << "user time: " << split_time(usage.user_time()) << '\n';
-  std::cout << "system time: " << convert_time(usage.system_time()) << '\n';
-  std::cout << "overall time: " << convert_time(usage.user_time() + usage.system_time()) << '\n';
+  fmt::println("maxrss: {}, {}", binmaxrss, decmaxrss);
+  fmt::println("user time: {}", convert_time(usage.user_time()));
+  fmt::println("user time: {}", split_time(usage.user_time()));
+  fmt::println("system time: {}", convert_time(usage.system_time()));
+  fmt::println("overall time: {}", convert_time(usage.user_time() + usage.system_time()));
 
   const auto t2 = Clock::now();
   const auto q =
     quantity_cast<thes::Quantity<double, thes::unit::second>>(thes::duration_quantity(t2 - t1));
-  std::cout << "time: " << q << '\n';
-  std::cout << "time: " << split_time(q) << '\n';
+  fmt::println("time: {}", q);
+  fmt::println("time: {}", split_time(q));
 }

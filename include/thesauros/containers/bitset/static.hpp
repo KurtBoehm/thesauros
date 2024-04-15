@@ -1,5 +1,5 @@
-#ifndef INCLUDE_THESAUROS_CONTAINERS_STATIC_BITSET_HPP
-#define INCLUDE_THESAUROS_CONTAINERS_STATIC_BITSET_HPP
+#ifndef INCLUDE_THESAUROS_CONTAINERS_BITSET_STATIC_HPP
+#define INCLUDE_THESAUROS_CONTAINERS_BITSET_STATIC_HPP
 
 #include <algorithm>
 #include <array>
@@ -7,16 +7,15 @@
 #include <climits>
 #include <concepts>
 #include <cstddef>
-#include <ostream>
 #include <utility>
 
+#include "thesauros/containers/bitset/iterator.hpp"
 #include "thesauros/math/arithmetic.hpp"
 #include "thesauros/ranges/iota.hpp"
 #include "thesauros/utility/fixed-size-integer.hpp"
 #include "thesauros/utility/multi-bit-reference.hpp"
 #include "thesauros/utility/static-ranges/ranges/constant.hpp"
 #include "thesauros/utility/static-ranges/ranges/iota.hpp"
-#include "thesauros/utility/static-ranges/ranges/reversed.hpp"
 #include "thesauros/utility/static-ranges/ranges/transform.hpp"
 #include "thesauros/utility/static-ranges/sinks/for-each.hpp"
 #include "thesauros/utility/static-ranges/sinks/to-array.hpp"
@@ -34,6 +33,7 @@ struct StaticBitset {
   static constexpr Chunk one_chunk = static_cast<Chunk>(~zero_chunk);
 
   using MutBitRef = MutableBitReference<chunk_byte_num>;
+  using const_iterator = detail::BitsetIterator<StaticBitset>;
 
   constexpr StaticBitset() = default;
   explicit constexpr StaticBitset(bool value)
@@ -102,10 +102,11 @@ struct StaticBitset {
     }
   }
 
-  friend std::ostream& operator<<(std::ostream& stream, const StaticBitset& bitset) {
-    star::for_each([&](auto i) { stream << int{bitset.get(i)}; })(
-      star::reversed(star::iota<0, static_size>));
-    return stream;
+  constexpr const_iterator begin() const {
+    return const_iterator{0, *this};
+  }
+  constexpr const_iterator end() const {
+    return const_iterator{static_size, *this};
   }
 
 private:
@@ -172,4 +173,4 @@ template<typename... TArgs>
 explicit StaticBitset(TArgs&&... args) -> StaticBitset<sizeof...(TArgs)>;
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_CONTAINERS_STATIC_BITSET_HPP
+#endif // INCLUDE_THESAUROS_CONTAINERS_BITSET_STATIC_HPP

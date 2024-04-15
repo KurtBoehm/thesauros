@@ -7,11 +7,8 @@
 #include <utility>
 #include <vector>
 
-#include <fmt/core.h>
-#include <fmt/ranges.h>
-
 #include "thesauros/algorithms.hpp"
-#include "thesauros/algorithms/ranges/for-each-tile.hpp"
+#include "thesauros/format.hpp"
 #include "thesauros/test.hpp"
 #include "thesauros/utility.hpp"
 

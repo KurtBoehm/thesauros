@@ -1,9 +1,9 @@
 #include <array>
 #include <cstddef>
-#include <iostream>
 #include <type_traits>
 
 #include "thesauros/containers.hpp"
+#include "thesauros/format.hpp"
 #include "thesauros/test.hpp"
 
 namespace test = thes::test;
@@ -26,7 +26,7 @@ constexpr int run() {
 
   auto assert_eq = [&] {
     if (!std::is_constant_evaluated()) {
-      std::cout << bitset << '\n';
+      fmt::println("{}", bitset);
     }
     THES_ASSERT(test::range_eq(bitset, ref));
   };
@@ -46,7 +46,7 @@ constexpr int run() {
     const bool v2 = ref[idx];
     THES_ASSERT(v1 == v2);
     if (!std::is_constant_evaluated()) {
-      std::cout << "@" << idx << ": " << v1 << '\n';
+      fmt::println("@{}: {}", idx, v1);
     }
   };
   auto countr_one = [&] {
@@ -63,7 +63,7 @@ constexpr int run() {
     }();
     THES_ASSERT(v1 == v2);
     if (!std::is_constant_evaluated()) {
-      std::cout << "countr_one: " << v1 << '\n';
+      fmt::println("countr_one: {}", v1);
     }
   };
   auto countr_zero = [&] {
@@ -80,7 +80,7 @@ constexpr int run() {
     }();
     THES_ASSERT(v1 == v2);
     if (!std::is_constant_evaluated()) {
-      std::cout << "countr_zero: " << v1 << '\n';
+      fmt::println("countr_zero: {}", v1);
     }
   };
 

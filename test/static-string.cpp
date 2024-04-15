@@ -1,7 +1,6 @@
 #include <array>
 
-#include <fmt/core.h>
-
+#include "thesauros/format.hpp"
 #include "thesauros/utility.hpp"
 
 int main() {

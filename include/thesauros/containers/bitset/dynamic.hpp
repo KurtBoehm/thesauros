@@ -1,17 +1,16 @@
-#ifndef INCLUDE_THESAUROS_CONTAINERS_DYNAMIC_BITSET_HPP
-#define INCLUDE_THESAUROS_CONTAINERS_DYNAMIC_BITSET_HPP
+#ifndef INCLUDE_THESAUROS_CONTAINERS_BITSET_DYNAMIC_HPP
+#define INCLUDE_THESAUROS_CONTAINERS_BITSET_DYNAMIC_HPP
 
 #include <algorithm>
 #include <atomic>
-#include <bitset>
 #include <cassert>
 #include <climits>
 #include <concepts>
 #include <cstddef>
 #include <limits>
-#include <ostream>
 
 #include "thesauros/containers/array/dynamic.hpp"
+#include "thesauros/containers/bitset/iterator.hpp"
 #include "thesauros/math/arithmetic.hpp"
 #include "thesauros/ranges/iota.hpp"
 #include "thesauros/utility/multi-bit-reference.hpp"
@@ -25,6 +24,7 @@ struct DynamicBitset {
   static constexpr std::size_t chunk_bit_num = CHAR_BIT * chunk_byte_num;
 
   using MutBitRef = MutableBitReference<chunk_byte_num>;
+  using const_iterator = detail::BitsetIterator<DynamicBitset>;
 
   DynamicBitset() = default;
   explicit DynamicBitset(std::size_t size) : chunks_(div_ceil(size, chunk_bit_num)), size_{size} {}
@@ -103,29 +103,11 @@ struct DynamicBitset {
     return MutBitRef{chunks_[i / chunk_bit_num], i % chunk_bit_num};
   }
 
-  friend std::ostream& operator<<(std::ostream& stream, const DynamicBitset& bitset) {
-    assert(div_ceil(bitset.size_, chunk_bit_num) == bitset.chunks_.size());
-
-    if (bitset.size_ == 0) {
-      return stream;
-    }
-
-    const std::size_t num{bitset.size_ / chunk_bit_num};
-    const std::size_t remainder{bitset.size_ % chunk_bit_num};
-    if (remainder != 0) {
-      const Chunk& last{bitset.chunks_.back()};
-      const std::size_t max{remainder - 1};
-      for (const std::size_t i : range(remainder)) {
-        stream << bool(last & mask(max - i));
-      }
-    }
-    if (num > 0) {
-      const std::size_t max{num - 1};
-      for (const std::size_t i : range(num)) {
-        stream << std::bitset<chunk_bit_num>(bitset.chunks_[max - i]);
-      }
-    }
-    return stream;
+  constexpr const_iterator begin() const {
+    return const_iterator{0, *this};
+  }
+  constexpr const_iterator end() const {
+    return const_iterator{size_, *this};
   }
 
 private:
@@ -159,4 +141,4 @@ private:
 };
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_CONTAINERS_DYNAMIC_BITSET_HPP
+#endif // INCLUDE_THESAUROS_CONTAINERS_BITSET_DYNAMIC_HPP

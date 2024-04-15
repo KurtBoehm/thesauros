@@ -5,7 +5,6 @@
 #include <concepts>
 #include <functional>
 #include <limits>
-#include <ostream>
 #include <utility>
 
 namespace thes {
@@ -45,15 +44,6 @@ struct ValueOptional {
     if (this->has_value()) {
       std::invoke(std::forward<TF>(f), **this);
     }
-  }
-
-  friend std::ostream& operator<<(std::ostream& stream, const ValueOptional& vo) {
-    if (vo.has_value()) {
-      stream << vo.value();
-    } else {
-      stream << "empty";
-    }
-    return stream;
   }
 
 private:

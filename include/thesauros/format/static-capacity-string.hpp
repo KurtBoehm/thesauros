@@ -1,0 +1,23 @@
+#ifndef INCLUDE_THESAUROS_FORMAT_STATIC_CAPACITY_STRING_HPP
+#define INCLUDE_THESAUROS_FORMAT_STATIC_CAPACITY_STRING_HPP
+
+#include <cstddef>
+#include <string_view>
+
+#include "thesauros/format/fmtlib.hpp"
+#include "thesauros/utility/static-capacity-string.hpp"
+
+template<std::size_t tCapacity>
+struct fmt::formatter<thes::StaticCapacityString<tCapacity>>
+    : fmt::nested_formatter<std::string_view> {
+  auto format(const thes::StaticCapacityString<tCapacity>& str, format_context& ctx) const {
+    return this->write_padded(
+      ctx, [&](auto out) { return fmt::format_to(out, "{}", this->nested(str.view())); });
+  }
+};
+template<std::size_t tCapacity>
+struct fmt::range_format_kind<thes::StaticCapacityString<tCapacity>, char> {
+  static constexpr auto value = fmt::range_format::disabled;
+};
+
+#endif // INCLUDE_THESAUROS_FORMAT_STATIC_CAPACITY_STRING_HPP

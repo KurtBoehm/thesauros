@@ -1,17 +1,16 @@
-#ifndef INCLUDE_THESAUROS_CONTAINERS_FIXED_BITSET_HPP
-#define INCLUDE_THESAUROS_CONTAINERS_FIXED_BITSET_HPP
+#ifndef INCLUDE_THESAUROS_CONTAINERS_BITSET_FIXED_HPP
+#define INCLUDE_THESAUROS_CONTAINERS_BITSET_FIXED_HPP
 
 #include <algorithm>
 #include <array>
-#include <bitset>
 #include <cassert>
 #include <climits>
 #include <concepts>
 #include <cstddef>
 #include <functional>
-#include <ostream>
 
 #include "thesauros/containers/array/fixed.hpp"
+#include "thesauros/containers/bitset/iterator.hpp"
 #include "thesauros/math/arithmetic.hpp"
 #include "thesauros/math/bit.hpp"
 #include "thesauros/ranges/iota.hpp"
@@ -32,6 +31,7 @@ struct FixedBitset {
   static constexpr Chunk one_chunk{static_cast<Chunk>(~zero_chunk)};
 
   using MutBitRef = MutableBitReference<chunk_byte_num>;
+  using const_iterator = detail::BitsetIterator<FixedBitset>;
 
   FixedBitset() = default;
   explicit FixedBitset(std::size_t size) : chunks_(div_ceil(size, chunk_bit_num)), size_{size} {}
@@ -95,29 +95,11 @@ struct FixedBitset {
     return MutBitRef{chunks_[i / chunk_bit_num], i % chunk_bit_num};
   }
 
-  friend std::ostream& operator<<(std::ostream& stream, const FixedBitset& bitset) {
-    assert(div_ceil(bitset.size_, chunk_bit_num) == bitset.chunks_.size());
-
-    if (bitset.size_ == 0) {
-      return stream;
-    }
-
-    const std::size_t num{bitset.size_ / chunk_bit_num};
-    const std::size_t remainder{bitset.size_ % chunk_bit_num};
-    if (remainder != 0) {
-      const Chunk& last{bitset.chunks_.back()};
-      const std::size_t max{remainder - 1};
-      for (const std::size_t i : range(remainder)) {
-        stream << bool(last & mask(max - i));
-      }
-    }
-    if (num > 0) {
-      const std::size_t max{num - 1};
-      for (const std::size_t i : range(num)) {
-        stream << std::bitset<chunk_bit_num>(bitset.chunks_[max - i]);
-      }
-    }
-    return stream;
+  constexpr const_iterator begin() const {
+    return const_iterator{0, *this};
+  }
+  constexpr const_iterator end() const {
+    return const_iterator{size_, *this};
   }
 
 private:
@@ -148,4 +130,4 @@ private:
 };
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_CONTAINERS_FIXED_BITSET_HPP
+#endif // INCLUDE_THESAUROS_CONTAINERS_BITSET_FIXED_HPP

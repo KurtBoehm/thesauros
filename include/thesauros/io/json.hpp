@@ -90,6 +90,13 @@ struct JsonPrinter {
   explicit JsonPrinter(T&& value, Indentation indent = {})
       : value_(std::forward<T>(value)), indent_{indent} {}
 
+  [[nodiscard]] const T& value() const {
+    return value_;
+  }
+  [[nodiscard]] const Indentation& indent() const {
+    return indent_;
+  }
+
   friend std::ostream& operator<<(std::ostream& stream, const JsonPrinter& printer) {
     write_json(std::ostream_iterator<char>{stream}, printer.value_, printer.indent_);
     return stream;

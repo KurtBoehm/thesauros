@@ -6,7 +6,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "thesauros/containers/static-bitset.hpp"
+#include "thesauros/containers/bitset/static.hpp"
 #include "thesauros/utility/static-ranges/definitions/concepts.hpp"
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
 #include "thesauros/utility/static-ranges/definitions/type-traits.hpp"

@@ -3,9 +3,7 @@
 #include <functional>
 #include <numeric>
 
-#include <fmt/core.h>
-#include <fmt/ranges.h>
-
+#include "thesauros/format.hpp"
 #include "thesauros/ranges.hpp"
 #include "thesauros/test.hpp"
 #include "thesauros/utility.hpp"

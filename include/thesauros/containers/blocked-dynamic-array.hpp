@@ -7,20 +7,88 @@
 #include <functional>
 #include <memory>
 #include <numeric>
-#include <ostream>
 #include <span>
 #include <type_traits>
 #include <utility>
 
 #include "thesauros/containers/array/growth-policy.hpp"
 #include "thesauros/containers/array/typed-chunk.hpp"
-#include "thesauros/io/printers.hpp"
 #include "thesauros/iterator/facades.hpp"
 #include "thesauros/iterator/provider-map.hpp"
 #include "thesauros/ranges/iota.hpp"
 #include "thesauros/utility/type-transformations.hpp"
 
 namespace thes {
+template<typename TValue, typename TSize>
+struct MutableBlock {
+  using Value = TValue;
+
+  using value_type = Value;
+  using iterator = Value*;
+  using const_iterator = const Value*;
+
+  MutableBlock(Value* begin, Value* end, Value* end_of_block, TSize* size)
+      : begin_(begin), end_(end), end_of_block_(end_of_block), size_(size) {}
+
+  iterator begin() {
+    return begin_;
+  }
+  iterator end() {
+    return end_;
+  }
+  const_iterator begin() const {
+    return begin_;
+  }
+  const_iterator end() const {
+    return end_;
+  }
+
+  template<typename... TArgs>
+  void emplace_back(TArgs&&... args) {
+    assert(end_ != end_of_block_);
+    new (end_) Value(std::forward<TArgs>(args)...);
+    ++end_;
+    ++(*size_);
+  }
+  void push_back(Value&& value) {
+    emplace_back(std::forward<Value>(value));
+  }
+  void push_back(const Value& value) {
+    emplace_back(value);
+  }
+
+  void erase(const Value& value) {
+    Value* remove_begin = std::remove(begin_, end_, value);
+    std::destroy(remove_begin, end_);
+    end_ = remove_begin;
+    *size_ = static_cast<TSize>(end_ - begin_);
+  }
+
+  Value operator[](TSize i) const {
+    assert(i < size());
+    return begin_[i];
+  }
+
+  [[nodiscard]] TSize size() const {
+    const auto size = static_cast<TSize>(end_ - begin_);
+    assert(size == (*size_));
+    return size;
+  }
+
+  std::span<const Value> span() const {
+    return std::span<const Value>(begin_, end_);
+  }
+  std::span<Value> span() {
+    return std::span<Value>(begin_, end_);
+  }
+
+private:
+  Value* begin_;
+  Value* end_;
+  Value* end_of_block_;
+  TSize* size_;
+};
+
 template<typename TValue, typename TSize, typename TAllocator, typename TSizeAllocator,
          typename TGrowthPolicy>
 struct BlockedDynamicArrayBase {
@@ -51,84 +119,12 @@ struct BlockedDynamicArrayBase {
   BlockedDynamicArrayBase& operator=(const BlockedDynamicArrayBase&) = delete;
   ~BlockedDynamicArrayBase() = default;
 
-  struct Block {
-    using Value = TValue;
-
-    using value_type = Value;
-    using iterator = Value*;
-    using const_iterator = const Value*;
-
-    Block(Value* begin, Value* end, Value* end_of_block, Size* size)
-        : begin_(begin), end_(end), end_of_block_(end_of_block), size_(size) {}
-
-    iterator begin() {
-      return begin_;
-    }
-    iterator end() {
-      return end_;
-    }
-    const_iterator begin() const {
-      return begin_;
-    }
-    const_iterator end() const {
-      return end_;
-    }
-
-    template<typename... TArgs>
-    void emplace_back(TArgs&&... args) {
-      assert(end_ != end_of_block_);
-      new (end_) Value(std::forward<TArgs>(args)...);
-      ++end_;
-      ++(*size_);
-    }
-    void push_back(Value&& value) {
-      emplace_back(std::forward<Value>(value));
-    }
-    void push_back(const Value& value) {
-      emplace_back(value);
-    }
-
-    void erase(const Value& value) {
-      Value* remove_begin = std::remove(begin_, end_, value);
-      std::destroy(remove_begin, end_);
-      end_ = remove_begin;
-      *size_ = static_cast<Size>(end_ - begin_);
-    }
-
-    Value operator[](Size i) const {
-      assert(i < size());
-      return begin_[i];
-    }
-
-    [[nodiscard]] Size size() const {
-      const auto size = static_cast<Size>(end_ - begin_);
-      assert(size == (*size_));
-      return size;
-    }
-
-    std::span<const Value> span() const {
-      return std::span<const Value>(begin_, end_);
-    }
-    std::span<Value> span() {
-      return std::span<Value>(begin_, end_);
-    }
-
-    friend std::ostream& operator<<(std::ostream& s, const Block& b) {
-      return s << range_print(b.span());
-    }
-
-  private:
-    Value* begin_;
-    Value* end_;
-    Value* end_of_block_;
-    Size* size_;
-  };
-
+  using Block = MutableBlock<TValue, TSize>;
   using ConstBlock = std::span<const Value>;
 
 private:
   template<bool tConst>
-  struct IterProv {
+  struct StateProv {
     using Val = std::conditional_t<tConst, ConstBlock, Block>;
 
     struct IterTypes : public iter_provider::ValueTypes<Val, std::ptrdiff_t> {
@@ -165,8 +161,8 @@ private:
 public:
   template<bool tConst>
   struct Iterator : public IteratorFacade<Iterator<tConst>,
-                                          iter_provider::Map<IterProv<tConst>, Iterator<tConst>>> {
-    friend IterProv<tConst>;
+                                          iter_provider::Map<StateProv<tConst>, Iterator<tConst>>> {
+    friend StateProv<tConst>;
     using CSize = ConditionalConst<tConst, Size>;
     using CValue = ConditionalConst<tConst, Value>;
 
@@ -270,10 +266,6 @@ public:
   }
   [[nodiscard]] Size value_num() const {
     return std::reduce(sizes_.begin(), sizes_.begin() + block_num_, Size{0}, std::plus<>{});
-  }
-
-  friend std::ostream& operator<<(std::ostream& s, const BlockedDynamicArrayBase& b) {
-    return s << '[' << range_print(b) << ']';
   }
 
 private:

@@ -1,8 +1,8 @@
 #include <cstddef>
 #include <cstdint>
-#include <iostream>
 #include <limits>
 
+#include "thesauros/format.hpp"
 #include "thesauros/ranges.hpp"
 #include "thesauros/test.hpp"
 #include "thesauros/utility.hpp"
@@ -11,8 +11,8 @@ int main() {
   const std::size_t size = std::numeric_limits<std::size_t>::max() - 10;
   const std::size_t seg_num = 7;
 
-  std::cout << "size: " << size << '\n';
-  std::cout << '\n';
+  fmt::print("size: {}\n\n", size);
+
   {
     const thes::UniformIndexSegmenter seg(size, seg_num);
 
@@ -22,7 +22,7 @@ int main() {
       const auto j0 = seg.segment_start(i);
       const auto j1 = seg.segment_end(i);
 
-      std::cout << j0 << "→" << j1 << ":" << (j1 - j0) << '\n';
+      fmt::println("{}→{}:{}", j0, j1, j1 - j0);
 
       THES_ASSERT(j0 == start);
       start = j1;
@@ -30,11 +30,11 @@ int main() {
     }
     THES_ASSERT(sum == size);
   }
-  std::cout << '\n';
+  fmt::println("");
   {
     auto impl = []<typename T>(thes::TypeTag<T>) {
       for (const auto num : thes::range<T>(512)) {
-        std::cout << "num: " << num << '\n';
+        fmt::println("num: {}", num);
         for (const auto blocks : thes::range<T>(1, 256)) {
           // test_to_seg
           {

@@ -1,8 +1,8 @@
 #include <array>
 #include <cstddef>
-#include <ostream>
 
 #include "thesauros/containers.hpp"
+#include "thesauros/format.hpp"
 #include "thesauros/ranges.hpp"
 #include "thesauros/test.hpp"
 
@@ -28,11 +28,14 @@ struct S {
     return ctr;
   }
 
-  friend std::ostream& operator<<(std::ostream& stream, const S& self) {
-    return stream << "S(" << self.i << ")";
-  }
-
   bool operator==(const S&) const = default;
+};
+
+template<>
+struct fmt::formatter<S> : fmt::nested_formatter<int> {
+  auto format(S s, format_context& ctx) const {
+    return this->write_padded(ctx, [&](auto out) { return fmt::format_to(out, "S({})", s.i); });
+  }
 };
 
 inline void test2() {

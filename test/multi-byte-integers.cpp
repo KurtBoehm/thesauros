@@ -3,11 +3,8 @@
 #include <cstddef>
 #include <vector>
 
-#include <fmt/color.h>
-#include <fmt/core.h>
-#include <fmt/ranges.h>
-
 #include "thesauros/containers.hpp"
+#include "thesauros/format.hpp"
 #include "thesauros/ranges.hpp"
 #include "thesauros/test.hpp"
 #include "thesauros/utility.hpp"

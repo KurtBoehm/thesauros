@@ -4,7 +4,6 @@
 #include <cassert>
 #include <cstddef>
 #include <memory>
-#include <ostream>
 #include <span>
 #include <utility>
 
@@ -102,10 +101,6 @@ public:
   std::span<const Value> operator[](Size index) const {
     assert(index + 1 < offsets_.size());
     return span_impl<true>(values_.begin(), offsets_.begin() + index);
-  }
-
-  friend std::ostream& operator<<(std::ostream& s, const NestedDynamicArrayBase& b) {
-    return s << '[' << range_print(b) << ']';
   }
 
   struct FlatBuilder {

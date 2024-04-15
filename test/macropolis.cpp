@@ -1,11 +1,11 @@
 #include <array>
 #include <concepts>
-#include <iostream>
 #include <optional>
 #include <tuple>
 #include <type_traits>
 #include <variant>
 
+#include "thesauros/format.hpp"
 #include "thesauros/macropolis.hpp"
 #include "thesauros/utility.hpp"
 
@@ -191,7 +191,6 @@ static_assert((thes::memory_layout_info<Type9> |
                thes::star::to_array) == std::array{0_uz, 8_uz, 12_uz});
 
 int main() {
-  thes::memory_layout_info<Type9> | thes::star::for_each([](auto info) {
-    std::cout << info.name.view() << ": " << info.offset << '\n';
-  });
+  thes::memory_layout_info<Type9> |
+    thes::star::for_each([](auto info) { fmt::println("{}: {}", info.name, info.offset); });
 }

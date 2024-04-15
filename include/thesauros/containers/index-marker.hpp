@@ -3,7 +3,7 @@
 
 #include <cstddef>
 
-#include "thesauros/containers/fixed-bitset.hpp"
+#include "thesauros/containers/bitset/fixed.hpp"
 
 namespace thes {
 struct IndexMarker {

@@ -6,7 +6,6 @@
 #include <functional>
 #include <iostream>
 #include <source_location>
-#include <sstream>
 #include <string_view>
 #include <type_traits>
 
@@ -125,8 +124,8 @@ inline bool string_eq(const std::string_view s1, const std::string_view s2, TStr
 }
 
 template<bool tVerbose = true>
-inline bool string_eq(const std::string_view s1, const auto&... v) {
-  const auto s2 = (std::stringstream{} << ... << v).str();
+inline bool string_eq(const std::string_view s1, const auto& v) {
+  const auto s2 = ::fmt::format("{}", v);
   if constexpr (tVerbose) {
     return string_eq(s1, std::string_view{s2}, std::cout);
   } else {

@@ -5,7 +5,6 @@
 #include <array>
 #include <cassert>
 #include <cstddef>
-#include <ostream>
 #include <string_view>
 
 namespace thes {
@@ -55,10 +54,6 @@ struct StaticCapacityString {
   void push_back(char c) {
     assert(size_ < tCapacity);
     data_[size_++] = c;
-  }
-
-  friend std::ostream& operator<<(std::ostream& s, const StaticCapacityString& str) {
-    return s << str.view();
   }
 
 private:

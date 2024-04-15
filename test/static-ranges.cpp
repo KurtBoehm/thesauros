@@ -2,13 +2,13 @@
 #include <concepts>
 #include <cstddef>
 #include <functional>
-#include <iostream>
 #include <optional>
 #include <tuple>
 #include <utility>
 #include <vector>
 
 #include "thesauros/algorithms.hpp"
+#include "thesauros/format.hpp"
 #include "thesauros/ranges.hpp"
 #include "thesauros/utility.hpp"
 
@@ -424,8 +424,18 @@ int main() {
   // for_each
   {
     static constexpr std::array arr{0, 4, 3, 1};
-    arr | star::transform([](auto v) { return 2 * v; }) |
-      star::for_each([](auto v) { std::cout << v << '\n'; });
+    static_assert([&] {
+      int sum = 0;
+      arr | star::transform([](auto v) { return 2 * v; }) |
+        star::for_each([&sum](auto v) { sum += v; });
+      return sum;
+    }() == 16);
+  }
+
+  // format
+  {
+    static constexpr std::array arr{0, 4, 3, 1};
+    fmt::println("{}", arr | star::transform([](auto v) { return 2 * v; }) | star::format);
   }
 
   // first_value
@@ -473,8 +483,8 @@ int main() {
   // apply
   {
     static constexpr std::array arr{0, 4, 3, 1};
-    arr | star::transform([](auto v) { return 2 * v; }) |
-      star::apply([](auto... v) { (std::cout << ... << v) << '\n'; });
+    static_assert((arr | star::transform([](auto v) { return 2 * v; }) |
+                   star::apply([](auto... v) { return (... + v); })) == 16);
   }
 
   // multidim_for_each

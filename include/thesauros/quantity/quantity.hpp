@@ -135,7 +135,7 @@ struct IsQuantityTrait : std::false_type {};
 template<typename TRep, typename TUnit>
 struct IsQuantityTrait<Quantity<TRep, TUnit>> : std::true_type {};
 template<typename T>
-inline constexpr bool is_quantity = IsQuantityTrait<T>::value;
+concept AnyQuantity = IsQuantityTrait<std::decay_t<T>>::value;
 
 template<typename TU1, typename TU2>
 struct UnitRatioTrait;
