@@ -1,17 +1,16 @@
 #ifndef INCLUDE_THESAUROS_TEST_TEST_HPP
 #define INCLUDE_THESAUROS_TEST_TEST_HPP
 
-#include <concepts>
 #include <cstdlib>
 #include <functional>
-#include <iostream>
 #include <source_location>
 #include <string_view>
 #include <type_traits>
 
 #include "thesauros/format.hpp"
 #include "thesauros/io.hpp"
-#include "thesauros/utility/empty.hpp"
+#include "thesauros/utility/no-op.hpp"
+#include "thesauros/utility/value-tag.hpp"
 
 namespace thes::test {
 #ifdef NDEBUG
@@ -22,9 +21,8 @@ namespace thes::test {
 
 inline void assert_fail(const char* assertion, auto fun,
                         const std::source_location location = std::source_location::current()) {
-  std::cerr << "Assertion “" << assertion << "” failed (" << location.function_name() << " @ "
-            << location.file_name() << ":" << location.line() << ":" << location.column() << ")"
-            << '\n';
+  ::fmt::print(stderr, "Assertion “{}” failed in {} @ {}:{}:{}\n", assertion,
+               location.function_name(), location.file_name(), location.line(), location.column());
   fun();
   std::abort();
 }
@@ -48,9 +46,8 @@ concept AreRanges = AreIterRanges<TRange1, TRange2> || AreAccessRanges<TRange1, 
 } // namespace detail
 
 template<typename TRange1, typename TRange2, typename TEqual = std::equal_to<>,
-         typename TStream = Empty>
-inline constexpr bool range_eq(TRange1&& r1, TRange2&& r2, TEqual equal = {},
-                               TStream&& stream = {}) {
+         typename TPrint = thes::NoOp<>>
+inline constexpr bool range_eq(TRange1&& r1, TRange2&& r2, TEqual equal = {}, TPrint printer = {}) {
   static_assert(detail::AreRanges<TRange1, TRange2>);
 
   if constexpr (detail::AreIterRanges<TRange1, TRange2>) {
@@ -59,28 +56,25 @@ inline constexpr bool range_eq(TRange1&& r1, TRange2&& r2, TEqual equal = {},
     auto it2 = std::begin(r2);
     auto end2 = std::end(r2);
 
-    constexpr bool print = !std::same_as<TStream, Empty> && requires {
-      stream << *it1;
-      stream << *it2;
-    };
-
+    constexpr bool print = !AnyNoOp<TPrint>;
     if constexpr (print) {
-      stream << "range_eq: ";
+      printer("range_eq: ");
     }
     std::size_t counter = 0;
     for (Delimiter delim{", "}; it1 != end1 && it2 != end2; ++it1, ++it2) {
       if constexpr (print) {
-        stream << delim << thes::formatted(thes::fmt::rainbow_fg(counter++), *it1, "/", *it2);
+        printer("{}", delim);
+        printer(thes::rainbow_fg(counter++), "{}/{}", *it1, *it2);
       }
       if (!equal(*it1, *it2)) {
         if constexpr (print) {
-          stream << '\n';
+          printer("\n");
         }
         return false;
       }
     }
     if constexpr (print) {
-      stream << '\n';
+      printer("\n");
     }
     return (it1 == end1) == (it2 == end2);
   }
@@ -98,39 +92,49 @@ inline constexpr bool range_eq(TRange1&& r1, TRange2&& r2, TEqual equal = {},
     return true;
   }
 }
-template<typename TStream = Empty>
-inline bool string_eq(const std::string_view s1, const std::string_view s2, TStream&& stream = {}) {
+template<typename TPrint>
+inline bool string_eq(const std::string_view s1, const std::string_view s2, TPrint printer) {
   const bool eq = s1 == s2;
 
-  if constexpr (!std::same_as<TStream, Empty>) {
+  if constexpr (!AnyNoOp<TPrint>) {
     if (eq) {
-      stream << formatted(fmt::fg_green, s1) << '\n';
+      printer(fg_green, "{}\n", s1);
     } else {
       for (Delimiter delim{", "}; char c : s1) {
-        stream << delim << int(c);
+        printer("{}{}", delim, int(c));
       }
-      stream << " vs. ";
+      printer(" vs. ");
       for (Delimiter delim{", "}; char c : s2) {
-        stream << delim << int(c);
+        printer("{}{}", delim, int(c));
       }
-      stream << '\n';
+      printer("\n");
 
-      stream << formatted(fmt::fg_red, s1) << (eq ? " == " : " != ") << formatted(fmt::fg_red, s2)
-             << '\n';
+      printer("{} {} {}\n", ::fmt::styled(s1, fg_red), eq ? "==" : "!=", ::fmt::styled(s2, fg_red));
     }
   }
 
   return eq;
 }
 
-template<bool tVerbose = true>
-inline bool string_eq(const std::string_view s1, const auto& v) {
-  const auto s2 = ::fmt::format("{}", v);
-  if constexpr (tVerbose) {
-    return string_eq(s1, std::string_view{s2}, std::cout);
-  } else {
-    return string_eq(s1, std::string_view{s2});
+struct StringEqPrinter {
+  template<typename... TArgs>
+  void operator()(::fmt::format_string<TArgs...> fmt, TArgs&&... args) {
+    ::fmt::print(fmt, std::forward<TArgs>(args)...);
   }
+  template<typename TFmt, typename... TArgs>
+  void operator()(::fmt::text_style ts, const TFmt& fmt, const TArgs&... args) {
+    ::fmt::print(ts, fmt, args...);
+  }
+};
+
+template<bool tVerbose = true>
+inline bool string_eq(const std::string_view s1, const auto& v,
+                      thes::BoolTag<tVerbose> verbose = {}) {
+  const auto s2 = ::fmt::format("{}", v);
+  if constexpr (verbose) {
+    return string_eq(s1, std::string_view{s2}, StringEqPrinter{});
+  }
+  return string_eq(s1, std::string_view{s2}, thes::NoOp{});
 }
 } // namespace thes::test
 

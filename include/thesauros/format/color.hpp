@@ -3,8 +3,10 @@
 
 #include <array>
 #include <cstddef>
+#include <type_traits>
 
 #include "thesauros/format/fmtlib.hpp"
+#include "thesauros/utility/value-tag.hpp"
 
 namespace thes {
 inline constexpr fmt::text_style fg_black{fmt::fg(fmt::terminal_color::black)};
@@ -73,6 +75,39 @@ inline constexpr fmt::text_style blink{fmt::emphasis::blink};
 inline constexpr fmt::text_style reverse{fmt::emphasis::reverse};
 inline constexpr fmt::text_style conceal{fmt::emphasis::conceal};
 inline constexpr fmt::text_style strikethrough{fmt::emphasis::strikethrough};
+
+template<bool tFormat>
+struct FormattingTag : public BoolTag<tFormat> {};
+inline constexpr FormattingTag<true> format_tag{};
+inline constexpr FormattingTag<false> unformat_tag{};
+template<typename T>
+struct IsFormatTagTrait : public std::false_type {};
+template<bool tIsFormat>
+struct IsFormatTagTrait<FormattingTag<tIsFormat>> : public std::true_type {};
+template<typename T>
+concept AnyFormatTag = IsFormatTagTrait<T>::value;
+
+template<typename TFmt, typename... TArgs>
+inline void tsprint(FormattingTag<true> /*tag*/, const ::fmt::text_style& ts, const TFmt& fmt,
+                    const TArgs&... args) {
+  ::fmt::print(ts, fmt, args...);
+}
+template<typename TFmt, typename... TArgs>
+inline void tsprint(FormattingTag<false> /*tag*/, const ::fmt::text_style& /*ts*/,
+                    ::fmt::format_string<TArgs...> fmt, TArgs&&... args) {
+  ::fmt::print(fmt, std::forward<TArgs>(args)...);
+}
+
+template<typename TFmt, typename... TArgs>
+inline auto tsformat_to(FormattingTag<true> /*tag*/, auto it, const ::fmt::text_style& ts,
+                        const TFmt& fmt, const TArgs&... args) {
+  return ::fmt::format_to(it, ts, fmt, args...);
+}
+template<typename TFmt, typename... TArgs>
+inline auto tsformat_to(FormattingTag<false> /*tag*/, auto it, const ::fmt::text_style& /*ts*/,
+                        ::fmt::format_string<TArgs...> fmt, TArgs&&... args) {
+  return ::fmt::format_to(it, fmt, std::forward<TArgs>(args)...);
+}
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_FORMAT_COLOR_HPP

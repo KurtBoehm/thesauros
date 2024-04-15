@@ -12,8 +12,12 @@ struct Delimiter {
   explicit constexpr Delimiter(Raw str) : str_(std::forward<Raw>(str)) {}
 
   template<typename TIt>
-  TIt write_to(TIt it, char sep) const {
-    return write_to_impl(it, [&] { *it++ = sep; });
+  TIt output(TIt it, char sep) const {
+    return output_impl(it, [&] { *it++ = sep; });
+  }
+
+  auto output(auto it) const {
+    return output_impl(it, [] {});
   }
 
   friend std::ostream& operator<<(std::ostream& s, const Delimiter& delim) {
@@ -27,13 +31,11 @@ struct Delimiter {
 
 private:
   template<typename TIt>
-  TIt write_to_impl(TIt it, auto op) const {
+  TIt output_impl(TIt it, auto op) const {
     if (first_) {
       first_ = false;
     } else {
-      for (char i : str_) {
-        *it++ = i;
-      }
+      it = std::copy(str_.begin(), str_.end(), it);
       op();
     }
     return it;

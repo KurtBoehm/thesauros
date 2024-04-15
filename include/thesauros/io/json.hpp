@@ -33,18 +33,18 @@ struct Indentation {
     }
     return *this;
   }
-  auto write_to(auto out_it) const {
+  auto output(auto it) const {
     if (state_.has_value()) {
       const auto depth = state_->depth * state_->step;
       for (std::size_t i = 0; i < depth; ++i) {
-        *out_it++ = ' ';
+        *it++ = ' ';
       }
     }
-    return out_it;
+    return it;
   }
 
   friend std::ostream& operator<<(std::ostream& s, const Indentation& indent) {
-    indent.write_to(std::ostream_iterator<char>{s});
+    indent.output(std::ostream_iterator<char>{s});
     return s;
   }
 
@@ -163,8 +163,8 @@ struct JsonWriter<TMap> {
     *out_it++ = indent.separator();
 
     for (Delimiter delim{","}; const auto& [k, v] : map) {
-      delim.write_to(out_it, indent1.separator());
-      out_it = indent1.write_to(out_it);
+      delim.output(out_it, indent1.separator());
+      out_it = indent1.output(out_it);
 
       *out_it++ = '"';
       out_it = escape_string(k, out_it);
@@ -176,7 +176,7 @@ struct JsonWriter<TMap> {
     }
 
     *out_it++ = indent1.separator();
-    out_it = indent.write_to(out_it);
+    out_it = indent.output(out_it);
     *out_it++ = '}';
 
     return out_it;
@@ -193,13 +193,13 @@ struct JsonWriter<TRange> {
     indent.reduced_separator([&](auto c) { *out_it++ = c; });
 
     for (Delimiter delim{","}; const auto& v : rng) {
-      delim.write_to(out_it, indent1.separator());
-      out_it = indent1.write_to(out_it);
+      delim.output(out_it, indent1.separator());
+      out_it = indent1.output(out_it);
       out_it = write_json(out_it, serial_value(v), indent1);
     }
 
     indent.reduced_separator([&](auto c) { *out_it++ = c; });
-    out_it = indent.write_to(out_it);
+    out_it = indent.output(out_it);
     *out_it++ = ']';
 
     return out_it;
@@ -230,7 +230,7 @@ struct JsonWriter<T> {
       }();
       using Member = decltype(member);
 
-      out_it = indent1.write_to(out_it);
+      out_it = indent1.output(out_it);
       *out_it++ = '"';
       out_it = escape_string(Member::serial_name.view(), out_it);
       *out_it++ = '"';
@@ -249,7 +249,7 @@ struct JsonWriter<T> {
       *out_it++ = indent1.separator();
     });
 
-    out_it = indent.write_to(out_it);
+    out_it = indent.output(out_it);
     *out_it++ = '}';
 
     return out_it;
