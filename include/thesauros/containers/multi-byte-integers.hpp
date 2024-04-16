@@ -34,7 +34,7 @@ struct ArrayStorage {
 
   using Data = DynamicArrayDefault<std::byte, TAllocator<std::byte>>;
 
-  ArrayStorage() : data_(padding_bytes){};
+  ArrayStorage() : data_(padding_bytes) {};
   explicit ArrayStorage(std::size_t size) : data_(effective_allocation(size)), size_(size) {}
 
   [[nodiscard]] Data& data() {
@@ -60,20 +60,21 @@ private:
   Size size_{0};
 };
 
-template<bool tIsConst>
+template<bool tIsConst, typename TByteInt>
 struct ViewStorage {
   using CByte = thes::ConditionalConst<tIsConst, std::byte>;
   using Size = std::size_t;
+  static constexpr std::size_t element_bytes = TByteInt::byte_num;
 
   ViewStorage(CByte* data, Size size) : data_(data), size_(size) {}
 
   [[nodiscard]] std::span<std::byte> data()
   requires(!tIsConst)
   {
-    return {data_, size_};
+    return {data_, size_ * element_bytes};
   }
   [[nodiscard]] std::span<const std::byte> data() const {
-    return {data_, size_};
+    return {data_, size_ * element_bytes};
   }
 
   [[nodiscard]] Size size() const {
@@ -245,7 +246,7 @@ struct MultiByteIntegersBase {
   using iterator = Iterator<false>;
   using const_iterator = Iterator<true>;
 
-  explicit MultiByteIntegersBase(TStorage&& strg) : strg_(std::forward<TStorage>(strg)){};
+  explicit MultiByteIntegersBase(TStorage&& storage) : storage_(std::forward<TStorage>(storage)) {};
 
   iterator begin() {
     return iterator(data().data());
@@ -254,17 +255,18 @@ struct MultiByteIntegersBase {
     return const_iterator(data().data());
   }
   iterator end() {
-    return iterator(data().data() + byte_size(strg_.size()));
+    return iterator(data().data() + byte_size(storage_.size()));
   }
   const_iterator end() const {
-    return const_iterator(data().data() + byte_size(strg_.size()));
+    return const_iterator(data().data() + byte_size(storage_.size()));
   }
 
   [[nodiscard]] Size size() const {
-    return strg_.size();
+    return storage_.size();
   }
 
   decltype(auto) operator[](Size i) const {
+    assert(i < size());
     return load(data().data() + byte_size(i));
   }
   decltype(auto) operator[](Size i)
@@ -281,28 +283,28 @@ struct MultiByteIntegersBase {
   }
 
   decltype(auto) back() const {
-    assert(strg_.size() > 0);
-    return load(data().data() + byte_size(strg_.size() - 1));
+    assert(storage_.size() > 0);
+    return load(data().data() + byte_size(storage_.size() - 1));
   }
   decltype(auto) back() {
-    assert(strg_.size() > 0);
-    return IntRef{data().data() + byte_size(strg_.size() - 1)};
+    assert(storage_.size() > 0);
+    return IntRef{data().data() + byte_size(storage_.size() - 1)};
   }
 
   [[nodiscard]] std::span<const std::byte> byte_span() const {
-    return std::span{data().begin(), byte_size(strg_.size())};
+    return std::span{data().begin(), byte_size(storage_.size())};
   }
   [[nodiscard]] std::span<std::byte> byte_span() {
-    return std::span{data().begin(), byte_size(strg_.size())};
+    return std::span{data().begin(), byte_size(storage_.size())};
   }
 
   ConstSubRange sub_range(Size begin, Size end) const {
     assert(end >= begin);
-    return ConstSubRange(data().data() + begin, end - begin);
+    return ConstSubRange(data().data() + byte_size(begin), end - begin);
   }
   MutableSubRange sub_range(Size begin, Size end) {
     assert(end >= begin);
-    return MutableSubRange(data().data() + begin, end - begin);
+    return MutableSubRange(data().data() + byte_size(begin), end - begin);
   }
 
   ConstSubRange full_sub_range() const {
@@ -313,7 +315,7 @@ struct MultiByteIntegersBase {
   }
 
   void to_file(FileWriter& writer) const {
-    const Size stored_size = strg_.size();
+    const Size stored_size = storage_.size();
     writer.write(std::span{&stored_size, 1});
     writer.write(byte_span());
   }
@@ -348,30 +350,30 @@ protected:
     std::memcpy(ptr, &store_transform(value), int_bytes);
   }
 
-  Storage& strg() {
-    return strg_;
+  Storage& storage() {
+    return storage_;
   }
-  const Storage& strg() const {
-    return strg_;
+  const Storage& storage() const {
+    return storage_;
   }
 
   [[nodiscard]] decltype(auto) data() const {
-    return strg_.data();
+    return storage_.data();
   }
   [[nodiscard]] decltype(auto) data() {
-    return strg_.data();
+    return storage_.data();
   }
 
 private:
-  TStorage strg_;
+  TStorage storage_;
 };
 
 template<bool tIsConst, typename TByteInt, std::size_t tPaddingBytes, bool tOptional>
 struct MultiByteSubRange
     : public MultiByteIntegersBase<MultiByteSubRange<tIsConst, TByteInt, tPaddingBytes, tOptional>,
                                    TByteInt, tPaddingBytes, tOptional,
-                                   impl::ViewStorage<tIsConst>> {
-  using Storage = impl::ViewStorage<tIsConst>;
+                                   impl::ViewStorage<tIsConst, TByteInt>> {
+  using Storage = impl::ViewStorage<tIsConst, TByteInt>;
   using Base =
     MultiByteIntegersBase<MultiByteSubRange, TByteInt, tPaddingBytes, tOptional, Storage>;
 
@@ -421,25 +423,25 @@ struct MultiByteIntegerArray
     return mbi;
   }
 
-  MultiByteIntegerArray() : Base(Storage{}){};
+  MultiByteIntegerArray() : Base(Storage{}) {};
   explicit MultiByteIntegerArray(std::size_t size) : Base(Storage{size}) {}
   MultiByteIntegerArray(std::initializer_list<Value> init) : Base(Storage{init.size()}) {
     std::copy(init.begin(), init.end(), this->begin());
   };
 
   void push_back(Value value) {
-    const Size size = byte_size(strg().size());
+    const Size size = byte_size(storage().size());
     assert(data().size() == size + padding_bytes);
 
     data().expand(data().size() + element_bytes);
-    ++strg().size();
+    ++storage().size();
 
     this->store_full(data().begin() + size, value);
   }
 
   void pop_back() {
-    assert(data().size() == Storage::effective_allocation(strg().size()));
-    --strg().size();
+    assert(data().size() == Storage::effective_allocation(storage().size()));
+    --storage().size();
     data().shrink(data().size() - element_bytes);
   }
 
@@ -448,14 +450,14 @@ struct MultiByteIntegerArray
   }
 
   iterator insert_uninit(const_iterator pos, Size size) {
-    const Size old_bsize = byte_size(strg().size());
+    const Size old_bsize = byte_size(storage().size());
     assert(data().size() == old_bsize + padding_bytes);
 
     const Size new_bsize = old_bsize + byte_size(size);
     const std::ptrdiff_t offset = pos.raw() - data().data();
 
     data().expand(new_bsize + padding_bytes);
-    strg().size() += size;
+    storage().size() += size;
 
     std::byte* new_begin = data().data();
     std::byte* dst = new_begin + offset;
@@ -480,13 +482,13 @@ struct MultiByteIntegerArray
 
 private:
   using Base::byte_size;
-  using Base::strg;
+  using Base::storage;
 
   [[nodiscard]] decltype(auto) data() const {
-    return strg().data();
+    return storage().data();
   }
   [[nodiscard]] decltype(auto) data() {
-    return strg().data();
+    return storage().data();
   }
 };
 

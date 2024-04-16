@@ -102,9 +102,10 @@ void body(auto... values) {
     elem_assert();
   }
 
-  auto sub = integers.sub_range(0, 2);
+  auto sub = integers.sub_range(2, 4);
   std::sort(sub.begin(), sub.end());
-  std::sort(vec.begin(), vec.begin() + 2);
+  std::sort(vec.begin() + 2, vec.begin() + 4);
+  fmt::print("{}\n", sub);
   elem_assert();
 
   for ([[maybe_unused]] const auto i : thes::range<std::size_t>(4)) {
