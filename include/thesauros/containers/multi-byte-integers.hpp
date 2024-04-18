@@ -16,6 +16,7 @@
 #include "thesauros/containers/array/dynamic.hpp"
 #include "thesauros/io.hpp"
 #include "thesauros/iterator/facades.hpp"
+#include "thesauros/iterator/provider-reverse.hpp"
 #include "thesauros/utility/arrow-proxy.hpp"
 #include "thesauros/utility/inlining.hpp"
 #include "thesauros/utility/integral-value.hpp"
@@ -220,20 +221,25 @@ struct MultiByteIntegersBase {
     }
   };
 
-  template<bool tConst>
-  struct Iterator : public IteratorFacade<Iterator<tConst>, IterProv<tConst>> {
+  template<bool tConst, bool tReverse>
+  struct BaseIterator
+      : public IteratorFacade<
+          BaseIterator<tConst, tReverse>,
+          std::conditional_t<
+            tReverse, iter_provider::Reverse<IterProv<tConst>, BaseIterator<tConst, tReverse>>,
+            IterProv<tConst>>> {
     using Container = TDerived;
     using Ptr = std::conditional_t<tConst, const std::byte, std::byte>*;
     friend IterProv<tConst>;
 
-    explicit Iterator() = default;
-    explicit Iterator(Ptr ptr) : ptr_{ptr} {}
+    explicit BaseIterator() = default;
+    explicit BaseIterator(Ptr ptr) : ptr_{ptr} {}
 
     [[nodiscard]] Ptr raw() const {
       return ptr_;
     }
-    operator Iterator<true>() const {
-      return Iterator<true>{ptr_};
+    operator BaseIterator<true, tReverse>() const {
+      return BaseIterator<true, tReverse>{ptr_};
     }
 
   private:
@@ -243,8 +249,10 @@ struct MultiByteIntegersBase {
   using ConstSubRange = MultiByteSubRange<true, TByteInt, tPaddingBytes, tOptional>;
   using MutableSubRange = MultiByteSubRange<false, TByteInt, tPaddingBytes, tOptional>;
 
-  using iterator = Iterator<false>;
-  using const_iterator = Iterator<true>;
+  using iterator = BaseIterator<false, false>;
+  using const_iterator = BaseIterator<true, false>;
+  using reverse_iterator = BaseIterator<false, true>;
+  using const_reverse_iterator = BaseIterator<true, true>;
 
   explicit MultiByteIntegersBase(TStorage&& storage) : storage_(std::forward<TStorage>(storage)) {};
 
@@ -259,6 +267,19 @@ struct MultiByteIntegersBase {
   }
   const_iterator end() const {
     return const_iterator(data().data() + byte_size(storage_.size()));
+  }
+
+  reverse_iterator rbegin() {
+    return reverse_iterator(data().data() + byte_size(storage_.size()));
+  }
+  const_reverse_iterator rbegin() const {
+    return const_reverse_iterator(data().data() + byte_size(storage_.size()));
+  }
+  reverse_iterator rend() {
+    return reverse_iterator(data().data());
+  }
+  const_reverse_iterator rend() const {
+    return const_reverse_iterator(data().data());
   }
 
   [[nodiscard]] Size size() const {

@@ -108,6 +108,14 @@ inline auto tsformat_to(FormattingTag<false> /*tag*/, auto it, const ::fmt::text
                         ::fmt::format_string<TArgs...> fmt, TArgs&&... args) {
   return ::fmt::format_to(it, fmt, std::forward<TArgs>(args)...);
 }
+
+inline auto tstyled(FormattingTag<true> /*tag*/, const auto& value, fmt::text_style ts) {
+  return fmt::styled(value, ts);
+}
+inline const auto& tstyled(FormattingTag<false> /*tag*/, const auto& value,
+                           fmt::text_style /*ts*/) {
+  return value;
+}
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_FORMAT_COLOR_HPP

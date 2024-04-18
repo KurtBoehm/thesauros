@@ -15,6 +15,9 @@ struct InfoResult {
     assert(is_valid());
     return value_;
   }
+  [[nodiscard]] constexpr TValue value_or(TValue def) const {
+    return is_valid() ? value_ : def;
+  }
 
   [[nodiscard]] constexpr bool is_valid() const {
     return info_ == tValid;

@@ -71,13 +71,15 @@ struct OverflowMultiplies<void> {
 };
 
 template<std::unsigned_integral T>
-inline constexpr T saturate_add(T arg1, T arg2) {
-  return overflow_add(arg1, arg2).value_or(std::numeric_limits<T>::max());
+inline constexpr T saturate_add(T a, T b) {
+  const T sum = a + b;
+  return (sum < a) ? std::numeric_limits<T>::max() : sum;
 }
 
 template<std::unsigned_integral T>
-inline constexpr T saturate_subtract(T arg1, T arg2) {
-  return overflow_subtract(arg1, arg2).value_or(0);
+inline constexpr T saturate_subtract(T a, T b) {
+  const T diff = a - b;
+  return (a < diff) ? 0 : diff;
 }
 
 template<std::unsigned_integral T>
