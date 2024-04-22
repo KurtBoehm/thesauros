@@ -103,7 +103,7 @@ inline auto tsformat_to(FormattingTag<true> /*tag*/, auto it, const ::fmt::text_
                         const TFmt& fmt, const TArgs&... args) {
   return ::fmt::format_to(it, ts, fmt, args...);
 }
-template<typename TFmt, typename... TArgs>
+template<typename... TArgs>
 inline auto tsformat_to(FormattingTag<false> /*tag*/, auto it, const ::fmt::text_style& /*ts*/,
                         ::fmt::format_string<TArgs...> fmt, TArgs&&... args) {
   return ::fmt::format_to(it, fmt, std::forward<TArgs>(args)...);
