@@ -1,9 +1,13 @@
-#ifndef INCLUDE_THESAUROS_MACROPOLIS_MEMBERS_HPP
-#define INCLUDE_THESAUROS_MACROPOLIS_MEMBERS_HPP
+#ifndef INCLUDE_THESAUROS_MACROPOLIS_TYPE_HPP
+#define INCLUDE_THESAUROS_MACROPOLIS_TYPE_HPP
 
 #include <cstddef>
 #include <tuple>
 #include <utility>
+
+#include "thesauros/concepts/type-traits.hpp"
+#include "thesauros/utility/primitives.hpp"
+#include "thesauros/utility/static-string/static-string.hpp"
 
 namespace thes {
 template<auto tSerialName, auto tValue>
@@ -51,9 +55,48 @@ struct TypeInfo<T> {
 };
 
 template<typename T>
-requires(requires { sizeof(TypeInfo<T>); })
+struct SerialNameTrait;
+template<typename T>
+requires(CompleteType<TypeInfo<T>>)
+struct SerialNameTrait<T> {
+  static constexpr auto name() {
+    return TypeInfo<T>::serial_name;
+  }
+};
+template<typename T>
+concept HasSerialName = CompleteType<SerialNameTrait<T>>;
+
+#ifdef THES_POLIS_PRIMITIVE_NAME
+#error "THES_POLIS_PRIMITIVE_NAME should not be defined!"
+#endif
+#define THES_POLIS_PRIMITIVE_NAME(TYPENAME) \
+  template<> \
+  struct SerialNameTrait<thes::TYPENAME> { \
+    static constexpr auto name() { \
+      return thes::StaticString{#TYPENAME}; \
+    }; \
+  };
+
+THES_POLIS_PRIMITIVE_NAME(u8)
+THES_POLIS_PRIMITIVE_NAME(u16)
+THES_POLIS_PRIMITIVE_NAME(u32)
+THES_POLIS_PRIMITIVE_NAME(u64)
+THES_POLIS_PRIMITIVE_NAME(u128)
+THES_POLIS_PRIMITIVE_NAME(i8)
+THES_POLIS_PRIMITIVE_NAME(i16)
+THES_POLIS_PRIMITIVE_NAME(i32)
+THES_POLIS_PRIMITIVE_NAME(i64)
+THES_POLIS_PRIMITIVE_NAME(i128)
+THES_POLIS_PRIMITIVE_NAME(f16)
+THES_POLIS_PRIMITIVE_NAME(f32)
+THES_POLIS_PRIMITIVE_NAME(f64)
+
+#undef THES_POLIS_PRIMITIVE_NAME
+
+template<typename T>
+requires(CompleteType<SerialNameTrait<T>>)
 inline constexpr auto serial_name_of() {
-  return TypeInfo<T>::serial_name;
+  return SerialNameTrait<T>::name();
 }
 
 #define THES_POLIS_MEMBER_NAME_STR_IMPL(NAME, TYPE, ...) THES_POLIS_NAME_STR_##NAME
@@ -283,4 +326,4 @@ inline constexpr auto serial_name_of() {
                            BOOST_PP_VARIADIC_TO_LIST(__VA_ARGS__))
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_MACROPOLIS_MEMBERS_HPP
+#endif // INCLUDE_THESAUROS_MACROPOLIS_TYPE_HPP

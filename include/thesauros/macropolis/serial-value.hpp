@@ -7,7 +7,7 @@
 
 #include "thesauros/macropolis/enum.hpp"
 #include "thesauros/macropolis/helpers.hpp"
-#include "thesauros/macropolis/members.hpp"
+#include "thesauros/macropolis/type.hpp"
 #include "thesauros/utility/primitives.hpp"
 #include "thesauros/utility/type-tag.hpp"
 

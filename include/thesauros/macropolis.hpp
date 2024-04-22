@@ -5,9 +5,9 @@
 #include "macropolis/enum.hpp"
 #include "macropolis/flatten-type.hpp"
 #include "macropolis/helpers.hpp"
-#include "macropolis/members.hpp"
 #include "macropolis/platform.hpp"
 #include "macropolis/serial-value.hpp"
+#include "macropolis/type.hpp"
 #include "macropolis/warnings.hpp"
 // IWYU pragma: end_exports
 

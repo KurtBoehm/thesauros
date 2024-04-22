@@ -5,12 +5,12 @@
 #include <initializer_list>
 #include <memory>
 #include <span>
-#include <sstream>
 #include <stdexcept>
 #include <utility>
 
 #include "thesauros/containers/array/initialization-policy.hpp"
 #include "thesauros/containers/array/typed-chunk.hpp"
+#include "thesauros/format/fmtlib.hpp"
 
 namespace thes {
 template<typename TValue, typename TAllocator, typename TInitPolicy>
@@ -124,15 +124,13 @@ struct FixedArray {
 
   [[nodiscard]] constexpr Value& at(Size index) {
     if (index >= size()) {
-      throw std::out_of_range(
-        (std::stringstream{} << "Invalid index: " << index << ' ' << size()).str());
+      throw std::out_of_range{fmt::format("Invalid index: {} >= {}", index, size())};
     }
     return allocation_[index];
   }
   [[nodiscard]] constexpr const Value& at(Size index) const {
     if (index >= size()) {
-      throw std::out_of_range(
-        (std::stringstream{} << "Invalid index: " << index << ' ' << size()).str());
+      throw std::out_of_range{fmt::format("Invalid index: {} >= {}", index, size())};
     }
     return allocation_[index];
   }
