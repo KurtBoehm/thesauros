@@ -16,6 +16,7 @@ struct LimitedArray {
   using Array = std::array<Value, capacity>;
   using const_iterator = const T*;
 
+  constexpr LimitedArray() = default;
   explicit constexpr LimitedArray(std::size_t size) : size_(size) {
     assert(size_ <= capacity);
   }
@@ -28,14 +29,14 @@ struct LimitedArray {
   template<typename TIt>
   LimitedArray(TIt first, TIt last) : size_(std::distance(first, last)) {
     assert(size_ <= capacity);
-
-    auto out_it = data_.begin();
-    for (auto in_it = first; in_it != last; ++in_it) {
-      *(out_it++) = *in_it;
-    }
+    std::copy(first, last, data_.begin());
   }
 
   constexpr const T& operator[](std::size_t idx) const {
+    assert(idx < capacity);
+    return data_[idx];
+  }
+  constexpr T& operator[](std::size_t idx) {
     assert(idx < capacity);
     return data_[idx];
   }
@@ -59,20 +60,12 @@ struct LimitedArray {
   }
 
   constexpr friend bool operator==(const LimitedArray& a1, const LimitedArray& a2) {
-    if (a1.size_ != a2.size_) {
-      return false;
-    }
-    for (std::size_t i = 0; i < a1.size_; ++i) {
-      if (a1[i] != a2[i]) {
-        return false;
-      }
-    }
-    return true;
+    return std::equal(a1.begin(), a1.end(), a2.begin(), a2.end());
   }
 
 private:
-  std::size_t size_;
-  Array data_{};
+  std::size_t size_{0};
+  Array data_;
 };
 } // namespace thes
 
