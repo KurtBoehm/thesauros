@@ -4,7 +4,7 @@
 #include <cstdint>
 
 #include "thesauros/format/fmtlib.hpp"
-#include "thesauros/format/simple-formatter.hpp"
+#include "thesauros/format/formatter.hpp"
 #include "thesauros/quantity.hpp"
 
 template<typename TRep, typename TUnit>

@@ -22,6 +22,11 @@ struct MemberInfo {
   static constexpr auto name = tName;
   static constexpr auto serial_name = tSerialName;
   static constexpr auto pointer = tPointer;
+
+  template<typename TOther>
+  constexpr decltype(auto) value(TOther&& val) {
+    return std::forward<TOther>(val).*pointer;
+  }
 };
 
 template<typename T, auto tName, auto tPointer, std::size_t tOffset>
@@ -40,7 +45,6 @@ inline constexpr auto memory_layout_info = T::MemoryLayoutInfo::members;
 
 template<typename T>
 struct TypeInfo;
-
 template<typename T>
 requires(requires { typename T::TypeInfo; })
 struct TypeInfo<T> {
@@ -53,6 +57,8 @@ struct TypeInfo<T> {
   static constexpr auto static_members = Info::static_members;
   static constexpr auto members = Info::members;
 };
+template<typename T>
+concept HasTypeInfo = CompleteType<TypeInfo<T>>;
 
 template<typename T>
 struct SerialNameTrait;

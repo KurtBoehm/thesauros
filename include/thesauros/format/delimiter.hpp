@@ -2,7 +2,7 @@
 #define INCLUDE_THESAUROS_FORMAT_DELIMITER_HPP
 
 #include "thesauros/format/fmtlib.hpp"
-#include "thesauros/format/simple-formatter.hpp"
+#include "thesauros/format/formatter.hpp"
 #include "thesauros/io/delimiter.hpp"
 
 template<>

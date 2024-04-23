@@ -4,7 +4,7 @@
 #include <functional>
 
 #include "thesauros/format/fmtlib.hpp"
-#include "thesauros/format/simple-formatter.hpp"
+#include "thesauros/format/formatter.hpp"
 #include "thesauros/utility/static-ranges/definitions.hpp"
 #include "thesauros/utility/static-ranges/ranges/iota.hpp"
 #include "thesauros/utility/static-ranges/sinks/for-each.hpp"

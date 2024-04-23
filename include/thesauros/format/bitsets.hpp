@@ -7,7 +7,7 @@
 #include "thesauros/containers/bitset.hpp"
 #include "thesauros/containers/bitset/dynamic.hpp"
 #include "thesauros/format/fmtlib.hpp"
-#include "thesauros/format/simple-formatter.hpp"
+#include "thesauros/format/formatter.hpp"
 
 namespace thes::detail {
 inline constexpr auto write_bitset(const auto& bs, auto it) {

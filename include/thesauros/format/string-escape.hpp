@@ -2,7 +2,7 @@
 #define INCLUDE_THESAUROS_FORMAT_STRING_ESCAPE_HPP
 
 #include "thesauros/format/fmtlib.hpp"
-#include "thesauros/format/simple-formatter.hpp"
+#include "thesauros/format/formatter.hpp"
 #include "thesauros/utility/string-escape.hpp"
 
 template<typename T>
