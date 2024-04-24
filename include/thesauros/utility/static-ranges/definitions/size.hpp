@@ -1,6 +1,7 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_DEFINITIONS_SIZE_HPP
 #define INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_DEFINITIONS_SIZE_HPP
 
+#include "thesauros/concepts/type-traits.hpp"
 #include <concepts>
 #include <cstddef>
 #include <type_traits>
@@ -14,7 +15,7 @@ concept HasMemberSize = requires {
 };
 
 template<typename TRange>
-concept HasTupleSize = requires(const TRange& c) { sizeof(std::tuple_size<TRange>); };
+concept HasTupleSize = CompleteType<std::tuple_size<TRange>>;
 } // namespace impl
 
 template<typename TRange>
@@ -32,7 +33,7 @@ struct SizeTrait<TRange> {
 };
 
 template<typename TRange>
-concept HasSize = requires { sizeof(SizeTrait<std::decay_t<TRange>>); };
+concept HasSize = CompleteType<SizeTrait<std::decay_t<TRange>>>;
 template<HasSize TRange>
 inline constexpr std::size_t size = SizeTrait<std::decay_t<TRange>>::value;
 template<HasSize TRange>

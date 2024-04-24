@@ -14,6 +14,7 @@
 
 #include "thesauros/concepts/type-traits.hpp"
 #include "thesauros/io/delimiter.hpp"
+#include "thesauros/macropolis/enum.hpp"
 #include "thesauros/macropolis/serial-value.hpp"
 #include "thesauros/macropolis/type.hpp"
 #include "thesauros/ranges/concepts.hpp"
@@ -80,9 +81,9 @@ template<typename T>
 struct JsonWriter;
 
 template<typename T>
-inline auto write_json(auto out_it, T&& value, Indentation indent = {}) {
+inline auto write_json(auto it, T&& value, Indentation indent = {}) {
   using Type = std::remove_cvref_t<T>;
-  return JsonWriter<Type>::write(out_it, std::forward<T>(value), indent);
+  return JsonWriter<Type>::write(it, std::forward<T>(value), indent);
 }
 
 template<typename T>
@@ -114,27 +115,27 @@ inline auto json_print(T&& value, Indentation indent = {}) {
 
 template<>
 struct JsonWriter<bool> {
-  static auto write(auto out_it, const bool value, Indentation /*indent*/ = {}) {
+  static auto write(auto it, const bool value, Indentation /*indent*/ = {}) {
     const std::string_view str = value ? "true" : "false";
-    return std::copy(str.begin(), str.end(), out_it);
+    return std::copy(str.begin(), str.end(), it);
   }
 };
 template<typename TNum>
 requires std::integral<TNum> || std::floating_point<TNum>
 struct JsonWriter<TNum> {
-  static auto write(auto out_it, const TNum value, Indentation /*indent*/ = {}) {
+  static auto write(auto it, const TNum value, Indentation /*indent*/ = {}) {
     const auto str = numeric_string(value).value();
-    return std::copy(str.begin(), str.end(), out_it);
+    return std::copy(str.begin(), str.end(), it);
   }
 };
 
 template<CharacterType TChar>
 struct JsonWriter<std::basic_string_view<TChar>> {
-  static auto write(auto out_it, std::string_view value, Indentation /*indent*/ = {}) {
-    *out_it++ = '"';
-    out_it = escape_string(value, out_it);
-    *out_it++ = '"';
-    return out_it;
+  static auto write(auto it, std::string_view value, Indentation /*indent*/ = {}) {
+    *it++ = '"';
+    it = escape_string(value, it);
+    *it++ = '"';
+    return it;
   }
 };
 template<CharacterType TChar, std::size_t tSize>
@@ -149,72 +150,71 @@ struct JsonWriter<std::basic_string<TChar>> : public JsonWriter<std::basic_strin
 template<>
 struct JsonWriter<std::filesystem::path> {
   using Path = std::filesystem::path;
-  static auto write(auto out_it, const std::filesystem::path& p, Indentation indent = {}) {
-    return JsonWriter<Path::string_type>::write(out_it, p.native(), indent);
+  static auto write(auto it, const Path& p, Indentation indent = {}) {
+    return JsonWriter<Path::string_type>::write(it, p.native(), indent);
   }
 };
 
 template<MapRange TMap>
 struct JsonWriter<TMap> {
-  static auto write(auto out_it, const TMap& map, Indentation indent = {}) {
+  static auto write(auto it, const TMap& map, Indentation indent = {}) {
     const auto indent1 = indent + 1;
 
-    *out_it++ = '{';
-    *out_it++ = indent.separator();
+    *it++ = '{';
+    *it++ = indent.separator();
 
     for (Delimiter delim{","}; const auto& [k, v] : map) {
-      delim.output(out_it, indent1.separator());
-      out_it = indent1.output(out_it);
+      delim.output(it, indent1.separator());
+      it = indent1.output(it);
 
-      *out_it++ = '"';
-      out_it = escape_string(k, out_it);
-      *out_it++ = '"';
-      *out_it++ = ':';
-      *out_it++ = ' ';
+      *it++ = '"';
+      it = escape_string(k, it);
+      *it++ = '"';
+      *it++ = ':';
+      *it++ = ' ';
 
-      out_it = write_json(out_it, serial_value(v), indent1);
+      it = write_json(it, serial_value(v), indent1);
     }
 
-    *out_it++ = indent1.separator();
-    out_it = indent.output(out_it);
-    *out_it++ = '}';
+    *it++ = indent1.separator();
+    it = indent.output(it);
+    *it++ = '}';
 
-    return out_it;
+    return it;
   }
 };
 
 template<typename TRange>
 requires(AnyRange<TRange> && !MapRange<TRange>)
 struct JsonWriter<TRange> {
-  static auto write(auto out_it, const TRange& rng, Indentation indent = {}) {
+  static auto write(auto it, const TRange& rng, Indentation indent = {}) {
     const auto indent1 = indent + 1;
 
-    *out_it++ = '[';
-    indent.reduced_separator([&](auto c) { *out_it++ = c; });
+    *it++ = '[';
+    indent.reduced_separator([&](auto c) { *it++ = c; });
 
     for (Delimiter delim{","}; const auto& v : rng) {
-      delim.output(out_it, indent1.separator());
-      out_it = indent1.output(out_it);
-      out_it = write_json(out_it, serial_value(v), indent1);
+      delim.output(it, indent1.separator());
+      it = indent1.output(it);
+      it = write_json(it, serial_value(v), indent1);
     }
 
-    indent.reduced_separator([&](auto c) { *out_it++ = c; });
-    out_it = indent.output(out_it);
-    *out_it++ = ']';
+    indent.reduced_separator([&](auto c) { *it++ = c; });
+    it = indent.output(it);
+    *it++ = ']';
 
-    return out_it;
+    return it;
   }
 };
 
-template<typename T>
-requires(requires { sizeof(TypeInfo<T>); })
+template<HasTypeInfo T>
 struct JsonWriter<T> {
-  static auto write(auto out_it, const T& value, Indentation indent = {}) {
+  static auto write(auto it, const T& value, Indentation indent = {}) {
     using Info = TypeInfo<T>;
     const auto indent1 = indent + 1;
 
-    *out_it++ = '{';
-    *out_it++ = indent.separator();
+    *it++ = '{';
+    *it++ = indent.separator();
 
     constexpr std::size_t static_size = std::tuple_size_v<decltype(Info::static_members)>;
     constexpr std::size_t size = static_size + std::tuple_size_v<decltype(Info::members)>;
@@ -223,36 +223,60 @@ struct JsonWriter<T> {
       constexpr bool is_static = i < static_size;
       constexpr auto member = [&] {
         if constexpr (is_static) {
-          return std::get<i>(Info::static_members);
+          return thes::star::get_at<i>(Info::static_members);
         } else {
-          return std::get<i - static_size>(Info::members);
+          return thes::star::get_at<i - static_size>(Info::members);
         }
       }();
       using Member = decltype(member);
 
-      out_it = indent1.output(out_it);
-      *out_it++ = '"';
-      out_it = escape_string(Member::serial_name.view(), out_it);
-      *out_it++ = '"';
-      *out_it++ = ':';
-      *out_it++ = ' ';
+      it = indent1.output(it);
+      *it++ = '"';
+      it = escape_string(Member::serial_name.view(), it);
+      *it++ = '"';
+      *it++ = ':';
+      *it++ = ' ';
 
       if constexpr (is_static) {
-        out_it = write_json(out_it, serial_value(Member::value), indent1);
+        it = write_json(it, serial_value(Member::value), indent1);
       } else {
-        out_it = write_json(out_it, serial_value(value.*Member::pointer), indent1);
+        it = write_json(it, serial_value(value.*Member::pointer), indent1);
       }
       if constexpr (i + 1 < size) {
-        *out_it++ = ',';
+        *it++ = ',';
       }
 
-      *out_it++ = indent1.separator();
+      *it++ = indent1.separator();
     });
 
-    out_it = indent.output(out_it);
-    *out_it++ = '}';
+    it = indent.output(it);
+    *it++ = '}';
 
-    return out_it;
+    return it;
+  }
+};
+
+template<HasEnumInfo TEnum>
+struct JsonWriter<TEnum> {
+  using Path = std::filesystem::path;
+  template<typename TIt>
+  static auto write(TIt it, TEnum value, Indentation indent = {}) {
+    using EnumInfo = ::thes::EnumInfo<TEnum>;
+
+    auto impl = [&]<std::size_t tHead, std::size_t... tTail>(
+                  auto rec, std::index_sequence<tHead, tTail...>) -> TIt {
+      constexpr auto value_info = thes::star::get_at<tHead>(EnumInfo::values);
+      if (value_info.value == value) {
+        return JsonWriter<std::string_view>::write(it, value_info.serial_name.view(), indent);
+      }
+      if constexpr (sizeof...(tTail) > 0) {
+        return rec(rec, std::index_sequence<tTail...>{});
+      } else {
+        using Under = std::underlying_type_t<TEnum>;
+        return JsonWriter<Under>::write(it, static_cast<Under>(value), indent);
+      }
+    };
+    return impl(impl, std::make_index_sequence<std::tuple_size_v<decltype(EnumInfo::values)>>{});
   }
 };
 } // namespace thes

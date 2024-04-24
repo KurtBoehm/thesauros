@@ -9,6 +9,7 @@
 #include <utility>
 #include <variant>
 
+#include "thesauros/concepts/type-traits.hpp"
 #include "thesauros/utility/inlining.hpp"
 #include "thesauros/utility/value-tag.hpp"
 
@@ -41,7 +42,10 @@ struct GetAtTrait<tIndex, TRange> {
 };
 
 template<std::size_t tIndex, typename TRange>
-requires(requires { sizeof(GetAtTrait<tIndex, TRange>); })
+concept HasGetAt = CompleteType<GetAtTrait<tIndex, TRange>>;
+
+template<std::size_t tIndex, typename TRange>
+requires HasGetAt<tIndex, TRange>
 THES_ALWAYS_INLINE inline constexpr decltype(auto) get_at(TRange&& r,
                                                           IndexTag<tIndex> /*tag*/ = {}) {
   return GetAtTrait<tIndex, TRange>::get_at(std::forward<TRange>(r));

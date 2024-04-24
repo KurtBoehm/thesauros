@@ -10,6 +10,7 @@
 #include <string_view>
 #include <utility>
 
+#include "thesauros/concepts/type-traits.hpp"
 #include "thesauros/math/safe-integer.hpp"
 #include "thesauros/utility/static-capacity-string.hpp"
 #include "thesauros/utility/unicode.hpp"
@@ -113,7 +114,7 @@ private:
 
 template<typename T>
 static constexpr auto escaped_string(T&& value) {
-  if constexpr (requires { sizeof(StringEscape<T>); }) {
+  if constexpr (CompleteType<StringEscape<T>>) {
     return StringEscape<T>::escape(value);
   } else {
     return EscapedPrinter<T>{std::forward<T>(value)};

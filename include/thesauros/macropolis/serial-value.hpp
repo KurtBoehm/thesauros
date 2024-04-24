@@ -9,6 +9,7 @@
 #include "thesauros/macropolis/helpers.hpp"
 #include "thesauros/macropolis/type.hpp"
 #include "thesauros/utility/primitives.hpp"
+#include "thesauros/utility/static-ranges.hpp"
 #include "thesauros/utility/type-tag.hpp"
 
 namespace thes {
@@ -30,8 +31,7 @@ inline constexpr decltype(auto) serial_value(T&& value) {
   return SerialValueTrait<std::decay_t<T>>::make(std::forward<T>(value));
 }
 
-template<typename T>
-requires(requires { sizeof(EnumInfo<T>); })
+template<HasEnumInfo T>
 struct SerialValueTrait<T> {
   static constexpr auto make(const T& value) {
     auto impl = [&](auto& rec, const auto& head, const auto&... tail) {
@@ -44,21 +44,19 @@ struct SerialValueTrait<T> {
         throw std::invalid_argument("Unsupported value!");
       }
     };
-    return std::apply([&](const auto&... members) { return impl(impl, members...); },
-                      EnumInfo<T>::values);
+    return EnumInfo<T>::values |
+           thes::star::apply([&](const auto&... members) { return impl(impl, members...); });
   }
 };
 
-template<typename T>
-requires(requires { sizeof(TypeInfo<T>); })
+template<HasTypeInfo T>
 struct SerialValueTrait<TypeTag<T>> {
   static constexpr auto make(const T& /*value*/) {
     return TypeInfo<T>::serial_name.view();
   }
 };
 
-template<typename T>
-requires(requires { sizeof(EnumInfo<T>); })
+template<HasEnumInfo T>
 struct SerialValueTrait<TypeTag<T>> {
   static constexpr auto make(const T& /*value*/) {
     return EnumInfo<T>::serial_name.view();

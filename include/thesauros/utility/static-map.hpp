@@ -44,7 +44,8 @@ template<typename... TPairs>
 struct StaticMap;
 
 template<typename... TPairs>
-requires(Tuple<typename TPairs::Key...>{TPairs::key...} | star::all_different)
+requires(Tuple<typename std::decay_t<TPairs>::Key...>{std::decay_t<TPairs>::key...} |
+         star::all_different)
 struct StaticMap<TPairs...> {
   using Tuple = ::thes::Tuple<TPairs...>;
 

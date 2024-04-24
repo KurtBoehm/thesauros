@@ -1,11 +1,12 @@
 #ifndef INCLUDE_THESAUROS_MACROPOLIS_ENUM_HPP
 #define INCLUDE_THESAUROS_MACROPOLIS_ENUM_HPP
 
-#include <tuple>
-
 #include <boost/preprocessor.hpp>
 
+#include "thesauros/concepts/type-traits.hpp"
 #include "thesauros/macropolis/helpers.hpp"
+#include "thesauros/utility/static-ranges.hpp"
+#include "thesauros/utility/tuple.hpp"
 #include "thesauros/utility/value-tag.hpp"
 
 namespace thes {
@@ -16,8 +17,22 @@ struct EnumValueInfo {
   static constexpr auto serial_name = tSerialName;
 };
 
+template<auto tName, auto tSerialName, auto tValues>
+struct EnumInfoTemplate {
+  static constexpr auto name = tName;
+  static constexpr auto serial_name = tSerialName;
+  static constexpr auto values = tValues;
+};
+
 template<typename TEnum>
 struct EnumInfo;
+
+template<typename TEnum>
+requires(requires(TEnum value) { enum_info_helper(value); })
+struct EnumInfo<TEnum> : public decltype(enum_info_helper(std::declval<TEnum>())){};
+
+template<typename T>
+concept HasEnumInfo = CompleteType<EnumInfo<T>>;
 
 #define THES_POLIS_ENUM_DEF_IMPL(VALUE) THES_POLIS_NAME_##VALUE
 #define THES_POLIS_ENUM_DEF(REC, _, IDX, VALUE) \
@@ -36,49 +51,30 @@ struct EnumInfo;
 
 #define THES_DEFINE_ENUM_IMPL_INFO(TYPE, TYPENAME, LIST) \
   /* gcc: global qualification of class name is invalid before ‘{’ token */ \
-  template<> \
-  struct thes::EnumInfo<TYPENAME> { \
-    static constexpr auto name = THES_POLIS_NAME_STR_##TYPE; \
-    static constexpr auto serial_name = THES_POLIS_SERIAL_NAME_STR_##TYPE; \
-    static constexpr std::tuple values{ \
-      BOOST_PP_LIST_FOR_EACH_I(THES_POLIS_ENUM_VALUE_DEF, TYPENAME, LIST)}; \
-  };
+  inline consteval auto enum_info_helper(TYPENAME /*dummy*/) { \
+    return ::thes::EnumInfoTemplate<THES_POLIS_NAME_STR_##TYPE, THES_POLIS_SERIAL_NAME_STR_##TYPE, \
+                                    thes::Tuple{BOOST_PP_LIST_FOR_EACH_I( \
+                                      THES_POLIS_ENUM_VALUE_DEF, TYPENAME, LIST)}>{}; \
+  }
 
-// Version with namespace
-
-#define THES_DEFINE_ENUM_IMPL(NAMESPACE, NAME, UNDERLYING, LIST) \
-  namespace NAMESPACE { \
-  THES_DEFINE_ENUM_IMPL_ENUM(NAME, UNDERLYING, LIST) \
-  } \
-  THES_DEFINE_ENUM_IMPL_INFO(NAME, NAMESPACE::THES_POLIS_NAME(NAME), LIST)
-
-#define THES_DEFINE_ENUM(NAMESPACE, NAME, UNDERLYING, ...) \
-  THES_DEFINE_ENUM_IMPL(NAMESPACE, NAME, UNDERLYING, BOOST_PP_VARIADIC_TO_LIST(__VA_ARGS__))
-
-#define THES_DEFINE_ENUM_INFO(NAMESPACE, NAME, ...) \
-  THES_DEFINE_ENUM_IMPL_INFO(NAME, NAMESPACE::THES_POLIS_NAME(NAME), \
-                             BOOST_PP_VARIADIC_TO_LIST(__VA_ARGS__))
-
-// Version without namespace
-
-#define THES_DEFINE_ENUM_SIMPLE_IMPL(NAME, UNDERLYING, LIST) \
+#define THES_DEFINE_ENUM_IMPL(NAME, UNDERLYING, LIST) \
   THES_DEFINE_ENUM_IMPL_ENUM(NAME, UNDERLYING, LIST) \
   THES_DEFINE_ENUM_IMPL_INFO(NAME, THES_POLIS_NAME(NAME), LIST)
 
-#define THES_DEFINE_ENUM_SIMPLE(NAME, UNDERLYING, ...) \
-  THES_DEFINE_ENUM_SIMPLE_IMPL(NAME, UNDERLYING, BOOST_PP_VARIADIC_TO_LIST(__VA_ARGS__))
-
-#define THES_DEFINE_ENUM_INFO_SIMPLE(NAME, ...) \
+#define THES_DEFINE_ENUM_INFO(NAME, ...) \
   THES_DEFINE_ENUM_IMPL_INFO(NAME, THES_POLIS_NAME(NAME), BOOST_PP_VARIADIC_TO_LIST(__VA_ARGS__))
 
+#define THES_DEFINE_ENUM(NAME, UNDERLYING, ...) \
+  THES_DEFINE_ENUM_IMPL(NAME, UNDERLYING, BOOST_PP_VARIADIC_TO_LIST(__VA_ARGS__))
+
 template<auto tValue>
-requires(requires { sizeof(EnumInfo<decltype(tValue)>); })
+requires HasEnumInfo<decltype(tValue)>
 inline constexpr auto enum_value_info = [] {
   using Info = EnumInfo<decltype(tValue)>;
   constexpr auto values = Info::values;
 
   auto impl = [&](auto self, auto idx) {
-    auto info = std::get<idx>(values);
+    auto info = thes::star::get_at<idx>(values);
     if constexpr (info.value == tValue) {
       return info;
     } else {
@@ -88,13 +84,12 @@ inline constexpr auto enum_value_info = [] {
   return impl(impl, index_tag<0>);
 }();
 
-template<typename T>
-requires(requires { sizeof(EnumInfo<T>); })
+template<HasEnumInfo T>
 inline constexpr auto serial_name_of() {
   return EnumInfo<T>::serial_name;
 }
 template<auto tValue>
-requires(requires { sizeof(EnumInfo<decltype(tValue)>); })
+requires HasEnumInfo<decltype(tValue)>
 inline constexpr auto serial_name_of() {
   return enum_value_info<tValue>.serial_name;
 }

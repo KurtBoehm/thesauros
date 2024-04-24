@@ -47,32 +47,16 @@ static_assert(Test1b::pointer == &Test1::test);
 
 ////////////////////////////////////////////////////////////////
 
-#define USE_NAMESPACE true
-
-#if USE_NAMESPACE
-#if false
-THES_DEFINE_ENUM(Inner, SNAKE_CASE(Test2), int, LOWERCASE(A), LOWERCASE(B));
-#else
 namespace inner {
-enum struct Test2 { A, B };
+THES_DEFINE_ENUM(SNAKE_CASE(Test2), int, LOWERCASE(A), LOWERCASE(B));
 }
-THES_DEFINE_ENUM_INFO(inner, SNAKE_CASE(Test2), LOWERCASE(A), LOWERCASE(B));
-#endif
-#else
-THES_DEFINE_ENUM_SIMPLE(SNAKE_CASE(Test2), int, SNAKE_CASE(A));
-#endif
 
-#if USE_NAMESPACE
-using Type2 = inner::Test2;
-#else
-using Type2 = Test2;
-#endif
-using Test2Info = thes::EnumInfo<Type2>;
+using Test2Info = thes::EnumInfo<inner::Test2>;
 
 static_assert(Test2Info::name == "Te"_sstr + "st2"_sstr);
 static_assert(Test2Info::serial_name == "test2"_sstr);
 
-inline constexpr auto test_2_a = std::get<0>(Test2Info::values);
+inline constexpr auto test_2_a = thes::star::get_at<0>(Test2Info::values);
 using Test2A = decltype(test_2_a);
 static_assert(Test2A::name == "A"_sstr);
 static_assert(Test2A::serial_name == "a"_sstr);
@@ -82,22 +66,22 @@ static_assert(thes::enum_value_info<inner::Test2::B>.name == "B"_sstr);
 
 ////////////////////////////////////////////////////////////////
 
-template<Type2 tValue>
+template<inner::Test2 tValue>
 struct Test3 {
   THES_DEFINE_TYPE(SNAKE_CASE(Test3, tValue), CONSTEXPR_CONSTRUCTOR)
 };
-using Type3 = Test3<Type2::A>;
+using Type3 = Test3<inner::Test2::A>;
 using Test3Info = thes::TypeInfo<Type3>;
 static_assert(Test3Info::name == "Test3"_sstr);
 static_assert(Test3Info::serial_name == "test3_a"_sstr);
 
 ////////////////////////////////////////////////////////////////
 
-template<typename T, Type2 tValue2>
+template<typename T, inner::Test2 tValue2>
 struct Test4 {
   THES_DEFINE_TYPE(SNAKE_CASE(Test4, (T, tValue2)), CONSTEXPR_CONSTRUCTOR)
 };
-using Type4 = Test4<Type2, Type2::B>;
+using Type4 = Test4<inner::Test2, inner::Test2::B>;
 using Test4Info = thes::TypeInfo<Type4>;
 static_assert(Test4Info::name == "Test4"_sstr);
 static_assert(Test4Info::serial_name == "test4_test2_b"_sstr);
@@ -122,10 +106,10 @@ static_assert(Test6Info::serial_name == thes::StaticString<3>::filled('t'));
 
 ////////////////////////////////////////////////////////////////
 
-template<Type2 tVal, typename TType>
+template<inner::Test2 tVal, typename TType>
 struct Test7 {
   THES_DEFINE_TYPE_EX(SNAKE_CASE(Test7), CONSTEXPR_CONSTRUCTOR,
-                      TEMPLATE_PARAMS((Type2)tVal, (typename)TType),
+                      TEMPLATE_PARAMS((inner::Test2)tVal, (typename)TType),
                       MEMBERS((SNAKE_CASE(a), TType), (SNAKE_CASE(b), int)),
                       STATIC_MEMBERS(("value", tVal), ("type", thes::type_tag<TType>)))
   Test7(Test7&&) noexcept = default;
@@ -146,7 +130,7 @@ THES_CREATE_TYPE_EX(SNAKE_CASE(Test9), CONSTEXPR_CONSTRUCTOR,
                     STATIC_MEMBERS(("value", tVal), ("type", thes::type_tag<TType>)))
 }
 
-using Type7a = Test7<Type2::A, int>;
+using Type7a = Test7<inner::Test2::A, int>;
 using Type7aInfo = thes::TypeInfo<Type7a>;
 inline constexpr auto mems = Type7aInfo::members;
 inline constexpr auto stat_mems = Type7aInfo::static_members;
@@ -156,18 +140,19 @@ using Mem0 = decltype(mem0);
 using Mem1 = decltype(mem1);
 
 static_assert(Mem0::serial_name == "value"_sstr);
-static_assert(Mem0::value == Type2::A);
+static_assert(Mem0::value == inner::Test2::A);
 static_assert(Mem1::serial_name == "type"_sstr);
 
 static_assert(thes::serial_value(Mem0::value) == "a"_sstr.view());
 static_assert(thes::serial_value(Mem1::value) == "i32");
 
-using Type7b = Test7<Type2::A, std::variant<int, double>>;
-using Type7c = Test7<Type2::B, std::optional<std::variant<int, Type7b>>>;
+using Type7b = Test7<inner::Test2::A, std::variant<int, double>>;
+using Type7c = Test7<inner::Test2::B, std::optional<std::variant<int, Type7b>>>;
 
 constexpr auto test7fv = thes::flatten_type(Type7b{4, 4});
-static_assert(std::same_as<std::decay_t<decltype(test7fv)>,
-                           std::variant<Test7<Type2::A, int>, Test7<Type2::A, double>>>);
+static_assert(
+  std::same_as<std::decay_t<decltype(test7fv)>,
+               std::variant<Test7<inner::Test2::A, int>, Test7<inner::Test2::A, double>>>);
 
 constexpr auto test7fv2 = thes::flatten_type(std::variant<Type7b, Type7c>{Type7b{4, 4}});
 static_assert(
@@ -180,8 +165,8 @@ static_assert(
 ////////////////////////////////////////////////////////////////
 
 static_assert(thes::serial_name_of<Test1>() == "test1"_sstr);
-static_assert(thes::serial_name_of<Type2>() == "test2"_sstr);
-static_assert(thes::serial_name_of<Type2::A>() == "a"_sstr);
+static_assert(thes::serial_name_of<inner::Test2>() == "test2"_sstr);
+static_assert(thes::serial_name_of<inner::Test2::A>() == "a"_sstr);
 
 ////////////////////////////////////////////////////////////////
 
