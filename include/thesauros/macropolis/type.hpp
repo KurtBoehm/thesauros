@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 
 #include "thesauros/concepts/type-traits.hpp"
@@ -10,8 +11,10 @@
 #include "thesauros/utility/static-string/static-string.hpp"
 
 namespace thes {
-template<auto tSerialName, auto tValue>
+template<auto tName, auto tSerialName, auto tValue>
 struct StaticMemberInfo {
+  using Type = std::decay_t<decltype(tValue)>;
+  static constexpr auto name = tName;
   static constexpr auto serial_name = tSerialName;
   static constexpr auto value = tValue;
 };
@@ -125,10 +128,16 @@ inline constexpr auto serial_name_of() {
   __VA_OPT__(=) BOOST_PP_REMOVE_PARENS(__VA_ARGS__)
 #define THES_POLIS_MEMBER_CONSTR_INIT(ARG) THES_POLIS_MEMBER_CONSTR_INIT_IMPL ARG
 
-// Generate the static member definitions
+// A static member declaration
 
-#define THES_POLIS_STATIC_MEMBER_IMPL(SERIAL_NAME, VALUE) \
-  ::thes::StaticMemberInfo<THES_POLIS_STR(SERIAL_NAME), VALUE> {}
+#define THES_POLIS_STATIC_MEMBER_DECL_IMPL(NAME, VALUE) \
+  static constexpr auto THES_POLIS_NAME(NAME) = VALUE;
+#define THES_POLIS_STATIC_MEMBER_DECL(REC, TYPENAME, ARG) THES_POLIS_STATIC_MEMBER_DECL_IMPL ARG
+
+// Generate the StaticMemberInfos
+
+#define THES_POLIS_STATIC_MEMBER_IMPL(NAME, VALUE) \
+  ::thes::StaticMemberInfo<THES_POLIS_NAME_STR(NAME), THES_POLIS_SERIAL_NAME_STR(NAME), VALUE> {}
 #define THES_POLIS_STATIC_MEMBER(REC, _, IDX, PAIR) \
   BOOST_PP_COMMA_IF(IDX) THES_POLIS_STATIC_MEMBER_IMPL PAIR
 
@@ -261,6 +270,7 @@ inline constexpr auto serial_name_of() {
 
 #define THES_DEFINE_TYPE_IMPL(TYPE, TYPENAME, CONSTRUCTOR, TEMPLATE_PARAMS, STATIC_MEMBERS, \
                               MEMBERS, BODIES) \
+  BOOST_PP_LIST_FOR_EACH(THES_POLIS_STATIC_MEMBER_DECL, TYPENAME, STATIC_MEMBERS) \
   THES_POLIS_CONSTRUCTOR(TYPENAME, CONSTRUCTOR, MEMBERS) \
   BOOST_PP_LIST_FOR_EACH(THES_POLIS_MEMBER_DECL, TYPENAME, MEMBERS) \
   struct TypeInfo { \

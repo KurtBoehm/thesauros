@@ -111,7 +111,7 @@ struct Test7 {
   THES_DEFINE_TYPE_EX(SNAKE_CASE(Test7), CONSTEXPR_CONSTRUCTOR,
                       TEMPLATE_PARAMS((inner::Test2)tVal, (typename)TType),
                       MEMBERS((SNAKE_CASE(a), TType), (SNAKE_CASE(b), int)),
-                      STATIC_MEMBERS(("value", tVal), ("type", thes::type_tag<TType>)))
+                      STATIC_MEMBERS((KEEP(value), tVal), (KEEP(type), thes::type_tag<TType>)))
   Test7(Test7&&) noexcept = default;
   Test7(const Test7&) = delete;
 
@@ -127,7 +127,7 @@ namespace n1::n2 {
 THES_CREATE_TYPE_EX(SNAKE_CASE(Test9), CONSTEXPR_CONSTRUCTOR,
                     TEMPLATE_PARAMS((int)tVal, (typename)TType),
                     MEMBERS((SNAKE_CASE(a), TType), (KEEP(b), char), (SNAKE_CASE(c), int)),
-                    STATIC_MEMBERS(("value", tVal), ("type", thes::type_tag<TType>)))
+                    STATIC_MEMBERS((KEEP(value), tVal), (KEEP(type), thes::type_tag<TType>)))
 }
 
 using Type7a = Test7<inner::Test2::A, int>;
@@ -136,6 +136,7 @@ inline constexpr auto mems = Type7aInfo::members;
 inline constexpr auto stat_mems = Type7aInfo::static_members;
 inline constexpr auto mem0 = std::get<0>(stat_mems);
 inline constexpr auto mem1 = std::get<1>(stat_mems);
+inline constexpr auto mem1val = std::get<1>(stat_mems).value;
 using Mem0 = decltype(mem0);
 using Mem1 = decltype(mem1);
 
