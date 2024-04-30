@@ -1,7 +1,10 @@
+#include <filesystem>
 #include <iostream>
 #include <numbers>
+#include <string>
 
 #include "thesauros/format.hpp"
+#include "thesauros/macropolis.hpp"
 
 struct S {
   int i;
@@ -19,10 +22,15 @@ struct fmt::formatter<S> : thes::SimpleFormatter {
   }
 };
 
+THES_CREATE_TYPE(SNAKE_CASE(Test), NORMAL_CONSTRUCTOR, (KEEP(a), std::filesystem::path),
+                 (KEEP(c), std::string), (KEEP(d), double))
+
 // TODO Nested formatting does NOT work!
 #define USE_COUT true
 
 int main() {
+  fmt::print("{}\n", Test{std::filesystem::current_path(), "abc", 3.14});
+
   // Mix of manipulations and styles
 
   fmt::print(thes::fg_red, "test\n");

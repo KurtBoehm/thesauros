@@ -101,11 +101,11 @@ struct MultiSize : public BasicMultiSize<TIndex, tDimNum> {
   }
 
   template<std::size_t tDim>
-  const Div& from_size_div(IndexTag<tDim> /*tag*/ = {}) const {
+  [[nodiscard]] const Div& from_size_div(IndexTag<tDim> /*tag*/ = {}) const {
     return std::get<tDim>(postfix_prod_incl_divs_);
   }
   template<std::size_t tDim>
-  const Div& after_size_div(IndexTag<tDim> /*tag*/ = {}) const {
+  [[nodiscard]] const Div& after_size_div(IndexTag<tDim> /*tag*/ = {}) const {
     return std::get<tDim + 1>(postfix_prod_incl_divs_);
   }
 

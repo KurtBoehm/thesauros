@@ -1,11 +1,12 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_DEFINITIONS_SIZE_HPP
 #define INCLUDE_THESAUROS_UTILITY_STATIC_RANGES_DEFINITIONS_SIZE_HPP
 
-#include "thesauros/concepts/type-traits.hpp"
 #include <concepts>
 #include <cstddef>
 #include <type_traits>
 #include <utility>
+
+#include "thesauros/concepts/type-traits.hpp"
 
 namespace thes::star {
 namespace impl {

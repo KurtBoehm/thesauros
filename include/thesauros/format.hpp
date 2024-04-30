@@ -10,6 +10,7 @@
 #include "format/format.hpp"
 #include "format/formatter.hpp"
 #include "format/json.hpp"
+#include "format/macropolis.hpp"
 #include "format/manip.hpp"
 #include "format/quantity.hpp"
 #include "format/static-capacity-string.hpp"
