@@ -1,10 +1,13 @@
 #ifndef INCLUDE_THESAUROS_FORMAT_FMTLIB_HPP
 #define INCLUDE_THESAUROS_FORMAT_FMTLIB_HPP
 
-#include <fmt/color.h> // IWYU pragma: export
-#include <fmt/core.h> // IWYU pragma: export
-#include <fmt/format.h> // IWYU pragma: export
-#include <fmt/ranges.h> // IWYU pragma: export
-#include <fmt/std.h> // IWYU pragma: export
+// IWYU pragma: begin_exports
+#include "fmt/chrono.h"
+#include <fmt/color.h>
+#include <fmt/core.h>
+#include <fmt/format.h>
+#include <fmt/ranges.h>
+#include <fmt/std.h>
+// IWYU pragma: end_exports
 
 #endif // INCLUDE_THESAUROS_FORMAT_FMTLIB_HPP
