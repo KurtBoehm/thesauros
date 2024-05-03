@@ -74,7 +74,7 @@ struct BlockedIndexSegmenter {
         block_seg_(thes::div_ceil(size, block_size), segment_num) {}
 
   [[nodiscard]] constexpr Size segment_start(const Segment segment) const {
-    return std::min(block_size_ * block_seg_.segment_start(segment), size_);
+    return std::min(saturate_cast<Size>(block_size_ * block_seg_.segment_start(segment)), size_);
   }
   [[nodiscard]] constexpr Size segment_end(const Segment segment) const {
     return segment_start(segment + 1);
