@@ -23,7 +23,7 @@ include/thesauros/utility/check-variant.hpp
 include/thesauros/utility/move-detector.hpp
 include/thesauros/utility/multi-bit-reference.hpp
 include/thesauros/utility/numeric-info.hpp
-include/thesauros/utility/safe-cast.hpp
+include/thesauros/utility/integer-cast.hpp
 include/thesauros/utility/static-capacity-string.hpp
 include/thesauros/utility/static-value.hpp
 include/thesauros/utility/type-name.hpp

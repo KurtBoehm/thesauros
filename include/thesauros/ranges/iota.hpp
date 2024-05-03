@@ -2,6 +2,7 @@
 #define INCLUDE_THESAUROS_RANGES_IOTA_HPP
 
 #include <cassert>
+#include <concepts>
 #include <cstddef>
 #include <ostream>
 #include <type_traits>
@@ -97,7 +98,11 @@ public:
   }
 
   [[nodiscard]] constexpr auto size() const {
-    return end_ - begin_;
+    if constexpr (std::integral<T>) {
+      return static_cast<T>(end_ - begin_);
+    } else {
+      return end_ - begin_;
+    }
   }
 
   constexpr bool operator==(const IotaRange& other) const = default;

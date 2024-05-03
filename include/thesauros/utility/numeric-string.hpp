@@ -11,7 +11,7 @@
 #include "tl/expected.hpp"
 
 #include "thesauros/math/arithmetic.hpp"
-#include "thesauros/utility/safe-cast.hpp"
+#include "thesauros/utility/integer-cast.hpp"
 #include "thesauros/utility/static-capacity-string.hpp"
 
 namespace thes {

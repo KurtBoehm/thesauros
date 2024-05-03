@@ -6,7 +6,7 @@
 #include <utility>
 
 #include "thesauros/iterator/concepts.hpp"
-#include "thesauros/utility/safe-cast.hpp"
+#include "thesauros/utility/integer-cast.hpp"
 
 namespace thes::iter_provider {
 // `StateProvider` needs to provide three static member functions:

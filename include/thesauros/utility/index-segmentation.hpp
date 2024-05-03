@@ -8,7 +8,7 @@
 #include "thesauros/math/arithmetic.hpp"
 #include "thesauros/math/divmod.hpp"
 #include "thesauros/ranges/iota.hpp"
-#include "thesauros/utility/safe-cast.hpp"
+#include "thesauros/utility/integer-cast.hpp"
 #include "thesauros/utility/type-transformations.hpp"
 
 namespace thes {

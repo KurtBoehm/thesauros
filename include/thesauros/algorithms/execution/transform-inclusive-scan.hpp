@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "thesauros/containers/array/fixed.hpp"
-#include "thesauros/utility/safe-cast.hpp"
+#include "thesauros/utility/integer-cast.hpp"
 
 namespace thes {
 template<typename T, typename TExecutionPolicy, typename TForwardIt1, typename TForwardIt2,
