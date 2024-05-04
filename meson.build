@@ -13,13 +13,13 @@ thesauros_dep = declare_dependency(
   dependencies: [boost_preprocessor_dep, expected_dep, fmt_dep],
 )
 
-install_subdir('include', install_dir: 'include')
+install_subdir('include/thesauros', install_dir: 'include')
 
 pc = import('pkgconfig')
 pc.generate(
   name: 'thesauros',
   version: meson.project_version(),
-  description: 'Thesauros',
+  description: 'thesauros',
 )
 
 if get_option('test')

@@ -29,15 +29,15 @@ template<std::integral TOut>
 struct SafeCastWorker {
   using Ret = CastResult<TOut>;
 
-  THES_ALWAYS_INLINE explicit SafeCastWorker(TOut v) : value_(v) {}
+  THES_ALWAYS_INLINE explicit constexpr SafeCastWorker(TOut v) : value_(v) {}
 
-  THES_ALWAYS_INLINE void too_small() {
+  THES_ALWAYS_INLINE constexpr void too_small() {
     info_ = CastInfo::TOO_SMALL;
   }
-  THES_ALWAYS_INLINE void too_large() {
+  THES_ALWAYS_INLINE constexpr void too_large() {
     info_ = CastInfo::TOO_LARGE;
   }
-  THES_ALWAYS_INLINE Ret value() {
+  THES_ALWAYS_INLINE constexpr Ret value() {
     return Ret{value_, info_};
   }
 
@@ -49,15 +49,15 @@ template<std::integral TOut>
 struct SatCastWorker {
   using Ret = TOut;
 
-  THES_ALWAYS_INLINE explicit SatCastWorker(TOut v) : value_(v) {}
+  THES_ALWAYS_INLINE explicit constexpr SatCastWorker(TOut v) : value_(v) {}
 
-  THES_ALWAYS_INLINE void too_small() {
+  THES_ALWAYS_INLINE constexpr void too_small() {
     value_ = std::numeric_limits<TOut>::lowest();
   }
-  THES_ALWAYS_INLINE void too_large() {
+  THES_ALWAYS_INLINE constexpr void too_large() {
     value_ = std::numeric_limits<TOut>::max();
   }
-  THES_ALWAYS_INLINE Ret value() {
+  THES_ALWAYS_INLINE constexpr Ret value() {
     return value_;
   }
 
