@@ -220,7 +220,7 @@ struct MultiByteIntegersBase {
     static auto byte_size(T d) {
       using Integral = IntegralValue<T>;
       using Ret = std::conditional_t<std::unsigned_integral<Integral>, Size, Diff>;
-      return d * IntegralValue<Ret>{element_bytes};
+      return d * Ret{element_bytes};
     }
   };
 
