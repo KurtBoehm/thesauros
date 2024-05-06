@@ -5,6 +5,7 @@
 #include <bit>
 #include <cassert>
 #include <compare>
+#include <concepts>
 #include <cstddef>
 #include <cstring>
 #include <initializer_list>
@@ -216,8 +217,10 @@ struct MultiByteIntegersBase {
 
   private:
     template<typename T>
-    static IntegralValue<T> byte_size(T d) {
-      return d * IntegralValue<T>{element_bytes};
+    static auto byte_size(T d) {
+      using Integral = IntegralValue<T>;
+      using Ret = std::conditional_t<std::unsigned_integral<Integral>, Size, Diff>;
+      return d * IntegralValue<Ret>{element_bytes};
     }
   };
 
