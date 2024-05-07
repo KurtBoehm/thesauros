@@ -7,6 +7,7 @@
 
 #include "thesauros/iterator/concepts.hpp"
 #include "thesauros/utility/integer-cast.hpp"
+#include "thesauros/utility/integral-value.hpp"
 
 namespace thes::iter_provider {
 // `StateProvider` needs to provide three static member functions:
@@ -50,7 +51,7 @@ struct Map {
   requires iter::InPlaceAdd<State, decltype(d)>
   {
     if constexpr (std::integral<State>) {
-      TStateProvider::state(self) += *safe_cast<State>(d);
+      TStateProvider::state(self) += *safe_cast<State>(integral_value(d));
     } else {
       TStateProvider::state(self) += d;
     }
@@ -59,7 +60,7 @@ struct Map {
   requires iter::InPlaceSub<State, decltype(d)>
   {
     if constexpr (std::integral<State>) {
-      TStateProvider::state(self) -= *safe_cast<State>(d);
+      TStateProvider::state(self) -= *safe_cast<State>(integral_value(d));
     } else {
       TStateProvider::state(self) -= d;
     }
