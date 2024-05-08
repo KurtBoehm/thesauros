@@ -24,6 +24,7 @@ foreach name, deps : {
   'primitives': [],
   'quantity': [],
   'ranges': [],
+  'randomize-range': [],
   'static-bitset': [],
   'static-map': [],
   'static-ranges': [],
@@ -36,9 +37,9 @@ foreach name, deps : {
 }
   space_name = name.replace('-', ' ')
   test(
-    name,
+    f'test @space_name@',
     executable(
-      f'test @space_name@',
+      f'test-@name@',
       [f'@name@.cpp'],
       override_options: opts,
       cpp_args: args,
