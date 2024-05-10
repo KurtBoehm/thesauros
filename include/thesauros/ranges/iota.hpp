@@ -42,11 +42,12 @@ public:
   struct const_iterator
       : public IteratorFacade<const_iterator, iter_provider::Map<IterProv, const_iterator>> {
     friend IterProv;
+    constexpr const_iterator() = default;
     explicit constexpr const_iterator(Value&& v) : value_(std::move(v)) {}
     explicit constexpr const_iterator(const Value& v) : value_(v) {}
 
   private:
-    Value value_;
+    Value value_{};
   };
 
   struct const_reverse_iterator
@@ -55,11 +56,12 @@ public:
           iter_provider::Reverse<iter_provider::Map<IterProv, const_reverse_iterator>,
                                  const_reverse_iterator>> {
     friend IterProv;
+    constexpr const_reverse_iterator() = default;
     explicit constexpr const_reverse_iterator(Value&& v) : value_(std::forward<Value>(v)) {}
     explicit constexpr const_reverse_iterator(const Value& v) : value_(v) {}
 
   private:
-    Value value_;
+    Value value_{};
   };
 
   constexpr IotaRange() : begin_{}, end_{} {}

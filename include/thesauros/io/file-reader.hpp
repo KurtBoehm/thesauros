@@ -13,6 +13,7 @@
 #include <fmt/core.h>
 
 #include "thesauros/containers/dynamic-buffer.hpp"
+#include "thesauros/utility/integer-cast.hpp"
 #include "thesauros/utility/type-tag.hpp"
 
 namespace thes {
@@ -129,7 +130,7 @@ struct FileReader {
     seek(0L, SEEK_END);
     const auto size = tell();
     seek(prev, SEEK_SET);
-    return static_cast<std::size_t>(size);
+    return *safe_cast<std::size_t>(size);
   }
 
   [[nodiscard]] bool end_of_file() const {
