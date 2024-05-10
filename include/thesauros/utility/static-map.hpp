@@ -48,12 +48,13 @@ requires(Tuple<typename std::decay_t<TPairs>::Key...>{std::decay_t<TPairs>::key.
          star::all_different)
 struct StaticMap<TPairs...> {
   using Tuple = ::thes::Tuple<TPairs...>;
+  using DecayedTuple = ::thes::Tuple<std::decay_t<TPairs>...>;
 
   static constexpr bool contains(AnyValueTag auto key) {
     auto impl = [key](auto idx, auto rec) {
       if constexpr (idx == sizeof...(TPairs)) {
         return false;
-      } else if constexpr (TupleElement<idx, Tuple>::key == key.value) {
+      } else if constexpr (TupleElement<idx, DecayedTuple>::key == key.value) {
         return true;
       } else {
         return rec(index_tag<idx + 1>, rec);
@@ -92,7 +93,7 @@ private:
   static constexpr auto& get_impl(auto& self) {
     auto impl = [&self](auto idx, auto rec) -> const auto& {
       static_assert(idx < sizeof...(TPairs), "The key is not known!");
-      if constexpr (TupleElement<idx, Tuple>::key == tKey) {
+      if constexpr (TupleElement<idx, DecayedTuple>::key == tKey) {
         return star::get_at<idx>(self._pairs).value;
       } else {
         return rec(index_tag<idx + 1>, rec);
@@ -106,7 +107,7 @@ private:
     auto impl = [&](auto idx, auto rec) -> const auto& {
       if constexpr (idx == sizeof...(TPairs)) {
         return def;
-      } else if constexpr (TupleElement<idx, Tuple>::key == tKey) {
+      } else if constexpr (TupleElement<idx, DecayedTuple>::key == tKey) {
         return star::get_at<idx>(self._pairs).value;
       } else {
         return rec(index_tag<idx + 1>, rec);
