@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <span>
+#include <string_view>
 
 namespace thes {
 struct DynamicBuffer {
@@ -40,7 +41,14 @@ struct DynamicBuffer {
   [[nodiscard]] std::uint8_t* data_u8() {
     return reinterpret_cast<std::uint8_t*>(begin_);
   }
+  [[nodiscard]] const std::uint8_t* data_u8() const {
+    return reinterpret_cast<std::uint8_t*>(begin_);
+  }
+
   [[nodiscard]] char* data_char() {
+    return reinterpret_cast<char*>(begin_);
+  }
+  [[nodiscard]] const char* data_char() const {
     return reinterpret_cast<char*>(begin_);
   }
 

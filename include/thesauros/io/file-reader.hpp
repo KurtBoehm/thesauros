@@ -3,11 +3,14 @@
 
 #include <array>
 #include <cerrno>
+#include <concepts>
+#include <cstddef>
 #include <cstdio>
 #include <exception>
 #include <filesystem>
 #include <span>
 #include <string>
+#include <type_traits>
 #include <utility>
 
 #include <fmt/core.h>
@@ -17,6 +20,19 @@
 #include "thesauros/utility/type-tag.hpp"
 
 namespace thes {
+template<typename T>
+concept ByteLike =
+  std::same_as<T, std::byte> || std::same_as<T, unsigned char> || std::same_as<T, signed char>;
+template<typename T>
+concept ByteLikePtr = std::is_pointer_v<T> || ByteLike<std::decay_t<T>>;
+
+template<typename T>
+concept BufferLike = requires(T& mbuf, const T& cbuf, std::size_t size) {
+  { mbuf.resize(size) } -> std::same_as<void>;
+  { mbuf.data() } -> ByteLikePtr;
+  { mbuf.size() } -> std::convertible_to<std::size_t>;
+};
+
 struct FileReaderException : public std::exception {
   explicit FileReaderException(std::string msg) : message_(std::move(msg)) {}
 
@@ -66,7 +82,7 @@ struct FileReader {
   }
   void read(DynamicBuffer& buf, std::size_t size) {
     buf.resize(size);
-    read(std::span{buf.data(), buf.size()});
+    read(buf.span());
   }
   template<typename T, std::size_t tSize>
   requires std::is_trivial_v<T>
@@ -79,6 +95,21 @@ struct FileReader {
     T value{};
     read(std::span{&value, 1});
     return value;
+  }
+
+  void read_full(BufferLike auto& buf) {
+    if (const auto off = tell(); off != 0) {
+      throw FileReaderException{
+        fmt::format("read_full has to start at the beginning, not at {}!", off)};
+    }
+    buf.resize(size());
+    buf.resize(try_read(std::span{buf.data(), buf.size()}));
+  }
+  template<BufferLike TBuf>
+  TBuf read_full(TypeTag<TBuf> /*tag*/ = {}) {
+    TBuf buf{};
+    read_full(buf);
+    return buf;
   }
 
   void seek(long offset, int whence) {
@@ -107,7 +138,7 @@ struct FileReader {
   }
   auto try_pread(DynamicBuffer& buf, std::size_t size, long offset) {
     buf.resize(size);
-    const auto ret = try_pread(std::span{buf.data(), buf.size()}, offset);
+    const auto ret = try_pread(buf.span(), offset);
     buf.resize(ret);
     return ret;
   }
@@ -122,7 +153,7 @@ struct FileReader {
   }
   void pread(DynamicBuffer& buf, std::size_t size, long offset) {
     buf.resize(size);
-    pread(std::span{buf.data(), buf.size()}, offset);
+    pread(buf.span(), offset);
   }
 
   [[nodiscard]] std::size_t size() {
@@ -144,6 +175,15 @@ struct FileReader {
 private:
   FILE* handle_;
 };
+
+template<BufferLike TBuf>
+void read_file(TBuf& dst, const std::filesystem::path& path) {
+  FileReader{path}.read_full(dst);
+}
+template<BufferLike TBuf>
+TBuf read_file(const std::filesystem::path& path, TypeTag<TBuf> /*tag*/ = {}) {
+  return FileReader{path}.read_full<TBuf>();
+}
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_IO_FILE_READER_HPP
