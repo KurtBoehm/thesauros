@@ -5,7 +5,6 @@
 #include <cstdint>
 #include <cstdlib>
 #include <span>
-#include <string_view>
 
 namespace thes {
 struct DynamicBuffer {

@@ -6,7 +6,6 @@ foreach name, deps : {
   'arrays': [],
   'blocked-dynamic-array': [],
   'concepts': [],
-  'concurrency': [],
   'divisor': [],
   'dynamic-bitset': [],
   'empty': [],

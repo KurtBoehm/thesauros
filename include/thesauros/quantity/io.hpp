@@ -92,20 +92,23 @@ UNIT_NAME(unit::day, "d");
 
 #undef UNIT_NAME
 
+namespace detail {
+template<std::intmax_t tNum>
+inline constexpr std::intmax_t ratio_as_integer(std::ratio<tNum> /*r*/) {
+  return tNum;
+}
+} // namespace detail
+
 template<AnyQuantity TQuantity>
 struct SplitTimePrinter {
   using Unit = unit::millisecond;
 
-private:
-  template<std::intmax_t tNum>
-  static constexpr std::intmax_t as_integer(std::ratio<tNum> /*r*/) {
-    return tNum;
-  }
-
-public:
-  static constexpr std::intmax_t hour_limit = as_integer(UnitRatio<unit::hour, Unit>{});
-  static constexpr std::intmax_t min_limit = as_integer(UnitRatio<unit::minute, Unit>{});
-  static constexpr std::intmax_t sec_limit = as_integer(UnitRatio<unit::second, Unit>{});
+  static constexpr std::intmax_t hour_limit =
+    detail::ratio_as_integer(UnitRatio<unit::hour, Unit>{});
+  static constexpr std::intmax_t min_limit =
+    detail::ratio_as_integer(UnitRatio<unit::minute, Unit>{});
+  static constexpr std::intmax_t sec_limit =
+    detail::ratio_as_integer(UnitRatio<unit::second, Unit>{});
 
   explicit SplitTimePrinter(TQuantity&& q) : quantity(std::forward<TQuantity>(q)) {}
 

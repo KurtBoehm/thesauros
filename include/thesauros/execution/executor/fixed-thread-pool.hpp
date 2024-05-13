@@ -8,12 +8,15 @@
 #include <functional>
 #include <mutex>
 #include <optional>
+#include <ranges>
+#include <stdexcept>
 #include <thread>
 #include <utility>
 
 #include "thesauros/containers/array/fixed-alloc.hpp"
 #include "thesauros/execution/system.hpp"
 #include "thesauros/execution/system/affinity.hpp"
+#include "thesauros/format/fmtlib.hpp"
 #include "thesauros/ranges/iota.hpp"
 #include "thesauros/utility/empty.hpp"
 
@@ -26,6 +29,14 @@ struct FixedThreadPool {
   template<typename TCpuSets = Empty>
   explicit FixedThreadPool(std::size_t size, const TCpuSets& cpu_sets = {})
       : threads_(Threads::create_with_capacity(size)) {
+    if constexpr (!std::same_as<TCpuSets, Empty>) {
+      if (size > cpu_sets.size()) {
+        throw std::invalid_argument{::fmt::format("{} threads have been requested, "
+                                                  "but there are only {} entries in the CPU set!",
+                                                  size, cpu_sets.size())};
+      }
+    }
+
     for (const std::size_t i : range(size)) {
       threads_.emplace_back([this, i] {
         TaskID last_id{0};
@@ -48,12 +59,21 @@ struct FixedThreadPool {
           end_work_.notify_all();
         }
       });
-      if constexpr (std::same_as<TCpuSets, Empty>) {
-        set_affinity(threads_[i], CPUSet::single_set(i));
-      } else {
+      if constexpr (!std::same_as<TCpuSets, Empty>) {
         set_affinity(threads_[i], cpu_sets[i]);
       }
       set_scheduler(threads_[i], Scheduler::FIFO);
+    }
+  }
+
+  template<typename TCpuInfos = Empty>
+  static FixedThreadPool from_cpu_infos(std::size_t size, TCpuInfos&& cpu_infos = {}) {
+    if constexpr (std::same_as<TCpuInfos, Empty>) {
+      return thes::FixedThreadPool{size, Empty{}};
+    } else {
+      return thes::FixedThreadPool{
+        size, std::views::transform(std::forward<TCpuInfos>(cpu_infos),
+                                    [](auto cpu) { return thes::CpuSet::single_set(cpu.id); })};
     }
   }
 
