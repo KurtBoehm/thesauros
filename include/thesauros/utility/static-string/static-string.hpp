@@ -59,7 +59,7 @@ struct StaticString {
     using Tuple = std::tuple<TStrings...>;
 
     constexpr auto compute_pair = [=](auto i) {
-      std::optional<std::pair<std::size_t, std::size_t>> idxs = std::nullopt;
+      std::optional<std::pair<std::size_t, std::size_t>> idxs{};
       star::iota<0, str_num> | star::for_each([&](auto j) {
         std::size_t offset = star::index_transform<j>(
                                [](auto k) { return std::tuple_element_t<k, Tuple>::size + size; }) |

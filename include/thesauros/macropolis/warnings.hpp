@@ -5,13 +5,13 @@
 
 #include "thesauros/macropolis/platform.hpp"
 
-#if THES_POLIS_CLANG
+#if THES_CLANG
 #define THES_POLIS_PRAGMA_CLANG(PRAGMA) _Pragma(PRAGMA)
 #else
 #define THES_POLIS_PRAGMA_CLANG(PRAGMA)
 #endif
 
-#if THES_POLIS_GCC_COMPAT
+#if THES_GCC_COMPAT
 #define THES_POLIS_PRAGMA_GCC(PRAGMA) _Pragma(PRAGMA)
 #define THES_POLIS_WARNINGS_OP_GCC(REC, DUMMY, ELEM) \
   THES_POLIS_PRAGMA_GCC(BOOST_PP_STRINGIZE(GCC diagnostic ignored ELEM))

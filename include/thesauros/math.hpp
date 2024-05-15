@@ -6,6 +6,7 @@
 #include "math/bit.hpp"
 #include "math/divmod.hpp"
 #include "math/fast.hpp"
+#include "math/finite.hpp"
 #include "math/float-fraction.hpp"
 #include "math/is-close.hpp"
 #include "math/overflow.hpp"
