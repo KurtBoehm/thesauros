@@ -124,10 +124,8 @@ struct MultiByteIntegersBase {
     IntRef(IntRef&&) noexcept = default;
     ~IntRef() = default;
 
-    IntRef& operator=(const IntRef& ref) {
-      if (&ref != this) {
-        store(ptr_, load(ref.ptr_));
-      }
+    IntRef& operator=(const IntRef& ref) { // NOLINT
+      store(ptr_, load(ref.ptr_));
       return *this;
     }
     IntRef& operator=(IntRef&& ref) noexcept {
@@ -135,11 +133,12 @@ struct MultiByteIntegersBase {
       return *this;
     }
     IntRef& operator=(Value value) {
+      assert(value == (value & mask));
       store(ptr_, value);
       return *this;
     }
 
-    operator Value() const {
+    operator Value() const { // NOLINT
       return load(ptr_);
     }
 
@@ -220,7 +219,7 @@ struct MultiByteIntegersBase {
     static auto byte_size(T d) {
       using Integral = IntegralValue<T>;
       using Ret = std::conditional_t<std::unsigned_integral<Integral>, Size, Diff>;
-      return d * Ret{element_bytes};
+      return Ret{d} * Ret{element_bytes};
     }
   };
 
@@ -241,7 +240,7 @@ struct MultiByteIntegersBase {
     [[nodiscard]] Ptr raw() const {
       return ptr_;
     }
-    operator BaseIterator<true, tReverse>() const {
+    operator BaseIterator<true, tReverse>() const { // NOLINT
       return BaseIterator<true, tReverse>{ptr_};
     }
 
