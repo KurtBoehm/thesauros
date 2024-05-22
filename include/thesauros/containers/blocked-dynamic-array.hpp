@@ -280,9 +280,8 @@ private:
 };
 
 template<typename T>
-using BlockedDynamicArray =
-  BlockedDynamicArrayBase<T, std::size_t, std::allocator<T>, std::allocator<std::size_t>,
-                          array::DoublingGrowthPolicy>;
+using BlockedDynamicArray = BlockedDynamicArrayBase<T, std::size_t, std::allocator<T>,
+                                                    std::allocator<std::size_t>, DoublingGrowth>;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_CONTAINERS_BLOCKED_DYNAMIC_ARRAY_HPP

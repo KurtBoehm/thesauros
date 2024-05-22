@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <concepts>
 #include <cstddef>
 #include <initializer_list>
 #include <memory>
@@ -30,7 +31,8 @@ namespace thes {
 //
 // The growth policy `GP` determines the growth behaviour when e.g. `resize` or `push_back` are
 // called.
-template<typename TValue, typename TAllocator, typename TInitPolicy, typename TGrowthPolicy>
+template<typename TValue, typename TInitPolicy = DefaultInit,
+         typename TGrowthPolicy = DoublingGrowth, typename TAllocator = std::allocator<TValue>>
 struct DynamicArray {
   using Data = array::TypedChunk<TValue, std::size_t, TAllocator>;
 
@@ -105,6 +107,23 @@ struct DynamicArray {
   // WARNING Only valid if the data is fully initialized!
   constexpr ~DynamicArray() {
     destroy();
+  }
+
+  template<typename... TArgs>
+  void initial_emplace(Size index, TArgs&&... args)
+  requires(std::same_as<TInitPolicy, NoInit>)
+  {
+    new (this->begin() + index) Value(std::forward<TArgs>(args)...);
+  }
+  void initialize(Size index, Value&& value)
+  requires(std::same_as<TInitPolicy, NoInit>)
+  {
+    initial_emplace(index, std::forward<Value>(value));
+  }
+  void initialize(Size index, const Value& value)
+  requires(std::same_as<TInitPolicy, NoInit>)
+  {
+    initial_emplace(index, value);
   }
 
   [[nodiscard]] constexpr Size size() const noexcept {
@@ -345,44 +364,6 @@ private:
 
   Data allocation_{};
   Value* data_end_{allocation_.end()};
-};
-
-template<typename TValue, typename TAlloc = std::allocator<TValue>>
-struct DynamicArrayValue
-    : public DynamicArray<TValue, TAlloc, array::ValueInitPolicy, array::DoublingGrowthPolicy> {
-  using Parent = DynamicArray<TValue, TAlloc, array::ValueInitPolicy, array::DoublingGrowthPolicy>;
-
-  using Parent::Parent;
-};
-
-template<typename TValue, typename TAlloc = std::allocator<TValue>>
-struct DynamicArrayDefault
-    : public DynamicArray<TValue, TAlloc, array::DefaultInitPolicy, array::DoublingGrowthPolicy> {
-  using Parent =
-    DynamicArray<TValue, TAlloc, array::DefaultInitPolicy, array::DoublingGrowthPolicy>;
-
-  using Parent::Parent;
-};
-
-template<typename TValue, typename TAlloc = std::allocator<TValue>>
-struct DynamicArrayUninit
-    : public DynamicArray<TValue, TAlloc, array::NoInitPolicy, array::DoublingGrowthPolicy> {
-  using Parent = DynamicArray<TValue, TAlloc, array::NoInitPolicy, array::DoublingGrowthPolicy>;
-  using Size = Parent::size_type;
-  using Value = Parent::value_type;
-
-  using Parent::Parent;
-
-  template<typename... TArgs>
-  void initial_emplace(Size index, TArgs&&... args) {
-    new (this->begin() + index) Value(std::forward<TArgs>(args)...);
-  }
-  void initialize(Size index, Value&& value) {
-    initial_emplace(index, std::forward<Value>(value));
-  }
-  void initialize(Size index, const Value& value) {
-    initial_emplace(index, value);
-  }
 };
 } // namespace thes
 

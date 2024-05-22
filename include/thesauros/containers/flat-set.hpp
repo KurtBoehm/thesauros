@@ -10,7 +10,7 @@
 
 namespace thes {
 template<typename TValue, typename TCompare = std::less<TValue>,
-         typename TEqual = std::equal_to<TValue>, typename TContainer = DynamicArrayDefault<TValue>>
+         typename TEqual = std::equal_to<TValue>, typename TContainer = DynamicArray<TValue>>
 struct FlatSet {
   using Value = TValue;
   using Container = TContainer;

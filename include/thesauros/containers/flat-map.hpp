@@ -11,7 +11,7 @@
 namespace thes {
 template<typename TKey, typename TMapped, typename TKeyCompare = std::less<TKey>,
          typename TKeyEqual = std::equal_to<TKey>,
-         typename TContainer = DynamicArrayDefault<std::pair<TKey, TMapped>>>
+         typename TContainer = DynamicArray<std::pair<TKey, TMapped>>>
 struct FlatMap {
   using Key = TKey;
   using Mapped = TMapped;

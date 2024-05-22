@@ -19,15 +19,16 @@
 
 namespace thes {
 template<typename TChars>
-auto cpu_range(TChars&& str) {
-  const std::string_view sv{str.data(), str.size()};
-  const auto size = str.size() - size_t(sv.ends_with("\n"));
-  return std::forward<TChars>(str) | std::views::take(size) | std::views::split(',') |
-         std::views::transform([](auto chars) {
-           auto parts = std::views::split(std::string_view(chars.data(), chars.size()),
+auto cpu_range(TChars&& full) {
+  const std::string_view sv{full.data(), full.size()};
+  const auto size = full.size() - size_t(sv.ends_with("\n"));
+  return std::forward<TChars>(full) | std::views::take(size) | std::views::split(',') |
+         std::views::transform([](auto substr) {
+           auto parts = std::views::split(std::string_view(substr.data(), substr.size()),
                                           std::string_view{"-"}) |
-                        std::views::transform(
-                          [](auto str) { return std::string_view(str.data(), str.size()); });
+                        std::views::transform([](auto numstr) {
+                          return std::string_view(numstr.data(), numstr.size());
+                        });
            auto it = parts.begin();
            const auto first = string_to_integral<std::size_t>(*it++).value();
            if (it == parts.end()) {
@@ -50,13 +51,12 @@ struct CpuInfo {
   }
 
   [[nodiscard]] auto core_cpus() const {
-    return cpu_range(
-      thes::read_file<thes::DynamicArrayDefault<char>>(sys_folder() / "core_cpus_list"));
+    return cpu_range(thes::read_file<thes::DynamicArray<char>>(sys_folder() / "core_cpus_list"));
   }
 
   static auto present() {
     const auto present_path = std::filesystem::path{cpu_path_cstr} / "present";
-    return cpu_range(thes::read_file<thes::DynamicArrayDefault<char>>(present_path)) |
+    return cpu_range(thes::read_file<thes::DynamicArray<char>>(present_path)) |
            std::views::transform([](auto i) { return CpuInfo{i}; });
   }
 

@@ -11,6 +11,8 @@
 #include <utility>
 
 #include "thesauros/containers/array/dynamic.hpp"
+#include "thesauros/containers/array/growth-policy.hpp"
+#include "thesauros/containers/array/initialization-policy.hpp"
 #include "thesauros/math/arithmetic.hpp"
 
 namespace thes {
@@ -96,7 +98,7 @@ struct MultiBitIntegers {
   }
 
 private:
-  DynamicArrayDefault<Chunk, Allocator> data_;
+  DynamicArray<Chunk, DefaultInit, DoublingGrowth, Allocator> data_;
   std::size_t size_;
 };
 } // namespace thes

@@ -1,6 +1,7 @@
 #ifndef INCLUDE_THESAUROS_CONTAINERS_ARRAY_FIXED_HPP
 #define INCLUDE_THESAUROS_CONTAINERS_ARRAY_FIXED_HPP
 
+#include <concepts>
 #include <cstddef>
 #include <initializer_list>
 #include <memory>
@@ -13,7 +14,8 @@
 #include "thesauros/format/fmtlib.hpp"
 
 namespace thes {
-template<typename TValue, typename TAllocator, typename TInitPolicy>
+template<typename TValue, typename TInitPolicy = DefaultInit,
+         typename TAllocator = std::allocator<TValue>>
 struct FixedArray {
   using Data = array::TypedChunk<TValue, std::size_t, TAllocator>;
 
@@ -81,6 +83,23 @@ struct FixedArray {
                               allocation_.begin());
     }
     return *this;
+  }
+
+  template<typename... TArgs>
+  void initial_emplace(Size index, TArgs&&... args)
+  requires(std::same_as<TInitPolicy, NoInit>)
+  {
+    new (this->begin() + index) Value(std::forward<TArgs>(args)...);
+  }
+  void initialize(Size index, Value&& value)
+  requires(std::same_as<TInitPolicy, NoInit>)
+  {
+    initial_emplace(index, std::forward<Value>(value));
+  }
+  void initialize(Size index, const Value& value)
+  requires(std::same_as<TInitPolicy, NoInit>)
+  {
+    initial_emplace(index, value);
   }
 
   // WARNING Only valid if the data is fully initialized!
@@ -170,40 +189,6 @@ private:
   }
 
   Data allocation_{};
-};
-
-template<typename TValue, typename TAlloc = std::allocator<TValue>>
-struct FixedArrayValue : public FixedArray<TValue, TAlloc, array::ValueInitPolicy> {
-  using Parent = FixedArray<TValue, TAlloc, array::ValueInitPolicy>;
-
-  using Parent::Parent;
-};
-
-template<typename TValue, typename TAlloc = std::allocator<TValue>>
-struct FixedArrayDefault : public FixedArray<TValue, TAlloc, array::DefaultInitPolicy> {
-  using Parent = FixedArray<TValue, TAlloc, array::DefaultInitPolicy>;
-
-  using Parent::Parent;
-};
-
-template<typename TValue, typename TAlloc = std::allocator<TValue>>
-struct FixedArrayUninit : public FixedArray<TValue, TAlloc, array::NoInitPolicy> {
-  using Parent = FixedArray<TValue, TAlloc, array::NoInitPolicy>;
-  using Size = Parent::Size;
-  using Value = Parent::Value;
-
-  using Parent::Parent;
-
-  template<typename... TArgs>
-  void initial_emplace(Size index, TArgs&&... args) {
-    new (this->begin() + index) Value(std::forward<TArgs>(args)...);
-  }
-  void initialize(Size index, Value&& value) {
-    initial_emplace(index, std::forward<Value>(value));
-  }
-  void initialize(Size index, const Value& value) {
-    initial_emplace(index, value);
-  }
 };
 } // namespace thes
 

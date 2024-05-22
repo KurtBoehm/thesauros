@@ -7,8 +7,8 @@
 #include "thesauros/math/bit.hpp"
 #include "thesauros/utility/numeric-info.hpp"
 
-namespace thes::array {
-struct DoublingGrowthPolicy {
+namespace thes {
+struct DoublingGrowth {
   using Size = std::size_t;
 
   static constexpr Size new_allocation_size([[maybe_unused]] Size old_size,
@@ -23,6 +23,6 @@ struct DoublingGrowthPolicy {
     return one << logarithm;
   }
 };
-} // namespace thes::array
+} // namespace thes
 
 #endif // INCLUDE_THESAUROS_CONTAINERS_ARRAY_GROWTH_POLICY_HPP

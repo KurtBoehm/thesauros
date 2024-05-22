@@ -31,10 +31,10 @@ struct S {
 };
 
 int main() {
-  thes::DynamicArrayValue<int> darray1(3);
+  thes::DynamicArray<int, thes::ValueInit> darray1(3);
   THES_ASSERT(darray1.size() == 3 && test::range_eq(darray1, std::array{0, 0, 0}));
 
-  thes::DynamicArrayDefault<int> darray2(3);
+  thes::DynamicArray<int, thes::DefaultInit> darray2(3);
   darray2[2] = 3;
   THES_ASSERT(darray2.size() == 3 && darray2[2] == 3);
 
@@ -66,7 +66,7 @@ int main() {
   THES_ASSERT(test::range_eq(darray2, std::array{darray2[0], darray2[1], 3, 11, 14, 17, 20}));
 
   {
-    thes::DynamicArrayDefault<S> darray3(3);
+    thes::DynamicArray<S, thes::DefaultInit> darray3(3);
     THES_ASSERT(darray3.size() == 3 && darray3.allocation_size() == 3);
     THES_ASSERT(test::range_eq(darray3, std::array{S{}, S{}, S{}}));
     S::counter() = 0;
@@ -74,7 +74,7 @@ int main() {
   THES_ASSERT(S::counter() == 3);
 
   {
-    thes::DynamicArrayUninit<S> darray4(3);
+    thes::DynamicArray<S, thes::NoInit> darray4(3);
     THES_ASSERT(darray4.size() == 3 && darray4.allocation_size() == 3);
 
     for (const auto i : thes::range<std::size_t>(3)) {

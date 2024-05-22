@@ -15,6 +15,8 @@
 #include <type_traits>
 
 #include "thesauros/containers/array/dynamic.hpp"
+#include "thesauros/containers/array/growth-policy.hpp"
+#include "thesauros/containers/array/initialization-policy.hpp"
 #include "thesauros/io.hpp"
 #include "thesauros/iterator/facades.hpp"
 #include "thesauros/iterator/provider-reverse.hpp"
@@ -34,7 +36,7 @@ struct ArrayStorage {
   static constexpr std::size_t padding_bytes = tPaddingBytes;
   static constexpr std::size_t element_bytes = TByteInt::byte_num;
 
-  using Data = DynamicArrayDefault<std::byte, TAllocator<std::byte>>;
+  using Data = DynamicArray<std::byte, DefaultInit, DoublingGrowth, TAllocator<std::byte>>;
 
   ArrayStorage() : data_(padding_bytes) {};
   explicit ArrayStorage(std::size_t size) : data_(effective_allocation(size)), size_(size) {}
@@ -133,7 +135,9 @@ struct MultiByteIntegersBase {
       return *this;
     }
     IntRef& operator=(Value value) {
-      assert(value == (value & mask));
+      if constexpr (!tOptional) {
+        assert(value == (value & mask));
+      }
       store(ptr_, value);
       return *this;
     }

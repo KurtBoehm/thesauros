@@ -114,7 +114,7 @@ private:
   static constexpr Chunk zero_chunk{0};
   static constexpr Chunk one_chunk{static_cast<Chunk>(~zero_chunk)};
 
-  DynamicArrayDefault<Chunk> chunks_{};
+  DynamicArray<Chunk> chunks_{};
   std::size_t size_{0};
 
   template<typename TCounter>

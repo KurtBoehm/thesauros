@@ -125,7 +125,7 @@ private:
     return Chunk{1} << i;
   }
 
-  FixedArrayDefault<Chunk> chunks_{};
+  FixedArray<Chunk> chunks_{};
   const std::size_t size_{0};
 };
 } // namespace thes
