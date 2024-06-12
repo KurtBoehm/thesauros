@@ -7,6 +7,7 @@
 #include <concepts>
 #include <cstddef>
 #include <limits>
+#include <utility>
 
 #include "thesauros/utility/inlining.hpp"
 
@@ -91,6 +92,13 @@ inline constexpr T set_bit(T value, TIdx bit_index, bool bit_value) {
 template<std::unsigned_integral T, typename TIdx>
 inline constexpr bool get_bit(T value, TIdx bit_index) {
   return value & T(T{1} << bit_index);
+}
+template<std::unsigned_integral T, typename... TArgs>
+requires(... && std::same_as<TArgs, bool>)
+inline constexpr T combine_bits(TArgs... bits) {
+  return [bits...]<std::size_t... tIdxs>(std::index_sequence<tIdxs...> /*idxs*/) {
+    return (... + T(T{bits} << tIdxs));
+  }(std::index_sequence_for<TArgs...>{});
 }
 
 // Computes floor(x^(1/n)) precisely. The complexity is Θ(log2(x)/n).
