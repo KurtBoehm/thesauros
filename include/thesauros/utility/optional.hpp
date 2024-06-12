@@ -101,9 +101,9 @@ struct Optional : public std::optional<T> {
     return this->has_value() ? std::move(**this) : std::forward<TF>(f)();
   }
 };
-template<class T>
+template<typename T>
 Optional(T) -> Optional<T>;
-template<class T>
+template<typename T>
 Optional(std::optional<T>) -> Optional<T>;
 } // namespace thes
 

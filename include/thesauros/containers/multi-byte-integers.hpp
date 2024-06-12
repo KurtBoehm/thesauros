@@ -476,6 +476,12 @@ struct MultiByteIntegerArray
     data().reserve(Storage::effective_allocation(allocation));
   }
 
+  void init_all_set(Size first, Size last) {
+    std::byte* ptr = data().data();
+    std::uninitialized_fill(ptr + byte_size(first), ptr + byte_size(last),
+                            std::byte{std::numeric_limits<unsigned char>::max()});
+  }
+
   iterator insert_uninit(const_iterator pos, Size size) {
     const Size old_bsize = byte_size(storage().size());
     assert(data().size() == old_bsize + padding_bytes);

@@ -5,7 +5,7 @@
 #include <numeric>
 
 namespace thes {
-template<class TRange, class T, class TBinOp>
+template<typename TRange, typename T, typename TBinOp>
 inline constexpr T reduce(TRange&& range, T init, TBinOp op) {
   return std::reduce(std::begin(range), std::end(range), init, op);
 }
