@@ -437,16 +437,16 @@ struct MultiByteIntegerArray
   requires(!tOptional)
   {
     MultiByteIntegerArray mbi(size);
-    std::uninitialized_fill_n(mbi.data().data(), byte_size(mbi.size()),
-                              std::byte{std::numeric_limits<unsigned char>::max()});
+    std::fill_n(mbi.data().data(), byte_size(mbi.size()),
+                std::byte{std::numeric_limits<unsigned char>::max()});
     return mbi;
   }
   static MultiByteIntegerArray create_empty(std::size_t size)
   requires(tOptional)
   {
     MultiByteIntegerArray mbi(size);
-    std::uninitialized_fill_n(mbi.data().data(), byte_size(mbi.size()),
-                              std::byte{std::numeric_limits<unsigned char>::max()});
+    std::fill_n(mbi.data().data(), byte_size(mbi.size()),
+                std::byte{std::numeric_limits<unsigned char>::max()});
     return mbi;
   }
 
@@ -476,10 +476,10 @@ struct MultiByteIntegerArray
     data().reserve(Storage::effective_allocation(allocation));
   }
 
-  void init_all_set(Size first, Size last) {
+  void set_all(Size first, Size last) {
     std::byte* ptr = data().data();
-    std::uninitialized_fill(ptr + byte_size(first), ptr + byte_size(last),
-                            std::byte{std::numeric_limits<unsigned char>::max()});
+    std::fill(ptr + byte_size(first), ptr + byte_size(last),
+              std::byte{std::numeric_limits<unsigned char>::max()});
   }
 
   iterator insert_uninit(const_iterator pos, Size size) {
