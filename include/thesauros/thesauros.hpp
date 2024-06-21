@@ -12,6 +12,7 @@
 #include "iterator.hpp"
 #include "macropolis.hpp"
 #include "math.hpp"
+#include "memory.hpp"
 #include "quantity.hpp"
 #include "random.hpp"
 #include "ranges.hpp"
