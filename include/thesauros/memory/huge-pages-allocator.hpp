@@ -1,5 +1,5 @@
-#ifndef INCLUDE_THESAUROS_MEMORY_THP_ALLOCATOR_HPP
-#define INCLUDE_THESAUROS_MEMORY_THP_ALLOCATOR_HPP
+#ifndef INCLUDE_THESAUROS_MEMORY_HUGE_PAGES_ALLOCATOR_HPP
+#define INCLUDE_THESAUROS_MEMORY_HUGE_PAGES_ALLOCATOR_HPP
 
 #include <cstddef>
 #include <cstdlib>
@@ -10,11 +10,11 @@
 
 namespace thes {
 template<typename T>
-struct TransparentHugePagesAllocator {
+struct HugePagesAllocator {
   static constexpr std::size_t huge_page_size = 1U << 21U; // 2 MiB
   using value_type = T;
 
-  TransparentHugePagesAllocator() = default;
+  HugePagesAllocator() = default;
 
   T* allocate(std::size_t n) {
     if (n > std::numeric_limits<std::size_t>::max() / sizeof(T)) {
@@ -35,4 +35,4 @@ struct TransparentHugePagesAllocator {
 };
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_MEMORY_THP_ALLOCATOR_HPP
+#endif // INCLUDE_THESAUROS_MEMORY_HUGE_PAGES_ALLOCATOR_HPP
