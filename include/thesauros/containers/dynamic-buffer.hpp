@@ -4,16 +4,19 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#include <new>
 #include <span>
 
 namespace thes {
 struct DynamicBuffer {
   DynamicBuffer() = default;
   explicit DynamicBuffer(std::size_t size)
-      : begin_(static_cast<std::byte*>(std::malloc(size))), size_(size) {}
+      : begin_(static_cast<std::byte*>(std::malloc(size))), alloc_(size), size_(size) {}
   DynamicBuffer(const DynamicBuffer&) = delete;
-  DynamicBuffer(DynamicBuffer&& other) noexcept : begin_(other.begin_), size_(other.size_) {
+  DynamicBuffer(DynamicBuffer&& other) noexcept
+      : begin_(other.begin_), alloc_(other.alloc_), size_(other.size_) {
     other.begin_ = nullptr;
+    other.alloc_ = 0;
     other.size_ = 0;
   }
   DynamicBuffer& operator=(const DynamicBuffer&) = delete;
@@ -26,7 +29,16 @@ struct DynamicBuffer {
     if (new_size == size_) {
       return;
     }
-    begin_ = static_cast<std::byte*>(std::realloc(begin_, new_size));
+    if (new_size <= alloc_) {
+      size_ = new_size;
+      return;
+    }
+    auto* new_begin = static_cast<std::byte*>(std::realloc(begin_, new_size));
+    if (new_begin == nullptr) {
+      throw std::bad_alloc{};
+    }
+    begin_ = new_begin;
+    alloc_ = new_size;
     size_ = new_size;
   }
 
@@ -71,6 +83,7 @@ struct DynamicBuffer {
 
 private:
   std::byte* begin_{};
+  std::size_t alloc_{};
   std::size_t size_{};
 };
 } // namespace thes
