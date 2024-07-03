@@ -1,5 +1,5 @@
-#ifndef INCLUDE_THESAUROS_EXECUTION_EXECUTOR_FIXED_THREAD_POOL_HPP
-#define INCLUDE_THESAUROS_EXECUTION_EXECUTOR_FIXED_THREAD_POOL_HPP
+#ifndef INCLUDE_THESAUROS_EXECUTION_EXECUTOR_FIXED_STD_THREAD_POOL_HPP
+#define INCLUDE_THESAUROS_EXECUTION_EXECUTOR_FIXED_STD_THREAD_POOL_HPP
 
 #include <cassert>
 #include <concepts>
@@ -21,13 +21,13 @@
 #include "thesauros/utility/empty.hpp"
 
 namespace thes {
-struct FixedThreadPool {
+struct FixedStdThreadPool {
   using Threads = FixedAllocArray<std::thread>;
   using Task = std::function<void(std::size_t)>;
   using TaskID = std::size_t;
 
   template<typename TCpuSets = Empty>
-  explicit FixedThreadPool(std::size_t size, const TCpuSets& cpu_sets = {})
+  explicit FixedStdThreadPool(std::size_t size, const TCpuSets& cpu_sets = {})
       : threads_(Threads::create_with_capacity(size)) {
     if constexpr (!std::same_as<TCpuSets, Empty>) {
       if (size > cpu_sets.size()) {
@@ -67,22 +67,22 @@ struct FixedThreadPool {
   }
 
   template<typename TCpuInfos = Empty>
-  static FixedThreadPool from_cpu_infos(std::size_t size, TCpuInfos&& cpu_infos = {}) {
+  static FixedStdThreadPool from_cpu_infos(std::size_t size, TCpuInfos&& cpu_infos = {}) {
     if constexpr (std::same_as<TCpuInfos, Empty>) {
-      return thes::FixedThreadPool{size, Empty{}};
+      return thes::FixedStdThreadPool{size, Empty{}};
     } else {
-      return thes::FixedThreadPool{
+      return thes::FixedStdThreadPool{
         size, std::views::transform(std::forward<TCpuInfos>(cpu_infos),
                                     [](auto cpu) { return thes::CpuSet::single_set(cpu.id); })};
     }
   }
 
-  FixedThreadPool(const FixedThreadPool&) = delete;
-  FixedThreadPool(FixedThreadPool&&) = delete;
-  FixedThreadPool& operator=(const FixedThreadPool&) = delete;
-  FixedThreadPool& operator=(FixedThreadPool&&) = delete;
+  FixedStdThreadPool(const FixedStdThreadPool&) = delete;
+  FixedStdThreadPool(FixedStdThreadPool&&) = delete;
+  FixedStdThreadPool& operator=(const FixedStdThreadPool&) = delete;
+  FixedStdThreadPool& operator=(FixedStdThreadPool&&) = delete;
 
-  ~FixedThreadPool() {
+  ~FixedStdThreadPool() {
     {
       const std::lock_guard lock{work_mutex_};
       assert(!task_.has_value());
@@ -126,4 +126,4 @@ private:
 };
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_EXECUTION_EXECUTOR_FIXED_THREAD_POOL_HPP
+#endif // INCLUDE_THESAUROS_EXECUTION_EXECUTOR_FIXED_STD_THREAD_POOL_HPP
