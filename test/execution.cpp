@@ -16,12 +16,15 @@ int main() {
     scanned_ref.push_back(accum);
   }
 
-  thes::FixedThreadPool pool{2};
-  thes::LinearExecutionPolicy expo{pool};
+  auto op = [&](auto pool) {
+    thes::LinearExecutionPolicy expo{pool};
 
-  thes::transform_inclusive_scan(
-    expo, values.begin(), values.end(), scanned.begin(), std::plus<>{}, [](Type v) { return v; },
-    Type{0});
+    thes::transform_inclusive_scan(
+      expo, values.begin(), values.end(), scanned.begin(), std::plus<>{}, [](Type v) { return v; },
+      Type{0});
 
-  THES_ASSERT(scanned == scanned_ref);
+    THES_ASSERT(scanned == scanned_ref);
+  };
+  op(thes::FixedStdThreadPool{2});
+  op(thes::FixedOpenMpThreadPool{2});
 }

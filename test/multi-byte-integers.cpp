@@ -56,7 +56,7 @@ void body(auto... values) {
   }
 
   assign(1, 4);
-  assign(4, (1ULL << 24ULL) + (1ULL << 15ULL));
+  assign(4, (1ULL << 23ULL) + (1ULL << 15ULL));
   elem_assert();
 
   pop_back();
