@@ -2,13 +2,13 @@
 #define INCLUDE_THESAUROS_MACROPOLIS_TYPE_HPP
 
 #include <cstddef>
-#include <tuple>
 #include <type_traits>
 #include <utility>
 
 #include "thesauros/concepts/type-traits.hpp"
 #include "thesauros/utility/primitives.hpp"
 #include "thesauros/utility/static-string/static-string.hpp"
+#include "thesauros/utility/tuple.hpp"
 
 namespace thes {
 template<auto tName, auto tSerialName, auto tValue>
@@ -281,9 +281,9 @@ inline constexpr auto serial_name_of() {
     static constexpr auto name = THES_POLIS_NAME_STR(TYPE); \
     static constexpr auto serial_name = THES_POLIS_SERIAL_NAME_STR(TYPE); \
 \
-    static constexpr std::tuple members{ \
+    static constexpr thes::Tuple members{ \
       BOOST_PP_LIST_FOR_EACH_I(THES_POLIS_MEMBER_INFO, TYPENAME, MEMBERS)}; \
-    static constexpr std::tuple static_members{ \
+    static constexpr thes::Tuple static_members{ \
       BOOST_PP_LIST_FOR_EACH_I(THES_POLIS_STATIC_MEMBER, BOOST_PP_EMPTY(), STATIC_MEMBERS)}; \
 \
     using Members = decltype(members); \
@@ -304,7 +304,7 @@ inline constexpr auto serial_name_of() {
                                       (THES_POLIS_TEMPLATE_SPEC(TYPENAME, TEMPLATE_PARAMS)))) \
   struct BOOST_PP_REMOVE_PARENS(FULL_NAME)::MemoryLayoutInfo { \
     using Self = BOOST_PP_REMOVE_PARENS(FULL_NAME); \
-    static constexpr std::tuple members{ \
+    static constexpr thes::Tuple members{ \
       BOOST_PP_LIST_FOR_EACH_I(THES_POLIS_MEMBER_OFFSET, Self, MEMBERS)}; \
   };
 

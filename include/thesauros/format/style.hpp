@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <ostream>
 #include <unordered_map>
+#include <utility>
 
 namespace thes::fmt {
 enum struct Colour : std::uint8_t {
@@ -315,7 +316,7 @@ private:
   }
 
   static Style& get(std::ostream& s) {
-    return get_map().insert({&s, {}}).first->second;
+    return get_map().insert(std::make_pair(&s, Style{})).first->second;
   }
 
   static void remove(std::ostream& s) {
