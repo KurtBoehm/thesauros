@@ -44,6 +44,8 @@ private:
   std::string message_;
 };
 
+enum struct Seek : int { set = SEEK_SET, cur = SEEK_CUR, end = SEEK_END };
+
 struct FileReader {
   explicit FileReader(const std::filesystem::path& path) : handle_(std::fopen(path.c_str(), "rb")) {
     if (handle_ == nullptr) {
@@ -112,8 +114,8 @@ struct FileReader {
     return buf;
   }
 
-  void seek(long offset, int whence) {
-    const auto ret = std::fseek(handle_, offset, whence);
+  void seek(long offset, Seek whence) {
+    const auto ret = std::fseek(handle_, offset, int(whence));
     if (ret != 0) {
       throw FileReaderException(fmt::format("fseek failed: {}", ret));
     }
@@ -129,14 +131,14 @@ struct FileReader {
 
   template<typename T>
   requires std::is_trivial_v<T>
-  auto try_pread(std::span<T> span, long offset) {
+  std::size_t try_pread(std::span<T> span, long offset) {
     const auto pre = tell();
-    seek(offset, SEEK_SET);
+    seek(offset, Seek::set);
     const auto ret = std::fread(span.data(), sizeof(T), span.size(), handle_);
-    seek(pre, SEEK_SET);
+    seek(pre, Seek::set);
     return ret;
   }
-  auto try_pread(DynamicBuffer& buf, std::size_t size, long offset) {
+  std::size_t try_pread(DynamicBuffer& buf, std::size_t size, long offset) {
     buf.resize(size);
     const auto ret = try_pread(buf.span(), offset);
     buf.resize(ret);
@@ -151,6 +153,13 @@ struct FileReader {
       throw FileReaderException(fmt::format("pread failed: {} != {}", ret, span.size()));
     }
   }
+  template<typename T>
+  requires std::is_trivial_v<T>
+  T pread(long offset, thes::TypeTag<T> /*tag*/) {
+    T value{};
+    pread(std::span{&value, 1}, offset);
+    return value;
+  }
   void pread(DynamicBuffer& buf, std::size_t size, long offset) {
     buf.resize(size);
     pread(buf.span(), offset);
@@ -158,9 +167,9 @@ struct FileReader {
 
   [[nodiscard]] std::size_t size() {
     const auto prev = tell();
-    seek(0L, SEEK_END);
+    seek(0L, Seek::end);
     const auto size = tell();
-    seek(prev, SEEK_SET);
+    seek(prev, Seek::set);
     return *safe_cast<std::size_t>(size);
   }
 
