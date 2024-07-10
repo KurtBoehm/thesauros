@@ -3,53 +3,24 @@
 
 #include <array>
 #include <cerrno>
-#include <concepts>
 #include <cstddef>
 #include <cstdio>
-#include <exception>
 #include <filesystem>
 #include <span>
-#include <string>
 #include <type_traits>
-#include <utility>
 
 #include <fmt/core.h>
 
 #include "thesauros/containers/dynamic-buffer.hpp"
+#include "thesauros/io/file.hpp"
 #include "thesauros/utility/integer-cast.hpp"
 #include "thesauros/utility/type-tag.hpp"
 
 namespace thes {
-template<typename T>
-concept ByteLike =
-  std::same_as<T, std::byte> || std::same_as<T, unsigned char> || std::same_as<T, signed char>;
-template<typename T>
-concept ByteLikePtr = std::is_pointer_v<T> || ByteLike<std::decay_t<T>>;
-
-template<typename T>
-concept BufferLike = requires(T& mbuf, const T& cbuf, std::size_t size) {
-  { mbuf.resize(size) } -> std::same_as<void>;
-  { mbuf.data() } -> ByteLikePtr;
-  { mbuf.size() } -> std::convertible_to<std::size_t>;
-};
-
-struct FileReaderException : public std::exception {
-  explicit FileReaderException(std::string msg) : message_(std::move(msg)) {}
-
-  [[nodiscard]] const char* what() const noexcept override {
-    return message_.c_str();
-  }
-
-private:
-  std::string message_;
-};
-
-enum struct Seek : int { set = SEEK_SET, cur = SEEK_CUR, end = SEEK_END };
-
 struct FileReader {
   explicit FileReader(const std::filesystem::path& path) : handle_(std::fopen(path.c_str(), "rb")) {
     if (handle_ == nullptr) {
-      throw FileReaderException(fmt::format("fopen failed: {}", errno));
+      throw FileException(fmt::format("fopen failed: {}", errno));
     }
   }
   FileReader(const FileReader&) = delete;
@@ -68,7 +39,7 @@ struct FileReader {
     const auto ret = std::fread(span.data(), sizeof(T), span.size(), handle_);
     const auto err = std::ferror(handle_);
     if (err) {
-      throw FileReaderException(
+      throw FileException(
         fmt::format("fread failed ({}), ret={}, size={}", err, ret, span.size()));
     }
     return ret;
@@ -79,7 +50,7 @@ struct FileReader {
   void read(std::span<T> span) {
     const auto ret = std::fread(span.data(), sizeof(T), span.size(), handle_);
     if (ret != span.size()) {
-      throw FileReaderException(fmt::format("fread failed: {} != {}", ret, span.size()));
+      throw FileException(fmt::format("fread failed: {} != {}", ret, span.size()));
     }
   }
   void read(DynamicBuffer& buf, std::size_t size) {
@@ -101,7 +72,7 @@ struct FileReader {
 
   void read_full(BufferLike auto& buf) {
     if (const auto off = tell(); off != 0) {
-      throw FileReaderException{
+      throw FileException{
         fmt::format("read_full has to start at the beginning, not at {}!", off)};
     }
     buf.resize(size());
@@ -117,14 +88,14 @@ struct FileReader {
   void seek(long offset, Seek whence) {
     const auto ret = std::fseek(handle_, offset, int(whence));
     if (ret != 0) {
-      throw FileReaderException(fmt::format("fseek failed: {}", ret));
+      throw FileException(fmt::format("fseek failed: {}", ret));
     }
   }
 
   [[nodiscard]] long tell() {
     const auto ret = std::ftell(handle_);
     if (ret == -1) {
-      throw FileReaderException(fmt::format("ftell failed: {}", errno));
+      throw FileException(fmt::format("ftell failed: {}", errno));
     }
     return ret;
   }
@@ -150,7 +121,7 @@ struct FileReader {
   void pread(std::span<T> span, long offset) {
     const auto ret = try_pread(span, offset);
     if (ret != span.size()) {
-      throw FileReaderException(fmt::format("pread failed: {} != {}", ret, span.size()));
+      throw FileException(fmt::format("pread failed: {} != {}", ret, span.size()));
     }
   }
   template<typename T>

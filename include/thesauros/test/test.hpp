@@ -13,10 +13,12 @@
 #include "thesauros/utility/value-tag.hpp"
 
 namespace thes::test {
+#define THES_ALWAYS_ASSERT(expr) ((expr) ? void(0) : ::thes::test::assert_fail(#expr, [] {}))
+
 #ifdef NDEBUG
 #define THES_ASSERT(expr)
 #else
-#define THES_ASSERT(expr) ((expr) ? void(0) : ::thes::test::assert_fail(#expr, [] {}))
+#define THES_ASSERT(expr) THES_ALWAYS_ASSERT(expr)
 #endif
 
 inline void assert_fail(const char* assertion, auto fun,

@@ -5,6 +5,7 @@
 #include "io/delimiter.hpp"
 #include "io/file-reader.hpp"
 #include "io/file-writer.hpp"
+#include "io/file.hpp"
 #include "io/json.hpp"
 #include "io/printers.hpp"
 // IWYU pragma: end_exports

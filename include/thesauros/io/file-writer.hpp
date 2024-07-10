@@ -3,27 +3,16 @@
 
 #include <cerrno>
 #include <cstdio>
-#include <exception>
 #include <filesystem>
 #include <span>
-#include <string>
 #include <type_traits>
 #include <utility>
 
 #include <fmt/core.h>
 
+#include "thesauros/io/file.hpp"
+
 namespace thes {
-struct FileWriterException : public std::exception {
-  explicit FileWriterException(std::string msg) : message_(std::move(msg)) {}
-
-  [[nodiscard]] const char* what() const noexcept override {
-    return message_.c_str();
-  }
-
-private:
-  std::string message_;
-};
-
 struct FileWriter {
   FileWriter(const FileWriter&) = delete;
   FileWriter(FileWriter&&) = delete;
@@ -31,9 +20,9 @@ struct FileWriter {
   FileWriter& operator=(FileWriter&&) = delete;
 
   explicit FileWriter(std::filesystem::path path)
-      : path_(std::move(path)), handle_(std::fopen(path_.c_str(), "wb")) {
+      : path_(std::move(path)), handle_(std::fopen(path_.c_str(), "wb+")) {
     if (handle_ == nullptr) {
-      throw FileWriterException(fmt::format("fopen failed: {}", errno));
+      throw FileException(fmt::format("fopen failed: {}", errno));
     }
   }
   ~FileWriter() {
@@ -51,12 +40,27 @@ struct FileWriter {
   void write(std::span<T> span) {
     const auto written = std::fwrite(span.data(), sizeof(T), span.size(), handle_);
     if (written != span.size()) {
-      throw FileWriterException(fmt::format("fwrite failed: {} != {}", written, span.size()));
+      throw FileException(fmt::format("fwrite failed: {} != {}", written, span.size()));
     }
   }
   template<typename T>
   void write(const T& value) {
     write(std::span{&value, 1});
+  }
+
+  void seek(long offset, Seek whence) {
+    const auto ret = std::fseek(handle_, offset, int(whence));
+    if (ret != 0) {
+      throw FileException(fmt::format("fseek failed: {}", ret));
+    }
+  }
+
+  [[nodiscard]] long tell() {
+    const auto ret = std::ftell(handle_);
+    if (ret == -1) {
+      throw FileException(fmt::format("ftell failed: {}", errno));
+    }
+    return ret;
   }
 
   [[nodiscard]] FILE* handle() const {
