@@ -97,7 +97,9 @@ template<std::unsigned_integral T, typename... TArgs>
 requires(... && std::same_as<TArgs, bool>)
 inline constexpr T combine_bits(TArgs... bits) {
   return [bits...]<std::size_t... tIdxs>(std::index_sequence<tIdxs...> /*idxs*/) {
-    return (... + T(T{bits} << tIdxs));
+    T out{};
+    (out += ... += T(T{bits} << tIdxs));
+    return out;
   }(std::index_sequence_for<TArgs...>{});
 }
 
