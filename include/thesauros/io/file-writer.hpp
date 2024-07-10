@@ -56,7 +56,7 @@ struct FileWriter {
   }
   template<typename T>
   void write(const T& value) {
-    write(&value, 1);
+    write(std::span{&value, 1});
   }
 
   [[nodiscard]] FILE* handle() const {
