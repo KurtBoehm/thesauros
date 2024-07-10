@@ -54,6 +54,10 @@ struct FileWriter {
       throw FileWriterException(fmt::format("fwrite failed: {} != {}", written, span.size()));
     }
   }
+  template<typename T>
+  void write(const T& value) {
+    write(&value, 1);
+  }
 
   [[nodiscard]] FILE* handle() const {
     return handle_;
