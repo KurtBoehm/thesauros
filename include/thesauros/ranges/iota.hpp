@@ -39,8 +39,7 @@ private:
   };
 
 public:
-  struct const_iterator
-      : public IteratorFacade<const_iterator, iter_provider::Map<IterProv, const_iterator>> {
+  struct const_iterator : public IteratorFacade<const_iterator, iter_provider::Map<IterProv>> {
     friend IterProv;
     constexpr const_iterator() = default;
     explicit constexpr const_iterator(Value&& v) : value_(std::move(v)) {}
@@ -53,8 +52,7 @@ public:
   struct const_reverse_iterator
       : public IteratorFacade<
           const_reverse_iterator,
-          iter_provider::Reverse<iter_provider::Map<IterProv, const_reverse_iterator>,
-                                 const_reverse_iterator>> {
+          iter_provider::Reverse<iter_provider::Map<IterProv>, const_reverse_iterator>> {
     friend IterProv;
     constexpr const_reverse_iterator() = default;
     explicit constexpr const_reverse_iterator(Value&& v) : value_(std::forward<Value>(v)) {}

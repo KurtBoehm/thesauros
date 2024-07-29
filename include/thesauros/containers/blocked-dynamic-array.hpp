@@ -160,8 +160,7 @@ private:
 
 public:
   template<bool tConst>
-  struct Iterator : public IteratorFacade<Iterator<tConst>,
-                                          iter_provider::Map<StateProv<tConst>, Iterator<tConst>>> {
+  struct Iterator : public IteratorFacade<Iterator<tConst>, iter_provider::Map<StateProv<tConst>>> {
     friend StateProv<tConst>;
     using CSize = ConditionalConst<tConst, Size>;
     using CValue = ConditionalConst<tConst, Value>;

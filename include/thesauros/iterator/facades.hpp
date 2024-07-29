@@ -8,7 +8,6 @@
 
 #include "thesauros/iterator/concepts.hpp"
 #include "thesauros/utility/arrow-proxy.hpp"
-#include "thesauros/utility/type-tag.hpp"
 
 namespace thes {
 // The iter needs to be a forward iter at least.

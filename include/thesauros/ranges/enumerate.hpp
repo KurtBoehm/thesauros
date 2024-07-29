@@ -32,8 +32,7 @@ private:
   };
 
 public:
-  struct const_iterator
-      : public IteratorFacade<const_iterator, iter_provider::Map<IterProv, const_iterator>> {
+  struct const_iterator : public IteratorFacade<const_iterator, iter_provider::Map<IterProv>> {
     friend IterProv;
     explicit constexpr const_iterator(TIter begin, TIter it) : begin_(begin), it_(std::move(it)) {}
 

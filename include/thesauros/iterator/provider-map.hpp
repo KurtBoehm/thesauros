@@ -19,7 +19,7 @@ namespace thes::iter_provider {
 // for added functionality:
 // * test_if_cmp(const Derived&, const Derived&)
 //   * This is called when comparing instances and is intended for assertions.
-template<typename TStateProvider, typename TDerived>
+template<typename TStateProvider>
 struct Map {
   using IterTypes = TStateProvider::IterTypes;
   using Ref = IterTypes::IterRef;

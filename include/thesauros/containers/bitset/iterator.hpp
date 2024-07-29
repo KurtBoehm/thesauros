@@ -29,9 +29,8 @@ struct BitsetIterStateProv {
 };
 
 template<typename TBitset>
-struct BitsetIterator
-    : public IteratorFacade<BitsetIterator<TBitset>, iter_provider::Map<detail::BitsetIterStateProv,
-                                                                        BitsetIterator<TBitset>>> {
+struct BitsetIterator : public IteratorFacade<BitsetIterator<TBitset>,
+                                              iter_provider::Map<detail::BitsetIterStateProv>> {
   friend detail::BitsetIterStateProv;
   constexpr BitsetIterator(std::size_t idx, const TBitset& self) : idx_(idx), self_(self) {}
 
