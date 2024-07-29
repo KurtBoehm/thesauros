@@ -13,6 +13,7 @@
 
 #include "thesauros/containers/dynamic-buffer.hpp"
 #include "thesauros/io/file.hpp"
+#include "thesauros/utility/inlining.hpp"
 #include "thesauros/utility/integer-cast.hpp"
 #include "thesauros/utility/type-tag.hpp"
 
@@ -20,7 +21,7 @@ namespace thes {
 struct FileReader {
   explicit FileReader(const std::filesystem::path& path) : handle_(std::fopen(path.c_str(), "rb")) {
     if (handle_ == nullptr) {
-      throw FileException(fmt::format("fopen failed: {}", errno));
+      throw FileException{fmt::format("fopen failed: {}", errno)};
     }
   }
   FileReader(const FileReader&) = delete;
@@ -35,36 +36,35 @@ struct FileReader {
 
   template<typename T>
   requires std::is_trivial_v<T>
-  std::size_t try_read(std::span<T> span) {
+  THES_ALWAYS_INLINE std::size_t try_read(std::span<T> span) {
     const auto ret = std::fread(span.data(), sizeof(T), span.size(), handle_);
     const auto err = std::ferror(handle_);
     if (err) {
-      throw FileException(
-        fmt::format("fread failed ({}), ret={}, size={}", err, ret, span.size()));
+      throw FileException{fmt::format("fread failed ({}), ret={}, size={}", err, ret, span.size())};
     }
     return ret;
   }
 
   template<typename T>
   requires std::is_trivial_v<T>
-  void read(std::span<T> span) {
+  THES_ALWAYS_INLINE void read(std::span<T> span) {
     const auto ret = std::fread(span.data(), sizeof(T), span.size(), handle_);
     if (ret != span.size()) {
-      throw FileException(fmt::format("fread failed: {} != {}", ret, span.size()));
+      throw FileException{fmt::format("fread failed: {} != {}", ret, span.size())};
     }
   }
-  void read(DynamicBuffer& buf, std::size_t size) {
+  THES_ALWAYS_INLINE void read(DynamicBuffer& buf, std::size_t size) {
     buf.resize(size);
     read(buf.span());
   }
   template<typename T, std::size_t tSize>
   requires std::is_trivial_v<T>
-  void read(std::array<T, tSize>& array) {
+  THES_ALWAYS_INLINE void read(std::array<T, tSize>& array) {
     read(std::span{array.data(), array.size()});
   }
   template<typename T>
   requires std::is_trivial_v<T>
-  T read(TypeTag<T> /*tag*/) {
+  THES_ALWAYS_INLINE T read(TypeTag<T> /*tag*/) {
     T value{};
     read(std::span{&value, 1});
     return value;
@@ -72,8 +72,7 @@ struct FileReader {
 
   void read_full(BufferLike auto& buf) {
     if (const auto off = tell(); off != 0) {
-      throw FileException{
-        fmt::format("read_full has to start at the beginning, not at {}!", off)};
+      throw FileException{fmt::format("read_full has to start at the beginning, not at {}!", off)};
     }
     buf.resize(size());
     buf.resize(try_read(std::span{buf.data(), buf.size()}));
@@ -85,17 +84,17 @@ struct FileReader {
     return buf;
   }
 
-  void seek(long offset, Seek whence) {
+  THES_ALWAYS_INLINE void seek(long offset, Seek whence) {
     const auto ret = std::fseek(handle_, offset, int(whence));
     if (ret != 0) {
-      throw FileException(fmt::format("fseek failed: {}", ret));
+      throw FileException{fmt::format("fseek failed: {}", ret)};
     }
   }
 
-  [[nodiscard]] long tell() {
+  [[nodiscard]] THES_ALWAYS_INLINE long tell() {
     const auto ret = std::ftell(handle_);
     if (ret == -1) {
-      throw FileException(fmt::format("ftell failed: {}", errno));
+      throw FileException{fmt::format("ftell failed: {}", errno)};
     }
     return ret;
   }
@@ -105,7 +104,7 @@ struct FileReader {
   std::size_t try_pread(std::span<T> span, long offset) {
     const auto pre = tell();
     seek(offset, Seek::set);
-    const auto ret = std::fread(span.data(), sizeof(T), span.size(), handle_);
+    const auto ret = try_read(span);
     seek(pre, Seek::set);
     return ret;
   }
@@ -121,7 +120,7 @@ struct FileReader {
   void pread(std::span<T> span, long offset) {
     const auto ret = try_pread(span, offset);
     if (ret != span.size()) {
-      throw FileException(fmt::format("pread failed: {} != {}", ret, span.size()));
+      throw FileException{fmt::format("pread failed: {} != {}", ret, span.size())};
     }
   }
   template<typename T>
