@@ -6,7 +6,6 @@
 namespace thes {
 template<typename T>
 concept AnyRange = requires(const T& r) {
-  typename T::value_type;
   std::begin(r);
   std::end(r);
 };
