@@ -30,8 +30,8 @@ struct NestedFormatter {
     specs.width = width_;
     specs.fill = fill_;
     specs.align = align_;
-    return ::fmt::detail::write<TChar>(ctx.out(), basic_string_view<TChar>(buf.data(), buf.size()),
-                                       specs);
+    return ::fmt::detail::write<TChar>(
+      ctx.out(), ::fmt::basic_string_view<TChar>(buf.data(), buf.size()), specs);
   }
 
   ::fmt::nested_view<T, TChar> nested(const T& value) const {
@@ -79,8 +79,8 @@ struct SimpleFormatter {
     specs.width = width_;
     specs.fill = fill_;
     specs.align = align_;
-    return ::fmt::detail::write<TChar>(ctx.out(), basic_string_view<TChar>(buf.data(), buf.size()),
-                                       specs);
+    return ::fmt::detail::write<TChar>(
+      ctx.out(), ::fmt::basic_string_view<TChar>(buf.data(), buf.size()), specs);
   }
 
 private:
