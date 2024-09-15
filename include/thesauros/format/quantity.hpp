@@ -17,7 +17,7 @@ struct fmt::formatter<thes::Quantity<TRep, TUnit>> : fmt::nested_formatter<TRep>
 };
 
 template<thes::AnyQuantity TQuantity>
-struct fmt::formatter<thes::SplitTimePrinter<TQuantity>> : thes::SimpleFormatter {
+struct fmt::formatter<thes::SplitTimePrinter<TQuantity>> : thes::SimpleFormatter<> {
   using Self = thes::SplitTimePrinter<TQuantity>;
 
   auto format(Self p, format_context& ctx) const {

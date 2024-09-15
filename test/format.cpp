@@ -15,7 +15,7 @@ struct S {
 };
 
 template<>
-struct fmt::formatter<S> : thes::SimpleFormatter {
+struct fmt::formatter<S> : thes::SimpleFormatter<> {
   auto format(S s, format_context& ctx) const {
     // TODO Nested formatting does NOT work!
     return this->write_padded(ctx, [&](auto out) { return fmt::format_to(out, "S({})", s.i); });

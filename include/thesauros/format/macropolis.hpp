@@ -8,7 +8,7 @@
 #include "thesauros/macropolis/type.hpp"
 
 template<thes::HasTypeInfo T>
-struct fmt::formatter<T> : public thes::SimpleFormatter {
+struct fmt::formatter<T> : public thes::SimpleFormatter<> {
   using Info = thes::TypeInfo<T>;
 
   auto format(const T& obj, format_context& ctx) const {

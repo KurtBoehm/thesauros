@@ -1,17 +1,15 @@
 #ifndef INCLUDE_THESAUROS_FORMAT_FORMATTER_HPP
 #define INCLUDE_THESAUROS_FORMAT_FORMATTER_HPP
 
-#include <iterator>
-
 #include "thesauros/format/fmtlib.hpp"
 
 namespace thes {
-template<typename T>
+template<typename T, typename TChar = char>
 struct NestedFormatter {
   constexpr NestedFormatter() = default;
 
-  constexpr const char* parse(fmt::format_parse_context& ctx) {
-    auto specs = ::fmt::detail::dynamic_format_specs<char>();
+  constexpr auto parse(::fmt::basic_format_parse_context<TChar>& ctx) -> decltype(ctx.begin()) {
+    auto specs = ::fmt::detail::dynamic_format_specs<TChar>();
     auto it =
       parse_format_specs(ctx.begin(), ctx.end(), specs, ctx, ::fmt::detail::type::none_type);
     width_ = specs.width;
@@ -21,22 +19,23 @@ struct NestedFormatter {
     return formatter_.parse(ctx);
   }
 
-  template<typename TOp>
-  ::fmt::appender write_padded(::fmt::format_context& ctx, TOp write) const {
+  template<typename TFormatContext, typename TF>
+  auto write_padded(TFormatContext& ctx, TF write) const -> decltype(ctx.out()) {
     if (width_ == 0) {
       return write(ctx.out());
     }
-    auto buf = ::fmt::memory_buffer();
-    write(std::back_inserter(buf));
-    auto specs = ::fmt::format_specs<>();
+    auto buf = ::fmt::basic_memory_buffer<TChar>();
+    write(::fmt::basic_appender<TChar>(buf));
+    auto specs = ::fmt::format_specs();
     specs.width = width_;
     specs.fill = fill_;
     specs.align = align_;
-    return ::fmt::detail::write(ctx.out(), ::fmt::string_view(buf.data(), buf.size()), specs);
+    return ::fmt::detail::write<TChar>(ctx.out(), basic_string_view<TChar>(buf.data(), buf.size()),
+                                       specs);
   }
 
-  ::fmt::nested_view<T> nested(const T& value) const {
-    return ::fmt::nested_view<T>{&formatter_, &value};
+  ::fmt::nested_view<T, TChar> nested(const T& value) const {
+    return ::fmt::nested_view<T, TChar>{&formatter_, &value};
   }
 
 protected:
@@ -49,17 +48,18 @@ protected:
 
 private:
   int width_{};
-  ::fmt::detail::fill_t<char> fill_{};
+  ::fmt::detail::fill_t fill_{};
   ::fmt::align_t align_ : 4 {::fmt::align_t::none};
   ::fmt::formatter<T> formatter_{};
 };
 
+template<typename TChar = char>
 struct SimpleFormatter {
   constexpr SimpleFormatter() = default;
 
-  FMT_CONSTEXPR const char* parse(::fmt::format_parse_context& ctx) {
-    auto specs = ::fmt::detail::dynamic_format_specs<char>();
-    const auto* it =
+  constexpr auto parse(::fmt::basic_format_parse_context<TChar>& ctx) -> decltype(ctx.begin()) {
+    auto specs = ::fmt::detail::dynamic_format_specs<TChar>();
+    auto it =
       parse_format_specs(ctx.begin(), ctx.end(), specs, ctx, ::fmt::detail::type::none_type);
     width_ = specs.width;
     fill_ = specs.fill;
@@ -68,23 +68,24 @@ struct SimpleFormatter {
     return it;
   }
 
-  template<typename TOp>
-  auto write_padded(::fmt::format_context& ctx, TOp write) const -> decltype(ctx.out()) {
+  template<typename TFormatContext, typename TF>
+  auto write_padded(TFormatContext& ctx, TF write) const -> decltype(ctx.out()) {
     if (width_ == 0) {
       return write(ctx.out());
     }
-    auto buf = ::fmt::memory_buffer();
-    write(std::back_inserter(buf));
-    auto specs = ::fmt::format_specs<>();
+    auto buf = ::fmt::basic_memory_buffer<TChar>();
+    write(::fmt::basic_appender<TChar>(buf));
+    auto specs = ::fmt::format_specs();
     specs.width = width_;
     specs.fill = fill_;
     specs.align = align_;
-    return ::fmt::detail::write(ctx.out(), ::fmt::string_view(buf.data(), buf.size()), specs);
+    return ::fmt::detail::write<TChar>(ctx.out(), basic_string_view<TChar>(buf.data(), buf.size()),
+                                       specs);
   }
 
 private:
   int width_{0};
-  ::fmt::detail::fill_t<char> fill_;
+  ::fmt::detail::fill_t fill_;
   ::fmt::align_t align_ : 4 {::fmt::align_t::none};
 };
 } // namespace thes

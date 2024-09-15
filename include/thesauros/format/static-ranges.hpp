@@ -38,7 +38,7 @@ struct fmt::formatter<thes::star::Formatter<TRange>>
 };
 template<thes::star::AnyStaticRange TRange>
 requires(!thes::star::HasValue<TRange>)
-struct fmt::formatter<thes::star::Formatter<TRange>> : public thes::SimpleFormatter {
+struct fmt::formatter<thes::star::Formatter<TRange>> : public thes::SimpleFormatter<> {
   auto format(const thes::star::Formatter<TRange>& f, fmt::format_context& ctx) const {
     return this->write_padded(
       ctx, [&](auto it) { return thes::detail::static_range_format(f, it, std::identity{}); });

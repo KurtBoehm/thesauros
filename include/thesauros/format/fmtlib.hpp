@@ -2,6 +2,7 @@
 #define INCLUDE_THESAUROS_FORMAT_FMTLIB_HPP
 
 // IWYU pragma: begin_exports
+#include <fmt/base.h>
 #include <fmt/chrono.h>
 #include <fmt/color.h>
 #include <fmt/core.h>
