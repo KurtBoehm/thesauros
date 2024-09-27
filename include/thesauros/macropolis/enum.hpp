@@ -53,7 +53,7 @@ concept HasEnumInfo = CompleteType<EnumInfo<T>>;
   /* gcc: global qualification of class name is invalid before ‘{’ token */ \
   inline consteval auto enum_info_helper(TYPENAME /*dummy*/) { \
     return ::thes::EnumInfoTemplate<THES_POLIS_NAME_STR_##TYPE, THES_POLIS_SERIAL_NAME_STR_##TYPE, \
-                                    thes::Tuple{BOOST_PP_LIST_FOR_EACH_I( \
+                                    ::thes::Tuple{BOOST_PP_LIST_FOR_EACH_I( \
                                       THES_POLIS_ENUM_VALUE_DEF, TYPENAME, LIST)}>{}; \
   }
 
@@ -74,7 +74,7 @@ inline constexpr auto enum_value_info = [] {
   constexpr auto values = Info::values;
 
   auto impl = [&](auto self, auto idx) {
-    auto info = thes::star::get_at<idx>(values);
+    auto info = star::get_at<idx>(values);
     if constexpr (info.value == tValue) {
       return info;
     } else {

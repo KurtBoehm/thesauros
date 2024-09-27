@@ -96,7 +96,7 @@ struct Printer<TRange> {
   explicit Printer(TRange&& range) : range_{std::forward<TRange>(range)} {}
 
   std::ostream& print(std::ostream& stream) const {
-    thes::Delimiter delim{", "};
+    Delimiter delim{", "};
     stream << '(';
     range_ |
       star::for_each([&]<typename T>(const T& v) { stream << delim << Printer<const T&>{v}; });

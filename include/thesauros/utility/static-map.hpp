@@ -140,7 +140,7 @@ StaticMap(TPairs&&... pairs) -> StaticMap<TPairs...>;
 
 template<auto... tPairs>
 inline constexpr auto static_map_tag =
-  thes::auto_tag<StaticMap((std::decay_t<decltype(tPairs)>(tPairs))...)>;
+  auto_tag<StaticMap((std::decay_t<decltype(tPairs)>(tPairs))...)>;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_UTILITY_STATIC_MAP_HPP

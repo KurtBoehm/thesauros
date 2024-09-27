@@ -223,9 +223,9 @@ struct JsonWriter<T> {
       constexpr bool is_static = i < static_size;
       constexpr auto member = [&] {
         if constexpr (is_static) {
-          return thes::star::get_at<i>(Info::static_members);
+          return star::get_at<i>(Info::static_members);
         } else {
-          return thes::star::get_at<i - static_size>(Info::members);
+          return star::get_at<i - static_size>(Info::members);
         }
       }();
       using Member = decltype(member);
@@ -265,7 +265,7 @@ struct JsonWriter<TEnum> {
 
     auto impl = [&]<std::size_t tHead, std::size_t... tTail>(
                   auto rec, std::index_sequence<tHead, tTail...>) -> TIt {
-      constexpr auto value_info = thes::star::get_at<tHead>(EnumInfo::values);
+      constexpr auto value_info = star::get_at<tHead>(EnumInfo::values);
       if (value_info.value == value) {
         return JsonWriter<std::string_view>::write(it, value_info.serial_name.view(), indent);
       }

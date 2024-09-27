@@ -40,11 +40,11 @@ struct Tuple<std::index_sequence<tIdxs...>, Ts...> : detail::TupleLeaf<tIdxs, Ts
 };
 
 template<std::size_t tIdx, typename T>
-static constexpr const T& get_tuple_at(const ::thes::detail::TupleLeaf<tIdx, T>& t) {
+static constexpr const T& get_tuple_at(const TupleLeaf<tIdx, T>& t) {
   return t.data;
 }
 template<std::size_t tIdx, typename T>
-static constexpr T& get_tuple_at(::thes::detail::TupleLeaf<tIdx, T>& t) {
+static constexpr T& get_tuple_at(TupleLeaf<tIdx, T>& t) {
   return t.data;
 }
 } // namespace detail

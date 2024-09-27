@@ -20,7 +20,7 @@ private:
     };
 
     static constexpr Value deref(const auto& self) {
-      return Value{*thes::safe_cast<TSize>(self.it_ - self.begin_), *self.it_};
+      return Value{*safe_cast<TSize>(self.it_ - self.begin_), *self.it_};
     }
 
     static constexpr TIter& state(auto& self) {

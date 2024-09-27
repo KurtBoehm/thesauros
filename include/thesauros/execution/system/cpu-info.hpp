@@ -51,12 +51,12 @@ struct CpuInfo {
   }
 
   [[nodiscard]] auto core_cpus() const {
-    return cpu_range(thes::read_file<thes::DynamicArray<char>>(sys_folder() / "core_cpus_list"));
+    return cpu_range(read_file<DynamicArray<char>>(sys_folder() / "core_cpus_list"));
   }
 
   static auto present() {
     const auto present_path = std::filesystem::path{cpu_path_cstr} / "present";
-    return cpu_range(thes::read_file<thes::DynamicArray<char>>(present_path)) |
+    return cpu_range(read_file<DynamicArray<char>>(present_path)) |
            std::views::transform([](auto i) { return CpuInfo{i}; });
   }
 
@@ -68,7 +68,7 @@ struct CpuInfo {
   static auto core_part(std::size_t idx, std::size_t num) {
     auto common = std::ranges::common_view(CpuInfo::core_unique());
     std::vector<CpuInfo> one_per_core(common.begin(), common.end());
-    const auto subsizes = thes::UniformIndexSegmenter{one_per_core.size(), num}.segment_range(idx);
+    const auto subsizes = UniformIndexSegmenter{one_per_core.size(), num}.segment_range(idx);
     return std::move(one_per_core) | std::views::drop(subsizes.begin_value()) |
            std::views::take(subsizes.size());
   }

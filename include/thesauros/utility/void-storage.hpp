@@ -26,7 +26,7 @@ struct VoidTypeTrait {
 template<template<typename> typename... TTrans>
 struct VoidTypeTrait<void, TTrans...> {
   using Type = void;
-  using Storage = thes::Empty;
+  using Storage = Empty;
 };
 
 template<typename T>
@@ -40,7 +40,8 @@ using VoidStorageRvalRef = VoidTypeTrait<T, std::add_rvalue_reference>::Storage;
 template<typename T>
 using VoidConstLvalRef = VoidTypeTrait<T, std::add_const, std::add_lvalue_reference>::Type;
 template<typename T>
-using VoidStorageConstLvalRef = VoidTypeTrait<T, std::add_const, std::add_lvalue_reference>::Storage;
+using VoidStorageConstLvalRef =
+  VoidTypeTrait<T, std::add_const, std::add_lvalue_reference>::Storage;
 
 template<typename T>
 using VoidConstPtr = VoidTypeTrait<T, std::add_const, std::add_pointer>::Type;
@@ -48,7 +49,7 @@ template<typename T>
 using VoidStorageConstPtr = VoidTypeTrait<T, std::add_const, std::add_pointer>::Storage;
 
 template<typename T>
-using UnVoidStorage = std::conditional_t<std::same_as<std::decay_t<T>, thes::Empty>, void, T>;
+using UnVoidStorage = std::conditional_t<std::same_as<std::decay_t<T>, Empty>, void, T>;
 
 template<typename T>
 inline constexpr VoidStorageConstLvalRef<UnVoidStorage<T>> void_storage_cref(const T& value) {

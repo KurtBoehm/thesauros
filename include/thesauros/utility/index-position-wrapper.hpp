@@ -107,7 +107,7 @@ struct BasePosIndexWrapper {
   using PosSize = IndexManager::PosSize;
 
   using SizeArr = std::array<PosSize, dimension_num>;
-  using DivArr = std::array<thes::Divisor<PosSize>, dimension_num>;
+  using DivArr = std::array<Divisor<PosSize>, dimension_num>;
   using Diff = std::make_signed_t<IdxSize>;
 
   constexpr BasePosIndexWrapper(IndexManager idx_man, SizeArr pos, SizeArr dims)

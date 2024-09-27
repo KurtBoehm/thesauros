@@ -12,13 +12,13 @@
 
 namespace thes::detail {
 template<thes::star::AnyStaticRange TRange>
-inline auto static_range_format(const thes::star::Formatter<TRange>& f, auto it, auto op) {
+inline auto static_range_format(const star::Formatter<TRange>& f, auto it, auto op) {
   it = ::fmt::format_to(it, "[");
-  thes::star::iota<0, thes::star::size<TRange>> | thes::star::for_each([&](auto i) {
+  star::iota<0, star::size<TRange>> | star::for_each([&](auto i) {
     if constexpr (i > 0) {
       it = ::fmt::format_to(it, ", ");
     }
-    it = ::fmt::format_to(it, "{}", op(thes::star::get_at(f.range(), i)));
+    it = ::fmt::format_to(it, "{}", op(star::get_at(f.range(), i)));
   });
   it = ::fmt::format_to(it, "]");
   return it;

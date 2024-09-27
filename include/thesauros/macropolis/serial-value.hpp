@@ -45,7 +45,7 @@ struct SerialValueTrait<T> {
       }
     };
     return EnumInfo<T>::values |
-           thes::star::apply([&](const auto&... members) { return impl(impl, members...); });
+           star::apply([&](const auto&... members) { return impl(impl, members...); });
   }
 };
 

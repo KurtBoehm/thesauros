@@ -66,7 +66,7 @@ private:
 
 template<bool tIsConst, typename TByteInt>
 struct ViewStorage {
-  using CByte = thes::ConditionalConst<tIsConst, std::byte>;
+  using CByte = ConditionalConst<tIsConst, std::byte>;
   using Size = std::size_t;
   static constexpr std::size_t element_bytes = TByteInt::byte_num;
 

@@ -125,7 +125,7 @@ struct FileReader {
   }
   template<typename T>
   requires std::is_trivial_v<T>
-  T pread(long offset, thes::TypeTag<T> /*tag*/) {
+  T pread(long offset, TypeTag<T> /*tag*/) {
     T value{};
     pread(std::span{&value, 1}, offset);
     return value;

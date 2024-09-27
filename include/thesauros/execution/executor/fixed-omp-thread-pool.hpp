@@ -36,11 +36,11 @@ struct FixedOpenMpThreadPool {
   template<typename TCpuInfos = Empty>
   static FixedOpenMpThreadPool from_cpu_infos(std::size_t size, TCpuInfos&& cpu_infos = {}) {
     if constexpr (std::same_as<TCpuInfos, Empty>) {
-      return thes::FixedOpenMpThreadPool{size, Empty{}};
+      return FixedOpenMpThreadPool{size, Empty{}};
     } else {
-      return thes::FixedOpenMpThreadPool{
+      return FixedOpenMpThreadPool{
         size, std::views::transform(std::forward<TCpuInfos>(cpu_infos),
-                                    [](auto cpu) { return thes::CpuSet::single_set(cpu.id); })};
+                                    [](auto cpu) { return CpuSet::single_set(cpu.id); })};
     }
   }
 

@@ -69,11 +69,11 @@ struct FixedStdThreadPool {
   template<typename TCpuInfos = Empty>
   static FixedStdThreadPool from_cpu_infos(std::size_t size, TCpuInfos&& cpu_infos = {}) {
     if constexpr (std::same_as<TCpuInfos, Empty>) {
-      return thes::FixedStdThreadPool{size, Empty{}};
+      return FixedStdThreadPool{size, Empty{}};
     } else {
-      return thes::FixedStdThreadPool{
+      return FixedStdThreadPool{
         size, std::views::transform(std::forward<TCpuInfos>(cpu_infos),
-                                    [](auto cpu) { return thes::CpuSet::single_set(cpu.id); })};
+                                    [](auto cpu) { return CpuSet::single_set(cpu.id); })};
     }
   }
 

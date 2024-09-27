@@ -16,7 +16,7 @@ struct DoublingGrowth {
     assert(new_size_lower_bound > old_size);
     constexpr Size one = 1;
 
-    const unsigned logarithm = thes::bit_width(new_size_lower_bound);
+    const unsigned logarithm = bit_width(new_size_lower_bound);
     if (logarithm >= NumericInfo<Size>::digits) {
       return NumericInfo<Size>::max;
     }

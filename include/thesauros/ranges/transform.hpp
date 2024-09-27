@@ -69,7 +69,7 @@ public:
   {
     assert(end_ - begin_ >= 0);
     using Signed = decltype(end_ - begin_);
-    return *thes::safe_cast<std::make_unsigned_t<Signed>>(end_ - begin_);
+    return *safe_cast<std::make_unsigned_t<Signed>>(end_ - begin_);
   }
 
 private:

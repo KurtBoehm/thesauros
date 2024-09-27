@@ -11,9 +11,8 @@
 namespace thes {
 template<typename... TRanges>
 struct ZipRange {
-  using Value =
-    thes::Tuple<decltype(*std::declval<typename std::decay_t<TRanges>::const_iterator>())...>;
-  using Iterators = thes::Tuple<typename std::decay_t<TRanges>::const_iterator...>;
+  using Value = Tuple<decltype(*std::declval<typename std::decay_t<TRanges>::const_iterator>())...>;
+  using Iterators = Tuple<typename std::decay_t<TRanges>::const_iterator...>;
 
 private:
   struct IterProv {
@@ -61,7 +60,7 @@ public:
   }
 
 private:
-  thes::Tuple<TRanges...> ranges_;
+  Tuple<TRanges...> ranges_;
 };
 
 template<typename... TRanges>

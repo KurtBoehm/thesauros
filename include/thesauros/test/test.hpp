@@ -48,7 +48,7 @@ concept AreRanges = AreIterRanges<TRange1, TRange2> || AreAccessRanges<TRange1, 
 } // namespace detail
 
 template<typename TRange1, typename TRange2, typename TEqual = std::equal_to<>,
-         typename TPrint = thes::NoOp<>>
+         typename TPrint = NoOp<>>
 inline constexpr bool range_eq(TRange1&& r1, TRange2&& r2, TEqual equal = {}, TPrint printer = {}) {
   static_assert(detail::AreRanges<TRange1, TRange2>);
 
@@ -66,7 +66,7 @@ inline constexpr bool range_eq(TRange1&& r1, TRange2&& r2, TEqual equal = {}, TP
     for (Delimiter delim{", "}; it1 != end1 && it2 != end2; ++it1, ++it2) {
       if constexpr (print) {
         printer("{}", delim);
-        printer(thes::rainbow_fg(counter++), "{}/{}", *it1, *it2);
+        printer(rainbow_fg(counter++), "{}/{}", *it1, *it2);
       }
       if (!equal(*it1, *it2)) {
         if constexpr (print) {
@@ -130,13 +130,12 @@ struct StringEqPrinter {
 };
 
 template<bool tVerbose = true>
-inline bool string_eq(const std::string_view s1, const auto& v,
-                      thes::BoolTag<tVerbose> verbose = {}) {
+inline bool string_eq(const std::string_view s1, const auto& v, BoolTag<tVerbose> verbose = {}) {
   const auto s2 = ::fmt::format("{}", v);
   if constexpr (verbose) {
     return string_eq(s1, std::string_view{s2}, StringEqPrinter{});
   }
-  return string_eq(s1, std::string_view{s2}, thes::NoOp{});
+  return string_eq(s1, std::string_view{s2}, NoOp{});
 }
 } // namespace thes::test
 

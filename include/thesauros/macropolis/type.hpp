@@ -80,9 +80,9 @@ concept HasSerialName = CompleteType<SerialNameTrait<T>>;
 #endif
 #define THES_POLIS_PRIMITIVE_NAME(TYPENAME) \
   template<> \
-  struct SerialNameTrait<thes::TYPENAME> { \
+  struct SerialNameTrait<::thes::TYPENAME> { \
     static constexpr auto name() { \
-      return thes::StaticString{#TYPENAME}; \
+      return ::thes::StaticString{#TYPENAME}; \
     }; \
   };
 
@@ -281,9 +281,9 @@ inline constexpr auto serial_name_of() {
     static constexpr auto name = THES_POLIS_NAME_STR(TYPE); \
     static constexpr auto serial_name = THES_POLIS_SERIAL_NAME_STR(TYPE); \
 \
-    static constexpr thes::Tuple members{ \
+    static constexpr ::thes::Tuple members{ \
       BOOST_PP_LIST_FOR_EACH_I(THES_POLIS_MEMBER_INFO, TYPENAME, MEMBERS)}; \
-    static constexpr thes::Tuple static_members{ \
+    static constexpr ::thes::Tuple static_members{ \
       BOOST_PP_LIST_FOR_EACH_I(THES_POLIS_STATIC_MEMBER, BOOST_PP_EMPTY(), STATIC_MEMBERS)}; \
 \
     using Members = decltype(members); \
@@ -304,7 +304,7 @@ inline constexpr auto serial_name_of() {
                                       (THES_POLIS_TEMPLATE_SPEC(TYPENAME, TEMPLATE_PARAMS)))) \
   struct BOOST_PP_REMOVE_PARENS(FULL_NAME)::MemoryLayoutInfo { \
     using Self = BOOST_PP_REMOVE_PARENS(FULL_NAME); \
-    static constexpr thes::Tuple members{ \
+    static constexpr ::thes::Tuple members{ \
       BOOST_PP_LIST_FOR_EACH_I(THES_POLIS_MEMBER_OFFSET, Self, MEMBERS)}; \
   };
 

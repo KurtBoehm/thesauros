@@ -17,7 +17,7 @@ inline constexpr auto base_unit_name = BaseUnitNameTrait<T>::name;
 #define BASE_UNIT_NAME(BASE_UNIT, NAME) \
   template<> \
   struct BaseUnitNameTrait<BASE_UNIT> { \
-    static constexpr thes::StaticString name{NAME}; \
+    static constexpr StaticString name{NAME}; \
   }
 
 BASE_UNIT_NAME(base_unit::second, "s");
@@ -40,7 +40,7 @@ inline constexpr auto prefix_name = PrefixNameTrait<T>::name;
 #define PREFIX_NAME(PREFIX, NAME) \
   template<> \
   struct PrefixNameTrait<PREFIX> { \
-    static constexpr thes::StaticString name{NAME}; \
+    static constexpr StaticString name{NAME}; \
   }
 
 PREFIX_NAME(atto, "a");
@@ -83,7 +83,7 @@ struct UnitNameTrait<Unit<TMul, TBUnit>> {
 #define UNIT_NAME(UNIT, NAME) \
   template<> \
   struct UnitNameTrait<UNIT> { \
-    static constexpr thes::StaticString name{NAME}; \
+    static constexpr StaticString name{NAME}; \
   }
 
 UNIT_NAME(unit::minute, "min");
