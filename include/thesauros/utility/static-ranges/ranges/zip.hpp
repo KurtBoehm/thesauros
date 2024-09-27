@@ -15,15 +15,14 @@
 namespace thes::star {
 template<typename... TRanges>
 struct ZipView {
-  thes::Tuple<TRanges...> ranges;
+  Tuple<TRanges...> ranges;
 
-  static constexpr std::size_t size =
-    *thes::star::unique_value(std::array{thes::star::size<TRanges>...});
+  static constexpr std::size_t size = *unique_value(std::array{thes::star::size<TRanges>...});
 
   template<std::size_t tIndex>
   THES_ALWAYS_INLINE constexpr auto get() const {
-    return thes::star::apply([](auto&... inner) THES_ALWAYS_INLINE {
-      return thes::Tuple{thes::star::get_at<tIndex>(inner)...};
+    return apply([](auto&... inner) THES_ALWAYS_INLINE {
+      return Tuple{thes::star::get_at<tIndex>(inner)...};
     })(ranges);
   }
 };
