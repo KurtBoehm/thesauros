@@ -182,6 +182,7 @@ tile_for_each(const auto& multi_size, const TRanges& ranges, auto&& full_fun, au
   using Size = star::Value<Range>;
   constexpr std::size_t dim_num = star::size<TRanges>;
   using IndexPos = IndexPosition<TIdx, std::array<Size, dim_num>>;
+  constexpr auto vsize = static_cast<Size>(vec_size);
 
   auto impl = [&](auto dim, auto rec, auto index, auto... args) THES_ALWAYS_INLINE {
     const auto [begin, end] = star::get_at<dim>(ranges);
@@ -195,15 +196,15 @@ tile_for_each(const auto& multi_size, const TRanges& ranges, auto&& full_fun, au
       } else {
         if constexpr (has_part) {
           Size i = begin;
-          for (; i + vec_size < end; i += vec_size) {
+          for (; i + vsize < end; i += vsize) {
             full_fun(IndexPos{TIdx{index + i}, {args..., i}});
           }
           if (i != end) {
             part_fun(IndexPos{TIdx{index + i}, {args..., i}}, end - i);
           }
         } else {
-          assert((end - begin) % vec_size == 0);
-          for (Size i = begin; i < end; i += vec_size) {
+          assert((end - begin) % vsize == 0);
+          for (Size i = begin; i < end; i += vsize) {
             full_fun(IndexPos{TIdx{index + i}, {args..., i}});
           }
         }
@@ -217,19 +218,19 @@ tile_for_each(const auto& multi_size, const TRanges& ranges, auto&& full_fun, au
         }
       } else {
         if constexpr (has_part) {
-          const Size full_vec_end = end - ((end - begin) % vec_size);
+          const Size full_vec_end = end - ((end - begin) % vsize);
           if (full_vec_end != end) {
             part_fun(IndexPos{TIdx{index + full_vec_end}, {args..., full_vec_end}},
                      end - full_vec_end);
           }
-          for (Size i = full_vec_end; i > begin; i -= vec_size) {
-            const Size idx = i - vec_size;
+          for (Size i = full_vec_end; i > begin; i -= vsize) {
+            const Size idx = i - vsize;
             full_fun(IndexPos{TIdx{index + idx}, {args..., idx}});
           }
         } else {
-          assert((end - begin) % vec_size == 0);
-          for (Size i = end; i > begin; i -= vec_size) {
-            const Size idx = i - vec_size;
+          assert((end - begin) % vsize == 0);
+          for (Size i = end; i > begin; i -= vsize) {
+            const Size idx = i - vsize;
             full_fun(IndexPos{TIdx{index + idx}, {args..., idx}});
           }
         }
