@@ -9,7 +9,7 @@ namespace thes {
 struct SequentialExecutor {
   explicit constexpr SequentialExecutor() = default;
 
-  [[nodiscard]] constexpr static std::size_t size() {
+  [[nodiscard]] constexpr static std::size_t thread_num() {
     return 1;
   }
 

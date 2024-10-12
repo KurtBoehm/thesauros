@@ -94,7 +94,7 @@ struct FixedStdThreadPool {
     }
   }
 
-  [[nodiscard]] std::size_t size() const {
+  [[nodiscard]] std::size_t thread_num() const {
     return threads_.size();
   }
 

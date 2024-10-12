@@ -51,7 +51,7 @@ struct FixedOpenMpThreadPool {
 
   ~FixedOpenMpThreadPool() = default;
 
-  [[nodiscard]] std::size_t size() const {
+  [[nodiscard]] std::size_t thread_num() const {
     return thread_num_;
   }
 

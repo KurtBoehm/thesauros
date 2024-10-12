@@ -28,8 +28,8 @@ inline void transform_inclusive_scan(TExecutionPolicy&& policy, TForwardIt1 firs
     }
   }();
 
-  std::latch barrier{*safe_cast<std::ptrdiff_t>(policy.size())};
-  FixedArray<T> offsets(policy.size());
+  std::latch barrier{*safe_cast<std::ptrdiff_t>(policy.thread_num())};
+  FixedArray<T> offsets(policy.thread_num());
   std::forward<TExecutionPolicy>(policy).execute_segmented(
     size, [=, &barrier, &offsets](std::size_t thread_idx, auto begin, auto end) {
       auto thread_first = first;

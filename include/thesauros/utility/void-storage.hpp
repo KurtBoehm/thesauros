@@ -38,6 +38,11 @@ template<typename T>
 using VoidStorageRvalRef = VoidTypeTrait<T, std::add_rvalue_reference>::Storage;
 
 template<typename T>
+using VoidLvalRef = VoidTypeTrait<T, std::add_lvalue_reference>::Type;
+template<typename T>
+using VoidStorageLvalRef = VoidTypeTrait<T, std::add_lvalue_reference>::Storage;
+
+template<typename T>
 using VoidConstLvalRef = VoidTypeTrait<T, std::add_const, std::add_lvalue_reference>::Type;
 template<typename T>
 using VoidStorageConstLvalRef =
