@@ -55,8 +55,7 @@ struct FixedOpenMpThreadPool {
     return thread_num_;
   }
 
-  template<std::invocable<std::size_t> TTask>
-  void execute(TTask task) const {
+  void execute(std::invocable<std::size_t> auto task) const {
 #pragma omp parallel for num_threads(thread_num_)
     for (std::size_t t = 0; t < thread_num_; ++t) {
       if (cpu_sets_.has_value()) {

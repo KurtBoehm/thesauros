@@ -48,8 +48,11 @@ struct MultiBitIntegers {
     }
     constexpr void set_bit(Chunk index, bool value, std::memory_order mem_order) {
       std::atomic_ref ref{chunk};
-      for (Chunk c = ref; !ref.compare_exchange_weak(
-             c, thes::set_bit<Chunk>(c, index + offset, value), mem_order);) {
+      Chunk bmask = Chunk{1} << (index + offset);
+      if (value) {
+        ref.fetch_or(bmask, mem_order);
+      } else {
+        ref.fetch_and(~bmask, mem_order);
       }
     }
 
