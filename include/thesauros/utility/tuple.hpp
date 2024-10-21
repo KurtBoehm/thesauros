@@ -1,6 +1,7 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_TUPLE_HPP
 #define INCLUDE_THESAUROS_UTILITY_TUPLE_HPP
 
+#include <array>
 #include <compare>
 #include <concepts>
 #include <cstddef>
@@ -12,12 +13,20 @@
 
 namespace thes {
 namespace detail {
+template<typename T>
+struct IsEqualityComparableTrait : public std::bool_constant<std::equality_comparable<T>> {};
+template<typename T, std::size_t tSize>
+struct IsEqualityComparableTrait<std::array<T, tSize>>
+    : public std::bool_constant<std::equality_comparable<T>> {};
+template<typename T>
+concept EqualityComparable = IsEqualityComparableTrait<std::decay_t<T>>::value;
+
 template<std::size_t tIdx, typename T>
 struct TupleLeaf {
   T data;
 
   constexpr friend bool operator==(const TupleLeaf& a, const TupleLeaf& b)
-  requires(std::equality_comparable<T>)
+  requires(EqualityComparable<T>)
   {
     return a.data == b.data;
   }
