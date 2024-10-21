@@ -1,6 +1,8 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_TUPLE_HPP
 #define INCLUDE_THESAUROS_UTILITY_TUPLE_HPP
 
+#include <compare>
+#include <concepts>
 #include <cstddef>
 #include <type_traits>
 #include <utility>
@@ -14,8 +16,15 @@ template<std::size_t tIdx, typename T>
 struct TupleLeaf {
   T data;
 
-  constexpr friend bool operator==(const TupleLeaf& a, const TupleLeaf& b) {
+  constexpr friend bool operator==(const TupleLeaf& a, const TupleLeaf& b)
+  requires(std::equality_comparable<T>)
+  {
     return a.data == b.data;
+  }
+  constexpr friend auto operator<=>(const TupleLeaf& a, const TupleLeaf& b)
+  requires(std::three_way_comparable<T>)
+  {
+    return a.data <=> b.data;
   }
 };
 
@@ -36,7 +45,8 @@ struct Tuple<std::index_sequence<tIdxs...>, Ts...> : detail::TupleLeaf<tIdxs, Ts
   requires(... && std::is_default_constructible_v<Ts>)
       : detail::TupleLeaf<tIdxs, Ts>{Ts{}}... {}
 
-  bool operator==(const Tuple& other) const = default;
+  constexpr bool operator==(const Tuple& other) const = default;
+  constexpr auto operator<=>(const Tuple& other) const = default;
 };
 
 template<std::size_t tIdx, typename T>
@@ -66,6 +76,9 @@ struct Tuple : public detail::Tuple<std::index_sequence_for<Ts...>, Ts...> {
   constexpr decltype(auto) get() {
     return detail::get_tuple_at<tIdx>(*this);
   }
+
+  constexpr bool operator==(const Tuple&) const = default;
+  constexpr auto operator<=>(const Tuple&) const = default;
 };
 template<typename... Ts>
 Tuple(Ts&&...) -> Tuple<Ts...>;

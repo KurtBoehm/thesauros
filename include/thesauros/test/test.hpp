@@ -123,9 +123,10 @@ struct StringEqPrinter {
   void operator()(::fmt::format_string<TArgs...> fmt, TArgs&&... args) {
     ::fmt::print(fmt, std::forward<TArgs>(args)...);
   }
-  template<typename TFmt, typename... TArgs>
-  void operator()(::fmt::text_style ts, const TFmt& fmt, const TArgs&... args) {
-    ::fmt::print(ts, fmt, args...);
+  template<typename... TArgs>
+  void operator()(const ::fmt::text_style& ts, ::fmt::format_string<TArgs...> fmt,
+                  TArgs&&... args) {
+    ::fmt::print(ts, fmt, std::forward<TArgs>(args)...);
   }
 };
 

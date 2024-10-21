@@ -10,6 +10,7 @@
 #include "boost/preprocessor.hpp"
 
 #include "thesauros/utility/fancy-visit.hpp"
+#include "thesauros/utility/static-ranges/definitions.hpp"
 
 namespace thes {
 namespace impl {
@@ -28,7 +29,7 @@ inline constexpr auto member_info_of() {
 
   auto impl = [&]<std::size_t tHead, std::size_t... tTail>(auto rec,
                                                            std::index_sequence<tHead, tTail...>) {
-    constexpr auto member = std::get<tHead>(members);
+    constexpr auto member = star::get_at<tHead>(members);
     if constexpr (member_ptrs_eq(member.pointer, tPtr)) {
       return member;
     } else {
@@ -164,10 +165,10 @@ inline constexpr decltype(auto) flatten_type(T&& value) {
     }; \
 \
     constexpr auto variant_index_of = [=]<std::size_t tIdx>(std::index_sequence<tIdx>) { \
-      constexpr auto ptr = std::get<tIdx>(member_infos).pointer; \
+      constexpr auto ptr = ::thes::star::get_at<tIdx>(member_infos).pointer; \
       std::optional<std::size_t> index = std::nullopt; \
       [&]<std::size_t... tIdxs>(std::index_sequence<tIdxs...>) { \
-        return ((::thes::impl::member_ptrs_eq(std::get<tIdxs>(variant_members), ptr) \
+        return ((::thes::impl::member_ptrs_eq(::thes::star::get_at<tIdxs>(variant_members), ptr) \
                    ? (index = tIdxs, true) \
                    : false) || \
                 ...); \
@@ -191,10 +192,10 @@ inline constexpr decltype(auto) flatten_type(T&& value) {
           constexpr auto variant_idx = variant_index_of(std::index_sequence<tIdx>{}); \
           if constexpr (variant_idx.has_value()) { \
             return std::forward<std::tuple_element_t<*variant_idx, Visited>>( \
-              std::get<*variant_idx>(visited)); \
+              thes::star::get_at<*variant_idx>(visited)); \
           } else { \
             return std::forward<typename std::tuple_element_t<tIdx, MemberInfos>::Type>( \
-              this->*std::get<tIdx>(member_infos).pointer); \
+              this->*thes::star::get_at<tIdx>(member_infos).pointer); \
           } \
         }; \
 \

@@ -1,7 +1,6 @@
 #include <array>
 #include <concepts>
 #include <optional>
-#include <tuple>
 #include <type_traits>
 #include <variant>
 
@@ -31,14 +30,14 @@ using Test1Info = thes::TypeInfo<Test1>;
 static_assert(Test1Info::name == "Test1"_sstr);
 static_assert(Test1Info::serial_name == "test1"_sstr);
 
-inline constexpr auto test_1a = std::get<0>(Test1Info::members);
+inline constexpr auto test_1a = thes::star::get_at<0>(Test1Info::members);
 using Test1a = decltype(test_1a);
 static_assert(std::same_as<Test1a::Type, int>);
 static_assert(Test1a::name == "CapitalName"_sstr);
 static_assert(Test1a::serial_name == "capital_name"_sstr);
 static_assert(Test1a::pointer == &Test1::CapitalName);
 
-inline constexpr auto test_1b = std::get<1>(Test1Info::members);
+inline constexpr auto test_1b = thes::star::get_at<1>(Test1Info::members);
 using Test1b = decltype(test_1b);
 static_assert(std::same_as<Test1b::Type, float>);
 static_assert(Test1b::name == "test"_sstr);
@@ -134,9 +133,9 @@ using Type7a = Test7<inner::Test2::A, int>;
 using Type7aInfo = thes::TypeInfo<Type7a>;
 inline constexpr auto mems = Type7aInfo::members;
 inline constexpr auto stat_mems = Type7aInfo::static_members;
-inline constexpr auto mem0 = std::get<0>(stat_mems);
-inline constexpr auto mem1 = std::get<1>(stat_mems);
-inline constexpr auto mem1val = std::get<1>(stat_mems).value;
+inline constexpr auto mem0 = thes::star::get_at<0>(stat_mems);
+inline constexpr auto mem1 = thes::star::get_at<1>(stat_mems);
+inline constexpr auto mem1val = thes::star::get_at<1>(stat_mems).value;
 using Mem0 = decltype(mem0);
 using Mem1 = decltype(mem1);
 
