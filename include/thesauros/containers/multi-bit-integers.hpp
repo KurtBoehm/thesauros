@@ -93,6 +93,13 @@ struct MultiBitIntegers {
     return {data_[index / per_chunk], static_cast<Chunk>(tBitNum * (index % per_chunk))};
   }
 
+  [[nodiscard]] constexpr Chunk load(std::size_t index, std::memory_order order) const {
+    assert(index < size_);
+    Chunk out = std::atomic_ref{data_[index / per_chunk]}.load(order);
+    const auto offset = tBitNum * (index % per_chunk);
+    return (out >> offset) & mask;
+  }
+
   [[nodiscard]] constexpr std::size_t size() const {
     return size_;
   }

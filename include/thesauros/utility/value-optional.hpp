@@ -45,6 +45,14 @@ struct ValueOptional {
       std::invoke(std::forward<TF>(f), **this);
     }
   }
+  // has_value() → f(value()), otherwise → alt()
+  template<typename TF, typename TAlt>
+  constexpr auto value_run(TF&& f, TAlt&& alt) {
+    if (this->has_value()) [[likely]] {
+      return std::invoke(std::forward<TF>(f), **this);
+    }
+    return std::invoke(std::forward<TAlt>(alt));
+  }
 
 private:
   Value value_{empty_value};
