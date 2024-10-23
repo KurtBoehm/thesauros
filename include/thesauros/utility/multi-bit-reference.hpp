@@ -1,6 +1,7 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_MULTI_BIT_REFERENCE_HPP
 #define INCLUDE_THESAUROS_UTILITY_MULTI_BIT_REFERENCE_HPP
 
+#include <atomic>
 #include <cstddef>
 
 #include "thesauros/utility/fixed-size-integer.hpp"
@@ -22,6 +23,14 @@ struct MutableBitReference {
       chunk_ |= mask();
     } else {
       chunk_ &= ~mask();
+    }
+    return *this;
+  }
+  constexpr MutableBitReference& store(const bool value, std::memory_order order) {
+    if (value) {
+      std::atomic_ref{chunk_}.fetch_or(mask(), order);
+    } else {
+      std::atomic_ref{chunk_}.fetch_and(~mask(), order);
     }
     return *this;
   }

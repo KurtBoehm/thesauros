@@ -8,15 +8,16 @@
 #include <concepts>
 #include <cstddef>
 #include <limits>
+#include <memory>
 
-#include "thesauros/containers/array/dynamic.hpp"
+#include "thesauros/containers/array.hpp"
 #include "thesauros/containers/bitset/iterator.hpp"
 #include "thesauros/math/arithmetic.hpp"
 #include "thesauros/ranges/iota.hpp"
 #include "thesauros/utility/multi-bit-reference.hpp"
 
 namespace thes {
-template<std::unsigned_integral TChunk = std::size_t>
+template<std::unsigned_integral TChunk = std::size_t, typename TAllocator = std::allocator<TChunk>>
 struct DynamicBitset {
   static_assert(std::numeric_limits<TChunk>::radix == 2);
   using Chunk = TChunk;
@@ -114,7 +115,7 @@ private:
   static constexpr Chunk zero_chunk{0};
   static constexpr Chunk one_chunk{static_cast<Chunk>(~zero_chunk)};
 
-  DynamicArray<Chunk> chunks_{};
+  DynamicArray<Chunk, DefaultInit, DoublingGrowth, TAllocator> chunks_{};
   std::size_t size_{0};
 
   template<typename TCounter>
