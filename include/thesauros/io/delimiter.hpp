@@ -1,7 +1,6 @@
 #ifndef INCLUDE_THESAUROS_IO_DELIMITER_HPP
 #define INCLUDE_THESAUROS_IO_DELIMITER_HPP
 
-#include <ostream>
 #include <string_view>
 #include <utility>
 
@@ -18,15 +17,6 @@ struct Delimiter {
 
   auto output(auto it) const {
     return output_impl(it, [] {});
-  }
-
-  friend std::ostream& operator<<(std::ostream& s, const Delimiter& delim) {
-    if (delim.first_) {
-      delim.first_ = false;
-    } else {
-      s << delim.str_;
-    }
-    return s;
   }
 
 private:

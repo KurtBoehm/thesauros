@@ -4,7 +4,6 @@
 #include <cassert>
 #include <concepts>
 #include <cstddef>
-#include <ostream>
 #include <type_traits>
 #include <utility>
 
@@ -120,10 +119,6 @@ public:
   friend IotaRange operator|(IotaRange r1, IotaRange r2) {
     assert(r1.begin_ <= r2.end_ && r2.begin_ <= r1.end_);
     return IotaRange{std::min(r1.begin_, r2.begin_), std::max(r1.end_, r2.end_)};
-  }
-
-  friend std::ostream& operator<<(std::ostream& stream, const IotaRange& range) {
-    return stream << range.begin_ << ":" << range.end_;
   }
 
 private:

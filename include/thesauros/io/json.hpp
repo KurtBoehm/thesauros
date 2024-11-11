@@ -4,9 +4,7 @@
 #include <concepts>
 #include <cstddef>
 #include <filesystem>
-#include <iterator>
 #include <optional>
-#include <ostream>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -42,11 +40,6 @@ struct Indentation {
       }
     }
     return it;
-  }
-
-  friend std::ostream& operator<<(std::ostream& s, const Indentation& indent) {
-    indent.output(std::ostream_iterator<char>{s});
-    return s;
   }
 
   friend Indentation operator+(Indentation indent, std::size_t depth) {
@@ -96,11 +89,6 @@ struct JsonPrinter {
   }
   [[nodiscard]] const Indentation& indent() const {
     return indent_;
-  }
-
-  friend std::ostream& operator<<(std::ostream& stream, const JsonPrinter& printer) {
-    write_json(std::ostream_iterator<char>{stream}, printer.value_, printer.indent_);
-    return stream;
   }
 
 private:

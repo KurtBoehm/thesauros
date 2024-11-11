@@ -5,7 +5,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
-#include <ostream>
 #include <stdexcept>
 #include <string_view>
 #include <utility>
@@ -98,11 +97,6 @@ struct StringEscape<char[tSize]> {
 template<typename T>
 struct EscapedPrinter {
   explicit EscapedPrinter(T&& value) : value_(std::forward<T>(value)) {}
-
-  friend std::ostream& operator<<(std::ostream& stream, const EscapedPrinter& printer) {
-    escape_string(printer.value_, std::ostream_iterator<char>{stream});
-    return stream;
-  }
 
   const T& value() const {
     return value_;

@@ -3,24 +3,12 @@
 
 #include <concepts>
 #include <limits>
-#include <ostream>
-#include <type_traits>
 
 #include "thesauros/utility/info-result.hpp"
 #include "thesauros/utility/inlining.hpp"
 
 namespace thes {
 enum struct CastInfo { OKAY, TOO_SMALL, TOO_LARGE };
-inline std::ostream& operator<<(std::ostream& s, CastInfo err) {
-  using Under = std::underlying_type_t<CastInfo>;
-
-  switch (err) {
-  case CastInfo::OKAY: return s << "OKAY";
-  case CastInfo::TOO_SMALL: return s << "TOO_SMALL";
-  case CastInfo::TOO_LARGE: return s << "TOO_LARGE";
-  default: return s << "CastErrorCode(" << static_cast<Under>(err) << ")";
-  }
-}
 template<typename T>
 using CastResult = InfoResult<T, CastInfo, CastInfo::OKAY>;
 

@@ -7,7 +7,6 @@
 #include "io/file-writer.hpp"
 #include "io/file.hpp"
 #include "io/json.hpp"
-#include "io/printers.hpp"
 // IWYU pragma: end_exports
 
 #endif // INCLUDE_THESAUROS_IO_HPP

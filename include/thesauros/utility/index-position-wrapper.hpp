@@ -7,11 +7,9 @@
 #include <concepts>
 #include <cstddef>
 #include <functional>
-#include <ostream>
 #include <type_traits>
 
 #include "thesauros/algorithms/static-ranges.hpp"
-#include "thesauros/io/printers.hpp"
 #include "thesauros/math.hpp"
 #include "thesauros/utility/integer-cast.hpp"
 #include "thesauros/utility/static-ranges.hpp"
@@ -201,10 +199,6 @@ struct BasePosIndexWrapper {
     assert(w1.dims_ == w2.dims_);
     assert((w1.idx_man_ == w2.idx_man_) == (w1.pos_ == w2.pos_));
     return w1.index() <=> w2.index();
-  }
-
-  friend std::ostream& operator<<(std::ostream& stream, const TDerived& wrap) {
-    return stream << wrap.index() << "@" << range_print(wrap);
   }
 
 private:
