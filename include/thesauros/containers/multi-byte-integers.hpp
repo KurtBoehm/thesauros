@@ -29,14 +29,14 @@
 
 namespace thes {
 namespace impl {
-template<typename TByteInt, std::size_t tPaddingBytes, template<typename> typename TAllocator>
+template<typename TByteInt, std::size_t tPaddingBytes, typename TByteAlloc>
 struct ArrayStorage {
   using Size = std::size_t;
 
   static constexpr std::size_t padding_bytes = tPaddingBytes;
   static constexpr std::size_t element_bytes = TByteInt::byte_num;
 
-  using Data = DynamicArray<std::byte, DefaultInit, DoublingGrowth, TAllocator<std::byte>>;
+  using Data = DynamicArray<std::byte, DefaultInit, DoublingGrowth, TByteAlloc>;
 
   ArrayStorage() : data_(padding_bytes) {};
   explicit ArrayStorage(std::size_t size) : data_(effective_allocation(size)), size_(size) {}
@@ -410,13 +410,12 @@ struct MultiByteSubRange
   MultiByteSubRange(CByte* data, Size size) : Base(Storage{data, size}) {}
 };
 
-template<typename TByteInt, std::size_t tPaddingBytes, bool tOptional,
-         template<typename> typename TAllocator>
+template<typename TByteInt, std::size_t tPaddingBytes, bool tOptional, typename TByteAlloc>
 struct MultiByteIntegerArray
     : public MultiByteIntegersBase<
-        MultiByteIntegerArray<TByteInt, tPaddingBytes, tOptional, TAllocator>, TByteInt,
-        tPaddingBytes, tOptional, impl::ArrayStorage<TByteInt, tPaddingBytes, TAllocator>> {
-  using Storage = impl::ArrayStorage<TByteInt, tPaddingBytes, TAllocator>;
+        MultiByteIntegerArray<TByteInt, tPaddingBytes, tOptional, TByteAlloc>, TByteInt,
+        tPaddingBytes, tOptional, impl::ArrayStorage<TByteInt, tPaddingBytes, TByteAlloc>> {
+  using Storage = impl::ArrayStorage<TByteInt, tPaddingBytes, TByteAlloc>;
   using Base =
     MultiByteIntegersBase<MultiByteIntegerArray, TByteInt, tPaddingBytes, tOptional, Storage>;
 
@@ -526,11 +525,11 @@ private:
 };
 
 template<typename TByteInt, std::size_t tPaddingBytes,
-         template<typename> typename TAllocator = std::allocator>
-using MultiByteIntegers = MultiByteIntegerArray<TByteInt, tPaddingBytes, false, TAllocator>;
+         typename TByteAlloc = std::allocator<std::byte>>
+using MultiByteIntegers = MultiByteIntegerArray<TByteInt, tPaddingBytes, false, TByteAlloc>;
 template<typename TByteInt, std::size_t tPaddingBytes,
-         template<typename> typename TAllocator = std::allocator>
-using OptionalMultiByteIntegers = MultiByteIntegerArray<TByteInt, tPaddingBytes, true, TAllocator>;
+         typename TByteAlloc = std::allocator<std::byte>>
+using OptionalMultiByteIntegers = MultiByteIntegerArray<TByteInt, tPaddingBytes, true, TByteAlloc>;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_CONTAINERS_MULTI_BYTE_INTEGERS_HPP

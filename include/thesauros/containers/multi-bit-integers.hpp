@@ -17,11 +17,11 @@
 
 namespace thes {
 template<std::unsigned_integral TChunk, std::size_t tBitNum,
-         template<typename> typename TAllocator = std::allocator>
+         typename TAllocator = std::allocator<TChunk>>
 requires(std::has_single_bit(tBitNum))
 struct MultiBitIntegers {
   using Chunk = TChunk;
-  using Allocator = TAllocator<Chunk>;
+  using Allocator = TAllocator;
   using Limits = std::numeric_limits<Chunk>;
   static constexpr std::size_t per_chunk = Limits::digits / tBitNum;
   static constexpr Chunk mask = Limits::max() >> (Limits::digits - tBitNum);

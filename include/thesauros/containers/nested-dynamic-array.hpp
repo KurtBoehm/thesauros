@@ -215,12 +215,14 @@ private:
   Storage values_;
 };
 
-template<typename T, template<typename> typename TAlloc = std::allocator>
+template<typename T, typename TSize, typename TAlloc = std::allocator<T>>
 struct NestedDynamicArray
-    : public NestedDynamicArrayBase<NestedDynamicArray<T, TAlloc>, T, std::size_t, TAlloc<T>,
-                                    TAlloc<std::size_t>> {
-  using Parent = NestedDynamicArrayBase<NestedDynamicArray<T, TAlloc>, T, std::size_t, TAlloc<T>,
-                                        TAlloc<std::size_t>>;
+    : public NestedDynamicArrayBase<
+        NestedDynamicArray<T, TSize, TAlloc>, T, TSize, TAlloc,
+        typename std::allocator_traits<TAlloc>::template rebind_alloc<TSize>> {
+  using Parent =
+    NestedDynamicArrayBase<NestedDynamicArray<T, TSize, TAlloc>, T, TSize, TAlloc,
+                           typename std::allocator_traits<TAlloc>::template rebind_alloc<TSize>>;
 
   using Parent::Parent;
 };

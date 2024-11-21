@@ -50,7 +50,7 @@ inline void test2() {
 }
 
 using Blocked = thes::BlockedDynamicArray<S>;
-using Nested = thes::NestedDynamicArray<S>;
+using Nested = thes::NestedDynamicArray<S, std::size_t>;
 using NestedBuilder = Nested::NestedBuilder;
 
 int main() {
@@ -116,7 +116,7 @@ int main() {
     THES_ASSERT(test::range_eq(block2, std::array{S{2}, S{3}, S{5}, S{11}, S{17}}));
   }
 
-  auto builder = NestedBuilder();
+  NestedBuilder builder{};
   builder.initialize(vec.block_num(), vec.value_num());
   {
     auto part = builder.part_builder(0, 0);
