@@ -28,7 +28,7 @@ struct IndexPosition {
   }
 
   friend decltype(auto) operator+(IndexPosition lhs, auto rhs)
-  requires(requires { lhs.index + rhs; })
+  requires(requires(Index lhs_index) { lhs_index + rhs; })
   {
     return lhs.index + rhs;
   }
