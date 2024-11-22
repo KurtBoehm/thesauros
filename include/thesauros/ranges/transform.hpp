@@ -53,19 +53,26 @@ public:
     return const_iterator(op_, end_);
   }
 
+  constexpr TIter raw_begin() const {
+    return begin_;
+  }
+  constexpr TIter raw_end() const {
+    return end_;
+  }
+
   decltype(auto) operator[](const auto& idx) const
-  requires(requires { this->begin_[idx]; })
+  requires(requires { this->raw_begin()[idx]; })
   {
     return op_(begin_[idx]);
   }
   decltype(auto) operator[](const auto& idx)
-  requires(requires { this->begin_[idx]; })
+  requires(requires { this->raw_begin()[idx]; })
   {
     return op_(begin_[idx]);
   }
 
   auto size() const
-  requires(requires { this->end_ - this->begin_; })
+  requires(requires { this->raw_end() - this->raw_begin(); })
   {
     assert(end_ - begin_ >= 0);
     using Signed = decltype(end_ - begin_);

@@ -64,7 +64,7 @@ private:
 };
 
 template<typename... TRanges>
-inline constexpr auto zip(TRanges&&... ranges) {
+constexpr auto zip(TRanges&&... ranges) {
   return ZipRange<TRanges...>{std::forward<TRanges>(ranges)...};
 }
 } // namespace thes

@@ -179,24 +179,24 @@ private:
 };
 
 template<typename T>
-inline constexpr ExtendedIotaRange<T> range(T begin, T end, T step) {
+constexpr ExtendedIotaRange<T> range(T begin, T end, T step) {
   return {begin, end, step};
 }
 template<typename T>
-inline constexpr IotaRange<T> range(T begin, T end) {
+constexpr IotaRange<T> range(T begin, T end) {
   return {begin, std::max(begin, end)};
 }
 template<typename T>
-inline constexpr IotaRange<T> range(T end) {
+constexpr IotaRange<T> range(T end) {
   return range(T(), end);
 }
 
 template<typename TRange>
-inline constexpr auto iter_range(TRange&& container) {
+constexpr auto iter_range(TRange&& container) {
   return IotaRange{container.begin(), container.end()};
 }
 template<typename TIter>
-inline constexpr auto iter_range(TIter begin, TIter end) {
+constexpr auto iter_range(TIter begin, TIter end) {
   return IotaRange{std::move(begin), std::move(end)};
 }
 } // namespace thes

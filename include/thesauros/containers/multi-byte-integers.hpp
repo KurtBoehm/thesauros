@@ -104,6 +104,8 @@ struct MultiByteIntegersBase {
   using BaseValue = TByteInt::Unsigned;
   static constexpr BaseValue int_bytes = sizeof(BaseValue);
   static constexpr BaseValue mask = TByteInt::max;
+  static constexpr bool is_mutable =
+    std::is_const_v<std::remove_pointer_t<decltype(std::declval<TStorage>().data().data())>>;
 
   using Value = std::conditional_t<tOptional, ValueOptional<BaseValue, mask>, BaseValue>;
   using Size = std::size_t;
@@ -297,7 +299,7 @@ struct MultiByteIntegersBase {
     return load(data().data() + byte_size(i));
   }
   decltype(auto) operator[](Size i)
-  requires(!std::is_const_v<std::remove_pointer_t<decltype(this->data().data())>>)
+  requires(!is_mutable)
   {
     return IntRef{data().data() + byte_size(i)};
   }

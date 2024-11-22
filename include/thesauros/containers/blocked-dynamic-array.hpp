@@ -165,15 +165,16 @@ public:
     using CSize = ConditionalConst<tConst, Size>;
     using CValue = ConditionalConst<tConst, Value>;
 
+    Iterator() = default;
     Iterator(CSize* size_begin, CValue* value_begin, Size index, Size block_size)
         : index_(index), block_size_(block_size), size_begin_(size_begin),
           value_begin_(value_begin) {}
 
   private:
-    Size index_;
-    Size block_size_;
-    CSize* size_begin_;
-    CValue* value_begin_;
+    Size index_{};
+    Size block_size_{};
+    CSize* size_begin_{};
+    CValue* value_begin_{};
   };
 
   using iterator = Iterator<false>;

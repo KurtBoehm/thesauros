@@ -6,8 +6,8 @@
 
 namespace thes {
 template<typename TRange, typename T, typename TBinOp>
-inline constexpr T reduce(TRange&& range, T init, TBinOp op) {
-  return std::reduce(std::begin(range), std::end(range), init, op);
+constexpr T reduce(const TRange& range, T init, TBinOp op) {
+  return std::reduce(std::cbegin(range), std::cend(range), init, op);
 }
 } // namespace thes
 
