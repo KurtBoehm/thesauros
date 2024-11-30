@@ -41,10 +41,17 @@ struct ArrayStorage {
   ArrayStorage() : data_(padding_bytes) {};
   explicit ArrayStorage(std::size_t size) : data_(effective_allocation(size)), size_(size) {}
 
-  [[nodiscard]] Data& data() {
+  [[nodiscard]] std::span<std::byte> span() {
+    return {data_ + padding_bytes, size_ * element_bytes};
+  }
+  [[nodiscard]] std::span<const std::byte> span() const {
+    return {data_ + padding_bytes, size_ * element_bytes};
+  }
+
+  [[nodiscard]] Data& array() {
     return data_;
   }
-  [[nodiscard]] const Data& data() const {
+  [[nodiscard]] const Data& array() const {
     return data_;
   }
 
@@ -56,7 +63,7 @@ struct ArrayStorage {
   }
 
   static Size effective_allocation(Size allocation) THES_ALWAYS_INLINE {
-    return allocation * element_bytes + padding_bytes;
+    return allocation * element_bytes + 2 * padding_bytes;
   }
 
 private:
@@ -72,12 +79,12 @@ struct ViewStorage {
 
   ViewStorage(CByte* data, Size size) : data_(data), size_(size) {}
 
-  [[nodiscard]] std::span<std::byte> data()
+  [[nodiscard]] std::span<std::byte> span()
   requires(!tIsConst)
   {
     return {data_, size_ * element_bytes};
   }
-  [[nodiscard]] std::span<const std::byte> data() const {
+  [[nodiscard]] std::span<const std::byte> span() const {
     return {data_, size_ * element_bytes};
   }
 
@@ -265,29 +272,29 @@ struct MultiByteIntegersBase {
   explicit MultiByteIntegersBase(TStorage&& storage) : storage_(std::forward<TStorage>(storage)) {};
 
   iterator begin() {
-    return iterator(data().data());
+    return iterator(span().data());
   }
   const_iterator begin() const {
-    return const_iterator(data().data());
+    return const_iterator(span().data());
   }
   iterator end() {
-    return iterator(data().data() + byte_size(storage_.size()));
+    return iterator(span().data() + byte_size(storage_.size()));
   }
   const_iterator end() const {
-    return const_iterator(data().data() + byte_size(storage_.size()));
+    return const_iterator(span().data() + byte_size(storage_.size()));
   }
 
   reverse_iterator rbegin() {
-    return reverse_iterator(data().data() + byte_size(storage_.size()));
+    return reverse_iterator(span().data() + byte_size(storage_.size()));
   }
   const_reverse_iterator rbegin() const {
-    return const_reverse_iterator(data().data() + byte_size(storage_.size()));
+    return const_reverse_iterator(span().data() + byte_size(storage_.size()));
   }
   reverse_iterator rend() {
-    return reverse_iterator(data().data());
+    return reverse_iterator(span().data());
   }
   const_reverse_iterator rend() const {
-    return const_reverse_iterator(data().data());
+    return const_reverse_iterator(span().data());
   }
 
   [[nodiscard]] Size size() const {
@@ -296,44 +303,44 @@ struct MultiByteIntegersBase {
 
   decltype(auto) operator[](Size i) const {
     assert(i < size());
-    return load(data().data() + byte_size(i));
+    return load(span().data() + byte_size(i));
   }
   decltype(auto) operator[](Size i)
   requires(!is_mutable)
   {
-    return IntRef{data().data() + byte_size(i)};
+    return IntRef{span().data() + byte_size(i)};
   }
 
   decltype(auto) front() const {
-    return load(data().data());
+    return load(span().data());
   }
   decltype(auto) front() {
-    return IntRef{data().data()};
+    return IntRef{span().data()};
   }
 
   decltype(auto) back() const {
     assert(storage_.size() > 0);
-    return load(data().data() + byte_size(storage_.size() - 1));
+    return load(span().data() + byte_size(storage_.size() - 1));
   }
   decltype(auto) back() {
     assert(storage_.size() > 0);
-    return IntRef{data().data() + byte_size(storage_.size() - 1)};
+    return IntRef{span().data() + byte_size(storage_.size() - 1)};
   }
 
   [[nodiscard]] std::span<const std::byte> byte_span() const {
-    return std::span{data().begin(), byte_size(storage_.size())};
+    return std::span{span().begin(), byte_size(storage_.size())};
   }
   [[nodiscard]] std::span<std::byte> byte_span() {
-    return std::span{data().begin(), byte_size(storage_.size())};
+    return std::span{span().begin(), byte_size(storage_.size())};
   }
 
   ConstSubRange sub_range(Size begin, Size end) const {
     assert(end >= begin);
-    return ConstSubRange(data().data() + byte_size(begin), end - begin);
+    return ConstSubRange(span().data() + byte_size(begin), end - begin);
   }
   MutableSubRange sub_range(Size begin, Size end) {
     assert(end >= begin);
-    return MutableSubRange(data().data() + byte_size(begin), end - begin);
+    return MutableSubRange(span().data() + byte_size(begin), end - begin);
   }
 
   ConstSubRange full_sub_range() const {
@@ -386,11 +393,11 @@ protected:
     return storage_;
   }
 
-  [[nodiscard]] decltype(auto) data() const {
-    return storage_.data();
+  [[nodiscard]] std::span<const std::byte> span() const {
+    return storage_.span();
   }
-  [[nodiscard]] decltype(auto) data() {
-    return storage_.data();
+  [[nodiscard]] std::span<std::byte> span() {
+    return storage_.span();
   }
 
 private:
@@ -459,41 +466,41 @@ struct MultiByteIntegerArray
 
   void push_back(Value value) {
     const Size size = byte_size(storage().size());
-    assert(data().size() == size + padding_bytes);
+    assert(array().size() == size + 2 * padding_bytes);
 
-    data().expand(data().size() + element_bytes);
+    array().expand(array().size() + element_bytes);
     ++storage().size();
 
-    this->store_full(data().begin() + size, value);
+    this->store_full(array().begin() + size, value);
   }
 
   void pop_back() {
-    assert(data().size() == Storage::effective_allocation(storage().size()));
+    assert(array().size() == Storage::effective_allocation(storage().size()));
     --storage().size();
-    data().shrink(data().size() - element_bytes);
+    array().shrink(array().size() - element_bytes);
   }
 
   void reserve(Size allocation) {
-    data().reserve(Storage::effective_allocation(allocation));
+    array().reserve(Storage::effective_allocation(allocation));
   }
 
   void set_all(Size first, Size last) {
-    std::byte* ptr = data().data();
+    std::byte* ptr = array().data();
     std::fill(ptr + byte_size(first), ptr + byte_size(last),
               std::byte{std::numeric_limits<unsigned char>::max()});
   }
 
   iterator insert_uninit(const_iterator pos, Size size) {
     const Size old_bsize = byte_size(storage().size());
-    assert(data().size() == old_bsize + padding_bytes);
+    assert(array().size() == old_bsize + 2 * padding_bytes);
 
     const Size new_bsize = old_bsize + byte_size(size);
-    const std::ptrdiff_t offset = pos.raw() - data().data();
+    const std::ptrdiff_t offset = pos.raw() - array().data();
 
-    data().expand(new_bsize + padding_bytes);
+    array().expand(new_bsize + 2 * padding_bytes);
     storage().size() += size;
 
-    std::byte* new_begin = data().data();
+    std::byte* new_begin = array().data();
     std::byte* dst = new_begin + offset;
     std::move_backward(dst, new_begin + old_bsize, new_begin + new_bsize);
 
@@ -502,8 +509,8 @@ struct MultiByteIntegerArray
 
   template<typename TIt>
   void copy_uninit(const_iterator pos, TIt first, TIt last) {
-    const std::ptrdiff_t offset = pos.raw() - data().data();
-    for (std::byte* dst = data().data() + offset; first != last; ++first, dst += element_bytes) {
+    const std::ptrdiff_t offset = pos.raw() - array().data();
+    for (std::byte* dst = array().data() + offset; first != last; ++first, dst += element_bytes) {
       this->store(dst, *first);
     }
   }
@@ -518,11 +525,11 @@ private:
   using Base::byte_size;
   using Base::storage;
 
-  [[nodiscard]] decltype(auto) data() const {
-    return storage().data();
+  [[nodiscard]] decltype(auto) array() const {
+    return storage().array();
   }
-  [[nodiscard]] decltype(auto) data() {
-    return storage().data();
+  [[nodiscard]] decltype(auto) array() {
+    return storage().array();
   }
 };
 
