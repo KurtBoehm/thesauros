@@ -42,10 +42,10 @@ struct ArrayStorage {
   explicit ArrayStorage(std::size_t size) : data_(effective_allocation(size)), size_(size) {}
 
   [[nodiscard]] std::span<std::byte> span() {
-    return {data_ + padding_bytes, size_ * element_bytes};
+    return {data_.data() + padding_bytes, size_ * element_bytes};
   }
   [[nodiscard]] std::span<const std::byte> span() const {
-    return {data_ + padding_bytes, size_ * element_bytes};
+    return {data_.data() + padding_bytes, size_ * element_bytes};
   }
 
   [[nodiscard]] Data& array() {
