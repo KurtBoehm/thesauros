@@ -11,6 +11,7 @@ namespace thes {
 template<std::size_t tCapacity>
 struct StaticCapacityString {
   using value_type = char;
+  static constexpr std::size_t capacity = tCapacity;
 
   template<std::size_t tSize>
   requires(tSize <= tCapacity)
@@ -49,6 +50,11 @@ struct StaticCapacityString {
   }
   std::size_t& size() {
     return size_;
+  }
+
+  void set_size(std::size_t size) {
+    assert(size_ <= tCapacity);
+    size_ = size;
   }
 
   void push_back(char c) {
