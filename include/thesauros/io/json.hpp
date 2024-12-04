@@ -135,6 +135,17 @@ struct JsonWriter<const TChar*> : public JsonWriter<std::basic_string_view<TChar
 template<CharacterType TChar>
 struct JsonWriter<std::basic_string<TChar>> : public JsonWriter<std::basic_string_view<TChar>> {};
 
+template<typename T>
+struct JsonWriter<std::optional<T>> {
+  using Opt = std::optional<T>;
+  static auto write(auto it, const Opt& opt, Indentation indent = {}) {
+    if (opt.has_value()) {
+      return JsonWriter<T>::write(it, *opt, indent);
+    }
+    const std::string_view str{"null"};
+    return std::copy(str.begin(), str.end(), it);
+  }
+};
 template<>
 struct JsonWriter<std::filesystem::path> {
   using Path = std::filesystem::path;
