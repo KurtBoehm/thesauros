@@ -7,10 +7,13 @@
 #include <type_traits>
 
 #include "thesauros/math/arithmetic.hpp"
+#include "thesauros/ranges.hpp"
 #include "thesauros/utility/inlining.hpp"
 #include "thesauros/utility/no-op.hpp"
 #include "thesauros/utility/static-ranges/definitions/size.hpp"
 #include "thesauros/utility/static-ranges/definitions/type-traits.hpp"
+#include "thesauros/utility/tuple.hpp"
+#include "thesauros/utility/type-sequence.hpp"
 #include "thesauros/utility/type-tag.hpp"
 #include "thesauros/utility/value-tag.hpp"
 
@@ -62,19 +65,20 @@ THES_ALWAYS_INLINE inline constexpr void for_each_tile(const TRanges& ranges,
       } else if constexpr (TFixedAxes::contains(dim)) {
         rec(index_tag<dim + 1>, rec, args..., fixed_axes.get(dim));
       } else {
-        const auto [begin, end] = star::get_at<dim>(ranges);
-        const Size tile_size = star::get_at<dim>(tile_sizes);
+        const auto dim_range = star::get_at<dim>(ranges);
+        const auto begin = dim_range.begin_value();
+        const auto end = dim_range.end_value();
+        const auto tile_size = star::get_at<dim>(tile_sizes);
         if constexpr (tDir == IterDirection::FORWARD) {
           for (Size i = begin; i < end; i += tile_size) {
-            rec(index_tag<dim + 1>, rec, args..., std::make_pair(i, std::min(i + tile_size, end)));
+            rec(index_tag<dim + 1>, rec, args..., range(i, std::min(i + tile_size, end)));
           }
         } else {
           const Size size = end - begin;
-          const Size size_tile = div_ceil(size, tile_size) * tile_size;
+          const Size size_tile = div_ceil(size, Size{tile_size}) * tile_size;
           for (Size i = size_tile; i > 0; i -= tile_size) {
             const Size idx = i + begin;
-            rec(index_tag<dim + 1>, rec, args...,
-                std::make_pair(idx - tile_size, std::min(idx, end)));
+            rec(index_tag<dim + 1>, rec, args..., range(idx - tile_size, std::min(idx, end)));
           }
         }
       }
@@ -94,43 +98,45 @@ for_each_tile(const TRanges& ranges, const auto& tile_sizes, const TFixedAxes& f
   } else {
     auto impl = [&](auto dim, auto rec, auto... args) THES_ALWAYS_INLINE {
       static_assert(dim < dim_num && sizeof...(args) == dim);
-      const auto [begin, end] = star::get_at<dim>(ranges);
-      const Size tile_size = star::get_at<dim>(tile_sizes);
+      const auto dim_range = star::get_at<dim>(ranges);
+      const auto begin = dim_range.begin_value();
+      const auto end = dim_range.end_value();
+      const auto tile_size = star::get_at<dim>(tile_sizes);
 
+      static_assert(!TFixedAxes::contains(thes::index_tag<dim_num - 1>));
       if constexpr (dim + 1 == dim_num) {
-        static_assert(!TFixedAxes::contains(dim));
         assert(tile_size % vec_size == 0);
 
         if constexpr (tDir == IterDirection::FORWARD) {
           Size i = begin;
           for (; i + tile_size <= end; i += tile_size) {
-            full_fun(args..., std::make_pair(i, i + tile_size));
+            full_fun(args..., range(i, i + tile_size));
           }
           if (i != end) {
-            part_fun(args..., std::make_pair(i, end));
+            part_fun(args..., range(i, end));
           }
         } else {
-          const Size full_tile_end = end - ((end - begin) % tile_size);
+          const Size full_tile_end = end - (dim_range.size() % tile_size);
           if (full_tile_end != end) {
-            part_fun(args..., std::make_pair(full_tile_end, end));
+            part_fun(args..., range(full_tile_end, end));
           }
           for (Size i = full_tile_end; i > 0; i -= tile_size) {
-            full_fun(args..., std::make_pair(i - tile_size, i));
+            full_fun(args..., range(i - tile_size, i));
           }
         }
       } else if constexpr (TFixedAxes::contains(dim)) {
         const auto idx = fixed_axes.get(dim);
-        rec(index_tag<dim + 1>, rec, args..., std::make_pair(idx, idx + 1));
+        rec(index_tag<dim + 1>, rec, args..., range(idx, idx + 1));
       } else {
         if constexpr (tDir == IterDirection::FORWARD) {
           for (Size i = begin; i < end; i += tile_size) {
-            rec(index_tag<dim + 1>, rec, args..., std::make_pair(i, std::min(i + tile_size, end)));
+            rec(index_tag<dim + 1>, rec, args..., range(i, std::min(i + tile_size, end)));
           }
         } else {
           const Size size = end - begin;
-          const Size size_tile = div_ceil(size, tile_size) * tile_size;
+          const Size size_tile = div_ceil(size, Size{tile_size}) * tile_size;
           for (Size i = begin + size_tile; i > begin; i -= tile_size) {
-            rec(index_tag<dim + 1>, rec, args..., std::make_pair(i - tile_size, std::min(i, end)));
+            rec(index_tag<dim + 1>, rec, args..., range(i - tile_size, std::min(i, end)));
           }
         }
       }
@@ -150,7 +156,9 @@ THES_ALWAYS_INLINE inline constexpr void tile_for_each(const auto& multi_size,
   using IndexPos = IndexPosition<TIdx, std::array<Size, dim_num>>;
 
   auto impl = [&](auto dim, auto rec, auto index, auto... args) THES_ALWAYS_INLINE {
-    const auto [begin, end] = star::get_at<dim>(ranges);
+    const auto range = star::get_at<dim>(ranges);
+    const auto begin = range.begin_value();
+    const auto end = range.end_value();
 
     if constexpr (tDir == IterDirection::FORWARD) {
       for (Size i = begin; i < end; ++i) {
@@ -178,32 +186,33 @@ template<IterDirection tDir, typename TRanges, typename TIdx = star::Value<star:
 THES_ALWAYS_INLINE inline constexpr void
 tile_for_each(const auto& multi_size, const TRanges& ranges, auto&& full_fun, auto&& part_fun,
               AnyIndexTag auto vec_size, AnyBoolTag auto has_part, TypeTag<TIdx> /*tag*/ = {}) {
-  using Range = star::Value<TRanges>;
-  using Size = star::Value<Range>;
+  using Size = TransformedTypeSeq<TupleTypeSeq<TRanges>, star::Value>::Unique;
   constexpr std::size_t dim_num = star::size<TRanges>;
   using IndexPos = IndexPosition<TIdx, std::array<Size, dim_num>>;
   constexpr auto vsize = static_cast<Size>(vec_size);
 
   auto impl = [&](auto dim, auto rec, auto index, auto... args) THES_ALWAYS_INLINE {
-    const auto [begin, end] = star::get_at<dim>(ranges);
+    const auto range = star::get_at<dim>(ranges);
 
     if constexpr (tDir == IterDirection::FORWARD) {
       if constexpr (dim + 1 < dim_num) {
-        for (Size i = begin; i < end; ++i) {
+        for (const Size i : range) {
           const auto factor = multi_size.after_size(dim);
           rec(index_tag<dim + 1>, rec, index + i * factor, args..., i);
         }
       } else {
+        const auto begin = range.begin_value();
+        const auto end = range.end_value();
         if constexpr (has_part) {
           Size i = begin;
-          for (; i + vsize < end; i += vsize) {
+          for (; i + vsize <= end; i += vsize) {
             full_fun(IndexPos{TIdx{index + i}, {args..., i}});
           }
           if (i != end) {
             part_fun(IndexPos{TIdx{index + i}, {args..., i}}, end - i);
           }
         } else {
-          assert((end - begin) % vsize == 0);
+          assert(range.size() % vsize == 0);
           for (Size i = begin; i < end; i += vsize) {
             full_fun(IndexPos{TIdx{index + i}, {args..., i}});
           }
@@ -211,14 +220,15 @@ tile_for_each(const auto& multi_size, const TRanges& ranges, auto&& full_fun, au
       }
     } else {
       if constexpr (dim + 1 < dim_num) {
-        for (Size i = end; i > begin; --i) {
+        for (const Size i : reversed(range)) {
           const auto factor = multi_size.after_size(dim);
-          const Size idx = i - 1;
-          rec(index_tag<dim + 1>, rec, index + idx * factor, args..., idx);
+          rec(index_tag<dim + 1>, rec, index + i * factor, args..., i);
         }
       } else {
+        const auto begin = range.begin_value();
+        const auto end = range.end_value();
         if constexpr (has_part) {
-          const Size full_vec_end = end - ((end - begin) % vsize);
+          const Size full_vec_end = end - (range.size() % vsize);
           if (full_vec_end != end) {
             part_fun(IndexPos{TIdx{index + full_vec_end}, {args..., full_vec_end}},
                      end - full_vec_end);
@@ -228,7 +238,7 @@ tile_for_each(const auto& multi_size, const TRanges& ranges, auto&& full_fun, au
             full_fun(IndexPos{TIdx{index + idx}, {args..., idx}});
           }
         } else {
-          assert((end - begin) % vsize == 0);
+          assert(range.size() % vsize == 0);
           for (Size i = end; i > begin; i -= vsize) {
             const Size idx = i - vsize;
             full_fun(IndexPos{TIdx{index + idx}, {args..., idx}});
@@ -246,7 +256,7 @@ THES_ALWAYS_INLINE inline constexpr void
 tiled_for_each(const auto& multi_size, const TRanges& ranges, const auto& tile_sizes,
                const auto& fixed_axes, auto&& fun, TypeTag<TIdx> tag = {}) {
   for_each_tile<tDir>(ranges, tile_sizes, fixed_axes, [&](auto... args) THES_ALWAYS_INLINE {
-    tile_for_each<tDir>(multi_size, std::array{args...}, fun, tag);
+    tile_for_each<tDir>(multi_size, Tuple{std::move(args)...}, fun, tag);
   });
 }
 template<IterDirection tDir, typename TRanges, typename TIdx = star::Value<star::Value<TRanges>>>
@@ -258,12 +268,12 @@ tiled_for_each(const auto& multi_size, const TRanges& ranges, const auto& tile_s
     ranges, tile_sizes, fixed_axes,
     /*full_fun=*/
     [&](auto... args) THES_ALWAYS_INLINE {
-      tile_for_each<tDir>(multi_size, std::array{args...}, full_fun, NoOp{}, vec_size,
+      tile_for_each<tDir>(multi_size, Tuple{std::move(args)...}, full_fun, NoOp{}, vec_size,
                           /*has_part=*/false_tag, tag);
     },
     /*part_fun=*/
     [&](auto... args) THES_ALWAYS_INLINE {
-      tile_for_each<tDir>(multi_size, std::array{args...}, full_fun, part_fun, vec_size,
+      tile_for_each<tDir>(multi_size, Tuple{std::move(args)...}, full_fun, part_fun, vec_size,
                           /*has_part=*/true_tag, tag);
     },
     vec_size);

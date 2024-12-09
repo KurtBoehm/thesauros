@@ -5,6 +5,7 @@
 #include <type_traits>
 
 #include "thesauros/utility/static-ranges.hpp"
+#include "thesauros/utility/tuple.hpp"
 #include "thesauros/utility/type-sequence/type-sequence.hpp"
 
 namespace thes {
@@ -161,6 +162,18 @@ struct UniqueTypeSeqTrait<TypeSeq<T, Ts...>> {
 
 template<AnyTypeSeq TSeq>
 using UniqueTypeSeq = UniqueTypeSeqTrait<TSeq>::Type;
+
+// tuple types
+
+template<typename TTup>
+struct TupleTypeSeqTrait;
+template<typename... Ts>
+struct TupleTypeSeqTrait<Tuple<Ts...>> {
+  using Type = TypeSeq<Ts...>;
+};
+
+template<typename TTup>
+using TupleTypeSeq = TupleTypeSeqTrait<TTup>::Type;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_UTILITY_TYPE_SEQUENCE_OPERATIONS_HPP

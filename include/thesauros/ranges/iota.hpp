@@ -10,56 +10,62 @@
 #include "thesauros/iterator/facades.hpp"
 #include "thesauros/iterator/provider-map.hpp"
 #include "thesauros/iterator/provider-reverse.hpp"
+#include "thesauros/utility/value-tag.hpp"
 
 namespace thes {
+namespace iota_impl {
+template<typename T>
+struct IterProv {
+  using Value = T;
+  using State = T;
+  struct IterTypes : public iter_provider::ValueTypes<Value, std::ptrdiff_t> {
+    using IterState = State;
+  };
+
+  static constexpr Value deref(const auto& self) {
+    return self.value_;
+  }
+
+  static constexpr State& state(auto& self) {
+    return self.value_;
+  }
+  static constexpr const State& state(const auto& self) {
+    return self.value_;
+  }
+};
+
+template<typename T>
+struct ConstIterator : public IteratorFacade<ConstIterator<T>, iter_provider::Map<IterProv<T>>> {
+  friend IterProv<T>;
+  constexpr ConstIterator() = default;
+  explicit constexpr ConstIterator(T&& v) : value_(std::forward<T>(v)) {}
+  explicit constexpr ConstIterator(const T& v) : value_(v) {}
+
+private:
+  T value_{};
+};
+
+template<typename T>
+struct ConstReverseIterator
+    : public IteratorFacade<
+        ConstReverseIterator<T>,
+        iter_provider::Reverse<iter_provider::Map<IterProv<T>>, ConstReverseIterator<T>>> {
+  friend IterProv<T>;
+  constexpr ConstReverseIterator() = default;
+  explicit constexpr ConstReverseIterator(T&& v) : value_(std::forward<T>(v)) {}
+  explicit constexpr ConstReverseIterator(const T& v) : value_(v) {}
+
+private:
+  T value_{};
+};
+} // namespace iota_impl
+
 template<typename T>
 struct IotaRange {
   using Value = T;
   using value_type = Value;
-
-private:
-  struct IterProv {
-    using Value = T;
-    using State = T;
-    struct IterTypes : public iter_provider::ValueTypes<Value, std::ptrdiff_t> {
-      using IterState = State;
-    };
-
-    static constexpr Value deref(const auto& self) {
-      return self.value_;
-    }
-
-    static constexpr State& state(auto& self) {
-      return self.value_;
-    }
-    static constexpr const State& state(const auto& self) {
-      return self.value_;
-    }
-  };
-
-public:
-  struct const_iterator : public IteratorFacade<const_iterator, iter_provider::Map<IterProv>> {
-    friend IterProv;
-    constexpr const_iterator() = default;
-    explicit constexpr const_iterator(Value&& v) : value_(std::move(v)) {}
-    explicit constexpr const_iterator(const Value& v) : value_(v) {}
-
-  private:
-    Value value_{};
-  };
-
-  struct const_reverse_iterator
-      : public IteratorFacade<
-          const_reverse_iterator,
-          iter_provider::Reverse<iter_provider::Map<IterProv>, const_reverse_iterator>> {
-    friend IterProv;
-    constexpr const_reverse_iterator() = default;
-    explicit constexpr const_reverse_iterator(Value&& v) : value_(std::forward<Value>(v)) {}
-    explicit constexpr const_reverse_iterator(const Value& v) : value_(v) {}
-
-  private:
-    Value value_{};
-  };
+  using const_iterator = iota_impl::ConstIterator<T>;
+  using const_reverse_iterator = iota_impl::ConstReverseIterator<T>;
 
   constexpr IotaRange() : begin_{}, end_{} {}
   constexpr IotaRange(T begin, T end) : begin_{begin}, end_{end} {}
@@ -198,6 +204,55 @@ constexpr auto iter_range(TRange&& container) {
 template<typename TIter>
 constexpr auto iter_range(TIter begin, TIter end) {
   return IotaRange{std::move(begin), std::move(end)};
+}
+
+template<typename T, T tSize>
+struct StaticSizeIotaRange {
+  using Value = T;
+  using value_type = Value;
+  using const_iterator = iota_impl::ConstIterator<T>;
+  using const_reverse_iterator = iota_impl::ConstReverseIterator<T>;
+
+  explicit StaticSizeIotaRange(T begin) : begin_{begin} {}
+  explicit StaticSizeIotaRange(T begin, ValueTag<T, tSize> /*tag*/) : begin_{begin} {}
+
+  [[nodiscard]] constexpr const_iterator begin() const {
+    return const_iterator{begin_};
+  }
+  [[nodiscard]] constexpr const_iterator end() const {
+    return const_iterator{begin_ + tSize};
+  }
+
+  [[nodiscard]] constexpr const_reverse_iterator rbegin() const {
+    return const_reverse_iterator{begin_ + tSize};
+  }
+  [[nodiscard]] constexpr const_reverse_iterator rend() const {
+    return const_reverse_iterator{begin_};
+  }
+
+  [[nodiscard]] constexpr Value begin_value() const {
+    return begin_;
+  }
+  [[nodiscard]] constexpr Value end_value() const {
+    return begin_ + tSize;
+  }
+  [[nodiscard]] constexpr auto size() const {
+    return tSize;
+  }
+
+private:
+  T begin_;
+};
+template<typename T, T tSize>
+StaticSizeIotaRange(T, ValueTag<T, tSize>) -> StaticSizeIotaRange<T, tSize>;
+
+template<std::integral T>
+constexpr IotaRange<T> range_size(T begin, T size) {
+  return {begin, begin + size};
+}
+template<std::integral T, T tSize>
+constexpr StaticSizeIotaRange<T, tSize> range_size(T begin, ValueTag<T, tSize> /*tag*/) {
+  return StaticSizeIotaRange<T, tSize>{begin};
 }
 } // namespace thes
 

@@ -20,7 +20,7 @@ struct ValueTag {
   }
 };
 template<auto tValue>
-using AutoTag = ValueTag<decltype(tValue), tValue>;
+using AutoTag = ValueTag<std::decay_t<decltype(tValue)>, tValue>;
 template<std::size_t tValue>
 using IndexTag = AutoTag<tValue>;
 template<bool tValue>
