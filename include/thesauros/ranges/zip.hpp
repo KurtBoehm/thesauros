@@ -36,10 +36,11 @@ private:
 public:
   struct const_iterator : public IteratorFacade<const_iterator, IterProv> {
     friend IterProv;
+    constexpr const_iterator() = default;
     explicit constexpr const_iterator(Iterators&& iterators) : its_(std::move(iterators)) {}
 
   private:
-    Iterators its_;
+    Iterators its_{};
   };
 
   explicit constexpr ZipRange(TRanges&&... ranges) : ranges_{std::forward<TRanges>(ranges)...} {}
