@@ -4,28 +4,28 @@
 #include <cstddef>
 #include <optional>
 #include <type_traits>
-#include <utility>
 #include <vector>
 
 #include "thesauros/algorithms.hpp"
 #include "thesauros/format.hpp"
+#include "thesauros/ranges.hpp"
 #include "thesauros/test.hpp"
 #include "thesauros/utility.hpp"
 
 #define COMPILE_TIME true
 
+namespace {
 struct Idx {
   constexpr explicit Idx(size_t pidx) : idx(pidx) {}
   size_t idx;
 };
 
-static constexpr auto forward = thes::auto_tag<thes::IterDirection::FORWARD>;
-static constexpr auto backward = thes::auto_tag<thes::IterDirection::BACKWARD>;
+inline constexpr auto forward = thes::auto_tag<thes::IterDirection::FORWARD>;
+inline constexpr auto backward = thes::auto_tag<thes::IterDirection::BACKWARD>;
 
-static constexpr auto def_pairs =
-  thes::star::transform([](auto s) { return std::make_pair(std::size_t{0}, s); });
+inline constexpr auto def_rng = thes::star::transform([](auto s) { return thes::range(s); });
 
-static constexpr auto tiled_base(auto tag, auto sizes, auto ranges, auto tile_sizes, auto map) {
+constexpr auto tiled_base(auto tag, auto sizes, auto ranges, auto tile_sizes, auto map) {
   std::vector<std::size_t> idxs{};
   thes::tiled_for_each<tag>(
     thes::MultiSize{sizes}, ranges, tile_sizes, map,
@@ -53,14 +53,14 @@ void test_scalar() {
   static_assert([] {
     std::size_t num = 0;
     thes::for_each_tile<thes::IterDirection::FORWARD>(
-      sizes | def_pairs, tile_sizes, thes::StaticMap{}, [&num](auto, auto, auto) { ++num; });
+      sizes | def_rng, tile_sizes, thes::StaticMap{}, [&num](auto, auto, auto) { ++num; });
     return num;
   }() == 24);
   static constexpr auto tiles = [] {
     std::size_t num = 0;
-    std::array<std::pair<std::size_t, std::size_t>, 24_uz * 3_uz> arr{};
+    std::array<thes::IotaRange<std::size_t>, 24_uz * 3_uz> arr{};
     thes::for_each_tile<thes::IterDirection::FORWARD>(
-      sizes | def_pairs, tile_sizes, thes::StaticMap{}, [&arr, &num](auto t1, auto t2, auto t3) {
+      sizes | def_rng, tile_sizes, thes::StaticMap{}, [&arr, &num](auto t1, auto t2, auto t3) {
         arr[3 * num + 0] = t1;
         arr[3 * num + 1] = t2;
         arr[3 * num + 2] = t3;
@@ -68,9 +68,9 @@ void test_scalar() {
       });
     return arr;
   }();
-  static_assert(tiles[27] == std::make_pair(4_uz, 8_uz));
-  static_assert(tiles[28] == std::make_pair(4_uz, 8_uz));
-  static_assert(tiles[29] == std::make_pair(0_uz, 4_uz));
+  static_assert(tiles[27] == thes::range(4_uz, 8_uz));
+  static_assert(tiles[28] == thes::range(4_uz, 8_uz));
+  static_assert(tiles[29] == thes::range(0_uz, 4_uz));
 
   // Returns the index-position of the ref_idx-th position in the iteration order specified by dir
   static constexpr auto make_index_pos = [](std::size_t ref_idx, auto dir) {
@@ -114,8 +114,8 @@ void test_scalar() {
     const auto max = *std::ranges::max_element(idxs);
     return max + 1 - min == idxs.size();
   };
-  static_assert(lambda(forward, sizes | def_pairs, thes::StaticMap{}));
-  static_assert(lambda(backward, sizes | def_pairs, thes::StaticMap{}));
+  static_assert(lambda(forward, sizes | def_rng, thes::StaticMap{}));
+  static_assert(lambda(backward, sizes | def_rng, thes::StaticMap{}));
 }
 
 void test_vectorized() {
@@ -136,7 +136,7 @@ void test_vectorized() {
   };
 
   {
-    static constexpr auto ranges = thes::auto_tag<sizes | def_pairs>;
+    static constexpr auto ranges = thes::auto_tag<(sizes | def_rng)>;
 
     tiled(forward, ranges, thes::static_map_tag<>);
     tiled(backward, ranges, thes::static_map_tag<>);
@@ -145,7 +145,7 @@ void test_vectorized() {
   }
   {
     static constexpr auto ranges = thes::auto_tag<thes::star::index_transform<3>(
-      [](auto idx) { return std::make_pair(std::size_t{idx == 0} * 4, std::get<idx>(sizes)); })>;
+      [](auto idx) { return thes::range(std::get<idx>(sizes)); })>;
 
     tiled(forward, ranges, thes::static_map_tag<>);
     tiled(backward, ranges, thes::static_map_tag<>);
@@ -156,14 +156,15 @@ void test_vectorized() {
 
 constexpr void test_small() {
   using namespace thes::literals;
-  // tiled_base(forward, std::array{4_u32, 9_u32, 7_u32},
-  //            std::array{std::pair{2_u32, 4_u32}, std::pair{0_u32, 9_u32}, std::pair{0_u32,
-  //            7_u32}}, std::array{8_u32, 8_u32, 8_u32}, thes::StaticMap{});
+  // tiled_base(
+  //   forward, std::array{4_u32, 9_u32, 7_u32},
+  //   std::array{thes::range(2_u32, 4_u32), thes::range(0_u32, 9_u32), thes::range(0_u32, 7_u32)},
+  //   std::array{8_u32, 8_u32, 8_u32}, thes::StaticMap{});
 
   std::vector<thes::u32> idxs{};
   thes::tiled_for_each<backward>(
     thes::MultiSize{std::array{4_u32, 9_u32, 7_u32}},
-    std::array{std::pair{2_u32, 4_u32}, std::pair{0_u32, 9_u32}, std::pair{0_u32, 7_u32}},
+    std::array{thes::range(2_u32, 4_u32), thes::range(0_u32, 9_u32), thes::range(0_u32, 7_u32)},
     std::array{8_u32, 8_u32, 8_u32}, thes::StaticMap{},
     [&](auto pos) { idxs.push_back(pos.index); });
 
@@ -174,6 +175,7 @@ constexpr void test_small() {
   }
   THES_ASSERT(max + 1 - min == idxs.size());
 }
+} // namespace
 
 int main() {
   test_scalar();
