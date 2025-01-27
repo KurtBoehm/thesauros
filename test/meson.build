@@ -31,6 +31,7 @@ foreach name, deps : {
   'static-string': [],
   'std-extensions': [],
   'swap-or-equal': [],
+  'tessellation': [],
   'tiling': [],
   'tuples': [],
   'type-seq': [],
