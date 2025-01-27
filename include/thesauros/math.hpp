@@ -5,6 +5,7 @@
 #include "math/arithmetic.hpp"
 #include "math/bit.hpp"
 #include "math/divmod.hpp"
+#include "math/factorization.hpp"
 #include "math/fast.hpp"
 #include "math/finite.hpp"
 #include "math/float-fraction.hpp"

@@ -4,14 +4,15 @@ project(
   default_options: ['cpp_std=c++20', 'warning_level=3'],
 )
 
-boost_preprocessor_dep = dependency('boost-preprocessor')
-expected_dep = dependency('expected')
-fmt_dep = dependency('fmt')
-omp_dep = dependency('openmp')
-
 thesauros_dep = declare_dependency(
   include_directories: include_directories('include'),
-  dependencies: [boost_preprocessor_dep, expected_dep, fmt_dep, omp_dep],
+  dependencies: [
+    dependency('boost-preprocessor'),
+    dependency('expected'),
+    dependency('fmt'),
+    dependency('openmp'),
+    dependency('unordered_dense'),
+  ],
 )
 
 # install_subdir('include/thesauros', install_dir: 'include')

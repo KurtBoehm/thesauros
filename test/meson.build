@@ -10,6 +10,7 @@ foreach name, deps : {
   'dynamic-bitset': [],
   'empty': [],
   'execution': [],
+  'factorization': [],
   'fancy-visit': [],
   'fixed-bitset': [],
   'flat': [],
