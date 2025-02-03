@@ -72,7 +72,7 @@ struct FlatFactorization {
 };
 template<std::unsigned_integral T>
 inline auto factorize(T n, auto&& factorization) {
-  assert(value > 0);
+  assert(n > 0);
 
   if (const auto two_num = *thes::safe_cast<T>(std::countr_zero(n)); two_num > 0) {
     n >>= two_num;

@@ -8,6 +8,16 @@
 #include "thesauros/utility/fixed-size-integer.hpp"
 
 namespace thes {
+template<typename TMember>
+struct MemberTypeTrait {
+  template<typename T, typename TMem>
+  static TMem get_type(TMem T::* v);
+
+  using Type = decltype(get_type(static_cast<TMember>(nullptr)));
+};
+template<typename TMember>
+using MemberType = typename MemberTypeTrait<TMember>::Type;
+
 template<typename T>
 struct AddConstTrait {
   using Type = const T;
