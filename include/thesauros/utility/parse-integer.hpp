@@ -7,14 +7,18 @@
 #include <string_view>
 
 #include "thesauros/math/overflow.hpp"
+#include "thesauros/utility/primitives.hpp"
 #include "thesauros/utility/value-tag.hpp"
 
 namespace thes {
-template<typename T, bool tFromString>
-inline constexpr std::optional<T> parse_integer(std::string_view src) {
-  auto parse_impl = [](std::string_view number, auto op) -> std::optional<T> {
-    auto parse_base = [op]<std::size_t tBase>(std::string_view sv, IndexTag<tBase>) {
-      auto parse_char = [](char c) -> std::optional<T> {
+enum struct IntegerParseMode : thes::u8 { literal, extended };
+
+template<typename T, thes::TypedValueTag<IntegerParseMode> TParseMode =
+                       thes::AutoTag<IntegerParseMode::extended>>
+constexpr std::optional<T> parse_integer(std::string_view src, TParseMode parse_mode = {}) {
+  auto parse_impl = [&](std::string_view number, auto op) -> std::optional<T> {
+    auto parse_base = [&]<std::size_t tBase>(std::string_view sv, IndexTag<tBase>) {
+      auto parse_char = [&](char c) -> std::optional<T> {
         // This slightly convoluted implementation optimizes better
         auto char_map = [c]() -> T {
           switch (c) {
@@ -53,7 +57,7 @@ inline constexpr std::optional<T> parse_integer(std::string_view src) {
 
       T v = 0;
       for (char c : sv) {
-        if constexpr (tFromString) {
+        if constexpr (parse_mode == IntegerParseMode::extended) {
           if (c == '_') {
             continue;
           }
@@ -81,7 +85,7 @@ inline constexpr std::optional<T> parse_integer(std::string_view src) {
       if (c == 'b' || c == 'B') {
         return parse_base(number.substr(1), index_tag<2>);
       }
-      if constexpr (tFromString) {
+      if constexpr (parse_mode == IntegerParseMode::extended) {
         if (c == 'o' || c == 'O') {
           return parse_base(number.substr(1), index_tag<8>);
         }

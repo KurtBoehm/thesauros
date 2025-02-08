@@ -36,11 +36,12 @@ private:
 public:
   struct const_iterator : public IteratorFacade<const_iterator, iter_provider::Map<IterProv>> {
     friend IterProv;
+    constexpr const_iterator() = default;
     explicit constexpr const_iterator(TOp op, TIter it) : op_(op), it_(std::move(it)) {}
 
   private:
-    TOp op_;
-    TIter it_;
+    TOp op_{};
+    TIter it_{};
   };
 
   constexpr TransformRange(TOp&& op, TIter begin, TIter end)

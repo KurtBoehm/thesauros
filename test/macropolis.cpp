@@ -164,6 +164,16 @@ static_assert(
 
 ////////////////////////////////////////////////////////////////
 
+namespace inner {
+struct Type10 {
+  int a;
+  float b;
+};
+THES_DEFINE_TYPE_INFO(SNAKE_CASE(Type10), MEMBERS((KEEP(a), int), (KEEP(b), float)))
+} // namespace inner
+
+////////////////////////////////////////////////////////////////
+
 static_assert(thes::serial_name_of<Test1>() == "test1"_sstr);
 static_assert(thes::serial_name_of<inner::Test2>() == "test2"_sstr);
 static_assert(thes::serial_name_of<inner::Test2::A>() == "a"_sstr);
@@ -178,4 +188,8 @@ static_assert((thes::memory_layout_info<Type9> |
 int main() {
   thes::memory_layout_info<Type9> |
     thes::star::for_each([](auto info) { fmt::print("{}: {}\n", info.name, info.offset); });
+  thes::TypeInfo<Type9>::members |
+    thes::star::for_each([](auto info) { fmt::print("{}: {}\n", info.name, info.serial_name); });
+  thes::TypeInfo<inner::Type10>::members |
+    thes::star::for_each([](auto info) { fmt::print("{}: {}\n", info.name, info.serial_name); });
 }

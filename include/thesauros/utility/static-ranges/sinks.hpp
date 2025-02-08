@@ -8,6 +8,7 @@
 #include "sinks/first-value.hpp"
 #include "sinks/for-each.hpp"
 #include "sinks/format.hpp"
+#include "sinks/minmax.hpp"
 #include "sinks/reduce.hpp"
 #include "sinks/to-array.hpp"
 #include "sinks/to-container.hpp"

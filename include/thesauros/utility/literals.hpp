@@ -5,16 +5,17 @@
 #include <cstdint>
 #include <type_traits>
 
-#include "parse-integer.hpp"
-#include "primitives.hpp"
+#include "thesauros/utility/parse-integer.hpp"
+#include "thesauros/utility/primitives.hpp"
+#include "thesauros/utility/value-tag.hpp"
 
 namespace thes::literals {
 #define USER_DEFINED_LITERALS(OP_NAME, TYPE) \
   consteval TYPE operator""_##OP_NAME(const char* ptr) { \
-    return parse_integer<TYPE, false>(ptr).value(); \
+    return parse_integer<TYPE>(ptr, thes::auto_tag<IntegerParseMode::literal>).value(); \
   } \
   consteval TYPE operator""_##OP_NAME(const char* ptr, std::size_t len) { \
-    return parse_integer<TYPE, true>({ptr, len}).value(); \
+    return parse_integer<TYPE>({ptr, len}, thes::auto_tag<IntegerParseMode::extended>).value(); \
   }
 
 USER_DEFINED_LITERALS(iz, std::make_signed_t<std::size_t>)

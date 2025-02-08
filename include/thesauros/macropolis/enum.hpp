@@ -28,8 +28,8 @@ template<typename TEnum>
 struct EnumInfo;
 
 template<typename TEnum>
-requires(requires(TEnum value) { enum_info_helper(value); })
-struct EnumInfo<TEnum> : public decltype(enum_info_helper(std::declval<TEnum>())){};
+requires(requires(TEnum value) { enum_info_adl(value); })
+struct EnumInfo<TEnum> : public decltype(enum_info_adl(std::declval<TEnum>())){};
 
 template<typename T>
 concept HasEnumInfo = CompleteType<EnumInfo<T>>;
@@ -51,7 +51,7 @@ concept HasEnumInfo = CompleteType<EnumInfo<T>>;
 
 #define THES_DEFINE_ENUM_IMPL_INFO(TYPE, TYPENAME, LIST) \
   /* gcc: global qualification of class name is invalid before ‘{’ token */ \
-  inline consteval auto enum_info_helper(TYPENAME /*dummy*/) { \
+  inline consteval auto enum_info_adl(TYPENAME /*dummy*/) { \
     return ::thes::EnumInfoTemplate<THES_POLIS_NAME_STR_##TYPE, THES_POLIS_SERIAL_NAME_STR_##TYPE, \
                                     ::thes::Tuple{BOOST_PP_LIST_FOR_EACH_I( \
                                       THES_POLIS_ENUM_VALUE_DEF, TYPENAME, LIST)}>{}; \
