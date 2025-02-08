@@ -35,6 +35,19 @@ struct MutableBitReference {
     return *this;
   }
 
+  constexpr MutableBitReference& operator|=(const bool value) {
+    if (value) {
+      chunk_ |= mask();
+    }
+    return *this;
+  }
+  constexpr MutableBitReference& operator&=(const bool value) {
+    if (!value) {
+      chunk_ &= ~mask();
+    }
+    return *this;
+  }
+
 private:
   constexpr Chunk mask() const {
     return Chunk{1} << index_;
