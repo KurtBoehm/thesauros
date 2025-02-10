@@ -62,6 +62,9 @@ static_assert(Test2A::serial_name == "a"_sstr);
 
 static_assert(thes::enum_value_info<inner::Test2::A>.name == "A"_sstr);
 static_assert(thes::enum_value_info<inner::Test2::B>.name == "B"_sstr);
+static_assert(thes::enum_cast<inner::Test2>("a") == inner::Test2::A);
+static_assert(thes::enum_cast<inner::Test2>("b") == inner::Test2::B);
+static_assert(thes::enum_cast<inner::Test2>("ab") == std::nullopt);
 
 ////////////////////////////////////////////////////////////////
 

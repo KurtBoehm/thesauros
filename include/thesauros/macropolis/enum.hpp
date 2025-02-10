@@ -1,6 +1,10 @@
 #ifndef INCLUDE_THESAUROS_MACROPOLIS_ENUM_HPP
 #define INCLUDE_THESAUROS_MACROPOLIS_ENUM_HPP
 
+#include <cstddef>
+#include <optional>
+#include <string_view>
+
 #include <boost/preprocessor.hpp>
 
 #include "thesauros/concepts/type-traits.hpp"
@@ -85,13 +89,32 @@ inline constexpr auto enum_value_info = [] {
 }();
 
 template<HasEnumInfo T>
-inline constexpr auto serial_name_of() {
+constexpr auto serial_name_of() {
   return EnumInfo<T>::serial_name;
 }
 template<auto tValue>
 requires HasEnumInfo<decltype(tValue)>
-inline constexpr auto serial_name_of() {
+constexpr auto serial_name_of() {
   return enum_value_info<tValue>.serial_name;
+}
+
+// In contrast to magic_enum, this uses the serial names, which seems more appropriate
+template<HasEnumInfo T>
+constexpr std::optional<T> enum_cast(std::string_view serial_name) {
+  constexpr auto values = EnumInfo<T>::values;
+  constexpr std::size_t value_num = star::size<decltype(values)>;
+  auto op = [&](auto op, thes::AnyIndexTag auto depth) -> std::optional<T> {
+    constexpr auto value_info = star::get_at<depth>(values);
+    if (value_info.serial_name.view() == serial_name) {
+      return value_info.value;
+    }
+    if constexpr (depth + 1 < value_num) {
+      return op(op, index_tag<depth + 1>);
+    } else {
+      return std::nullopt;
+    }
+  };
+  return op(op, index_tag<0>);
 }
 } // namespace thes
 
