@@ -12,6 +12,7 @@
 #include "format/json.hpp"
 #include "format/macropolis.hpp"
 #include "format/quantity.hpp"
+#include "format/ranges.hpp"
 #include "format/static-capacity-string.hpp"
 #include "format/static-ranges.hpp"
 #include "format/static-string.hpp"
