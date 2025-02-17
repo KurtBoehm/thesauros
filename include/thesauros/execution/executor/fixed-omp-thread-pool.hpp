@@ -55,9 +55,12 @@ struct FixedOpenMpThreadPool {
     return thread_num_;
   }
 
-  void execute(std::invocable<std::size_t> auto task) const {
-#pragma omp parallel for num_threads(thread_num_)
-    for (std::size_t t = 0; t < thread_num_; ++t) {
+  void execute(std::invocable<std::size_t> auto task,
+               std::optional<std::size_t> used_thread_num = {}) const {
+    assert(!used_thread_num.has_value() || *used_thread_num <= thread_num_);
+    const std::size_t tnum = used_thread_num.value_or(thread_num_);
+#pragma omp parallel for num_threads(tnum)
+    for (std::size_t t = 0; t < tnum; ++t) {
       if (cpu_sets_.has_value()) {
         pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &(*cpu_sets_)[t].base());
       }

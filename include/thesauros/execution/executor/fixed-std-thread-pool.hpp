@@ -98,7 +98,8 @@ struct FixedStdThreadPool {
     return threads_.size();
   }
 
-  void execute(Task task) const {
+  void execute(Task task, std::optional<std::size_t> used_thread_num = {}) const {
+    assert(!used_thread_num.has_value() || *used_thread_num <= threads_.size());
     {
       const std::lock_guard lock{work_mutex_};
       task_ = std::move(task);
