@@ -23,8 +23,8 @@ namespace thes::test {
 
 inline void assert_fail(const char* assertion, auto fun,
                         const std::source_location location = std::source_location::current()) {
-  ::fmt::print(stderr, "Assertion “{}” failed in {} @ {}:{}:{}\n", assertion,
-               location.function_name(), location.file_name(), location.line(), location.column());
+  fmt::print(stderr, "Assertion “{}” failed in {} @ {}:{}:{}\n", assertion,
+             location.function_name(), location.file_name(), location.line(), location.column());
   fun();
   std::abort();
 }
@@ -111,7 +111,7 @@ inline bool string_eq(const std::string_view s1, const std::string_view s2, TPri
       }
       printer("\n");
 
-      printer("{} {} {}\n", ::fmt::styled(s1, fg_red), eq ? "==" : "!=", ::fmt::styled(s2, fg_red));
+      printer("{} {} {}\n", fmt::styled(s1, fg_red), eq ? "==" : "!=", fmt::styled(s2, fg_red));
     }
   }
 
@@ -120,19 +120,18 @@ inline bool string_eq(const std::string_view s1, const std::string_view s2, TPri
 
 struct StringEqPrinter {
   template<typename... TArgs>
-  void operator()(::fmt::format_string<TArgs...> fmt, TArgs&&... args) {
-    ::fmt::print(fmt, std::forward<TArgs>(args)...);
+  void operator()(fmt::format_string<TArgs...> fmt, TArgs&&... args) {
+    fmt::print(fmt, std::forward<TArgs>(args)...);
   }
   template<typename... TArgs>
-  void operator()(const ::fmt::text_style& ts, ::fmt::format_string<TArgs...> fmt,
-                  TArgs&&... args) {
-    ::fmt::print(ts, fmt, std::forward<TArgs>(args)...);
+  void operator()(const fmt::text_style& ts, fmt::format_string<TArgs...> fmt, TArgs&&... args) {
+    fmt::print(ts, fmt, std::forward<TArgs>(args)...);
   }
 };
 
 template<bool tVerbose = true>
 inline bool string_eq(const std::string_view s1, const auto& v, BoolTag<tVerbose> verbose = {}) {
-  const auto s2 = ::fmt::format("{}", v);
+  const auto s2 = fmt::format("{}", v);
   if constexpr (verbose) {
     return string_eq(s1, std::string_view{s2}, StringEqPrinter{});
   }

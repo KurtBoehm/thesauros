@@ -31,9 +31,9 @@ struct FixedStdThreadPool {
       : threads_(Threads::create_with_capacity(size)) {
     if constexpr (!std::same_as<TCpuSets, Empty>) {
       if (size > cpu_sets.size()) {
-        throw std::invalid_argument{::fmt::format("{} threads have been requested, "
-                                                  "but there are only {} entries in the CPU set!",
-                                                  size, cpu_sets.size())};
+        throw std::invalid_argument{fmt::format("{} threads have been requested, "
+                                                "but there are only {} entries in the CPU set!",
+                                                size, cpu_sets.size())};
       }
     }
 
