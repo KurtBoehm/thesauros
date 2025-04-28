@@ -1,5 +1,5 @@
-#ifndef INCLUDE_THESAUROS_UTILITY_NO_OP_HPP
-#define INCLUDE_THESAUROS_UTILITY_NO_OP_HPP
+#ifndef INCLUDE_THESAUROS_FUNCTIONAL_NO_OP_HPP
+#define INCLUDE_THESAUROS_FUNCTIONAL_NO_OP_HPP
 
 #include <type_traits>
 #include <utility>
@@ -32,4 +32,4 @@ template<typename TOp>
 concept AnyNoOp = AnyNoOpTrait<TOp>::value;
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_UTILITY_NO_OP_HPP
+#endif // INCLUDE_THESAUROS_FUNCTIONAL_NO_OP_HPP

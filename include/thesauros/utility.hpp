@@ -19,7 +19,6 @@
 #include "utility/move-detector.hpp"
 #include "utility/multi-bit-reference.hpp"
 #include "utility/multi-size.hpp"
-#include "utility/no-op.hpp"
 #include "utility/numeric-info.hpp"
 #include "utility/numeric-string.hpp"
 #include "utility/optional.hpp"

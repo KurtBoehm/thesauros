@@ -8,8 +8,8 @@
 #include <type_traits>
 
 #include "thesauros/format.hpp"
+#include "thesauros/functional/no-op.hpp"
 #include "thesauros/io.hpp"
-#include "thesauros/utility/no-op.hpp"
 #include "thesauros/utility/value-tag.hpp"
 
 namespace thes::test {
