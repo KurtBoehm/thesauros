@@ -16,6 +16,7 @@
 #include "quantity.hpp"
 #include "random.hpp"
 #include "ranges.hpp"
+#include "static-ranges.hpp"
 #include "test.hpp"
 #include "utility.hpp"
 // IWYU pragma: end_exports

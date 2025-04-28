@@ -10,7 +10,7 @@
 #include "boost/preprocessor.hpp"
 
 #include "thesauros/utility/fancy-visit.hpp"
-#include "thesauros/utility/static-ranges/definitions.hpp"
+#include "thesauros/static-ranges/definitions.hpp"
 
 namespace thes {
 namespace impl {

@@ -5,9 +5,9 @@
 #include <cstddef>
 #include <utility>
 
-#include "thesauros/utility/static-ranges/definitions/get-at.hpp"
-#include "thesauros/utility/static-ranges/definitions/size.hpp"
-#include "thesauros/utility/static-ranges/definitions/type-traits.hpp"
+#include "thesauros/static-ranges/definitions/get-at.hpp"
+#include "thesauros/static-ranges/definitions/size.hpp"
+#include "thesauros/static-ranges/definitions/type-traits.hpp"
 
 namespace thes::star {
 template<typename TPos, typename TProds>

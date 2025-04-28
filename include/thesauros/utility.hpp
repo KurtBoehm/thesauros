@@ -29,7 +29,6 @@
 #include "utility/resource-usage.hpp"
 #include "utility/static-capacity-string.hpp"
 #include "utility/static-map.hpp"
-#include "utility/static-ranges.hpp"
 #include "utility/static-string.hpp"
 #include "utility/string-convert.hpp"
 #include "utility/string-escape.hpp"

@@ -7,7 +7,7 @@
 #include "thesauros/algorithms/static-ranges/index-to-position.hpp"
 #include "thesauros/algorithms/static-ranges/position-to-index.hpp"
 #include "thesauros/math/divmod.hpp"
-#include "thesauros/utility/static-ranges.hpp"
+#include "thesauros/static-ranges.hpp"
 #include "thesauros/utility/value-tag.hpp"
 
 namespace thes {

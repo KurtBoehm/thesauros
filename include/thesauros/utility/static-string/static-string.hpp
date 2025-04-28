@@ -10,7 +10,7 @@
 #include <tuple>
 #include <utility>
 
-#include "thesauros/utility/static-ranges.hpp"
+#include "thesauros/static-ranges.hpp"
 #include "thesauros/utility/static-string/character-tools.hpp"
 #include "thesauros/utility/value-tag.hpp"
 

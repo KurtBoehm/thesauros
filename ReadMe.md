@@ -21,7 +21,6 @@ These sub-libraries are, together with some highlights from each:
   - Macros to define classes and enumerations with compile-time reflection information, which can be used e.g. for serialization and deserialization.
   - Tools to flatten nested instances of `std::variant`.
   - Macros to disable warnings.
-  - Some preprocessor definitions about the platform which the program is compiled for.
 - `math`:
   - Simple functions such as safe bounded addition/subtraction, integer division rounded upwards, `pow` with a (compile-time constant) integer exponent, bit manipulation, etc.
   - Overflow-/underflow-aware and saturated arithmetic operations.
@@ -32,6 +31,7 @@ These sub-libraries are, together with some highlights from each:
 - `quantity`: A quantity class similar to `std::chrono::duration`, but with support for arbitrary units, as well as connected operations.
 - `random`: A flexible implementation of a Linear Congruential Generator and a class that shuffles the integer values of a given range on the fly.
 - `ranges`: Ranges emulating Python’s `enumerate`, `range`, `reversed`, and `zip`. This part becomes increasingly redundant with C++23.
+- `static-ranges`: Static ranges which generalize `std::pair` and `std::tuple` with support for operations similar to C++20 ranges (including support for piping) and related operations.
 - `test`: Some assertion utilities as well as functions to check whether two containers or strings are equal with human-readable reports.
 
 While most components of Thesauros are written in standard C++20, some rely on Linux-specific functionality (especially in `execution` and `memory`) or GCC extensions (e.g. `THES_ALWAYS_INLINE`).

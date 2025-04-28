@@ -9,7 +9,7 @@
 
 #include "thesauros/concepts/type-traits.hpp"
 #include "thesauros/macropolis/helpers.hpp"
-#include "thesauros/utility/static-ranges.hpp"
+#include "thesauros/static-ranges.hpp"
 #include "thesauros/utility/tuple.hpp"
 #include "thesauros/utility/value-tag.hpp"
 

@@ -5,10 +5,10 @@
 
 #include "thesauros/format/fmtlib.hpp"
 #include "thesauros/format/formatter.hpp"
-#include "thesauros/utility/static-ranges/definitions.hpp"
-#include "thesauros/utility/static-ranges/ranges/iota.hpp"
-#include "thesauros/utility/static-ranges/sinks/for-each.hpp"
-#include "thesauros/utility/static-ranges/sinks/format.hpp"
+#include "thesauros/static-ranges/definitions.hpp"
+#include "thesauros/static-ranges/ranges/iota.hpp"
+#include "thesauros/static-ranges/sinks/for-each.hpp"
+#include "thesauros/static-ranges/sinks/format.hpp"
 
 namespace thes::detail {
 template<thes::star::AnyStaticRange TRange>

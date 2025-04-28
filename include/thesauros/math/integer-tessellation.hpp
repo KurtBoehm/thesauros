@@ -6,7 +6,7 @@
 #include <cstddef>
 #include <limits>
 
-#include "thesauros/utility/static-ranges.hpp"
+#include "thesauros/static-ranges.hpp"
 #include "thesauros/utility/value-tag.hpp"
 
 namespace thes {

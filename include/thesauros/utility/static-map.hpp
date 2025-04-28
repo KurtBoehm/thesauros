@@ -5,7 +5,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "thesauros/utility/static-ranges.hpp"
+#include "thesauros/static-ranges.hpp"
 #include "thesauros/utility/static-string/static-string.hpp"
 #include "thesauros/utility/tuple.hpp"
 #include "thesauros/utility/value-tag.hpp"

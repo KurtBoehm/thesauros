@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <type_traits>
 
-#include "thesauros/utility/static-ranges.hpp"
+#include "thesauros/static-ranges.hpp"
 #include "thesauros/utility/tuple.hpp"
 #include "thesauros/utility/type-sequence/type-sequence.hpp"
 

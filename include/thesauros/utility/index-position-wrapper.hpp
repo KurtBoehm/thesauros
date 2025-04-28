@@ -12,7 +12,7 @@
 #include "thesauros/algorithms/static-ranges.hpp"
 #include "thesauros/math.hpp"
 #include "thesauros/utility/integer-cast.hpp"
-#include "thesauros/utility/static-ranges.hpp"
+#include "thesauros/static-ranges.hpp"
 
 namespace thes {
 namespace detail {
