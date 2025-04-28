@@ -1,5 +1,5 @@
+#include "thesauros/algorithms.hpp"
 #include "thesauros/format.hpp"
-#include "thesauros/utility.hpp"
 
 int main() {
   int a = 5;

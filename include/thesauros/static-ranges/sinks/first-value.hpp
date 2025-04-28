@@ -5,10 +5,10 @@
 #include <utility>
 
 #include "thesauros/macropolis/inlining.hpp"
+#include "thesauros/macropolis/void-macros.hpp"
 #include "thesauros/static-ranges/definitions/concepts.hpp"
 #include "thesauros/static-ranges/definitions/size.hpp"
 #include "thesauros/static-ranges/definitions/type-traits.hpp"
-#include "thesauros/utility/void-macros.hpp"
 
 namespace thes::star {
 struct FirstValueGenerator : public ConsumerGeneratorBase {

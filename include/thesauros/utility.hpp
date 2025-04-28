@@ -17,14 +17,10 @@
 #include "utility/multi-size.hpp"
 #include "utility/optional.hpp"
 #include "utility/static-map.hpp"
-#include "utility/swap-or-equal.hpp"
 #include "utility/tuple.hpp"
-#include "utility/typed-integer.hpp"
 #include "utility/unreachable.hpp"
 #include "utility/unwrap.hpp"
 #include "utility/value-optional.hpp"
-#include "utility/void-macros.hpp"
-#include "utility/void-storage.hpp"
 // IWYU pragma: end_exports
 
 #endif // INCLUDE_THESAUROS_UTILITY_HPP

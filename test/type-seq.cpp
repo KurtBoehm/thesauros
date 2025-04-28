@@ -1,8 +1,8 @@
 #include <concepts>
 #include <type_traits>
 
-#include "thesauros/utility.hpp"
 #include "thesauros/types/type-sequence/operations.hpp"
+#include "thesauros/utility.hpp"
 
 template<typename T>
 struct Filter : public std::is_integral<T> {};

@@ -26,6 +26,7 @@ These sub-libraries are, together with some highlights from each:
   - Macros to define classes and enumerations with compile-time reflection information, which can be used e.g. for serialization and deserialization.
   - Tools to flatten nested instances of `std::variant`.
   - Macros to disable warnings and to ensure/prevent inlining.
+  - Macros to allow function objects returning `void` to be used in contexts in which the return value is optionally returned.
 - `math`:
   - Simple functions such as safe bounded addition/subtraction, integer division rounded upwards, `pow` with a (compile-time constant) integer exponent, bit manipulation, etc.
   - Overflow-/underflow-aware and saturated arithmetic operations as well as safe integer casts.
@@ -46,6 +47,7 @@ These sub-libraries are, together with some highlights from each:
   - Querying the (demangled) name of a type.
   - A type sequence type, with tools to work with them.
   - Type traits for the union/intersection of integer types.
+  - Type traits to allow template types that can be `void` to be stored (by replacing them with an empty type).
 
 While most components of Thesauros are written in standard C++20, some rely on Linux-specific functionality (especially in `execution` and `memory`) or GCC extensions (e.g. `THES_ALWAYS_INLINE`).
 While some of these could be generalized to other platforms and compilers, this has not been a priority for the author, who only strives for compatibility with recent versions of GCC and Clang on Linux.

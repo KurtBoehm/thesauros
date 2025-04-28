@@ -6,6 +6,7 @@
 #include "algorithms/ranges.hpp"
 #include "algorithms/sort-indices.hpp"
 #include "algorithms/static-ranges.hpp"
+#include "algorithms/swap-or-equal.hpp"
 // IWYU pragma: end_exports
 
 #endif // INCLUDE_THESAUROS_ALGORITHMS_HPP

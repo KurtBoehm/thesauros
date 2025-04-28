@@ -1,5 +1,5 @@
-#ifndef INCLUDE_THESAUROS_UTILITY_VOID_STORAGE_HPP
-#define INCLUDE_THESAUROS_UTILITY_VOID_STORAGE_HPP
+#ifndef INCLUDE_THESAUROS_TYPES_VOID_STORAGE_HPP
+#define INCLUDE_THESAUROS_TYPES_VOID_STORAGE_HPP
 
 #include <concepts>
 #include <type_traits>
@@ -70,4 +70,4 @@ inline constexpr VoidStorageConstPtr<UnVoidStorage<T>> void_storage_cptr(const T
 }
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_UTILITY_VOID_STORAGE_HPP
+#endif // INCLUDE_THESAUROS_TYPES_VOID_STORAGE_HPP

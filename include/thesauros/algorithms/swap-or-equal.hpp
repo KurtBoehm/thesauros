@@ -1,5 +1,5 @@
-#ifndef INCLUDE_THESAUROS_UTILITY_SWAP_OR_EQUAL_HPP
-#define INCLUDE_THESAUROS_UTILITY_SWAP_OR_EQUAL_HPP
+#ifndef INCLUDE_THESAUROS_ALGORITHMS_SWAP_OR_EQUAL_HPP
+#define INCLUDE_THESAUROS_ALGORITHMS_SWAP_OR_EQUAL_HPP
 
 #include <cassert>
 #include <type_traits>
@@ -18,4 +18,4 @@ inline constexpr void swap_or_equal(std::remove_reference_t<T>& v1,
 };
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_UTILITY_SWAP_OR_EQUAL_HPP
+#endif // INCLUDE_THESAUROS_ALGORITHMS_SWAP_OR_EQUAL_HPP

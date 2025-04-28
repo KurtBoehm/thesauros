@@ -9,6 +9,7 @@
 #include "macropolis/platform.hpp"
 #include "macropolis/serial-value.hpp"
 #include "macropolis/type.hpp"
+#include "macropolis/void-macros.hpp"
 #include "macropolis/warnings.hpp"
 // IWYU pragma: end_exports
 
