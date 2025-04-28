@@ -1,6 +1,6 @@
 #include <type_traits>
 
-#include "thesauros/utility.hpp"
+#include "thesauros/types.hpp"
 
 template<bool tIsValued>
 struct TestTag : public thes::BoolTag<tIsValued> {};
@@ -16,7 +16,7 @@ template<typename T>
 concept AnyTestTag = IsTestTagTrait<T>::value;
 
 template<bool tVal1, bool tVal2>
-inline constexpr bool operator==(TestTag<tVal1> /*tag1*/, TestTag<tVal2> /*tag2*/) {
+constexpr bool operator==(TestTag<tVal1> /*tag1*/, TestTag<tVal2> /*tag2*/) {
   return tVal1 == tVal2;
 }
 

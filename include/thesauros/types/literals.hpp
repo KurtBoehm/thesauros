@@ -1,13 +1,13 @@
-#ifndef INCLUDE_THESAUROS_UTILITY_LITERALS_HPP
-#define INCLUDE_THESAUROS_UTILITY_LITERALS_HPP
+#ifndef INCLUDE_THESAUROS_TYPES_LITERALS_HPP
+#define INCLUDE_THESAUROS_TYPES_LITERALS_HPP
 
 #include <cstddef>
 #include <cstdint>
 #include <type_traits>
 
 #include "thesauros/charconv/parse-integer.hpp"
-#include "thesauros/utility/primitives.hpp"
-#include "thesauros/utility/value-tag.hpp"
+#include "thesauros/types/primitives.hpp"
+#include "thesauros/types/value-tag.hpp"
 
 namespace thes::literals {
 #define USER_DEFINED_LITERALS(OP_NAME, TYPE) \
@@ -50,4 +50,4 @@ USER_DEFINED_LITERALS(64)
 #undef USER_DEFINED_LITERALS
 } // namespace thes::literals
 
-#endif // INCLUDE_THESAUROS_UTILITY_LITERALS_HPP
+#endif // INCLUDE_THESAUROS_TYPES_LITERALS_HPP

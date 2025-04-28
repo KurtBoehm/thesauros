@@ -6,7 +6,7 @@
 #include <utility>
 
 #include "thesauros/math/divmod.hpp"
-#include "thesauros/utility/value-tag.hpp"
+#include "thesauros/types/value-tag.hpp"
 
 namespace thes::star {
 template<typename TIdx, typename TSize, std::size_t tSize>

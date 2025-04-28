@@ -11,8 +11,8 @@
 #include <utility>
 
 #include "thesauros/static-ranges.hpp"
+#include "thesauros/types/value-tag.hpp"
 #include "thesauros/utility/static-string/character-tools.hpp"
-#include "thesauros/utility/value-tag.hpp"
 
 namespace thes {
 template<std::size_t tSize>

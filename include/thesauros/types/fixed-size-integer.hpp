@@ -1,10 +1,10 @@
-#ifndef INCLUDE_THESAUROS_UTILITY_FIXED_SIZE_INTEGER_HPP
-#define INCLUDE_THESAUROS_UTILITY_FIXED_SIZE_INTEGER_HPP
+#ifndef INCLUDE_THESAUROS_TYPES_FIXED_SIZE_INTEGER_HPP
+#define INCLUDE_THESAUROS_TYPES_FIXED_SIZE_INTEGER_HPP
 
 #include <bit>
 #include <cstddef>
 
-#include "primitives.hpp"
+#include "thesauros/types/primitives.hpp"
 
 namespace thes {
 template<std::size_t tByteNum>
@@ -42,4 +42,4 @@ template<std::size_t tByteNum>
 using FixedSignedInt = FixedIntTrait<tByteNum>::Signed;
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_UTILITY_FIXED_SIZE_INTEGER_HPP
+#endif // INCLUDE_THESAUROS_TYPES_FIXED_SIZE_INTEGER_HPP

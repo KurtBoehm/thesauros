@@ -9,8 +9,8 @@
 #include "thesauros/macropolis/helpers.hpp"
 #include "thesauros/macropolis/type.hpp"
 #include "thesauros/static-ranges.hpp"
-#include "thesauros/utility/primitives.hpp"
-#include "thesauros/utility/type-tag.hpp"
+#include "thesauros/types/primitives.hpp"
+#include "thesauros/types/type-tag.hpp"
 
 namespace thes {
 template<typename T>

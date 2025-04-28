@@ -2,7 +2,7 @@
 #define INCLUDE_THESAUROS_UTILITY_INTEGRAL_VALUE_HPP
 
 #include "thesauros/macropolis/inlining.hpp"
-#include "thesauros/utility/value-tag.hpp"
+#include "thesauros/types/value-tag.hpp"
 
 namespace thes {
 template<typename T>

@@ -7,10 +7,10 @@
 #include <utility>
 
 #include "thesauros/concepts/type-traits.hpp"
-#include "thesauros/utility/primitives.hpp"
+#include "thesauros/types/primitives.hpp"
+#include "thesauros/types/type-transformations.hpp"
 #include "thesauros/utility/static-string/static-string.hpp"
 #include "thesauros/utility/tuple.hpp"
-#include "thesauros/utility/type-transformations.hpp"
 
 namespace thes {
 template<auto tName, auto tSerialName, auto tValue>

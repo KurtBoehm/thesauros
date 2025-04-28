@@ -14,7 +14,7 @@
 #include "thesauros/io/file.hpp"
 #include "thesauros/macropolis/inlining.hpp"
 #include "thesauros/math/integer-cast.hpp"
-#include "thesauros/utility/type-tag.hpp"
+#include "thesauros/types/type-tag.hpp"
 
 namespace thes {
 struct FileReader {

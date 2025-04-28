@@ -3,8 +3,8 @@
 
 #include "thesauros/format.hpp"
 #include "thesauros/math.hpp"
+#include "thesauros/static-ranges.hpp"
 #include "thesauros/test.hpp"
-#include "thesauros/utility.hpp"
 
 int main() {
   using Int = unsigned;

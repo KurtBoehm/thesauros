@@ -10,8 +10,8 @@
 #include "thesauros/concepts/type-traits.hpp"
 #include "thesauros/macropolis/helpers.hpp"
 #include "thesauros/static-ranges.hpp"
+#include "thesauros/types/value-tag.hpp"
 #include "thesauros/utility/tuple.hpp"
-#include "thesauros/utility/value-tag.hpp"
 
 namespace thes {
 template<auto tValue, auto tName, auto tSerialName>

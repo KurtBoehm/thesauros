@@ -7,8 +7,8 @@
 #include <string_view>
 
 #include "thesauros/math/overflow.hpp"
-#include "thesauros/utility/primitives.hpp"
-#include "thesauros/utility/value-tag.hpp"
+#include "thesauros/types/primitives.hpp"
+#include "thesauros/types/value-tag.hpp"
 
 namespace thes {
 enum struct IntegerParseMode : thes::u8 { literal, extended };

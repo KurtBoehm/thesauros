@@ -9,7 +9,9 @@
 #include "thesauros/algorithms.hpp"
 #include "thesauros/format.hpp"
 #include "thesauros/ranges.hpp"
+#include "thesauros/static-ranges.hpp"
 #include "thesauros/test.hpp"
+#include "thesauros/types.hpp"
 #include "thesauros/utility.hpp"
 
 #define COMPILE_TIME true

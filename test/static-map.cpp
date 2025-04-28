@@ -1,4 +1,5 @@
 #include "thesauros/math.hpp"
+#include "thesauros/types.hpp"
 #include "thesauros/utility.hpp"
 
 int main() {

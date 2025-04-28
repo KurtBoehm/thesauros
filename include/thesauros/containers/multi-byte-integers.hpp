@@ -21,10 +21,10 @@
 #include "thesauros/iterator/facades.hpp"
 #include "thesauros/iterator/provider-reverse.hpp"
 #include "thesauros/macropolis/inlining.hpp"
+#include "thesauros/types/type-tag.hpp"
+#include "thesauros/types/type-transformations.hpp"
 #include "thesauros/utility/arrow-proxy.hpp"
 #include "thesauros/utility/integral-value.hpp"
-#include "thesauros/utility/type-tag.hpp"
-#include "thesauros/utility/type-transformations.hpp"
 #include "thesauros/utility/value-optional.hpp"
 
 namespace thes {

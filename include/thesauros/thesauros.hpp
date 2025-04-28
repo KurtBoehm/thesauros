@@ -20,6 +20,7 @@
 #include "resources.hpp"
 #include "static-ranges.hpp"
 #include "test.hpp"
+#include "types.hpp"
 #include "utility.hpp"
 // IWYU pragma: end_exports
 

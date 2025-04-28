@@ -8,8 +8,8 @@
 #include <type_traits>
 #include <utility>
 
-#include "thesauros/utility/type-tag.hpp"
-#include "thesauros/utility/value-tag.hpp"
+#include "thesauros/types/type-tag.hpp"
+#include "thesauros/types/value-tag.hpp"
 
 namespace thes {
 namespace detail {

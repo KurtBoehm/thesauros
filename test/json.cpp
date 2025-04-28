@@ -8,10 +8,10 @@
 #include <unordered_map>
 #include <vector>
 
+#include "thesauros/charconv.hpp"
 #include "thesauros/io.hpp"
 #include "thesauros/macropolis.hpp"
 #include "thesauros/test.hpp"
-#include "thesauros/utility.hpp"
 
 namespace test = thes::test;
 

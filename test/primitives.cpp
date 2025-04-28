@@ -1,7 +1,7 @@
 #include <concepts>
 #include <cstdint>
 
-#include "thesauros/utility.hpp"
+#include "thesauros/types.hpp"
 
 int main() {
   using namespace thes::literals;

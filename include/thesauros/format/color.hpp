@@ -6,7 +6,7 @@
 #include <type_traits>
 
 #include "thesauros/format/fmtlib.hpp"
-#include "thesauros/utility/value-tag.hpp"
+#include "thesauros/types/value-tag.hpp"
 
 namespace thes {
 inline constexpr fmt::text_style fg_black{fmt::fg(fmt::terminal_color::black)};

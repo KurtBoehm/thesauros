@@ -8,7 +8,7 @@
 #include "thesauros/macropolis/inlining.hpp"
 #include "thesauros/static-ranges/definitions/concepts.hpp"
 #include "thesauros/static-ranges/definitions/size.hpp"
-#include "thesauros/utility/value-tag.hpp"
+#include "thesauros/types/value-tag.hpp"
 
 namespace thes::star {
 template<typename TSize, typename TInner>

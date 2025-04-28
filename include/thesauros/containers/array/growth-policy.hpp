@@ -5,7 +5,7 @@
 #include <cstddef>
 
 #include "thesauros/math/bit.hpp"
-#include "thesauros/utility/numeric-info.hpp"
+#include "thesauros/types/numeric-info.hpp"
 
 namespace thes {
 struct DoublingGrowth {

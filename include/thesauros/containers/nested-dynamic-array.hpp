@@ -11,7 +11,7 @@
 #include "thesauros/io.hpp"
 #include "thesauros/iterator/facades.hpp"
 #include "thesauros/iterator/provider-map.hpp"
-#include "thesauros/utility/type-transformations.hpp"
+#include "thesauros/types/type-transformations.hpp"
 
 namespace thes {
 template<typename TDerived, typename TValue, typename TSize, typename TAllocator,

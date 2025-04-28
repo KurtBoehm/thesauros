@@ -1,5 +1,5 @@
-#ifndef INCLUDE_THESAUROS_UTILITY_VALUE_TAG_HPP
-#define INCLUDE_THESAUROS_UTILITY_VALUE_TAG_HPP
+#ifndef INCLUDE_THESAUROS_TYPES_VALUE_TAG_HPP
+#define INCLUDE_THESAUROS_TYPES_VALUE_TAG_HPP
 
 #include <concepts>
 #include <cstddef>
@@ -68,4 +68,4 @@ requires std::same_as<typename TTag1::Value, typename TTag2::Value>
 inline constexpr bool operator==(TTag1 tag1, TTag2 tag2) = delete;
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_UTILITY_VALUE_TAG_HPP
+#endif // INCLUDE_THESAUROS_TYPES_VALUE_TAG_HPP

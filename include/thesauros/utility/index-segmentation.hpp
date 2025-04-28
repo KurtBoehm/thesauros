@@ -9,7 +9,7 @@
 #include "thesauros/math/divmod.hpp"
 #include "thesauros/math/integer-cast.hpp"
 #include "thesauros/ranges/iota.hpp"
-#include "thesauros/utility/type-transformations.hpp"
+#include "thesauros/types/type-transformations.hpp"
 
 namespace thes {
 template<typename TSize, typename TSegment>

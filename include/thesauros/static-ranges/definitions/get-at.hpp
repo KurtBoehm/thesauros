@@ -11,7 +11,7 @@
 
 #include "thesauros/concepts/type-traits.hpp"
 #include "thesauros/macropolis/inlining.hpp"
-#include "thesauros/utility/value-tag.hpp"
+#include "thesauros/types/value-tag.hpp"
 
 namespace thes::star {
 namespace impl {

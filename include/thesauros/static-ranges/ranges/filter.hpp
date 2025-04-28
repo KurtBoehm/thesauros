@@ -13,7 +13,7 @@
 #include "thesauros/static-ranges/ranges/transform.hpp"
 #include "thesauros/static-ranges/sinks/for-each.hpp"
 #include "thesauros/static-ranges/sinks/to-array.hpp"
-#include "thesauros/utility/type-tag.hpp"
+#include "thesauros/types/type-tag.hpp"
 
 namespace thes::star {
 template<typename TInner, auto tIdxRange>

@@ -1,6 +1,7 @@
 #include <array>
 
 #include "thesauros/format.hpp"
+#include "thesauros/static-ranges.hpp"
 #include "thesauros/utility.hpp"
 
 int main() {

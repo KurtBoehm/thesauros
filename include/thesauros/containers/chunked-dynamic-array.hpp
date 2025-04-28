@@ -16,7 +16,7 @@
 #include "thesauros/iterator/facades.hpp"
 #include "thesauros/iterator/provider-map.hpp"
 #include "thesauros/ranges/iota.hpp"
-#include "thesauros/utility/type-transformations.hpp"
+#include "thesauros/types/type-transformations.hpp"
 
 namespace thes {
 template<typename TValue, typename TSize>

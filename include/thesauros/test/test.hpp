@@ -10,7 +10,7 @@
 #include "thesauros/format.hpp"
 #include "thesauros/functional/no-op.hpp"
 #include "thesauros/io.hpp"
-#include "thesauros/utility/value-tag.hpp"
+#include "thesauros/types/value-tag.hpp"
 
 namespace thes::test {
 #define THES_ALWAYS_ASSERT(expr) ((expr) ? void(0) : ::thes::test::assert_fail(#expr, [] {}))

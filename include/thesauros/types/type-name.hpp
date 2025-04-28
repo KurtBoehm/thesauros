@@ -1,5 +1,5 @@
-#ifndef INCLUDE_THESAUROS_UTILITY_TYPE_NAME_HPP
-#define INCLUDE_THESAUROS_UTILITY_TYPE_NAME_HPP
+#ifndef INCLUDE_THESAUROS_TYPES_TYPE_NAME_HPP
+#define INCLUDE_THESAUROS_TYPES_TYPE_NAME_HPP
 
 #include <cstdlib>
 #include <memory>
@@ -33,4 +33,4 @@ inline std::string type_name(T&& /*value*/) {
 }
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_UTILITY_TYPE_NAME_HPP
+#endif // INCLUDE_THESAUROS_TYPES_TYPE_NAME_HPP

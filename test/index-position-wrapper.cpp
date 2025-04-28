@@ -1,6 +1,7 @@
 #include <array>
 #include <cstddef>
 
+#include "thesauros/types.hpp"
 #include "thesauros/utility.hpp"
 
 using Size = thes::u64;

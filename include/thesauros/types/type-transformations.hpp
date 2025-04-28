@@ -1,11 +1,11 @@
-#ifndef INCLUDE_THESAUROS_UTILITY_TYPE_TRANSFORMATIONS_HPP
-#define INCLUDE_THESAUROS_UTILITY_TYPE_TRANSFORMATIONS_HPP
+#ifndef INCLUDE_THESAUROS_TYPES_TYPE_TRANSFORMATIONS_HPP
+#define INCLUDE_THESAUROS_TYPES_TYPE_TRANSFORMATIONS_HPP
 
 #include <concepts>
 #include <limits>
 #include <type_traits>
 
-#include "thesauros/utility/fixed-size-integer.hpp"
+#include "thesauros/types/fixed-size-integer.hpp"
 
 namespace thes {
 template<typename TMember>
@@ -121,4 +121,4 @@ template<typename... Ts>
 using Intersection = IntersectionTrait<Ts...>::Type;
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_UTILITY_TYPE_TRANSFORMATIONS_HPP
+#endif // INCLUDE_THESAUROS_TYPES_TYPE_TRANSFORMATIONS_HPP

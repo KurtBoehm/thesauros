@@ -6,7 +6,7 @@
 
 #include "thesauros/macropolis/inlining.hpp"
 #include "thesauros/math/arithmetic.hpp"
-#include "thesauros/utility/value-tag.hpp"
+#include "thesauros/types/value-tag.hpp"
 
 namespace thes::star {
 template<std::unsigned_integral TSize, TSize tBegin, TSize tEnd, TSize tStep>

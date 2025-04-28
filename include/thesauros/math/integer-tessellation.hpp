@@ -7,7 +7,7 @@
 #include <limits>
 
 #include "thesauros/static-ranges.hpp"
-#include "thesauros/utility/value-tag.hpp"
+#include "thesauros/types/value-tag.hpp"
 
 namespace thes {
 template<std::size_t tDimNum, std::unsigned_integral TInt>

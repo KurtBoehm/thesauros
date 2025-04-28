@@ -8,7 +8,7 @@
 #include "thesauros/algorithms/static-ranges/position-to-index.hpp"
 #include "thesauros/math/divmod.hpp"
 #include "thesauros/static-ranges.hpp"
-#include "thesauros/utility/value-tag.hpp"
+#include "thesauros/types/value-tag.hpp"
 
 namespace thes {
 template<typename TIndex, std::size_t tDimNum>

@@ -4,7 +4,7 @@
 #include <atomic>
 #include <cstddef>
 
-#include "thesauros/utility/fixed-size-integer.hpp"
+#include "thesauros/types/fixed-size-integer.hpp"
 
 namespace thes {
 template<std::size_t tChunkSize>

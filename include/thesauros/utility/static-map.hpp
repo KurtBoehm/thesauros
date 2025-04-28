@@ -6,9 +6,9 @@
 #include <utility>
 
 #include "thesauros/static-ranges.hpp"
+#include "thesauros/types/value-tag.hpp"
 #include "thesauros/utility/static-string/static-string.hpp"
 #include "thesauros/utility/tuple.hpp"
-#include "thesauros/utility/value-tag.hpp"
 
 namespace thes {
 template<auto tKey, typename TValue>

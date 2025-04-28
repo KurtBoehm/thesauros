@@ -1,5 +1,5 @@
-#ifndef INCLUDE_THESAUROS_UTILITY_PRIMITIVES_HPP
-#define INCLUDE_THESAUROS_UTILITY_PRIMITIVES_HPP
+#ifndef INCLUDE_THESAUROS_TYPES_PRIMITIVES_HPP
+#define INCLUDE_THESAUROS_TYPES_PRIMITIVES_HPP
 
 #include <cstdint>
 #include <limits>
@@ -28,4 +28,4 @@ using f64 = double;
 static_assert(std::numeric_limits<f64>::is_iec559 && sizeof(f64) == 8);
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_UTILITY_PRIMITIVES_HPP
+#endif // INCLUDE_THESAUROS_TYPES_PRIMITIVES_HPP

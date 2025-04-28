@@ -3,7 +3,7 @@
 
 #include "thesauros/math.hpp"
 #include "thesauros/test.hpp"
-#include "thesauros/utility.hpp"
+#include "thesauros/types.hpp"
 
 static_assert(thes::add_max<unsigned char>(1, 4, 3) == 3);
 static_assert(thes::add_max<unsigned char>(1, 2, 4) == 3);

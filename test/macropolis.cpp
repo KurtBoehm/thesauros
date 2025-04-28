@@ -6,6 +6,8 @@
 
 #include "thesauros/format.hpp"
 #include "thesauros/macropolis.hpp"
+#include "thesauros/static-ranges.hpp"
+#include "thesauros/types.hpp"
 #include "thesauros/utility.hpp"
 
 using namespace thes::literals;

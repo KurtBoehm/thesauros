@@ -1,5 +1,5 @@
-#ifndef INCLUDE_THESAUROS_UTILITY_TYPE_TAG_HPP
-#define INCLUDE_THESAUROS_UTILITY_TYPE_TAG_HPP
+#ifndef INCLUDE_THESAUROS_TYPES_TYPE_TAG_HPP
+#define INCLUDE_THESAUROS_TYPES_TYPE_TAG_HPP
 
 #include <type_traits>
 #include <utility>
@@ -28,4 +28,4 @@ template<typename T>
 concept AnyTypeTag = IsTypeTagTrait<T>::value;
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_UTILITY_TYPE_TAG_HPP
+#endif // INCLUDE_THESAUROS_TYPES_TYPE_TAG_HPP
