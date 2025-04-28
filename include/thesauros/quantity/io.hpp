@@ -6,7 +6,7 @@
 #include <utility>
 
 #include "thesauros/quantity/quantity.hpp"
-#include "thesauros/utility/static-string/static-string.hpp"
+#include "thesauros/string/static-string.hpp"
 
 namespace thes {
 template<typename T>

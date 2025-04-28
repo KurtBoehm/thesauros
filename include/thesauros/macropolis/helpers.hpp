@@ -3,7 +3,7 @@
 
 #include "boost/preprocessor.hpp"
 
-#include "thesauros/utility/static-string/static-string.hpp"
+#include "thesauros/string/static-string.hpp"
 
 namespace thes {
 #define THES_POLIS_STR(STR) \

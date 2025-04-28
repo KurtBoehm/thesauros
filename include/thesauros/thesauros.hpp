@@ -19,6 +19,7 @@
 #include "ranges.hpp"
 #include "resources.hpp"
 #include "static-ranges.hpp"
+#include "string.hpp"
 #include "test.hpp"
 #include "types.hpp"
 #include "utility.hpp"

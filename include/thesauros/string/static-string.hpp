@@ -1,5 +1,5 @@
-#ifndef INCLUDE_THESAUROS_UTILITY_STATIC_STRING_STATIC_STRING_HPP
-#define INCLUDE_THESAUROS_UTILITY_STATIC_STRING_STATIC_STRING_HPP
+#ifndef INCLUDE_THESAUROS_STRING_STATIC_STRING_HPP
+#define INCLUDE_THESAUROS_STRING_STATIC_STRING_HPP
 
 #include <array>
 #include <cassert>
@@ -11,8 +11,8 @@
 #include <utility>
 
 #include "thesauros/static-ranges.hpp"
+#include "thesauros/string/character-tools.hpp"
 #include "thesauros/types/value-tag.hpp"
-#include "thesauros/utility/static-string/character-tools.hpp"
 
 namespace thes {
 template<std::size_t tSize>
@@ -164,4 +164,4 @@ inline constexpr auto to_snake_case() {
 }
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_UTILITY_STATIC_STRING_STATIC_STRING_HPP
+#endif // INCLUDE_THESAUROS_STRING_STATIC_STRING_HPP

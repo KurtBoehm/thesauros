@@ -12,7 +12,7 @@
 #include "thesauros/charconv/unicode.hpp"
 #include "thesauros/concepts/type-traits.hpp"
 #include "thesauros/math/safe-integer.hpp"
-#include "thesauros/utility/static-capacity-string.hpp"
+#include "thesauros/string/static-capacity-string.hpp"
 
 namespace thes {
 inline auto escape_string(std::string_view in, auto out_it) {

@@ -7,7 +7,7 @@
 
 #include "thesauros/static-ranges/definitions/get-at.hpp"
 #include "thesauros/static-ranges/definitions/size.hpp"
-#include "thesauros/utility/type-sequence/type-sequence.hpp"
+#include "thesauros/types/type-sequence/type-sequence.hpp"
 
 namespace thes::star {
 template<std::size_t tIdx, typename TRange>

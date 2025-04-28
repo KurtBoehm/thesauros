@@ -3,9 +3,9 @@
 
 #include <concepts>
 
+#include "thesauros/string/static-string.hpp"
 #include "thesauros/types/value-tag.hpp"
 #include "thesauros/utility/static-map.hpp"
-#include "thesauros/utility/static-string/static-string.hpp"
 
 namespace thes {
 template<std::floating_point T, typename... TArgs>

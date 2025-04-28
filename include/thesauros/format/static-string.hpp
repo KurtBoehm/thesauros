@@ -5,7 +5,7 @@
 #include <string_view>
 
 #include "thesauros/format/fmtlib.hpp"
-#include "thesauros/utility/static-string.hpp"
+#include "thesauros/string/static-string.hpp"
 
 template<std::size_t tSize>
 struct fmt::formatter<thes::StaticString<tSize>> : fmt::nested_formatter<std::string_view> {

@@ -12,10 +12,10 @@
 #include "thesauros/ranges.hpp"
 #include "thesauros/static-ranges/definitions/size.hpp"
 #include "thesauros/static-ranges/definitions/type-traits.hpp"
+#include "thesauros/types/type-sequence.hpp"
 #include "thesauros/types/type-tag.hpp"
 #include "thesauros/types/value-tag.hpp"
 #include "thesauros/utility/tuple.hpp"
-#include "thesauros/utility/type-sequence.hpp"
 
 namespace thes {
 enum struct IterDirection : bool { FORWARD, BACKWARD };

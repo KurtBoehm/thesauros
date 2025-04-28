@@ -5,7 +5,7 @@
 #include <string_view>
 
 #include "thesauros/format/fmtlib.hpp"
-#include "thesauros/utility/static-capacity-string.hpp"
+#include "thesauros/string/static-capacity-string.hpp"
 
 template<std::size_t tCapacity>
 struct fmt::formatter<thes::StaticCapacityString<tCapacity>>

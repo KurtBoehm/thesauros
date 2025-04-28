@@ -6,8 +6,8 @@
 #include <utility>
 
 #include "thesauros/static-ranges.hpp"
+#include "thesauros/string/static-string.hpp"
 #include "thesauros/types/value-tag.hpp"
-#include "thesauros/utility/static-string/static-string.hpp"
 #include "thesauros/utility/tuple.hpp"
 
 namespace thes {

@@ -38,11 +38,13 @@ These sub-libraries are, together with some highlights from each:
 - `random`: A flexible implementation of a Linear Congruential Generator and a class that shuffles the integer values of a given range on the fly.
 - `ranges`: Ranges emulating Python’s `enumerate`, `range`, `reversed`, and `zip`. This part becomes increasingly redundant with C++23.
 - `static-ranges`: Static ranges which generalize `std::pair` and `std::tuple` with support for operations similar to C++20 ranges (including support for piping) and related operations.
+- `string`: Compile-time strings, strings backed by `std::array`, and some character tools.
 - `test`: Some assertion utilities as well as functions to check whether two containers or strings are equal with human-readable reports.
 - `types`:
   - Fixed-size integers and floating-point numbers with Rust-style names, including `f16` and `i128`/`u128`, literals for these types, as well as helpers to get an integer type with a desired number of bytes.
   - Type and value tags to ease the use of template (member) functions.
   - Querying the (demangled) name of a type.
+  - A type sequence type, with tools to work with them.
   - Type traits for the union/intersection of integer types.
 
 While most components of Thesauros are written in standard C++20, some rely on Linux-specific functionality (especially in `execution` and `memory`) or GCC extensions (e.g. `THES_ALWAYS_INLINE`).

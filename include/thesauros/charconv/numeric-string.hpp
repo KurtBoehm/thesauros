@@ -12,7 +12,7 @@
 
 #include "thesauros/math/arithmetic.hpp"
 #include "thesauros/math/integer-cast.hpp"
-#include "thesauros/utility/static-capacity-string.hpp"
+#include "thesauros/string/static-capacity-string.hpp"
 
 namespace thes {
 template<typename T>

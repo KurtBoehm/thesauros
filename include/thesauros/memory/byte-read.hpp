@@ -1,5 +1,5 @@
-#ifndef INCLUDE_THESAUROS_UTILITY_BYTE_READ_HPP
-#define INCLUDE_THESAUROS_UTILITY_BYTE_READ_HPP
+#ifndef INCLUDE_THESAUROS_MEMORY_BYTE_READ_HPP
+#define INCLUDE_THESAUROS_MEMORY_BYTE_READ_HPP
 
 #include <cstddef>
 #include <cstring>
@@ -15,4 +15,4 @@ inline T byte_read(std::byte* ptr) {
 }
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_UTILITY_BYTE_READ_HPP
+#endif // INCLUDE_THESAUROS_MEMORY_BYTE_READ_HPP

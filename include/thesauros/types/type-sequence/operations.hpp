@@ -1,12 +1,12 @@
-#ifndef INCLUDE_THESAUROS_UTILITY_TYPE_SEQUENCE_OPERATIONS_HPP
-#define INCLUDE_THESAUROS_UTILITY_TYPE_SEQUENCE_OPERATIONS_HPP
+#ifndef INCLUDE_THESAUROS_TYPES_TYPE_SEQUENCE_OPERATIONS_HPP
+#define INCLUDE_THESAUROS_TYPES_TYPE_SEQUENCE_OPERATIONS_HPP
 
 #include <cstddef>
 #include <type_traits>
 
 #include "thesauros/static-ranges.hpp"
+#include "thesauros/types/type-sequence/type-sequence.hpp"
 #include "thesauros/utility/tuple.hpp"
-#include "thesauros/utility/type-sequence/type-sequence.hpp"
 
 namespace thes {
 // join
@@ -176,4 +176,4 @@ template<typename TTup>
 using TupleTypeSeq = TupleTypeSeqTrait<TTup>::Type;
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_UTILITY_TYPE_SEQUENCE_OPERATIONS_HPP
+#endif // INCLUDE_THESAUROS_TYPES_TYPE_SEQUENCE_OPERATIONS_HPP

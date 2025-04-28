@@ -8,7 +8,7 @@
 #include <utility>
 #include <variant>
 
-#include "thesauros/utility/type-sequence.hpp"
+#include "thesauros/types/type-sequence.hpp"
 #include "thesauros/utility/unwrap.hpp"
 
 namespace thes {

@@ -2,7 +2,7 @@
 #include <type_traits>
 
 #include "thesauros/utility.hpp"
-#include "thesauros/utility/type-sequence/operations.hpp"
+#include "thesauros/types/type-sequence/operations.hpp"
 
 template<typename T>
 struct Filter : public std::is_integral<T> {};

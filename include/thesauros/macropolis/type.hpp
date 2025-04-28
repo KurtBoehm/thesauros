@@ -7,9 +7,9 @@
 #include <utility>
 
 #include "thesauros/concepts/type-traits.hpp"
+#include "thesauros/string/static-string.hpp"
 #include "thesauros/types/primitives.hpp"
 #include "thesauros/types/type-transformations.hpp"
-#include "thesauros/utility/static-string/static-string.hpp"
 #include "thesauros/utility/tuple.hpp"
 
 namespace thes {

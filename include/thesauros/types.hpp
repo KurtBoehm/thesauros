@@ -7,6 +7,7 @@
 #include "types/numeric-info.hpp"
 #include "types/primitives.hpp"
 #include "types/type-name.hpp"
+#include "types/type-sequence.hpp"
 #include "types/type-tag.hpp"
 #include "types/type-transformations.hpp"
 #include "types/value-tag.hpp"
