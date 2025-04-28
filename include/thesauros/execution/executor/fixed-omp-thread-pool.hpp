@@ -24,9 +24,9 @@ struct FixedOpenMpThreadPool {
   explicit FixedOpenMpThreadPool(std::size_t size, TCpuSets cpu_sets = {}) : thread_num_(size) {
     if constexpr (!std::same_as<TCpuSets, Empty>) {
       if (size > cpu_sets.size()) {
-        throw std::invalid_argument{::fmt::format("{} threads have been requested, "
-                                                  "but there are only {} entries in the CPU set!",
-                                                  size, cpu_sets.size())};
+        throw std::invalid_argument{fmt::format("{} threads have been requested, "
+                                                "but there are only {} entries in the CPU set!",
+                                                size, cpu_sets.size())};
       }
       auto rng = std::views::common(std::move(cpu_sets));
       cpu_sets_.emplace(rng.begin(), rng.end());

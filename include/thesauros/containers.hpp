@@ -8,7 +8,6 @@
 #include "containers/dynamic-buffer.hpp"
 #include "containers/flat-map.hpp"
 #include "containers/flat-set.hpp"
-#include "containers/index-marker.hpp"
 #include "containers/multi-bit-integers.hpp"
 #include "containers/multi-byte-integers.hpp"
 #include "containers/nested-dynamic-array.hpp"

@@ -47,7 +47,7 @@ struct CpuInfo {
   std::size_t id;
 
   [[nodiscard]] auto sys_folder() const {
-    return std::filesystem::path{cpu_path_cstr} / ::fmt::format("cpu{}", id) / "topology";
+    return std::filesystem::path{cpu_path_cstr} / fmt::format("cpu{}", id) / "topology";
   }
 
   [[nodiscard]] auto core_cpus() const {
