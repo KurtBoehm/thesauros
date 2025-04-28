@@ -10,7 +10,7 @@
 #include "thesauros/utility/primitives.hpp"
 
 // The implementation is inspired by https://arxiv.org/abs/1902.01961
-// and its implementation on https://github.com/lemire/fastmod.
+// and its implementation in https://github.com/lemire/fastmod.
 
 namespace thes {
 namespace detail {

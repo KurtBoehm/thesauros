@@ -85,12 +85,12 @@ inline consteval unsigned abs_log_ceil(T base, T num) {
   return out + 1;
 }
 
-template<std::unsigned_integral T, typename TIdx>
-inline constexpr T set_bit(T value, TIdx bit_index, bool bit_value) {
+template<std::unsigned_integral T>
+inline constexpr T set_bit(T value, auto bit_index, bool bit_value) {
   return static_cast<T>((value & T(~(T{1} << bit_index))) + (T{bit_value} << bit_index));
 }
-template<std::unsigned_integral T, typename TIdx>
-inline constexpr bool get_bit(T value, TIdx bit_index) {
+template<std::unsigned_integral T>
+inline constexpr bool get_bit(T value, auto bit_index) {
   return value & T(T{1} << bit_index);
 }
 template<std::unsigned_integral T, typename... TArgs>
@@ -104,7 +104,7 @@ inline constexpr T combine_bits(TArgs... bits) {
 }
 
 // Computes floor(x^(1/n)) precisely. The complexity is Θ(log2(x)/n).
-template<auto tExponent, typename T>
+template<auto tExponent, std::unsigned_integral T>
 THES_ALWAYS_INLINE inline constexpr T int_root(T x) {
   if (x < 2) {
     return x;

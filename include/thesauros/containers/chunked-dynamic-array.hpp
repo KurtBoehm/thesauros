@@ -1,5 +1,5 @@
-#ifndef INCLUDE_THESAUROS_CONTAINERS_BLOCKED_DYNAMIC_ARRAY_HPP
-#define INCLUDE_THESAUROS_CONTAINERS_BLOCKED_DYNAMIC_ARRAY_HPP
+#ifndef INCLUDE_THESAUROS_CONTAINERS_CHUNKED_DYNAMIC_ARRAY_HPP
+#define INCLUDE_THESAUROS_CONTAINERS_CHUNKED_DYNAMIC_ARRAY_HPP
 
 #include <algorithm>
 #include <cassert>
@@ -91,7 +91,7 @@ private:
 
 template<typename TValue, typename TSize, typename TAllocator, typename TSizeAllocator,
          typename TGrowthPolicy>
-struct BlockedDynamicArrayBase {
+struct ChunkedDynamicArrayBase {
   using Value = TValue;
   using Size = TSize;
   using Allocator = TAllocator;
@@ -105,19 +105,19 @@ struct BlockedDynamicArrayBase {
 
   using GrowthPolicy = TGrowthPolicy;
 
-  explicit BlockedDynamicArrayBase(Size block_size) : block_size_(block_size) {}
-  BlockedDynamicArrayBase(Size block_size, Allocator&& allocator, SizeAllocator&& size_allocator)
+  explicit ChunkedDynamicArrayBase(Size block_size) : block_size_(block_size) {}
+  ChunkedDynamicArrayBase(Size block_size, Allocator&& allocator, SizeAllocator&& size_allocator)
       : sizes_(std::forward<Allocator>(allocator)),
         elements_(std::forward<SizeAllocator>(size_allocator)), block_size_(block_size) {}
-  BlockedDynamicArrayBase(Size block_size, const Allocator& allocator,
+  ChunkedDynamicArrayBase(Size block_size, const Allocator& allocator,
                           const SizeAllocator& size_allocator)
       : sizes_(allocator), elements_(size_allocator), block_size_(block_size) {}
 
-  BlockedDynamicArrayBase(BlockedDynamicArrayBase&&) noexcept = default;
-  BlockedDynamicArrayBase(const BlockedDynamicArrayBase&) = delete;
-  BlockedDynamicArrayBase& operator=(BlockedDynamicArrayBase&&) = delete;
-  BlockedDynamicArrayBase& operator=(const BlockedDynamicArrayBase&) = delete;
-  ~BlockedDynamicArrayBase() = default;
+  ChunkedDynamicArrayBase(ChunkedDynamicArrayBase&&) noexcept = default;
+  ChunkedDynamicArrayBase(const ChunkedDynamicArrayBase&) = delete;
+  ChunkedDynamicArrayBase& operator=(ChunkedDynamicArrayBase&&) = delete;
+  ChunkedDynamicArrayBase& operator=(const ChunkedDynamicArrayBase&) = delete;
+  ~ChunkedDynamicArrayBase() = default;
 
   using Block = MutableBlock<TValue, TSize>;
   using ConstBlock = std::span<const Value>;
@@ -280,8 +280,8 @@ private:
 };
 
 template<typename T>
-using BlockedDynamicArray = BlockedDynamicArrayBase<T, std::size_t, std::allocator<T>,
+using ChunkedDynamicArray = ChunkedDynamicArrayBase<T, std::size_t, std::allocator<T>,
                                                     std::allocator<std::size_t>, DoublingGrowth>;
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_CONTAINERS_BLOCKED_DYNAMIC_ARRAY_HPP
+#endif // INCLUDE_THESAUROS_CONTAINERS_CHUNKED_DYNAMIC_ARRAY_HPP

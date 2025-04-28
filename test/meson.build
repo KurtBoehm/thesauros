@@ -4,7 +4,7 @@ args = options_sub.get_variable('all_args')
 
 foreach name, deps : {
   'arrays': [],
-  'blocked-dynamic-array': [],
+  'chunked-dynamic-array': [],
   'concepts': [],
   'divisor': [],
   'dynamic-bitset': [],

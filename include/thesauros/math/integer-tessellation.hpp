@@ -11,8 +11,6 @@
 
 namespace thes {
 template<std::size_t tDimNum, std::unsigned_integral TInt>
-// inline constexpr std::size_t tDimNum = 3;
-// using TInt = unsigned;
 inline std::array<TInt, tDimNum> box_tesselate(TInt tile_num, std::array<TInt, tDimNum> box_dims) {
   using Cost = double;
   struct Sol {

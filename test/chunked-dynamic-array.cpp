@@ -39,7 +39,7 @@ struct fmt::formatter<S> : fmt::nested_formatter<int> {
 };
 
 inline void test2() {
-  thes::BlockedDynamicArray<int> arr(8);
+  thes::ChunkedDynamicArray<int> arr(8);
   arr.add_blocks(4);
   arr[0].emplace_back(2);
   arr[0].emplace_back(5);
@@ -49,12 +49,12 @@ inline void test2() {
                              std::array<std::size_t, 4>{2, 0, 0, 1}));
 }
 
-using Blocked = thes::BlockedDynamicArray<S>;
+using Chunked = thes::ChunkedDynamicArray<S>;
 using Nested = thes::NestedDynamicArray<S, std::size_t>;
 using NestedBuilder = Nested::NestedBuilder;
 
 int main() {
-  Blocked vec(8);
+  Chunked vec(8);
   THES_ASSERT(vec.block_num() == 0 && vec.value_num() == 0);
 
   vec.push_block();

@@ -4,7 +4,7 @@
 // IWYU pragma: begin_exports
 #include "containers/array.hpp"
 #include "containers/bitset.hpp"
-#include "containers/blocked-dynamic-array.hpp"
+#include "containers/chunked-dynamic-array.hpp"
 #include "containers/dynamic-buffer.hpp"
 #include "containers/flat-map.hpp"
 #include "containers/flat-set.hpp"
