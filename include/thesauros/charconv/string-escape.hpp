@@ -1,5 +1,5 @@
-#ifndef INCLUDE_THESAUROS_UTILITY_STRING_ESCAPE_HPP
-#define INCLUDE_THESAUROS_UTILITY_STRING_ESCAPE_HPP
+#ifndef INCLUDE_THESAUROS_CHARCONV_STRING_ESCAPE_HPP
+#define INCLUDE_THESAUROS_CHARCONV_STRING_ESCAPE_HPP
 
 #include <bit>
 #include <cstddef>
@@ -9,10 +9,10 @@
 #include <string_view>
 #include <utility>
 
+#include "thesauros/charconv/unicode.hpp"
 #include "thesauros/concepts/type-traits.hpp"
 #include "thesauros/math/safe-integer.hpp"
 #include "thesauros/utility/static-capacity-string.hpp"
-#include "thesauros/utility/unicode.hpp"
 
 namespace thes {
 inline auto escape_string(std::string_view in, auto out_it) {
@@ -116,4 +116,4 @@ static constexpr auto escaped_string(T&& value) {
 }
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_UTILITY_STRING_ESCAPE_HPP
+#endif // INCLUDE_THESAUROS_CHARCONV_STRING_ESCAPE_HPP

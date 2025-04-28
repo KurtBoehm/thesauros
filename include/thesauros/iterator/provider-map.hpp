@@ -6,7 +6,7 @@
 #include <utility>
 
 #include "thesauros/iterator/concepts.hpp"
-#include "thesauros/utility/integer-cast.hpp"
+#include "thesauros/math/integer-cast.hpp"
 #include "thesauros/utility/integral-value.hpp"
 
 namespace thes::iter_provider {

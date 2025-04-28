@@ -6,11 +6,13 @@
 
 #include "thesauros/format.hpp"
 #include "thesauros/quantity.hpp"
-#include "thesauros/utility.hpp"
+#include "thesauros/resources.hpp"
 
+namespace {
 auto convert_time(thes::Quantity<long, thes::unit::microsecond> q) {
   return quantity_cast<thes::Quantity<double, thes::unit::second>>(q);
 }
+} // namespace
 
 int main() {
   using Clock = std::chrono::steady_clock;
@@ -23,7 +25,7 @@ int main() {
 
   std::vector<double> data(1U << 26U, 1);
   for (std::size_t i = 0; i < 1; ++i) {
-    std::generate(data.begin(), data.end(), std::rand);
+    std::ranges::generate(data, std::rand);
   }
 
   thes::ResourceUsage usage{};

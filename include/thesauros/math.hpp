@@ -9,6 +9,7 @@
 #include "math/fast.hpp"
 #include "math/finite.hpp"
 #include "math/float-fraction.hpp"
+#include "math/integer-cast.hpp"
 #include "math/integer-tessellation.hpp"
 #include "math/is-close.hpp"
 #include "math/overflow.hpp"

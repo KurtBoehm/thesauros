@@ -1,5 +1,5 @@
-#ifndef INCLUDE_THESAUROS_UTILITY_PARSE_INTEGER_HPP
-#define INCLUDE_THESAUROS_UTILITY_PARSE_INTEGER_HPP
+#ifndef INCLUDE_THESAUROS_CHARCONV_PARSE_INTEGER_HPP
+#define INCLUDE_THESAUROS_CHARCONV_PARSE_INTEGER_HPP
 
 #include <cstddef>
 #include <limits>
@@ -106,4 +106,4 @@ constexpr std::optional<T> parse_integer(std::string_view src, TParseMode parse_
 }
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_UTILITY_PARSE_INTEGER_HPP
+#endif // INCLUDE_THESAUROS_CHARCONV_PARSE_INTEGER_HPP

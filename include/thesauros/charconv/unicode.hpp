@@ -1,5 +1,5 @@
-#ifndef INCLUDE_THESAUROS_UTILITY_UNICODE_HPP
-#define INCLUDE_THESAUROS_UTILITY_UNICODE_HPP
+#ifndef INCLUDE_THESAUROS_CHARCONV_UNICODE_HPP
+#define INCLUDE_THESAUROS_CHARCONV_UNICODE_HPP
 
 #include <array>
 #include <bit>
@@ -19,6 +19,7 @@ struct UnicodeDecoder {
 
   // Copyright (c) 2008-2010 Bjoern Hoehrmann <bjoern@hoehrmann.de>
   // See http://bjoern.hoehrmann.de/utf-8/decoder/dfa/ for details.
+  // Originally licenced under the MIT licence.
   // Modified to be more C++
   std::pair<CodePoint, State> decode(const std::uint8_t byte) noexcept {
     // Map a character to its character class.
@@ -139,4 +140,4 @@ template<typename TStr>
 UnicodeStringView(TStr&&) -> UnicodeStringView<TStr>;
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_UTILITY_UNICODE_HPP
+#endif // INCLUDE_THESAUROS_CHARCONV_UNICODE_HPP

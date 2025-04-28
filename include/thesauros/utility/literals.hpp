@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <type_traits>
 
-#include "thesauros/utility/parse-integer.hpp"
+#include "thesauros/charconv/parse-integer.hpp"
 #include "thesauros/utility/primitives.hpp"
 #include "thesauros/utility/value-tag.hpp"
 

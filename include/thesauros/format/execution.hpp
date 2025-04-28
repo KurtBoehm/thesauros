@@ -3,9 +3,9 @@
 
 #include <cstddef>
 
-#include "thesauros/execution/system/cpu-info.hpp"
 #include "thesauros/format/fmtlib.hpp"
 #include "thesauros/format/formatter.hpp"
+#include "thesauros/resources/cpu-info.hpp"
 
 template<>
 struct fmt::formatter<thes::CpuInfo> : public thes::NestedFormatter<std::size_t> {

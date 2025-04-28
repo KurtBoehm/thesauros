@@ -10,6 +10,8 @@
 #include <type_traits>
 #include <utility>
 
+#include "thesauros/charconv/numeric-string.hpp"
+#include "thesauros/charconv/string-escape.hpp"
 #include "thesauros/concepts/type-traits.hpp"
 #include "thesauros/io/delimiter.hpp"
 #include "thesauros/macropolis/enum.hpp"
@@ -17,8 +19,6 @@
 #include "thesauros/macropolis/type.hpp"
 #include "thesauros/ranges/concepts.hpp"
 #include "thesauros/static-ranges.hpp"
-#include "thesauros/utility/numeric-string.hpp"
-#include "thesauros/utility/string-escape.hpp"
 
 namespace thes {
 struct Indentation {

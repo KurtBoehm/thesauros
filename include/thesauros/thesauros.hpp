@@ -3,6 +3,7 @@
 
 // IWYU pragma: begin_exports
 #include "algorithms.hpp"
+#include "charconv.hpp"
 #include "concepts.hpp"
 #include "containers.hpp"
 #include "execution.hpp"
@@ -16,6 +17,7 @@
 #include "quantity.hpp"
 #include "random.hpp"
 #include "ranges.hpp"
+#include "resources.hpp"
 #include "static-ranges.hpp"
 #include "test.hpp"
 #include "utility.hpp"

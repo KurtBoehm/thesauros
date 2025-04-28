@@ -1,5 +1,5 @@
-#ifndef INCLUDE_THESAUROS_UTILITY_STRING_CONVERT_HPP
-#define INCLUDE_THESAUROS_UTILITY_STRING_CONVERT_HPP
+#ifndef INCLUDE_THESAUROS_CHARCONV_STRING_CONVERT_HPP
+#define INCLUDE_THESAUROS_CHARCONV_STRING_CONVERT_HPP
 
 #include <charconv>
 #include <concepts>
@@ -19,4 +19,4 @@ inline std::optional<T> string_to_integral(std::string_view sv) {
 }
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_UTILITY_STRING_CONVERT_HPP
+#endif // INCLUDE_THESAUROS_CHARCONV_STRING_CONVERT_HPP

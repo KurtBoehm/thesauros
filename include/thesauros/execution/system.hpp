@@ -3,7 +3,6 @@
 
 // IWYU pragma: begin_exports
 #include "system/affinity.hpp"
-#include "system/cpu-info.hpp"
 #include "system/scheduler.hpp"
 // IWYU pragma: end_exports
 

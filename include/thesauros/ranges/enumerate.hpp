@@ -6,7 +6,7 @@
 
 #include "thesauros/iterator/facades.hpp"
 #include "thesauros/iterator/provider-map.hpp"
-#include "thesauros/utility/integer-cast.hpp"
+#include "thesauros/math/integer-cast.hpp"
 
 namespace thes {
 template<typename TSize, typename TIter>

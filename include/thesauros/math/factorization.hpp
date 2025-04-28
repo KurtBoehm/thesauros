@@ -10,7 +10,7 @@
 #include "ankerl/unordered_dense.h"
 
 #include "thesauros/containers/array/dynamic.hpp"
-#include "thesauros/utility/integer-cast.hpp"
+#include "thesauros/math/integer-cast.hpp"
 
 namespace thes {
 namespace factorize_detail {

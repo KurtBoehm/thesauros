@@ -1,5 +1,5 @@
-#ifndef INCLUDE_THESAUROS_EXECUTION_SYSTEM_CPU_INFO_HPP
-#define INCLUDE_THESAUROS_EXECUTION_SYSTEM_CPU_INFO_HPP
+#ifndef INCLUDE_THESAUROS_RESOURCES_CPU_INFO_HPP
+#define INCLUDE_THESAUROS_RESOURCES_CPU_INFO_HPP
 
 #include <algorithm>
 #include <cassert>
@@ -10,12 +10,12 @@
 #include <utility>
 #include <vector>
 
+#include "thesauros/charconv/string-convert.hpp"
 #include "thesauros/containers/array.hpp"
 #include "thesauros/format/fmtlib.hpp"
 #include "thesauros/io/file-reader.hpp"
 #include "thesauros/ranges/iota.hpp"
 #include "thesauros/utility/index-segmentation.hpp"
-#include "thesauros/utility/string-convert.hpp"
 
 namespace thes {
 template<typename TChars>
@@ -75,4 +75,4 @@ struct CpuInfo {
 };
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_EXECUTION_SYSTEM_CPU_INFO_HPP
+#endif // INCLUDE_THESAUROS_RESOURCES_CPU_INFO_HPP

@@ -11,8 +11,8 @@
 
 #include "thesauros/algorithms/static-ranges.hpp"
 #include "thesauros/math.hpp"
+#include "thesauros/math/integer-cast.hpp"
 #include "thesauros/static-ranges.hpp"
-#include "thesauros/utility/integer-cast.hpp"
 
 namespace thes {
 namespace detail {

@@ -1,5 +1,5 @@
-#ifndef INCLUDE_THESAUROS_UTILITY_NUMERIC_STRING_HPP
-#define INCLUDE_THESAUROS_UTILITY_NUMERIC_STRING_HPP
+#ifndef INCLUDE_THESAUROS_CHARCONV_NUMERIC_STRING_HPP
+#define INCLUDE_THESAUROS_CHARCONV_NUMERIC_STRING_HPP
 
 #include <algorithm>
 #include <charconv>
@@ -11,7 +11,7 @@
 #include "tl/expected.hpp"
 
 #include "thesauros/math/arithmetic.hpp"
-#include "thesauros/utility/integer-cast.hpp"
+#include "thesauros/math/integer-cast.hpp"
 #include "thesauros/utility/static-capacity-string.hpp"
 
 namespace thes {
@@ -61,4 +61,4 @@ numeric_string(const T& value) {
 }
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_UTILITY_NUMERIC_STRING_HPP
+#endif // INCLUDE_THESAUROS_CHARCONV_NUMERIC_STRING_HPP

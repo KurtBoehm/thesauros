@@ -1,9 +1,9 @@
 #ifndef INCLUDE_THESAUROS_FORMAT_STRING_ESCAPE_HPP
 #define INCLUDE_THESAUROS_FORMAT_STRING_ESCAPE_HPP
 
+#include "thesauros/charconv/string-escape.hpp"
 #include "thesauros/format/fmtlib.hpp"
 #include "thesauros/format/formatter.hpp"
-#include "thesauros/utility/string-escape.hpp"
 
 template<typename T>
 struct fmt::formatter<thes::EscapedPrinter<T>> : public thes::SimpleFormatter<> {
