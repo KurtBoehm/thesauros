@@ -1,7 +1,7 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_INTEGRAL_VALUE_HPP
 #define INCLUDE_THESAUROS_UTILITY_INTEGRAL_VALUE_HPP
 
-#include "thesauros/utility/inlining.hpp"
+#include "thesauros/macropolis/inlining.hpp"
 #include "thesauros/utility/value-tag.hpp"
 
 namespace thes {

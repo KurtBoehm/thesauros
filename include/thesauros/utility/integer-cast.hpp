@@ -4,8 +4,8 @@
 #include <concepts>
 #include <limits>
 
+#include "thesauros/macropolis/inlining.hpp"
 #include "thesauros/utility/info-result.hpp"
-#include "thesauros/utility/inlining.hpp"
 
 namespace thes {
 enum struct CastInfo { OKAY, TOO_SMALL, TOO_LARGE };

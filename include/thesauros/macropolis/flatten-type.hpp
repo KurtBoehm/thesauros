@@ -9,8 +9,8 @@
 
 #include "boost/preprocessor.hpp"
 
-#include "thesauros/utility/fancy-visit.hpp"
 #include "thesauros/static-ranges/definitions.hpp"
+#include "thesauros/utility/fancy-visit.hpp"
 
 namespace thes {
 namespace impl {
@@ -19,7 +19,7 @@ inline constexpr bool member_ptrs_eq(const T1& /*value1*/, const T2& /*value2*/)
   return false;
 }
 template<typename TClass, typename TMember>
-inline constexpr bool member_ptrs_eq(TMember TClass::*ptr1, TMember TClass::*ptr2) {
+inline constexpr bool member_ptrs_eq(TMember TClass::* ptr1, TMember TClass::* ptr2) {
   return ptr1 == ptr2;
 }
 

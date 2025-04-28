@@ -6,7 +6,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "thesauros/utility/inlining.hpp"
+#include "thesauros/macropolis/inlining.hpp"
 
 namespace thes::star {
 namespace generate_impl {

@@ -9,7 +9,7 @@
 #include <limits>
 #include <utility>
 
-#include "thesauros/utility/inlining.hpp"
+#include "thesauros/macropolis/inlining.hpp"
 
 namespace thes {
 template<std::unsigned_integral T>

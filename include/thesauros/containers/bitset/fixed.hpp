@@ -14,11 +14,11 @@
 #include "thesauros/math/arithmetic.hpp"
 #include "thesauros/math/bit.hpp"
 #include "thesauros/ranges/iota.hpp"
-#include "thesauros/utility/fixed-size-integer.hpp"
-#include "thesauros/utility/multi-bit-reference.hpp"
 #include "thesauros/static-ranges/ranges/transform.hpp"
 #include "thesauros/static-ranges/sinks/for-each.hpp"
 #include "thesauros/static-ranges/sinks/reduce.hpp"
+#include "thesauros/utility/fixed-size-integer.hpp"
+#include "thesauros/utility/multi-bit-reference.hpp"
 
 namespace thes {
 template<std::size_t tChunkByteNum>

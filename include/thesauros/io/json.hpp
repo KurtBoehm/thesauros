@@ -16,8 +16,8 @@
 #include "thesauros/macropolis/serial-value.hpp"
 #include "thesauros/macropolis/type.hpp"
 #include "thesauros/ranges/concepts.hpp"
-#include "thesauros/utility/numeric-string.hpp"
 #include "thesauros/static-ranges.hpp"
+#include "thesauros/utility/numeric-string.hpp"
 #include "thesauros/utility/string-escape.hpp"
 
 namespace thes {

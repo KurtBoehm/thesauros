@@ -17,10 +17,10 @@ These sub-libraries are, together with some highlights from each:
 - `functional`: Function objects computing the minimum or maximum.
 - `io`: A file reader and writer based on `std::fread`/`std::fwrite` and friends, which avoid the madness of format flags and locales inherent to C++ stream-based I/O, as well as a JSON printer.
 - `iterator`: Helpers for defining fully-featured iterators with very limited code.
-- `macropolis`: Macropolis (_Μακρόπολις_, a portmanteau of _macro_ and _Acropolis_) is a set of macro-based tools, including:
+- `macropolis`: Macropolis (_Μακρόπολις_, a portmanteau of _macro_ and _Acropolis_) is a set of preprocessor tools, including:
   - Macros to define classes and enumerations with compile-time reflection information, which can be used e.g. for serialization and deserialization.
   - Tools to flatten nested instances of `std::variant`.
-  - Macros to disable warnings.
+  - Macros to disable warnings and to ensure/prevent inlining.
 - `math`:
   - Simple functions such as safe bounded addition/subtraction, integer division rounded upwards, `pow` with a (compile-time constant) integer exponent, bit manipulation, etc.
   - Overflow-/underflow-aware and saturated arithmetic operations.

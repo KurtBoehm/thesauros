@@ -13,7 +13,7 @@
 
 #include "thesauros/containers/dynamic-buffer.hpp"
 #include "thesauros/io/file.hpp"
-#include "thesauros/utility/inlining.hpp"
+#include "thesauros/macropolis/inlining.hpp"
 #include "thesauros/utility/integer-cast.hpp"
 #include "thesauros/utility/type-tag.hpp"
 

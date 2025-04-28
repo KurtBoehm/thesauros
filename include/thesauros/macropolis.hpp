@@ -5,6 +5,7 @@
 #include "macropolis/enum.hpp"
 #include "macropolis/flatten-type.hpp"
 #include "macropolis/helpers.hpp"
+#include "macropolis/inlining.hpp"
 #include "macropolis/platform.hpp"
 #include "macropolis/serial-value.hpp"
 #include "macropolis/type.hpp"

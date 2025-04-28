@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <functional>
 
-#include "thesauros/utility/inlining.hpp"
+#include "thesauros/macropolis/inlining.hpp"
 #include "thesauros/static-ranges/definitions/size.hpp"
 #include "thesauros/static-ranges/definitions/type-traits.hpp"
 #include "thesauros/static-ranges/ranges/filter.hpp"

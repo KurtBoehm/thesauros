@@ -4,12 +4,12 @@
 #include <cstddef>
 #include <utility>
 
+#include "thesauros/macropolis/inlining.hpp"
 #include "thesauros/ranges/iota.hpp"
-#include "thesauros/utility/inlining.hpp"
-#include "thesauros/utility/static-map.hpp"
 #include "thesauros/static-ranges/definitions/get-at.hpp"
 #include "thesauros/static-ranges/definitions/size.hpp"
 #include "thesauros/static-ranges/ranges/transform.hpp"
+#include "thesauros/utility/static-map.hpp"
 
 namespace thes {
 template<typename TRanges, typename TFixedAxes>

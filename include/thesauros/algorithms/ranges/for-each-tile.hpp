@@ -6,12 +6,12 @@
 #include <cstddef>
 #include <type_traits>
 
+#include "thesauros/macropolis/inlining.hpp"
 #include "thesauros/math/arithmetic.hpp"
 #include "thesauros/ranges.hpp"
-#include "thesauros/utility/inlining.hpp"
-#include "thesauros/utility/no-op.hpp"
 #include "thesauros/static-ranges/definitions/size.hpp"
 #include "thesauros/static-ranges/definitions/type-traits.hpp"
+#include "thesauros/utility/no-op.hpp"
 #include "thesauros/utility/tuple.hpp"
 #include "thesauros/utility/type-sequence.hpp"
 #include "thesauros/utility/type-tag.hpp"

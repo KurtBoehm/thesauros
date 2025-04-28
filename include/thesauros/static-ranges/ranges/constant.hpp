@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <utility>
 
-#include "thesauros/utility/inlining.hpp"
+#include "thesauros/macropolis/inlining.hpp"
 
 namespace thes::star {
 template<std::size_t tSize, typename T>

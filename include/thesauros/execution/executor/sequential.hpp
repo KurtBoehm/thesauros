@@ -5,7 +5,7 @@
 #include <cstddef>
 #include <optional>
 
-#include "thesauros/utility/inlining.hpp"
+#include "thesauros/macropolis/inlining.hpp"
 
 namespace thes {
 struct SequentialExecutor {

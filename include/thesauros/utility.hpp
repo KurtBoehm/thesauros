@@ -13,7 +13,6 @@
 #include "utility/index-position-wrapper.hpp"
 #include "utility/index-segmentation.hpp"
 #include "utility/info-result.hpp"
-#include "utility/inlining.hpp"
 #include "utility/integer-cast.hpp"
 #include "utility/integral-value.hpp"
 #include "utility/literals.hpp"

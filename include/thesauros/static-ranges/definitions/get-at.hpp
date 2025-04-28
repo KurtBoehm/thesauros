@@ -10,7 +10,7 @@
 #include <variant>
 
 #include "thesauros/concepts/type-traits.hpp"
-#include "thesauros/utility/inlining.hpp"
+#include "thesauros/macropolis/inlining.hpp"
 #include "thesauros/utility/value-tag.hpp"
 
 namespace thes::star {
