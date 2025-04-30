@@ -49,7 +49,7 @@ template<typename T>
 inline constexpr unsigned max_char_num = MaxCharNumTrait<T>::char_num;
 
 template<typename T>
-inline constexpr tl::expected<StaticCapacityString<max_char_num<T>>, std::errc>
+constexpr tl::expected<StaticCapacityString<max_char_num<T>>, std::errc>
 numeric_string(const T& value) {
   StaticCapacityString<max_char_num<T>> out{};
   auto res = std::to_chars(out.data(), out.data() + max_char_num<T>, value);

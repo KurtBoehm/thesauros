@@ -139,8 +139,7 @@ private:
     }));
   }
 
-  template<typename TCounter>
-  constexpr auto countr(TCounter counter) const {
+  constexpr auto countr(auto counter) const {
     if constexpr (static_chunk_num == 0) {
       return 0;
     }
