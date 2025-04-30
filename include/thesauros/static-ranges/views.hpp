@@ -3,6 +3,7 @@
 
 // IWYU pragma: begin_exports
 #include "views/constant.hpp"
+#include "views/elements.hpp"
 #include "views/enumerate.hpp"
 #include "views/filter.hpp"
 #include "views/generate.hpp"
