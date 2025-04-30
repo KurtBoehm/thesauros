@@ -20,9 +20,9 @@
 #include "thesauros/math/arithmetic.hpp"
 #include "thesauros/math/bit.hpp"
 #include "thesauros/ranges/iota.hpp"
-#include "thesauros/static-ranges/ranges/transform.hpp"
 #include "thesauros/static-ranges/sinks/for-each.hpp"
 #include "thesauros/static-ranges/sinks/reduce.hpp"
+#include "thesauros/static-ranges/views/transform.hpp"
 #include "thesauros/types/fixed-size-integer.hpp"
 #include "thesauros/utility/multi-bit-reference.hpp"
 

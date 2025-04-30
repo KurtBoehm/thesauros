@@ -13,8 +13,8 @@
 #include "thesauros/static-ranges/definitions/concepts.hpp"
 #include "thesauros/static-ranges/definitions/get-at.hpp"
 #include "thesauros/static-ranges/definitions/size.hpp"
-#include "thesauros/static-ranges/ranges/transform.hpp"
 #include "thesauros/static-ranges/sinks/reduce.hpp"
+#include "thesauros/static-ranges/views/transform.hpp"
 
 namespace thes::star {
 struct AllDifferentGenerator : public ConsumerGeneratorBase {

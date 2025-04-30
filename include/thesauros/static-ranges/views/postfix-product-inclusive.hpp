@@ -4,8 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#ifndef INCLUDE_THESAUROS_STATIC_RANGES_RANGES_POSTFIX_PRODUCT_INCLUSIVE_HPP
-#define INCLUDE_THESAUROS_STATIC_RANGES_RANGES_POSTFIX_PRODUCT_INCLUSIVE_HPP
+#ifndef INCLUDE_THESAUROS_STATIC_RANGES_VIEWS_POSTFIX_PRODUCT_INCLUSIVE_HPP
+#define INCLUDE_THESAUROS_STATIC_RANGES_VIEWS_POSTFIX_PRODUCT_INCLUSIVE_HPP
 
 #include <cstddef>
 #include <functional>
@@ -13,10 +13,10 @@
 #include "thesauros/macropolis/inlining.hpp"
 #include "thesauros/static-ranges/definitions/size.hpp"
 #include "thesauros/static-ranges/definitions/type-traits.hpp"
-#include "thesauros/static-ranges/ranges/filter.hpp"
-#include "thesauros/static-ranges/ranges/iota.hpp"
-#include "thesauros/static-ranges/ranges/transform.hpp"
 #include "thesauros/static-ranges/sinks/reduce.hpp"
+#include "thesauros/static-ranges/views/filter.hpp"
+#include "thesauros/static-ranges/views/iota.hpp"
+#include "thesauros/static-ranges/views/transform.hpp"
 
 namespace thes::star {
 template<typename TRange>
@@ -31,4 +31,4 @@ THES_ALWAYS_INLINE inline constexpr auto postfix_product_inclusive(const TRange&
 }
 } // namespace thes::star
 
-#endif // INCLUDE_THESAUROS_STATIC_RANGES_RANGES_POSTFIX_PRODUCT_INCLUSIVE_HPP
+#endif // INCLUDE_THESAUROS_STATIC_RANGES_VIEWS_POSTFIX_PRODUCT_INCLUSIVE_HPP

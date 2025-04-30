@@ -4,8 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#ifndef INCLUDE_THESAUROS_STATIC_RANGES_RANGES_FILTER_HPP
-#define INCLUDE_THESAUROS_STATIC_RANGES_RANGES_FILTER_HPP
+#ifndef INCLUDE_THESAUROS_STATIC_RANGES_VIEWS_FILTER_HPP
+#define INCLUDE_THESAUROS_STATIC_RANGES_VIEWS_FILTER_HPP
 
 #include <array>
 #include <cstddef>
@@ -15,10 +15,10 @@
 #include "thesauros/macropolis/inlining.hpp"
 #include "thesauros/static-ranges/definitions/concepts.hpp"
 #include "thesauros/static-ranges/definitions/size.hpp"
-#include "thesauros/static-ranges/ranges/iota.hpp"
-#include "thesauros/static-ranges/ranges/transform.hpp"
 #include "thesauros/static-ranges/sinks/for-each.hpp"
 #include "thesauros/static-ranges/sinks/to-array.hpp"
+#include "thesauros/static-ranges/views/iota.hpp"
+#include "thesauros/static-ranges/views/transform.hpp"
 #include "thesauros/types/type-tag.hpp"
 
 namespace thes::star {
@@ -119,4 +119,4 @@ template<auto tFun>
 inline constexpr FilterGenerator<tFun> filter{};
 } // namespace thes::star
 
-#endif // INCLUDE_THESAUROS_STATIC_RANGES_RANGES_FILTER_HPP
+#endif // INCLUDE_THESAUROS_STATIC_RANGES_VIEWS_FILTER_HPP

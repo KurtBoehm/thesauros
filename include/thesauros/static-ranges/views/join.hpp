@@ -4,8 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#ifndef INCLUDE_THESAUROS_STATIC_RANGES_RANGES_JOIN_HPP
-#define INCLUDE_THESAUROS_STATIC_RANGES_RANGES_JOIN_HPP
+#ifndef INCLUDE_THESAUROS_STATIC_RANGES_VIEWS_JOIN_HPP
+#define INCLUDE_THESAUROS_STATIC_RANGES_VIEWS_JOIN_HPP
 
 #include <cstddef>
 #include <cstdlib>
@@ -17,8 +17,8 @@
 #include "thesauros/static-ranges/definitions/concepts.hpp"
 #include "thesauros/static-ranges/definitions/size.hpp"
 #include "thesauros/static-ranges/definitions/type-traits.hpp"
-#include "thesauros/static-ranges/ranges/iota.hpp"
 #include "thesauros/static-ranges/sinks/for-each.hpp"
+#include "thesauros/static-ranges/views/iota.hpp"
 #include "thesauros/utility/tuple.hpp"
 
 namespace thes::star {
@@ -74,4 +74,4 @@ struct JoinGenerator : public RangeGeneratorBase {
 inline constexpr JoinGenerator join;
 } // namespace thes::star
 
-#endif // INCLUDE_THESAUROS_STATIC_RANGES_RANGES_JOIN_HPP
+#endif // INCLUDE_THESAUROS_STATIC_RANGES_VIEWS_JOIN_HPP

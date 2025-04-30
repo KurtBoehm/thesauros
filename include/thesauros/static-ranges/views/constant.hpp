@@ -4,8 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#ifndef INCLUDE_THESAUROS_STATIC_RANGES_RANGES_CONSTANT_HPP
-#define INCLUDE_THESAUROS_STATIC_RANGES_RANGES_CONSTANT_HPP
+#ifndef INCLUDE_THESAUROS_STATIC_RANGES_VIEWS_CONSTANT_HPP
+#define INCLUDE_THESAUROS_STATIC_RANGES_VIEWS_CONSTANT_HPP
 
 #include <cstddef>
 #include <utility>
@@ -34,4 +34,4 @@ THES_ALWAYS_INLINE inline constexpr auto constant(T&& value) {
 }
 } // namespace thes::star
 
-#endif // INCLUDE_THESAUROS_STATIC_RANGES_RANGES_CONSTANT_HPP
+#endif // INCLUDE_THESAUROS_STATIC_RANGES_VIEWS_CONSTANT_HPP

@@ -10,8 +10,8 @@
 #include <cstddef>
 
 #include "thesauros/static-ranges/definitions.hpp"
-#include "thesauros/static-ranges/ranges/iota.hpp"
 #include "thesauros/static-ranges/sinks/for-each.hpp"
+#include "thesauros/static-ranges/views/iota.hpp"
 #include "thesauros/types/value-tag.hpp"
 
 namespace thes::star {

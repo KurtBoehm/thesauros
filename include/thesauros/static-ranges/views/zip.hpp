@@ -4,8 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#ifndef INCLUDE_THESAUROS_STATIC_RANGES_RANGES_ZIP_HPP
-#define INCLUDE_THESAUROS_STATIC_RANGES_RANGES_ZIP_HPP
+#ifndef INCLUDE_THESAUROS_STATIC_RANGES_VIEWS_ZIP_HPP
+#define INCLUDE_THESAUROS_STATIC_RANGES_VIEWS_ZIP_HPP
 
 #include <array>
 #include <cstddef>
@@ -40,4 +40,4 @@ THES_ALWAYS_INLINE inline constexpr auto zip(TRanges&&... ranges) {
 }
 } // namespace thes::star
 
-#endif // INCLUDE_THESAUROS_STATIC_RANGES_RANGES_ZIP_HPP
+#endif // INCLUDE_THESAUROS_STATIC_RANGES_VIEWS_ZIP_HPP

@@ -4,8 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#ifndef INCLUDE_THESAUROS_STATIC_RANGES_RANGES_TRANSFORM_HPP
-#define INCLUDE_THESAUROS_STATIC_RANGES_RANGES_TRANSFORM_HPP
+#ifndef INCLUDE_THESAUROS_STATIC_RANGES_VIEWS_TRANSFORM_HPP
+#define INCLUDE_THESAUROS_STATIC_RANGES_VIEWS_TRANSFORM_HPP
 
 #include <array>
 #include <cstddef>
@@ -17,9 +17,9 @@
 #include "thesauros/static-ranges/definitions/get-at.hpp"
 #include "thesauros/static-ranges/definitions/size.hpp"
 #include "thesauros/static-ranges/definitions/type-traits.hpp"
-#include "thesauros/static-ranges/ranges/iota.hpp"
 #include "thesauros/static-ranges/sinks/apply.hpp"
 #include "thesauros/static-ranges/sinks/unique-value.hpp"
+#include "thesauros/static-ranges/views/iota.hpp"
 #include "thesauros/utility/tuple.hpp"
 
 namespace thes::star {
@@ -123,4 +123,4 @@ THES_ALWAYS_INLINE inline constexpr auto index_transform(TFun&& f) {
 };
 } // namespace thes::star
 
-#endif // INCLUDE_THESAUROS_STATIC_RANGES_RANGES_TRANSFORM_HPP
+#endif // INCLUDE_THESAUROS_STATIC_RANGES_VIEWS_TRANSFORM_HPP

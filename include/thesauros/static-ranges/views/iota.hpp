@@ -4,8 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#ifndef INCLUDE_THESAUROS_STATIC_RANGES_RANGES_IOTA_HPP
-#define INCLUDE_THESAUROS_STATIC_RANGES_RANGES_IOTA_HPP
+#ifndef INCLUDE_THESAUROS_STATIC_RANGES_VIEWS_IOTA_HPP
+#define INCLUDE_THESAUROS_STATIC_RANGES_VIEWS_IOTA_HPP
 
 #include <concepts>
 #include <cstddef>
@@ -32,4 +32,4 @@ template<std::unsigned_integral TSize, TSize tBegin, TSize tEnd, TSize tStep = 1
 inline constexpr IotaView<TSize, tBegin, tEnd, tStep> typed_iota{};
 } // namespace thes::star
 
-#endif // INCLUDE_THESAUROS_STATIC_RANGES_RANGES_IOTA_HPP
+#endif // INCLUDE_THESAUROS_STATIC_RANGES_VIEWS_IOTA_HPP
