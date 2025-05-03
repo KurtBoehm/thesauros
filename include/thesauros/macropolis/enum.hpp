@@ -109,13 +109,13 @@ template<HasEnumInfo T>
 constexpr std::optional<T> enum_cast(std::string_view serial_name) {
   constexpr auto values = EnumInfo<T>::values;
   constexpr std::size_t value_num = star::size<decltype(values)>;
-  auto op = [&](auto op, thes::AnyIndexTag auto depth) -> std::optional<T> {
+  auto op = [&](auto rec, thes::AnyIndexTag auto depth) -> std::optional<T> {
     constexpr auto value_info = star::get_at<depth>(values);
     if (value_info.serial_name.view() == serial_name) {
       return value_info.value;
     }
     if constexpr (depth + 1 < value_num) {
-      return op(op, index_tag<depth + 1>);
+      return rec(rec, index_tag<depth + 1>);
     } else {
       return std::nullopt;
     }

@@ -29,7 +29,7 @@ inline std::array<TInt, tDimNum> box_tesselate(TInt tile_num, std::array<TInt, t
   }
 
   Sol best{};
-  auto op = [&](auto op, Sol& sol, TInt remaining, thes::AnyIndexTag auto dim) {
+  auto op = [&](auto rec, Sol& sol, TInt remaining, thes::AnyIndexTag auto dim) {
     if constexpr (dim + 1 == tDimNum) {
       std::get<dim>(sol.sol) = remaining;
       const auto [min, max] =
@@ -44,7 +44,7 @@ inline std::array<TInt, tDimNum> box_tesselate(TInt tile_num, std::array<TInt, t
       for (TInt dcnum = remaining; dcnum > 0; --dcnum) {
         if (remaining % dcnum == 0) {
           std::get<dim>(sol.sol) = dcnum;
-          op(op, sol, remaining / dcnum, thes::index_tag<dim + 1>);
+          rec(rec, sol, remaining / dcnum, thes::index_tag<dim + 1>);
         }
       }
     }

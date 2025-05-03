@@ -30,7 +30,7 @@ struct MapFactorization {
     T cnt{};
     Map& factorization;
 
-    IterativeEmplacer(T k, Map& factorization) : k{k}, factorization(factorization) {}
+    IterativeEmplacer(T factor, Map& factors) : k{factor}, factorization(factors) {}
     ~IterativeEmplacer() {
       if (cnt > 0) {
         factorization.emplace(k, cnt);
@@ -59,7 +59,7 @@ struct FlatFactorization {
     T k;
     Arr& factorization;
 
-    IterativeEmplacer(T k, Arr& factorization) : k{k}, factorization(factorization) {}
+    IterativeEmplacer(T factor, Arr& factors) : k{factor}, factorization(factors) {}
 
     IterativeEmplacer& operator++() {
       factorization.push_back(k);
@@ -85,7 +85,7 @@ inline auto factorize(T n, auto&& factorization) {
     factorization.emplace(2, two_num);
   }
 
-  for (T d : {3, 5}) {
+  for (T d : {T{3}, T{5}}) {
     auto iter = factorization.iterative_emplacer(d);
     for (; n % d == 0; ++iter) {
       n /= d;

@@ -13,23 +13,23 @@
 #include "thesauros/format.hpp"
 #include "thesauros/macropolis.hpp"
 #include "thesauros/static-ranges.hpp"
+#include "thesauros/string.hpp"
 #include "thesauros/types.hpp"
-#include "thesauros/utility.hpp"
 
 using namespace thes::literals;
 
 #if false
 struct Test1 {
-  THES_DEFINE_TYPE(SNAKE_CASE(Test1), CONSTEXPR_CONSTRUCTOR, (SNAKE_CASE(CapitalName), int),
-                   (KEEP(test), float, 2.F))
+  THES_DEFINE_TYPE(SNAKE_CASE(Test1), CONSTEXPR_CONSTRUCTOR,
+                   MEMBERS((SNAKE_CASE(CapitalName), int), (KEEP(test), float, 2.F)))
 
   Test1(Test1&&) noexcept = default;
   Test1(const Test1&) = delete;
 };
 #else
-THES_CREATE_TYPE_EX(SNAKE_CASE(Test1), CONSTEXPR_CONSTRUCTOR,
-                    MEMBERS((SNAKE_CASE(CapitalName), int), (KEEP(test), float, 2.F)),
-                    BODY(Test1(Test1&&) noexcept = default; Test1(const Test1&) = delete;))
+THES_CREATE_TYPE(SNAKE_CASE(Test1), CONSTEXPR_CONSTRUCTOR,
+                 MEMBERS((SNAKE_CASE(CapitalName), int), (KEEP(test), float, 2.F)),
+                 BODY(Test1(Test1&&) noexcept = default; Test1(const Test1&) = delete;))
 #endif
 
 inline constexpr Test1 test1{2};
@@ -118,10 +118,10 @@ static_assert(Test6Info::serial_name == thes::StaticString<3>::filled('t'));
 
 template<inner::Test2 tVal, typename TType>
 struct Test7 {
-  THES_DEFINE_TYPE_EX(SNAKE_CASE(Test7), CONSTEXPR_CONSTRUCTOR,
-                      TEMPLATE_PARAMS((inner::Test2)tVal, (typename)TType),
-                      MEMBERS((SNAKE_CASE(a), TType), (SNAKE_CASE(b), int)),
-                      STATIC_MEMBERS((KEEP(value), tVal), (KEEP(type), thes::type_tag<TType>)))
+  THES_DEFINE_TYPE(SNAKE_CASE(Test7), CONSTEXPR_CONSTRUCTOR,
+                   TEMPLATE_PARAMS((inner::Test2)tVal, (typename)TType),
+                   MEMBERS((SNAKE_CASE(a), TType), (SNAKE_CASE(b), int)),
+                   STATIC_MEMBERS((KEEP(value), tVal), (KEEP(type), thes::type_tag<TType>)))
   Test7(Test7&&) noexcept = default;
   Test7(const Test7&) = delete;
 
@@ -130,14 +130,14 @@ struct Test7 {
 
 ////////////////////////////////////////////////////////////////
 
-THES_CREATE_TYPE_EX(SNAKE_CASE(Test8), CONSTEXPR_CONSTRUCTOR,
-                    MEMBERS((SNAKE_CASE(a), int), (SNAKE_CASE(b), bool)),
-                    BODY(int test() const { return a; }))
+THES_CREATE_TYPE(SNAKE_CASE(Test8), CONSTEXPR_CONSTRUCTOR,
+                 MEMBERS((SNAKE_CASE(a), int), (SNAKE_CASE(b), bool)),
+                 BODY(int test() const { return a; }))
 namespace n1::n2 {
-THES_CREATE_TYPE_EX(SNAKE_CASE(Test9), CONSTEXPR_CONSTRUCTOR,
-                    TEMPLATE_PARAMS((int)tVal, (typename)TType),
-                    MEMBERS((SNAKE_CASE(a), TType), (KEEP(b), char), (SNAKE_CASE(c), int)),
-                    STATIC_MEMBERS((KEEP(value), tVal), (KEEP(type), thes::type_tag<TType>)))
+THES_CREATE_TYPE(SNAKE_CASE(Test9), CONSTEXPR_CONSTRUCTOR,
+                 TEMPLATE_PARAMS((int)tVal, (typename)TType),
+                 MEMBERS((SNAKE_CASE(a), TType), (KEEP(b), char), (SNAKE_CASE(c), int)),
+                 STATIC_MEMBERS((KEEP(value), tVal), (KEEP(type), thes::type_tag<TType>)))
 }
 
 using Type7a = Test7<inner::Test2::A, int>;
