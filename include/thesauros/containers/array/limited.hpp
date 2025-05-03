@@ -11,6 +11,8 @@
 #include <cassert>
 #include <cstddef>
 
+#include "thesauros/math/integer-cast.hpp"
+
 namespace thes {
 // Access to element beyond the size (up to the capacity) is allowed, but discouraged
 template<typename T, std::size_t tCapacity>
@@ -33,7 +35,7 @@ struct LimitedArray {
   }
 
   template<typename TIt>
-  LimitedArray(TIt first, TIt last) : size_(std::distance(first, last)) {
+  LimitedArray(TIt first, TIt last) : size_(*safe_cast<std::size_t>(std::distance(first, last))) {
     assert(size_ <= capacity);
     std::copy(first, last, data_.begin());
   }
