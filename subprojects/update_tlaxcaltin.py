@@ -1,3 +1,13 @@
+# This file is part of https://github.com/KurtBoehm/tlaxcaltin.
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+# Update Tlaxcaltin in a project that uses it, with steps that are detailed later
+# in this file. Note that this requires “subprojects.txt” to exist in the root folder
+# of the project using Tlaxcaltin.
+
 import re
 from pathlib import Path
 from shutil import move, rmtree
@@ -21,7 +31,7 @@ assert subprojects_path.name == "subprojects"
 project_path = subprojects_path.parent
 assert Path.cwd() == project_path
 
-url = "git@github.com:Fingolfin1196/tlaxcaltin.git"
+url = "git@github.com:KurtBoehm/tlaxcaltin.git"
 
 selection_path = project_path / "subprojects.txt"
 selection: set[str] | None
@@ -30,7 +40,7 @@ if not selection_path.exists():
     selection = None
 else:
     with open(selection_path, "r") as f:
-        selection = {l.strip() for l in f.readlines()}
+        selection = {line.strip() for line in f.readlines()}
 
 with TemporaryDirectory() as tmp_dir:
     tmp_path = Path(tmp_dir).resolve()
@@ -70,11 +80,12 @@ with TemporaryDirectory() as tmp_dir:
 
         # Remove patches
         patch_path = package_files_path / "patch"
-        for p in patch_path.iterdir():
-            if p.stem not in selection:
-                p.unlink()
-        if len(list(patch_path.iterdir())) == 0:
-            patch_path.rmdir()
+        if patch_path.exists():
+            for p in patch_path.iterdir():
+                if p.stem not in selection:
+                    p.unlink()
+            if len(list(patch_path.iterdir())) == 0:
+                patch_path.rmdir()
 
         # Clean up gitignore
         gitignore_path = subprojects_path / ".gitignore"
@@ -82,17 +93,17 @@ with TemporaryDirectory() as tmp_dir:
             gitignore = f.readlines()
         new_gitignore = []
         folder_re = re.compile(r"/(.*)-\*/")
-        for l in gitignore:
-            l = l.strip()
-            if (m := folder_re.fullmatch(l)) is not None:
+        for line in gitignore:
+            line = line.strip()
+            if (m := folder_re.fullmatch(line)) is not None:
                 if m.group(1) in fnames:
-                    new_gitignore.append(l)
+                    new_gitignore.append(line)
             else:
-                new_gitignore.append(l)
+                new_gitignore.append(line)
         if new_gitignore[-1] == "":
             new_gitignore.pop()
         with open(gitignore_path, "w") as f:
-            f.write("".join(f"{l!s}\n" for l in new_gitignore))
+            f.write("".join(f"{line!s}\n" for line in new_gitignore))
 
     run(["git", "add", "subprojects"], check=True)
 
