@@ -4,7 +4,7 @@ Thesauros (Romanized from Ancient Greek _θησαυρός_, “treasury”) is a
 Its structure is somewhat inspired by the standard library with its functionality split into sub-libraries, each with its own umbrella header:
 
 - `algorithms`: Operations including tiled iteration in ascending/descending order, parallelizable inclusive prefix sum, and arbitrary-dimensional iteration.
-- `charconv`: Conversions to/from character stings, including converting a number to a string with static memory, parsing a string to an integer, escaping a string (in a way useful for `{{fmt}}` formatters), and decoding a Unicode string into Unicode code points.
+- `charconv`: Conversions to/from character stings, including converting a number to a string with static memory, parsing a string to an integer, escaping a string (in a way useful for `{fmt}` formatters), and decoding a Unicode string into Unicode code points.
 - `concepts`: C++20 concepts, including ones describing whether a type is complete and whether it only provides immutable access.
 - `containers`: A collection of general-purpose and more general containers, including:
   - Dynamic array types with support for default initialization (in contrast to e.g. `std::vector`).
@@ -14,7 +14,7 @@ Its structure is somewhat inspired by the standard library with its functionalit
   - Chunked array types with fixed-size chunks (using a flat array and simple index computations) or variable-sized chunks (with the memory layout of a CSR matrix without column indices).
   - Containers containing integers with an arbitrary number of bits each (which are grouped into chunks represented by an unsigned integer type) or integers with an arbitrary number of bytes each (backed by an array of `std::byte`).
 - `execution`: Tools for efficient computations, especially using multithreading, including thread pools backed by `std::thread` or OpenMP `parallel for` as well as functions which set the thread affinity and the scheduler.
-- `format`: Utilities for using `{{fmt}}`, including formatters for many of Thesauros’ types and simplified colour printing.
+- `format`: Utilities for using `{fmt}`, including formatters for many of Thesauros’ types and simplified colour printing.
 - `functional`: Function objects computing the minimum or maximum as well as a no-op function object.
 - `io`: I/O tools including a file reader and a file writer based on `std::fread`/`std::fwrite` and friends, which avoid the madness of format flags and locales inherent to C++ stream-based I/O, as well as a JSON printer.
 - `iterator`: Helpers for defining fully-featured iterators with very limited code.
