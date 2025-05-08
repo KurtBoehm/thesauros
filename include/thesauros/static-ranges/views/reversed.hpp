@@ -14,16 +14,18 @@
 #include "thesauros/macropolis/inlining.hpp"
 #include "thesauros/static-ranges/definitions/concepts.hpp"
 #include "thesauros/static-ranges/definitions/get-at.hpp"
+#include "thesauros/static-ranges/definitions/printable.hpp"
 #include "thesauros/static-ranges/definitions/size.hpp"
 #include "thesauros/types/value-tag.hpp"
 
 namespace thes::star {
 template<typename TInner>
 struct ReversedView {
-  TInner inner;
-
   using Inner = std::decay_t<TInner>;
   static constexpr std::size_t size = thes::star::size<Inner>;
+  static constexpr PrintableMarker printable{};
+
+  TInner inner;
 
   template<std::size_t tIndex>
   THES_ALWAYS_INLINE constexpr auto get(IndexTag<tIndex> /*index*/) const {

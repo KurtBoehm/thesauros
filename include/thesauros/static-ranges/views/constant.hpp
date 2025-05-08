@@ -11,16 +11,17 @@
 #include <utility>
 
 #include "thesauros/macropolis/inlining.hpp"
+#include "thesauros/static-ranges/definitions/printable.hpp"
 #include "thesauros/types/value-tag.hpp"
 
 namespace thes::star {
 template<std::size_t tSize, typename T>
 struct Constant {
   using Value = T;
+  static constexpr std::size_t size = tSize;
+  static constexpr PrintableMarker printable{};
 
   T value;
-
-  static constexpr std::size_t size = tSize;
 
   template<std::size_t tIndex>
   requires(tIndex < tSize)

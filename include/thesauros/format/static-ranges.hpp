@@ -13,18 +13,17 @@
 #include "thesauros/format/formatter.hpp"
 #include "thesauros/static-ranges/definitions.hpp"
 #include "thesauros/static-ranges/sinks/for-each.hpp"
-#include "thesauros/static-ranges/sinks/format.hpp"
 #include "thesauros/static-ranges/views/iota.hpp"
 
 namespace thes::detail {
 template<thes::star::AnyStaticRange TRange>
-inline auto static_range_format(const star::Formatter<TRange>& f, auto it, auto op) {
+inline auto static_range_format(const TRange& range, auto it, auto op) {
   it = fmt::format_to(it, "[");
   star::iota<0, star::size<TRange>> | star::for_each([&](auto i) {
     if constexpr (i > 0) {
       it = fmt::format_to(it, ", ");
     }
-    it = fmt::format_to(it, "{}", op(star::get_at(f.range(), i)));
+    it = fmt::format_to(it, "{}", op(star::get_at(range, i)));
   });
   it = fmt::format_to(it, "]");
   return it;
@@ -32,22 +31,21 @@ inline auto static_range_format(const star::Formatter<TRange>& f, auto it, auto 
 } // namespace thes::detail
 
 template<thes::star::AnyStaticRange TRange>
-requires(thes::star::HasValue<TRange>)
-struct fmt::formatter<thes::star::Formatter<TRange>>
-    : public fmt::nested_formatter<thes::star::Value<TRange>> {
-  auto format(const thes::star::Formatter<TRange>& f, fmt::format_context& ctx) const {
+requires(thes::star::HasValue<TRange> && thes::star::AnyPrintable<TRange>)
+struct fmt::formatter<TRange> : public fmt::nested_formatter<thes::star::Value<TRange>> {
+  auto format(const TRange& r, fmt::format_context& ctx) const {
     return this->write_padded(ctx, [&](auto it) {
-      return thes::detail::static_range_format(f, it,
+      return thes::detail::static_range_format(r, it,
                                                [&](const auto& v) { return this->nested(v); });
     });
   }
 };
 template<thes::star::AnyStaticRange TRange>
-requires(!thes::star::HasValue<TRange>)
-struct fmt::formatter<thes::star::Formatter<TRange>> : public thes::SimpleFormatter<> {
-  auto format(const thes::star::Formatter<TRange>& f, fmt::format_context& ctx) const {
+requires(!thes::star::HasValue<TRange> && thes::star::AnyPrintable<TRange>)
+struct fmt::formatter<TRange> : public thes::SimpleFormatter<> {
+  auto format(const TRange& r, fmt::format_context& ctx) const {
     return this->write_padded(
-      ctx, [&](auto it) { return thes::detail::static_range_format(f, it, std::identity{}); });
+      ctx, [&](auto it) { return thes::detail::static_range_format(r, it, std::identity{}); });
   }
 };
 

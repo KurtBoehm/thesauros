@@ -14,6 +14,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "thesauros/static-ranges/definitions/printable.hpp"
 #include "thesauros/types/type-tag.hpp"
 #include "thesauros/types/value-tag.hpp"
 
@@ -78,7 +79,7 @@ template<typename... Ts>
 struct Tuple : public detail::Tuple<std::index_sequence_for<Ts...>, Ts...> {
   using Parent = detail::Tuple<std::index_sequence_for<Ts...>, Ts...>;
   using Parent::Parent;
-
+  static constexpr star::PrintableMarker printable{};
   static constexpr std::size_t size = sizeof...(Ts);
 
   template<std::size_t tIndex>

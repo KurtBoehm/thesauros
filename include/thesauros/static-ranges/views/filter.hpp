@@ -14,6 +14,7 @@
 
 #include "thesauros/macropolis/inlining.hpp"
 #include "thesauros/static-ranges/definitions/concepts.hpp"
+#include "thesauros/static-ranges/definitions/printable.hpp"
 #include "thesauros/static-ranges/definitions/size.hpp"
 #include "thesauros/static-ranges/sinks/for-each.hpp"
 #include "thesauros/static-ranges/sinks/to-array.hpp"
@@ -25,10 +26,11 @@
 namespace thes::star {
 template<typename TInner, auto tIdxRange>
 struct FilterView {
-  TInner inner;
-
   using IdxRange = std::decay_t<decltype(tIdxRange)>;
   static constexpr std::size_t size = star::size<IdxRange>;
+  static constexpr PrintableMarker printable{};
+
+  TInner inner;
 
   template<std::size_t tIndex>
   THES_ALWAYS_INLINE constexpr decltype(auto) get(IndexTag<tIndex> /*index*/) const {

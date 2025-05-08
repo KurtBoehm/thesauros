@@ -15,6 +15,7 @@
 #include "thesauros/macropolis/inlining.hpp"
 #include "thesauros/static-ranges/definitions/concepts.hpp"
 #include "thesauros/static-ranges/definitions/get-at.hpp"
+#include "thesauros/static-ranges/definitions/printable.hpp"
 #include "thesauros/static-ranges/definitions/size.hpp"
 #include "thesauros/static-ranges/definitions/type-traits.hpp"
 #include "thesauros/static-ranges/sinks/apply.hpp"
@@ -45,14 +46,15 @@ struct ValueBase<TFun, TRet, TArgRanges...> {
 template<typename TFun, typename TRet, typename... TArgRanges>
 requires(sizeof...(TArgRanges) > 0 && star::has_unique_value(std::array{size<TArgRanges>...}))
 struct TransformView : public transform_impl::ValueBase<TFun, TRet, TArgRanges...> {
+  static constexpr std::size_t size =
+    star::unique_value(std::array{star::size<TArgRanges>...}).value();
+  static constexpr PrintableMarker printable{};
+
   TFun fun;
   Tuple<TArgRanges...> range_tup;
 
   explicit constexpr TransformView(TFun&& f, TArgRanges&&... ranges)
       : fun(std::forward<TFun>(f)), range_tup(std::forward<TArgRanges>(ranges)...) {}
-
-  static constexpr std::size_t size =
-    star::unique_value(std::array{star::size<TArgRanges>...}).value();
 
   template<std::size_t tIndex>
   THES_ALWAYS_INLINE constexpr decltype(auto) get(IndexTag<tIndex> /*tag*/) const {

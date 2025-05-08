@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "thesauros/macropolis/inlining.hpp"
+#include "thesauros/static-ranges/definitions/printable.hpp"
 #include "thesauros/types/value-tag.hpp"
 
 namespace thes::star {
@@ -29,9 +30,10 @@ struct ValueBase<TRet, TFun> {
 
 template<std::size_t tSize, typename TRet, std::invocable<> TGen>
 struct Generate : public generate_impl::ValueBase<TRet, TGen> {
-  explicit constexpr Generate(TGen&& gen) : gen_{std::forward<TGen>(gen)} {}
-
   static constexpr std::size_t size = tSize;
+  static constexpr PrintableMarker printable{};
+
+  explicit constexpr Generate(TGen&& gen) : gen_{std::forward<TGen>(gen)} {}
 
   template<std::size_t tIndex>
   requires(tIndex < tSize)

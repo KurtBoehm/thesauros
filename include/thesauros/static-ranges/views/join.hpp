@@ -15,6 +15,7 @@
 
 #include "thesauros/macropolis/inlining.hpp"
 #include "thesauros/static-ranges/definitions/concepts.hpp"
+#include "thesauros/static-ranges/definitions/printable.hpp"
 #include "thesauros/static-ranges/definitions/size.hpp"
 #include "thesauros/static-ranges/definitions/type-traits.hpp"
 #include "thesauros/static-ranges/sinks/for-each.hpp"
@@ -25,11 +26,12 @@
 namespace thes::star {
 template<typename TRanges>
 struct JoinView {
-  TRanges ranges;
-
   static constexpr std::size_t size = []<std::size_t... tIdxs>(std::index_sequence<tIdxs...>) {
     return (... + thes::star::size<std::decay_t<Element<tIdxs, TRanges>>>);
   }(std::make_index_sequence<star::size<TRanges>>{});
+  static constexpr PrintableMarker printable{};
+
+  TRanges ranges;
 
   template<std::size_t tIndex>
   requires(tIndex < size)

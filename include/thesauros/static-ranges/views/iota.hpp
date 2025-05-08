@@ -12,12 +12,14 @@
 
 #include "thesauros/macropolis/inlining.hpp"
 #include "thesauros/math/arithmetic.hpp"
+#include "thesauros/static-ranges/definitions/printable.hpp"
 #include "thesauros/types/value-tag.hpp"
 
 namespace thes::star {
 template<std::unsigned_integral TSize, TSize tBegin, TSize tEnd, TSize tStep>
 struct IotaView {
   static constexpr TSize size = div_ceil(tEnd - tBegin, tStep);
+  static constexpr PrintableMarker printable{};
 
   template<std::size_t tIndex>
   requires(tBegin + tIndex * tStep < tEnd)

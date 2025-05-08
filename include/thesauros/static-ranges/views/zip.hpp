@@ -13,6 +13,7 @@
 
 #include "thesauros/macropolis/inlining.hpp"
 #include "thesauros/static-ranges/definitions/get-at.hpp"
+#include "thesauros/static-ranges/definitions/printable.hpp"
 #include "thesauros/static-ranges/definitions/size.hpp"
 #include "thesauros/static-ranges/sinks/apply.hpp"
 #include "thesauros/static-ranges/sinks/unique-value.hpp"
@@ -22,9 +23,10 @@
 namespace thes::star {
 template<typename... TRanges>
 struct ZipView {
-  Tuple<TRanges...> ranges;
-
   static constexpr std::size_t size = *unique_value(std::array{thes::star::size<TRanges>...});
+  static constexpr PrintableMarker printable{};
+
+  Tuple<TRanges...> ranges;
 
   template<std::size_t tIndex>
   THES_ALWAYS_INLINE constexpr auto get(IndexTag<tIndex> /*index*/) const {
