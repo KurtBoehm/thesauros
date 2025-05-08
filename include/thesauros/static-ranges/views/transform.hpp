@@ -20,6 +20,7 @@
 #include "thesauros/static-ranges/sinks/apply.hpp"
 #include "thesauros/static-ranges/sinks/unique-value.hpp"
 #include "thesauros/static-ranges/views/iota.hpp"
+#include "thesauros/types/value-tag.hpp"
 #include "thesauros/utility/tuple.hpp"
 
 namespace thes::star {
@@ -54,7 +55,7 @@ struct TransformView : public transform_impl::ValueBase<TFun, TRet, TArgRanges..
     star::unique_value(std::array{star::size<TArgRanges>...}).value();
 
   template<std::size_t tIndex>
-  THES_ALWAYS_INLINE constexpr decltype(auto) get() const {
+  THES_ALWAYS_INLINE constexpr decltype(auto) get(IndexTag<tIndex> /*tag*/) const {
     return apply([this](const auto&... ranges) THES_ALWAYS_INLINE -> decltype(auto) {
       return fun(get_at<tIndex>(ranges)...);
     })(range_tup);

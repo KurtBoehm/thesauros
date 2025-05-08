@@ -19,6 +19,7 @@
 #include "thesauros/static-ranges/definitions/type-traits.hpp"
 #include "thesauros/static-ranges/sinks/for-each.hpp"
 #include "thesauros/static-ranges/views/iota.hpp"
+#include "thesauros/types/value-tag.hpp"
 #include "thesauros/utility/tuple.hpp"
 
 namespace thes::star {
@@ -32,7 +33,7 @@ struct JoinView {
 
   template<std::size_t tIndex>
   requires(tIndex < size)
-  THES_ALWAYS_INLINE constexpr auto get() const {
+  THES_ALWAYS_INLINE constexpr auto get(IndexTag<tIndex> /*index*/) const {
     constexpr auto pair = []() THES_ALWAYS_INLINE {
       std::size_t sum = 0;
       std::optional<std::pair<std::size_t, std::size_t>> out{};

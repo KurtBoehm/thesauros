@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "thesauros/macropolis/inlining.hpp"
+#include "thesauros/types/value-tag.hpp"
 
 namespace thes::star {
 namespace generate_impl {
@@ -34,7 +35,7 @@ struct Generate : public generate_impl::ValueBase<TRet, TGen> {
 
   template<std::size_t tIndex>
   requires(tIndex < tSize)
-  THES_ALWAYS_INLINE constexpr auto get() const {
+  THES_ALWAYS_INLINE constexpr auto get(IndexTag<tIndex> /*index*/) const {
     return gen_();
   }
 

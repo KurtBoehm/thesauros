@@ -21,7 +21,7 @@ struct IotaView {
 
   template<std::size_t tIndex>
   requires(tBegin + tIndex * tStep < tEnd)
-  THES_ALWAYS_INLINE constexpr decltype(auto) get() const {
+  THES_ALWAYS_INLINE constexpr decltype(auto) get(IndexTag<tIndex> /*index*/) const {
     return value_tag<TSize, tBegin + TSize{tIndex} * tStep>;
   }
 };

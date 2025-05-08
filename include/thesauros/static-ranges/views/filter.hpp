@@ -20,6 +20,7 @@
 #include "thesauros/static-ranges/views/iota.hpp"
 #include "thesauros/static-ranges/views/transform.hpp"
 #include "thesauros/types/type-tag.hpp"
+#include "thesauros/types/value-tag.hpp"
 
 namespace thes::star {
 template<typename TInner, auto tIdxRange>
@@ -30,7 +31,7 @@ struct FilterView {
   static constexpr std::size_t size = star::size<IdxRange>;
 
   template<std::size_t tIndex>
-  THES_ALWAYS_INLINE constexpr decltype(auto) get() const {
+  THES_ALWAYS_INLINE constexpr decltype(auto) get(IndexTag<tIndex> /*index*/) const {
     return get_at<get_at<tIndex>(tIdxRange)>(inner);
   }
 };

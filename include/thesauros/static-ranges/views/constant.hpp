@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "thesauros/macropolis/inlining.hpp"
+#include "thesauros/types/value-tag.hpp"
 
 namespace thes::star {
 template<std::size_t tSize, typename T>
@@ -23,7 +24,7 @@ struct Constant {
 
   template<std::size_t tIndex>
   requires(tIndex < tSize)
-  THES_ALWAYS_INLINE constexpr auto get() const {
+  THES_ALWAYS_INLINE constexpr auto get(IndexTag<tIndex> /*index*/) const {
     return value;
   }
 };

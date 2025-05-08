@@ -81,15 +81,15 @@ struct Tuple : public detail::Tuple<std::index_sequence_for<Ts...>, Ts...> {
 
   static constexpr std::size_t size = sizeof...(Ts);
 
-  template<std::size_t tIdx>
-  requires(tIdx < size)
-  constexpr decltype(auto) get() const {
-    return detail::get_tuple_at<tIdx>(*this);
+  template<std::size_t tIndex>
+  requires(tIndex < size)
+  constexpr decltype(auto) get(IndexTag<tIndex> /*index*/) const {
+    return detail::get_tuple_at<tIndex>(*this);
   }
-  template<std::size_t tIdx>
-  requires(tIdx < size)
-  constexpr decltype(auto) get() {
-    return detail::get_tuple_at<tIdx>(*this);
+  template<std::size_t tIndex>
+  requires(tIndex < size)
+  constexpr decltype(auto) get(IndexTag<tIndex> /*index*/) {
+    return detail::get_tuple_at<tIndex>(*this);
   }
 
   constexpr bool operator==(const Tuple&) const = default;

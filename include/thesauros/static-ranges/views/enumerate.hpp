@@ -26,7 +26,7 @@ struct EnumerateView {
 
   template<std::size_t tIndex>
   THES_ALWAYS_INLINE constexpr std::pair<ValueTag<TSize, tIndex>, decltype(get_at<tIndex>(inner))>
-  get() const {
+  get(IndexTag<tIndex> /*index*/) const {
     return {value_tag<TSize, tIndex>, get_at<tIndex>(inner)};
   }
 };

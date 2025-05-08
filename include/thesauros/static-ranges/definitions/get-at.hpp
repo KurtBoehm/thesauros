@@ -22,7 +22,7 @@
 namespace thes::star {
 namespace impl {
 template<std::size_t tIndex, typename TRange>
-concept HasMemberGet = requires(TRange&& rng) { std::forward<TRange>(rng).template get<tIndex>(); };
+concept HasMemberGet = requires(TRange&& rng) { std::forward<TRange>(rng).get(index_tag<tIndex>); };
 
 template<std::size_t tIndex, typename TRange>
 concept HasFreeGet = requires(TRange&& rng) { std::get<tIndex>(std::forward<TRange>(rng)); };
@@ -35,7 +35,7 @@ template<std::size_t tIndex, typename TRange>
 requires impl::HasMemberGet<tIndex, TRange>
 struct GetAtTrait<tIndex, TRange> {
   THES_ALWAYS_INLINE static constexpr decltype(auto) get_at(TRange&& range) {
-    return std::forward<TRange>(range).template get<tIndex>();
+    return std::forward<TRange>(range).get(index_tag<tIndex>);
   }
 };
 

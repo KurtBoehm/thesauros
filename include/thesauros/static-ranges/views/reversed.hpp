@@ -15,6 +15,7 @@
 #include "thesauros/static-ranges/definitions/concepts.hpp"
 #include "thesauros/static-ranges/definitions/get-at.hpp"
 #include "thesauros/static-ranges/definitions/size.hpp"
+#include "thesauros/types/value-tag.hpp"
 
 namespace thes::star {
 template<typename TInner>
@@ -25,7 +26,7 @@ struct ReversedView {
   static constexpr std::size_t size = thes::star::size<Inner>;
 
   template<std::size_t tIndex>
-  THES_ALWAYS_INLINE constexpr auto get() const {
+  THES_ALWAYS_INLINE constexpr auto get(IndexTag<tIndex> /*index*/) const {
     return get_at<size - tIndex - 1>(inner);
   }
 };
