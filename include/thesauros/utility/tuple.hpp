@@ -84,12 +84,12 @@ struct Tuple : public detail::Tuple<std::index_sequence_for<Ts...>, Ts...> {
 
   template<std::size_t tIndex>
   requires(tIndex < size)
-  constexpr decltype(auto) get(IndexTag<tIndex> /*index*/) const {
+  constexpr decltype(auto) get(IndexTag<tIndex> /*index*/ = {}) const {
     return detail::get_tuple_at<tIndex>(*this);
   }
   template<std::size_t tIndex>
   requires(tIndex < size)
-  constexpr decltype(auto) get(IndexTag<tIndex> /*index*/) {
+  constexpr decltype(auto) get(IndexTag<tIndex> /*index*/ = {}) {
     return detail::get_tuple_at<tIndex>(*this);
   }
 

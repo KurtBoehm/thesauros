@@ -66,11 +66,11 @@ inline auto escape_string(std::string_view in, auto out_it) {
       default:
         if (codep <= 0x1F) {
           using SI = SafeInt<char>;
-          const SI c1 = SI{'0'} + (SI{c} >> 4U);
+          const SI c1 = SI{'0'} + (SI{c} >> 4);
           const SI c2a = SI{c} & SI{0xF};
           const SI c2b = (c2a < SI{10}) ? (SI{'0'} + c2a) : (SI{'A'} + (c2a - SI{10}));
 
-          extend('\\', 'u', '0', '0', c1.raw(), c2b.raw());
+          extend('\\', 'u', '0', '0', c1.unsafe(), c2b.unsafe());
         } else {
           extend(c);
         }
