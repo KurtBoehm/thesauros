@@ -57,7 +57,7 @@ While some of these could be generalized to other platforms and compilers, this 
 
 Thesauros uses the Meson build system and includes a fairly extensive set of tests.
 These can be run by executing `meson setup -C <build directory>` followed by `meson test -C <build directory>`.
-`Makefile` contains targets for calling `meson setup` with different optimization and debugging settings.
+`Makefile` contains targets for calling `meson setup` with different optimization and debug settings.
 
 ## Dependencies
 
@@ -72,5 +72,5 @@ The Meson subprojects are managed by [Tlaxcaltin](https://github.com/KurtBoehm/t
 
 ## Licences
 
-Thesauros is licenced under the terms of the Mozilla Public Licence 2.0, which is provided in [`License`](License).
-The file [`include/thesauros/charconv/unicode.hpp`](include/thesauros/charconv/unicode.hpp) is based on code provided on [https://bjoern.hoehrmann.de/utf-8/decoder/dfa/](https://bjoern.hoehrmann.de/utf-8/decoder/dfa/), which is licenced under the terms of the MIT licence as provided in [`include/thesauros/charconv/unicode-license`](include/thesauros/charconv/unicode-license).
+Thesauros is licensed under the terms of the Mozilla Public Licence 2.0, which is provided in [`License`](License).
+The file [`include/thesauros/charconv/unicode.hpp`](include/thesauros/charconv/unicode.hpp) is based on code provided on [https://bjoern.hoehrmann.de/utf-8/decoder/dfa/](https://bjoern.hoehrmann.de/utf-8/decoder/dfa/), which is licensed under the terms of the MIT licence as provided in [`include/thesauros/charconv/unicode-license`](include/thesauros/charconv/unicode-license).
