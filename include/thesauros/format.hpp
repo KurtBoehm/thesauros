@@ -6,7 +6,6 @@
 #include "format/color.hpp"
 #include "format/debug.hpp"
 #include "format/delimiter.hpp"
-#include "format/execution.hpp"
 #include "format/fmtlib.hpp"
 #include "format/formatter.hpp"
 #include "format/json.hpp"

@@ -19,6 +19,7 @@
 #include "thesauros/charconv/string-convert.hpp"
 #include "thesauros/containers/array.hpp"
 #include "thesauros/format/fmtlib.hpp"
+#include "thesauros/format/formatter.hpp"
 #include "thesauros/io/file-reader.hpp"
 #include "thesauros/ranges/iota.hpp"
 #include "thesauros/utility/index-segmentation.hpp"
@@ -30,18 +31,14 @@ auto cpu_range(TChars&& full) {
   const auto size = full.size() - size_t(sv.ends_with("\n"));
   return std::forward<TChars>(full) | std::views::take(size) | std::views::split(',') |
          std::views::transform([](auto substr) {
-           auto parts = std::views::split(std::string_view(substr.data(), substr.size()),
-                                          std::string_view{"-"}) |
-                        std::views::transform([](auto numstr) {
-                          return std::string_view(numstr.data(), numstr.size());
-                        });
-           auto it = parts.begin();
-           const auto first = string_to_integral<std::size_t>(*it++).value();
-           if (it == parts.end()) {
+           std::string_view sv{substr.data(), substr.size()};
+           const std::size_t hyphen = sv.find('-');
+           const auto first = string_to_integral<std::size_t>(sv.substr(0, hyphen)).value();
+           if (hyphen == std::string_view::npos) {
              return range(first, first + 1);
            }
-           const auto second = string_to_integral<std::size_t>(*it++).value();
-           assert(it == parts.end());
+           assert(sv.find('-', hyphen + 1) == std::string_view::npos);
+           const auto second = string_to_integral<std::size_t>(sv.substr(hyphen + 1)).value();
            return range(first, second + 1);
          }) |
          std::views::join;
@@ -80,5 +77,13 @@ struct CpuInfo {
   }
 };
 } // namespace thes
+
+template<>
+struct fmt::formatter<thes::CpuInfo> : public thes::NestedFormatter<std::size_t> {
+  auto format(const thes::CpuInfo& info, fmt::format_context& ctx) const {
+    return this->write_padded(
+      ctx, [&](auto it) { return fmt::format_to(it, "cpu{}", this->nested(info.id)); });
+  }
+};
 
 #endif // INCLUDE_THESAUROS_RESOURCES_CPU_INFO_HPP
