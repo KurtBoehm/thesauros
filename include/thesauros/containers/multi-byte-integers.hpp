@@ -69,7 +69,7 @@ struct ArrayStorage {
   }
 
   static Size effective_allocation(Size allocation) THES_ALWAYS_INLINE {
-    return allocation * element_bytes + 2 * padding_bytes;
+    return (allocation * element_bytes) + (2 * padding_bytes);
   }
 
 private:

@@ -83,11 +83,11 @@ struct ReduceGenerator : public ConsumerGeneratorBase {
 };
 
 template<typename TBinOp, typename TInit>
-inline constexpr InitReduceGenerator<TBinOp, TInit, false> left_reduce(TBinOp&& op, TInit&& init) {
+constexpr InitReduceGenerator<TBinOp, TInit, false> left_reduce(TBinOp&& op, TInit&& init) {
   return {std::forward<TBinOp>(op), std::forward<TInit>(init)};
 }
 template<typename TBinOp>
-inline constexpr auto left_reduce(TBinOp&& op) {
+constexpr auto left_reduce(TBinOp&& op) {
   return ReduceGenerator<TBinOp, false>{std::forward<TBinOp>(op)};
 }
 inline constexpr auto minimum =
@@ -96,11 +96,11 @@ inline constexpr auto maximum =
   left_reduce([]<typename T>(const T& v1, const T& v2) { return std::max(v1, v2); });
 
 template<typename TBinOp, typename TInit>
-inline constexpr InitReduceGenerator<TBinOp, TInit, true> right_reduce(TBinOp&& op, TInit&& init) {
+constexpr InitReduceGenerator<TBinOp, TInit, true> right_reduce(TBinOp&& op, TInit&& init) {
   return {std::forward<TBinOp>(op), std::forward<TInit>(init)};
 }
 template<typename TBinOp>
-inline constexpr auto right_reduce(TBinOp&& op) {
+constexpr auto right_reduce(TBinOp&& op) {
   return ReduceGenerator<TBinOp, true>{std::forward<TBinOp>(op)};
 }
 } // namespace thes::star

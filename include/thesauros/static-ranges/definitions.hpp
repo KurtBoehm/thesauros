@@ -6,6 +6,7 @@
 #include "definitions/get-at.hpp"
 #include "definitions/printable.hpp"
 #include "definitions/size.hpp"
+#include "definitions/static-apply.hpp"
 #include "definitions/type-traits.hpp"
 // IWYU pragma: end_exports
 
