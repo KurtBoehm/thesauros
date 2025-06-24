@@ -24,10 +24,10 @@ THES_ALWAYS_INLINE inline constexpr auto postfix_product_inclusive(const TRange&
   using Value = star::Value<TRange>;
   constexpr std::size_t size = thes::star::size<TRange>;
 
-  return transform([&range](auto idx) THES_ALWAYS_INLINE {
+  return index_transform<size + 1>([&range](auto idx) THES_ALWAYS_INLINE {
     return static_cast<Value>(
       left_reduce(std::multiplies<>{}, Value{1})(star::only_range<iota<idx, size>>(range)));
-  })(iota<0, size + 1>);
+  });
 }
 } // namespace thes::star
 
