@@ -19,7 +19,6 @@
 #include "thesauros/charconv/string-convert.hpp"
 #include "thesauros/containers/array.hpp"
 #include "thesauros/format/fmtlib.hpp"
-#include "thesauros/format/formatter.hpp"
 #include "thesauros/io/file-reader.hpp"
 #include "thesauros/ranges/iota.hpp"
 #include "thesauros/utility/index-segmentation.hpp"
@@ -77,13 +76,5 @@ struct CpuInfo {
   }
 };
 } // namespace thes
-
-template<>
-struct fmt::formatter<thes::CpuInfo> : public thes::NestedFormatter<std::size_t> {
-  auto format(const thes::CpuInfo& info, fmt::format_context& ctx) const {
-    return this->write_padded(
-      ctx, [&](auto it) { return fmt::format_to(it, "cpu{}", this->nested(info.id)); });
-  }
-};
 
 #endif // INCLUDE_THESAUROS_RESOURCES_CPU_INFO_HPP

@@ -10,9 +10,6 @@
 #include "thesauros/format/fmtlib.hpp"
 
 namespace thes {
-template<typename T, typename TChar = char>
-struct NestedFormatter : fmt::nested_formatter<T, TChar> {};
-
 template<typename TChar = char>
 struct SimpleFormatter {
   constexpr SimpleFormatter() = default;

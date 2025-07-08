@@ -4,6 +4,7 @@
 // IWYU pragma: begin_exports
 #include "format/bitsets.hpp"
 #include "format/color.hpp"
+#include "format/cpu-info.hpp"
 #include "format/debug.hpp"
 #include "format/delimiter.hpp"
 #include "format/fmtlib.hpp"

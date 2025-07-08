@@ -32,7 +32,7 @@ struct fmt::formatter<thes::SplitTimePrinter<TQuantity>> : thes::SimpleFormatter
         quantity_cast<thes::Quantity<std::intmax_t, typename Self::Unit>>(p.quantity).count();
 
       if (milliq < 0) {
-        it = fmt::format_to(it, "-");
+        *it++ = '-';
         milliq = -milliq;
       }
 

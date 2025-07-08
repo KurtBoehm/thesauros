@@ -10,7 +10,7 @@
 #include <cstddef>
 #include <type_traits>
 
-#include "fmt/ranges.h"
+#include "thesauros/format/fmtlib.hpp"
 
 #include "thesauros/string/static-string.hpp"
 

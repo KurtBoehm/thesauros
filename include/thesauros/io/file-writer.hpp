@@ -14,7 +14,7 @@
 #include <type_traits>
 #include <utility>
 
-#include <fmt/core.h>
+#include "thesauros/format/fmtlib.hpp"
 
 #include "thesauros/io/file.hpp"
 

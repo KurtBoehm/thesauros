@@ -68,6 +68,10 @@ struct StaticCapacityString {
     data_[size_++] = c;
   }
 
+  friend std::string_view format_as(const StaticCapacityString& self) {
+    return self.view();
+  }
+
 private:
   std::array<char, tCapacity> data_{};
   std::size_t size_{0};
