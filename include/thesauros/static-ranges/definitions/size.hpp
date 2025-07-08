@@ -7,7 +7,6 @@
 #ifndef INCLUDE_THESAUROS_STATIC_RANGES_DEFINITIONS_SIZE_HPP
 #define INCLUDE_THESAUROS_STATIC_RANGES_DEFINITIONS_SIZE_HPP
 
-#include <concepts>
 #include <cstddef>
 #include <type_traits>
 #include <utility>
@@ -15,34 +14,10 @@
 #include "thesauros/concepts/type-traits.hpp"
 
 namespace thes::star {
-namespace impl {
 template<typename TRange>
-concept HasMemberSize = requires {
-  { TRange::size } -> std::convertible_to<std::size_t>;
-};
-
-template<typename TRange>
-concept HasTupleSize = CompleteType<std::tuple_size<TRange>>;
-} // namespace impl
-
-template<typename TRange>
-struct SizeTrait;
-
-template<typename TRange>
-requires impl::HasMemberSize<TRange>
-struct SizeTrait<TRange> {
-  static constexpr std::size_t value = TRange::size;
-};
-template<typename TRange>
-requires(!impl::HasMemberSize<TRange> && impl::HasTupleSize<TRange>)
-struct SizeTrait<TRange> {
-  static constexpr std::size_t value = std::tuple_size_v<TRange>;
-};
-
-template<typename TRange>
-concept HasSize = CompleteType<SizeTrait<std::decay_t<TRange>>>;
+concept HasSize = CompleteType<std::tuple_size<std::decay_t<TRange>>>;
 template<HasSize TRange>
-inline constexpr std::size_t size = SizeTrait<std::decay_t<TRange>>::value;
+inline constexpr std::size_t size = std::tuple_size_v<std::decay_t<TRange>>;
 template<HasSize TRange>
 inline constexpr bool is_empty = size<TRange> == 0;
 } // namespace thes::star

@@ -5,24 +5,24 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <algorithm>
-#include <numeric>
 #include <random>
+#include <ranges>
 
 #include "thesauros/thesauros.hpp"
 
 using Size = unsigned int;
 
 void run(const Size size) {
-  thes::DynamicArray<Size> arr(size);
-  std::iota(arr.begin(), arr.end(), Size{0});
+  fmt::print("test {}\n", size);
+  auto arr = std::views::iota(Size{0}, size);
   thes::DynamicArray<Size> perm(size);
   thes::RangeRandomizer rand{size, std::mt19937_64{size}};
-  std::transform(arr.begin(), arr.end(), perm.begin(), [&](Size i) { return rand.transform(i); });
+  std::ranges::transform(arr, perm.begin(), [&](Size i) { return rand.transform(i); });
   if (size <= 48) {
     fmt::print("{}\n", perm);
   }
-  std::sort(perm.begin(), perm.end());
-  THES_ASSERT(std::equal(arr.begin(), arr.end(), perm.begin(), perm.end()));
+  std::ranges::sort(perm);
+  THES_ASSERT(std::ranges::equal(arr, perm));
 }
 
 int main() {

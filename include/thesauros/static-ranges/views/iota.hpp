@@ -12,19 +12,19 @@
 
 #include "thesauros/macropolis/inlining.hpp"
 #include "thesauros/math/arithmetic.hpp"
-#include "thesauros/static-ranges/definitions/printable.hpp"
+#include "thesauros/static-ranges/definitions/tuple-defs.hpp"
 #include "thesauros/types/value-tag.hpp"
 
 namespace thes::star {
 template<std::unsigned_integral TSize, TSize tBegin, TSize tEnd, TSize tStep>
 struct IotaView {
   static constexpr TSize size = div_ceil(tEnd - tBegin, tStep);
-  static constexpr PrintableMarker printable{};
+  static constexpr TupleDefsMarker tuple_defs_marker{};
 
   template<std::size_t tIndex>
   requires(tBegin + tIndex * tStep < tEnd)
-  THES_ALWAYS_INLINE constexpr decltype(auto) get(IndexTag<tIndex> /*index*/) const {
-    return value_tag<TSize, tBegin + TSize{tIndex} * tStep>;
+  THES_ALWAYS_INLINE friend constexpr decltype(auto) get(const IotaView& /*self*/) {
+    return value_tag<TSize, tBegin + (TSize{tIndex} * tStep)>;
   }
 };
 

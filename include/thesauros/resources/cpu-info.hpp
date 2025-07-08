@@ -27,18 +27,18 @@
 namespace thes {
 template<typename TChars>
 auto cpu_range(TChars&& full) {
-  const std::string_view sv{full.data(), full.size()};
-  const auto size = full.size() - size_t(sv.ends_with("\n"));
+  const std::string_view fullsv{full.data(), full.size()};
+  const auto size = full.size() - size_t(fullsv.ends_with("\n"));
   return std::forward<TChars>(full) | std::views::take(size) | std::views::split(',') |
          std::views::transform([](auto substr) {
-           std::string_view sv{substr.data(), substr.size()};
-           const std::size_t hyphen = sv.find('-');
-           const auto first = string_to_integral<std::size_t>(sv.substr(0, hyphen)).value();
+           std::string_view subsv{substr.data(), substr.size()};
+           const std::size_t hyphen = subsv.find('-');
+           const auto first = string_to_integral<std::size_t>(subsv.substr(0, hyphen)).value();
            if (hyphen == std::string_view::npos) {
              return range(first, first + 1);
            }
-           assert(sv.find('-', hyphen + 1) == std::string_view::npos);
-           const auto second = string_to_integral<std::size_t>(sv.substr(hyphen + 1)).value();
+           assert(subsv.find('-', hyphen + 1) == std::string_view::npos);
+           const auto second = string_to_integral<std::size_t>(subsv.substr(hyphen + 1)).value();
            return range(first, second + 1);
          }) |
          std::views::join;

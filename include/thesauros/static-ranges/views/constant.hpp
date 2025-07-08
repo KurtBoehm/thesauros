@@ -11,22 +11,21 @@
 #include <utility>
 
 #include "thesauros/macropolis/inlining.hpp"
-#include "thesauros/static-ranges/definitions/printable.hpp"
-#include "thesauros/types/value-tag.hpp"
+#include "thesauros/static-ranges/definitions/tuple-defs.hpp"
 
 namespace thes::star {
 template<std::size_t tSize, typename T>
 struct Constant {
   using Value = T;
   static constexpr std::size_t size = tSize;
-  static constexpr PrintableMarker printable{};
+  static constexpr TupleDefsMarker tuple_defs_marker{};
 
   T value;
 
   template<std::size_t tIndex>
   requires(tIndex < tSize)
-  THES_ALWAYS_INLINE constexpr auto get(IndexTag<tIndex> /*index*/) const {
-    return value;
+  THES_ALWAYS_INLINE friend constexpr auto get(const Constant& self) {
+    return self.value;
   }
 };
 

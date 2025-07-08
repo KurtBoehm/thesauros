@@ -13,8 +13,8 @@
 
 #include "thesauros/macropolis/inlining.hpp"
 #include "thesauros/static-ranges/definitions/concepts.hpp"
-#include "thesauros/static-ranges/definitions/printable.hpp"
 #include "thesauros/static-ranges/definitions/size.hpp"
+#include "thesauros/static-ranges/definitions/tuple-defs.hpp"
 #include "thesauros/types/value-tag.hpp"
 
 namespace thes::star {
@@ -22,14 +22,15 @@ template<typename TSize, typename TInner>
 struct EnumerateView {
   using Inner = std::decay_t<TInner>;
   static constexpr std::size_t size = thes::star::size<Inner>;
-  static constexpr PrintableMarker printable{};
+  static constexpr TupleDefsMarker tuple_defs_marker{};
 
   TInner inner;
 
   template<std::size_t tIndex>
-  THES_ALWAYS_INLINE constexpr std::pair<ValueTag<TSize, tIndex>, decltype(get_at<tIndex>(inner))>
-  get(IndexTag<tIndex> /*index*/) const {
-    return {value_tag<TSize, tIndex>, get_at<tIndex>(inner)};
+  THES_ALWAYS_INLINE friend constexpr std::pair<ValueTag<TSize, tIndex>,
+                                                decltype(get_at<tIndex>(inner))>
+  get(const EnumerateView& self) {
+    return {value_tag<TSize, tIndex>, get_at<tIndex>(self.inner)};
   }
 };
 

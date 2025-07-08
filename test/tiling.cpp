@@ -69,9 +69,9 @@ void test_scalar() {
     std::array<thes::IotaRange<std::size_t>, 24_uz * 3_uz> arr{};
     thes::for_each_tile<thes::IterDirection::FORWARD>(
       sizes | def_rng, tile_sizes, thes::StaticMap{}, [&arr, &num](auto t1, auto t2, auto t3) {
-        arr[3 * num + 0] = t1;
-        arr[3 * num + 1] = t2;
-        arr[3 * num + 2] = t3;
+        arr[(3 * num) + 0] = t1;
+        arr[(3 * num) + 1] = t2;
+        arr[(3 * num) + 2] = t3;
         ++num;
       });
     return arr;

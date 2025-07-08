@@ -8,6 +8,7 @@
 #include <utility>
 #include <variant>
 
+#include "thesauros/types.hpp"
 #include "thesauros/utility.hpp"
 
 namespace nsp1 {

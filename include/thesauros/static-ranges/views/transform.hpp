@@ -15,13 +15,12 @@
 #include "thesauros/macropolis/inlining.hpp"
 #include "thesauros/static-ranges/definitions/concepts.hpp"
 #include "thesauros/static-ranges/definitions/get-at.hpp"
-#include "thesauros/static-ranges/definitions/printable.hpp"
 #include "thesauros/static-ranges/definitions/size.hpp"
+#include "thesauros/static-ranges/definitions/tuple-defs.hpp"
 #include "thesauros/static-ranges/definitions/type-traits.hpp"
 #include "thesauros/static-ranges/sinks/apply.hpp"
 #include "thesauros/static-ranges/sinks/unique-value.hpp"
 #include "thesauros/static-ranges/views/iota.hpp"
-#include "thesauros/types/value-tag.hpp"
 #include "thesauros/utility/tuple.hpp"
 
 namespace thes::star {
@@ -48,7 +47,7 @@ requires(sizeof...(TArgRanges) > 0 && star::has_unique_value(std::array{size<TAr
 struct TransformView : public transform_impl::ValueBase<TFun, TRet, TArgRanges...> {
   static constexpr std::size_t size =
     star::unique_value(std::array{star::size<TArgRanges>...}).value();
-  static constexpr PrintableMarker printable{};
+  static constexpr TupleDefsMarker tuple_defs_marker{};
 
   TFun fun;
   Tuple<TArgRanges...> range_tup;
@@ -57,10 +56,10 @@ struct TransformView : public transform_impl::ValueBase<TFun, TRet, TArgRanges..
       : fun(std::forward<TFun>(f)), range_tup(std::forward<TArgRanges>(ranges)...) {}
 
   template<std::size_t tIndex>
-  THES_ALWAYS_INLINE constexpr decltype(auto) get(IndexTag<tIndex> /*tag*/) const {
-    return apply([this](const auto&... ranges) THES_ALWAYS_INLINE -> decltype(auto) {
-      return fun(get_at<tIndex>(ranges)...);
-    })(range_tup);
+  THES_ALWAYS_INLINE friend constexpr decltype(auto) get(const TransformView& self) {
+    return apply([&self](const auto&... ranges) THES_ALWAYS_INLINE -> decltype(auto) {
+      return self.fun(get_at<tIndex>(ranges)...);
+    })(self.range_tup);
   }
 };
 

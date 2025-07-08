@@ -29,6 +29,9 @@ struct IsCompleteTrait<T, sizeof(T) / sizeof(T)> : public std::true_type {};
 
 template<typename T>
 concept CompleteType = IsCompleteTrait<T>::value;
+
+template<typename T1, typename T2>
+concept DecayedSameAs = std::same_as<std::decay_t<T1>, std::decay_t<T2>>;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_CONCEPTS_TYPE_TRAITS_HPP

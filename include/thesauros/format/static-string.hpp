@@ -8,17 +8,13 @@
 #define INCLUDE_THESAUROS_FORMAT_STATIC_STRING_HPP
 
 #include <cstddef>
-#include <string_view>
+#include <type_traits>
 
-#include "thesauros/format/fmtlib.hpp"
+#include "fmt/ranges.h"
+
 #include "thesauros/string/static-string.hpp"
 
-template<std::size_t tSize>
-struct fmt::formatter<thes::StaticString<tSize>> : fmt::nested_formatter<std::string_view> {
-  auto format(const thes::StaticString<tSize>& str, format_context& ctx) const {
-    return this->write_padded(
-      ctx, [&](auto out) { return fmt::format_to(out, "{}", this->nested(str.view())); });
-  }
-};
+template<std::size_t tSize, typename TChar>
+struct fmt::is_tuple_formattable<thes::StaticString<tSize>, TChar> : public std::false_type {};
 
 #endif // INCLUDE_THESAUROS_FORMAT_STATIC_STRING_HPP

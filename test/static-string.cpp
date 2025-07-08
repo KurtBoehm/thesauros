@@ -8,7 +8,7 @@
 
 #include "thesauros/format.hpp"
 #include "thesauros/static-ranges.hpp"
-#include "thesauros/utility.hpp"
+#include "thesauros/string.hpp"
 
 int main() {
   using namespace thes::literals;

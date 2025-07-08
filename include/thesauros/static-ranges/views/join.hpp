@@ -15,12 +15,11 @@
 
 #include "thesauros/macropolis/inlining.hpp"
 #include "thesauros/static-ranges/definitions/concepts.hpp"
-#include "thesauros/static-ranges/definitions/printable.hpp"
 #include "thesauros/static-ranges/definitions/size.hpp"
+#include "thesauros/static-ranges/definitions/tuple-defs.hpp"
 #include "thesauros/static-ranges/definitions/type-traits.hpp"
 #include "thesauros/static-ranges/sinks/for-each.hpp"
 #include "thesauros/static-ranges/views/iota.hpp"
-#include "thesauros/types/value-tag.hpp"
 #include "thesauros/utility/tuple.hpp"
 
 namespace thes::star {
@@ -29,13 +28,13 @@ struct JoinView {
   static constexpr std::size_t size = []<std::size_t... tIdxs>(std::index_sequence<tIdxs...>) {
     return (... + thes::star::size<std::decay_t<Element<tIdxs, TRanges>>>);
   }(std::make_index_sequence<star::size<TRanges>>{});
-  static constexpr PrintableMarker printable{};
+  static constexpr TupleDefsMarker tuple_defs_marker{};
 
   TRanges ranges;
 
   template<std::size_t tIndex>
   requires(tIndex < size)
-  THES_ALWAYS_INLINE constexpr auto get(IndexTag<tIndex> /*index*/) const {
+  THES_ALWAYS_INLINE friend constexpr auto get(const JoinView& self) {
     constexpr auto pair = []() THES_ALWAYS_INLINE {
       std::size_t sum = 0;
       std::optional<std::pair<std::size_t, std::size_t>> out{};
@@ -51,7 +50,7 @@ struct JoinView {
       })(star::iota<0, star::size<TRanges>>);
       return *out;
     }();
-    return get_at<pair.second>(get_at<pair.first>(ranges));
+    return get_at<pair.second>(get_at<pair.first>(self.ranges));
   }
 };
 template<typename... TRanges>

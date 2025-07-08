@@ -14,27 +14,26 @@
 
 #include "thesauros/macropolis/inlining.hpp"
 #include "thesauros/static-ranges/definitions/concepts.hpp"
-#include "thesauros/static-ranges/definitions/printable.hpp"
 #include "thesauros/static-ranges/definitions/size.hpp"
+#include "thesauros/static-ranges/definitions/tuple-defs.hpp"
 #include "thesauros/static-ranges/sinks/for-each.hpp"
 #include "thesauros/static-ranges/sinks/to-array.hpp"
 #include "thesauros/static-ranges/views/iota.hpp"
 #include "thesauros/static-ranges/views/transform.hpp"
 #include "thesauros/types/type-tag.hpp"
-#include "thesauros/types/value-tag.hpp"
 
 namespace thes::star {
 template<typename TInner, auto tIdxRange>
 struct FilterView {
   using IdxRange = std::decay_t<decltype(tIdxRange)>;
   static constexpr std::size_t size = star::size<IdxRange>;
-  static constexpr PrintableMarker printable{};
+  static constexpr TupleDefsMarker tuple_defs_marker{};
 
   TInner inner;
 
   template<std::size_t tIndex>
-  THES_ALWAYS_INLINE constexpr decltype(auto) get(IndexTag<tIndex> /*index*/) const {
-    return get_at<get_at<tIndex>(tIdxRange)>(inner);
+  THES_ALWAYS_INLINE friend constexpr decltype(auto) get(const FilterView& self) {
+    return get_at<get_at<tIndex>(tIdxRange)>(self.inner);
   }
 };
 

@@ -14,7 +14,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "thesauros/static-ranges/definitions/printable.hpp"
 #include "thesauros/types/type-tag.hpp"
 #include "thesauros/types/value-tag.hpp"
 
@@ -79,18 +78,17 @@ template<typename... Ts>
 struct Tuple : public detail::Tuple<std::index_sequence_for<Ts...>, Ts...> {
   using Parent = detail::Tuple<std::index_sequence_for<Ts...>, Ts...>;
   using Parent::Parent;
-  static constexpr star::PrintableMarker printable{};
   static constexpr std::size_t size = sizeof...(Ts);
 
   template<std::size_t tIndex>
   requires(tIndex < size)
-  constexpr decltype(auto) get(IndexTag<tIndex> /*index*/ = {}) const {
-    return detail::get_tuple_at<tIndex>(*this);
+  friend constexpr decltype(auto) get(const Tuple& self, IndexTag<tIndex> /*index*/ = {}) {
+    return detail::get_tuple_at<tIndex>(self);
   }
   template<std::size_t tIndex>
   requires(tIndex < size)
-  constexpr decltype(auto) get(IndexTag<tIndex> /*index*/ = {}) {
-    return detail::get_tuple_at<tIndex>(*this);
+  friend constexpr decltype(auto) get(Tuple& self, IndexTag<tIndex> /*index*/ = {}) {
+    return detail::get_tuple_at<tIndex>(self);
   }
 
   constexpr bool operator==(const Tuple&) const = default;

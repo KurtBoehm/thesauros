@@ -9,9 +9,7 @@
 #include "views/generate.hpp"
 #include "views/iota.hpp"
 #include "views/join.hpp"
-#include "views/postfix-product-inclusive.hpp"
 #include "views/reversed.hpp"
-#include "views/sub.hpp"
 #include "views/transform.hpp"
 #include "views/zip.hpp"
 // IWYU pragma: end_exports

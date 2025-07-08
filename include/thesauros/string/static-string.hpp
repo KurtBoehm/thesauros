@@ -18,14 +18,14 @@
 
 #include "thesauros/static-ranges.hpp"
 #include "thesauros/string/character-tools.hpp"
-#include "thesauros/types/value-tag.hpp"
 
 namespace thes {
 template<std::size_t tSize>
 struct StaticString {
   using Value = char;
+  using Data = std::array<Value, tSize + 1>;
   static constexpr std::size_t size = tSize;
-  using Data = std::array<Value, size + 1>;
+  static constexpr star::TupleDefsMarker tuple_defs_marker{};
 
   Data data;
 
@@ -39,12 +39,16 @@ struct StaticString {
   }
 
   template<std::size_t tIdx>
-  [[nodiscard]] constexpr char get(IndexTag<tIdx> /*tag*/ = {}) const {
-    return std::get<tIdx>(data);
+  [[nodiscard]] friend constexpr char get(const StaticString& self) {
+    return std::get<tIdx>(self.data);
   }
 
   [[nodiscard]] constexpr std::string_view view() const {
     return {data.data(), size};
+  }
+
+  friend std::string_view format_as(const StaticString& self) {
+    return self.view();
   }
 
   [[nodiscard]] constexpr auto to_lowercase() const {
@@ -89,8 +93,7 @@ struct StaticString {
     return StaticString<full_size>{star::index_transform<full_size + 1>([&](auto i) {
                                      if constexpr (i < full_size) {
                                        constexpr auto pair = compute_pair(i);
-                                       return std::get<pair.first>(tuple).get(
-                                         index_tag<pair.second>);
+                                       return get<pair.second>(std::get<pair.first>(tuple));
                                      } else {
                                        return '\0';
                                      }
@@ -115,7 +118,7 @@ inline constexpr bool operator==(const StaticString<tSize1>& s1, const StaticStr
   if constexpr (tSize1 != tSize2) {
     return false;
   } else {
-    return star::index_transform<tSize1>([&](auto i) { return s1.get(i) == s2.get(i); }) |
+    return star::index_transform<tSize1>([&](auto i) { return get<i>(s1) == get<i>(s2); }) |
            star::left_reduce(std::logical_and<>{}, true);
   }
 }
@@ -125,9 +128,9 @@ inline constexpr StaticString<tSize1 + tSize2> operator+(const StaticString<tSiz
                                                          const StaticString<tSize2>& s2) {
   return StaticString<tSize1 + tSize2>{star::index_transform<tSize1 + tSize2 + 1>([&](auto i) {
                                          if constexpr (i < tSize1) {
-                                           return s1.get(i);
+                                           return get<i>(s1);
                                          } else if constexpr (i < tSize1 + tSize2) {
-                                           return s2.get(index_tag<i - tSize1>);
+                                           return get<i - tSize1>(s2);
                                          } else {
                                            return '\0';
                                          }

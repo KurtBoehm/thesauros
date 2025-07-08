@@ -14,22 +14,21 @@
 #include "thesauros/macropolis/inlining.hpp"
 #include "thesauros/static-ranges/definitions/concepts.hpp"
 #include "thesauros/static-ranges/definitions/get-at.hpp"
-#include "thesauros/static-ranges/definitions/printable.hpp"
 #include "thesauros/static-ranges/definitions/size.hpp"
-#include "thesauros/types/value-tag.hpp"
+#include "thesauros/static-ranges/definitions/tuple-defs.hpp"
 
 namespace thes::star {
 template<typename TInner>
 struct ReversedView {
   using Inner = std::decay_t<TInner>;
   static constexpr std::size_t size = thes::star::size<Inner>;
-  static constexpr PrintableMarker printable{};
+  static constexpr TupleDefsMarker tuple_defs_marker{};
 
   TInner inner;
 
   template<std::size_t tIndex>
-  THES_ALWAYS_INLINE constexpr auto get(IndexTag<tIndex> /*index*/) const {
-    return get_at<size - tIndex - 1>(inner);
+  THES_ALWAYS_INLINE friend constexpr auto get(const ReversedView& self) {
+    return get_at<size - tIndex - 1>(self.inner);
   }
 };
 

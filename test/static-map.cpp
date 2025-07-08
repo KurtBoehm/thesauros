@@ -5,6 +5,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include "thesauros/math.hpp"
+#include "thesauros/string.hpp"
 #include "thesauros/types.hpp"
 #include "thesauros/utility.hpp"
 
