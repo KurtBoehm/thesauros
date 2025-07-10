@@ -8,16 +8,15 @@
 #define INCLUDE_THESAUROS_STATIC_RANGES_DEFINITIONS_TYPE_TRAITS_HPP
 
 #include <cstddef>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 
-#include "thesauros/static-ranges/definitions/get-at.hpp"
-#include "thesauros/static-ranges/definitions/size.hpp"
 #include "thesauros/types/type-sequence/type-sequence.hpp"
 
 namespace thes::star {
 template<std::size_t tIdx, typename TRange>
-using Element = decltype(get_at<tIdx>(std::declval<const TRange&>()));
+using Element = std::tuple_element_t<tIdx, std::decay_t<TRange>>;
 
 template<typename TRange>
 struct ValueSeqTrait {
@@ -26,10 +25,10 @@ struct ValueSeqTrait {
 
   template<std::size_t... tIdxs>
   struct Impl<std::index_sequence<tIdxs...>> {
-    using Type = TypeSeq<decltype(get_at<tIdxs>(std::declval<const TRange&>()))...>;
+    using Type = TypeSeq<Element<tIdxs, TRange>...>;
   };
 
-  using Type = Impl<std::make_index_sequence<size<TRange>>>::Type;
+  using Type = Impl<std::make_index_sequence<std::tuple_size_v<std::decay_t<TRange>>>>::Type;
 };
 
 template<typename TRange>
