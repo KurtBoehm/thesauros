@@ -15,7 +15,6 @@
 #include <utility>
 
 #include "thesauros/format/fmtlib.hpp"
-
 #include "thesauros/io/file.hpp"
 
 namespace thes {
