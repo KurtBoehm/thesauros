@@ -75,14 +75,16 @@ struct UnicodeDecoder {
     for (const char* ptr = str.begin(); ptr != end; ++ptr) {
       const auto [codep, state] = decode(std::bit_cast<std::uint8_t>(*ptr));
       switch (state) {
-      case State::ACCEPTED: {
-        return {codep, {ptr + 1, end}};
-      }
-      case State::REJECTED: throw std::invalid_argument("The string is invalid!");
-      default: break;
+        case State::ACCEPTED: {
+          return {codep, {ptr + 1, end}};
+        }
+        case State::REJECTED: {
+          throw std::invalid_argument{"The string is invalid!"};
+        }
+        default: break;
       }
     }
-    throw std::invalid_argument("The string is invalid!");
+    throw std::invalid_argument{"The string is invalid!"};
   }
 
   [[nodiscard]] State state() const {

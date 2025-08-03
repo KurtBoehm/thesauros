@@ -12,7 +12,7 @@
 
 namespace thes {
 struct Empty {
-  [[nodiscard]] constexpr static bool has_value() {
+  [[nodiscard]] static constexpr bool has_value() {
     return false;
   }
 

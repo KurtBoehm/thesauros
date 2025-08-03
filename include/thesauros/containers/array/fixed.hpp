@@ -123,7 +123,7 @@ struct FixedArray {
   [[nodiscard]] constexpr TValue* data() {
     return allocation_.data();
   }
-  [[nodiscard]] const constexpr TValue* data() const {
+  [[nodiscard]] constexpr const TValue* data() const {
     return allocation_.data();
   }
 
