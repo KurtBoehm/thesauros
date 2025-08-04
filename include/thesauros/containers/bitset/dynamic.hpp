@@ -143,7 +143,7 @@ private:
   }
 
   static constexpr Chunk mask(std::size_t i) {
-    return Chunk{1} << i;
+    return Chunk(Chunk{1} << i);
   }
 };
 } // namespace thes

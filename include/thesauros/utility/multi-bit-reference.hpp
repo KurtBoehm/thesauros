@@ -56,7 +56,7 @@ struct MutableBitReference {
 
 private:
   constexpr Chunk mask() const {
-    return Chunk{1} << index_;
+    return Chunk(Chunk{1} << index_);
   }
 
   Chunk& chunk_;

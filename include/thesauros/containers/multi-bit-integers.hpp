@@ -54,7 +54,7 @@ struct MultiBitIntegers {
     }
     constexpr void set_bit(Chunk index, bool value, std::memory_order mem_order) {
       std::atomic_ref ref{chunk};
-      Chunk bmask = Chunk{1} << (index + offset);
+      Chunk bmask = Chunk(Chunk{1} << (index + offset));
       if (value) {
         ref.fetch_or(bmask, mem_order);
       } else {
