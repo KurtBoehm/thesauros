@@ -33,52 +33,58 @@ inline auto escape_string(std::string_view in, auto out_it) {
 
     const auto [codep, state] = decoder.decode(std::bit_cast<std::uint8_t>(c));
     switch (state) {
-    case ACCEPTED: {
-      switch (codep) {
-      case '\b': {
-        extend('\\', 'b');
-        break;
-      }
-      case '\t': {
-        extend('\\', 't');
-        break;
-      }
-      case '\n': {
-        extend('\\', 'n');
-        break;
-      }
-      case '\f': {
-        extend('\\', 'f');
-        break;
-      }
-      case '\r': {
-        extend('\\', 'r');
-        break;
-      }
-      case '\"': {
-        extend('\\', '"');
-        break;
-      }
-      case '\\': {
-        extend('\\', '\\');
-        break;
-      }
-      default:
-        if (codep <= 0x1F) {
-          using SI = SafeInt<char>;
-          const SI c1 = SI{'0'} + (SI{c} >> 4);
-          const SI c2a = SI{c} & SI{0xF};
-          const SI c2b = (c2a < SI{10}) ? (SI{'0'} + c2a) : (SI{'A'} + (c2a - SI{10}));
+      case ACCEPTED: {
+        switch (codep) {
+          case '\b': {
+            extend('\\', 'b');
+            break;
+          }
+          case '\t': {
+            extend('\\', 't');
+            break;
+          }
+          case '\n': {
+            extend('\\', 'n');
+            break;
+          }
+          case '\f': {
+            extend('\\', 'f');
+            break;
+          }
+          case '\r': {
+            extend('\\', 'r');
+            break;
+          }
+          case '\"': {
+            extend('\\', '"');
+            break;
+          }
+          case '\\': {
+            extend('\\', '\\');
+            break;
+          }
+          default:
+            if (codep <= 0x1F) {
+              using SI = SafeInt<char>;
+              const SI c1 = SI{'0'} + (SI{c} >> 4);
+              const SI c2a = SI{c} & SI{0xF};
+              const SI c2b = (c2a < SI{10}) ? (SI{'0'} + c2a) : (SI{'A'} + (c2a - SI{10}));
 
-          extend('\\', 'u', '0', '0', c1.unsafe(), c2b.unsafe());
-        } else {
-          extend(c);
+              extend('\\', 'u', '0', '0', c1.unsafe(), c2b.unsafe());
+            } else {
+              extend(c);
+            }
+            break;
         }
+        break;
       }
-      break;
-    }
-    case REJECTED: throw std::invalid_argument("Found an invalid UTF-8 codepoint!");
-    default: extend(c); break;
+      case REJECTED: {
+        throw std::invalid_argument("Found an invalid UTF-8 codepoint!");
+      }
+      default: {
+        extend(c);
+        break;
+      }
     }
   }
 

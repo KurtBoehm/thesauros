@@ -28,29 +28,29 @@ constexpr std::optional<T> parse_integer(std::string_view src, TParseMode parse_
         // This slightly convoluted implementation optimizes better
         auto char_map = [c]() -> T {
           switch (c) {
-          case '0': return 0;
-          case '1': return 1;
-          case '2': return 2;
-          case '3': return 3;
-          case '4': return 4;
-          case '5': return 5;
-          case '6': return 6;
-          case '7': return 7;
-          case '8': return 8;
-          case '9': return 9;
-          case 'A':
-          case 'a': return 0xa;
-          case 'B':
-          case 'b': return 0xb;
-          case 'C':
-          case 'c': return 0xc;
-          case 'D':
-          case 'd': return 0xd;
-          case 'E':
-          case 'e': return 0xe;
-          case 'F':
-          case 'f': return 0xf;
-          default: return std::numeric_limits<T>::max();
+            case '0': return 0;
+            case '1': return 1;
+            case '2': return 2;
+            case '3': return 3;
+            case '4': return 4;
+            case '5': return 5;
+            case '6': return 6;
+            case '7': return 7;
+            case '8': return 8;
+            case '9': return 9;
+            case 'A': [[fallthrough]];
+            case 'a': return 0xa;
+            case 'B': [[fallthrough]];
+            case 'b': return 0xb;
+            case 'C': [[fallthrough]];
+            case 'c': return 0xc;
+            case 'D': [[fallthrough]];
+            case 'd': return 0xd;
+            case 'E': [[fallthrough]];
+            case 'e': return 0xe;
+            case 'F': [[fallthrough]];
+            case 'f': return 0xf;
+            default: return std::numeric_limits<T>::max();
           }
         };
 

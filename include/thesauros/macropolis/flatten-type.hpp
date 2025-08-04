@@ -158,7 +158,7 @@ inline constexpr decltype(auto) flatten_type(T&& value) {
   THES_POLIS_CALL_TYPED(THES_POLIS_FLATTEN_TYPE_VARIANT_IMPL, ELEM)
 
 #define THES_DEFINE_FLATTEN_TYPE_IMPL(VARIANT_MEMBERS, TEMPLATE_PARAMS) \
-  constexpr auto flatten()&& { \
+  constexpr auto flatten() && { \
     using Self = TypeInfo::Type; \
     using MemberInfos = TypeInfo::Members; \
     constexpr auto member_infos = TypeInfo::members; \

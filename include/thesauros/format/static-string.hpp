@@ -11,7 +11,6 @@
 #include <type_traits>
 
 #include "thesauros/format/fmtlib.hpp"
-
 #include "thesauros/string/static-string.hpp"
 
 template<std::size_t tSize, typename TChar>
