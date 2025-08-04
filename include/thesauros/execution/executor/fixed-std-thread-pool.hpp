@@ -28,8 +28,12 @@
 
 namespace thes {
 struct FixedStdThreadPool {
+  using Op = std::function<void(std::size_t)>;
+  struct Task {
+    Op fun;
+    std::optional<std::size_t> used_thread_num;
+  };
   using Threads = FixedAllocArray<std::thread>;
-  using Task = std::function<void(std::size_t)>;
   using TaskID = std::size_t;
 
   template<typename TCpuSets = Empty>
@@ -58,7 +62,9 @@ struct FixedStdThreadPool {
           last_id = task_id_;
           lock.unlock();
 
-          task(i);
+          if (!task.used_thread_num.has_value() || i < *task.used_thread_num) {
+            task.fun(i);
+          }
           lock.lock();
           --unfinished_;
           lock.unlock();
@@ -104,11 +110,11 @@ struct FixedStdThreadPool {
     return threads_.size();
   }
 
-  void execute(Task task, std::optional<std::size_t> used_thread_num = {}) const {
+  void execute(Op task, std::optional<std::size_t> used_thread_num = {}) const {
     assert(!used_thread_num.has_value() || *used_thread_num <= threads_.size());
     {
       const std::lock_guard lock{work_mutex_};
-      task_ = std::move(task);
+      task_.emplace(std::move(task), used_thread_num);
       unfinished_ = threads_.size();
       ++task_id_;
     }
