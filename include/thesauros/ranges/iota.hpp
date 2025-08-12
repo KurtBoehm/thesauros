@@ -97,6 +97,10 @@ struct IotaRange {
     return const_reverse_iterator{begin_};
   }
 
+  [[nodiscard]] constexpr Value operator[](Value i) const {
+    return begin_ + i;
+  }
+
   [[nodiscard]] constexpr bool contains(const T& value) const {
     return begin_ <= value && value < end_;
   }

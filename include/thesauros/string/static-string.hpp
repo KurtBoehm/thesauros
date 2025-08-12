@@ -30,8 +30,8 @@ struct StaticString {
   Data data;
 
   constexpr StaticString(const char* str)
-      : data{star::index_transform<size + 1>([&](auto idx) { return str[idx]; }) | star::to_array} {
-  }
+      : data{star::static_apply<size + 1>(
+          [str]<std::size_t... tIdxs>() { return std::array{str[tIdxs]...}; })} {}
   constexpr StaticString(Data&& d) : data{std::move(d)} {}
 
   static constexpr StaticString filled(char fill) {
@@ -65,40 +65,41 @@ struct StaticString {
   constexpr auto join(const TStrings&... strings) {
     constexpr std::size_t str_num = sizeof...(TStrings);
     constexpr std::size_t full_size = (... + TStrings::size) + (str_num - 1) * size;
-    const auto tuple = std::tie(*this, strings...);
+    const auto tuple = std::tie(strings...);
     using Tuple = std::tuple<TStrings...>;
 
-    constexpr auto compute_pair = [=](auto i) {
-      std::optional<std::pair<std::size_t, std::size_t>> idxs{};
-      star::iota<0, str_num> | star::for_each([&](auto j) {
-        std::size_t offset = star::index_transform<j>(
-                               [](auto k) { return std::tuple_element_t<k, Tuple>::size + size; }) |
-                             star::left_reduce(std::plus<>{}, std::size_t{0});
-
-        const std::size_t upper = offset + std::tuple_element_t<j, Tuple>::size;
-
-        if (offset <= i) {
-          if (i < upper) {
-            assert(!idxs.has_value());
-            idxs = std::make_pair(j + 1, i - offset);
-          } else if (i < upper + size) {
-            assert(!idxs.has_value());
-            idxs = std::make_pair(0, i - upper);
-          }
-        }
+    // number of characters before string i and an array of these
+    constexpr auto prefix_size = [=](auto i) {
+      return star::static_apply<i>([]<std::size_t... tIdxs>() {
+        return (std::size_t{0} + ... +
+                (std::tuple_element_t<tIdxs, Tuple>::size + ((tIdxs + 1 < str_num) ? size : 0)));
       });
-      return idxs.value();
+    };
+    constexpr std::array<std::size_t, str_num + 1> prefix_sizes = star::static_apply<str_num + 1>(
+      [=]<std::size_t... tIdxs>() { return std::array{prefix_size(index_tag<tIdxs>)...}; });
+    // find the string (including the following copy of *this) which output index i falls into
+    constexpr auto find_str = [=](auto i) {
+      for (std::size_t j = 0; j < str_num; ++j) {
+        if (prefix_sizes[j] <= i && i < prefix_sizes[j + 1]) {
+          return std::optional{j};
+        }
+      }
+      return std::optional<std::size_t>{};
+    };
+    // get the character at index i
+    const auto get_char = [&, this](auto i) {
+      constexpr auto off = find_str(i).value();
+      constexpr auto j = i - prefix_sizes[off];
+      constexpr auto offsize = std::tuple_element_t<off, Tuple>::size;
+      if constexpr (j < offsize) {
+        return get<j>(std::get<off>(tuple));
+      } else {
+        return get<j - offsize>(*this);
+      }
     };
 
-    return StaticString<full_size>{star::index_transform<full_size + 1>([&](auto i) {
-                                     if constexpr (i < full_size) {
-                                       constexpr auto pair = compute_pair(i);
-                                       return get<pair.second>(std::get<pair.first>(tuple));
-                                     } else {
-                                       return '\0';
-                                     }
-                                   }) |
-                                   star::to_array};
+    return StaticString<full_size>{star::static_apply<full_size>(
+      [=]<std::size_t... tIdxs>() { return std::array{get_char(index_tag<tIdxs>)..., '\0'}; })};
   }
 
   constexpr StaticString<0> join() {
@@ -114,7 +115,7 @@ template<std::size_t tSize>
 StaticString(const char (&)[tSize]) -> StaticString<tSize - 1>;
 
 template<std::size_t tSize1, std::size_t tSize2>
-inline constexpr bool operator==(const StaticString<tSize1>& s1, const StaticString<tSize2>& s2) {
+constexpr bool operator==(const StaticString<tSize1>& s1, const StaticString<tSize2>& s2) {
   if constexpr (tSize1 != tSize2) {
     return false;
   } else {
@@ -124,8 +125,8 @@ inline constexpr bool operator==(const StaticString<tSize1>& s1, const StaticStr
 }
 
 template<std::size_t tSize1, std::size_t tSize2>
-inline constexpr StaticString<tSize1 + tSize2> operator+(const StaticString<tSize1>& s1,
-                                                         const StaticString<tSize2>& s2) {
+constexpr StaticString<tSize1 + tSize2> operator+(const StaticString<tSize1>& s1,
+                                                  const StaticString<tSize2>& s2) {
   return StaticString<tSize1 + tSize2>{star::index_transform<tSize1 + tSize2 + 1>([&](auto i) {
                                          if constexpr (i < tSize1) {
                                            return get<i>(s1);
@@ -140,13 +141,13 @@ inline constexpr StaticString<tSize1 + tSize2> operator+(const StaticString<tSiz
 
 namespace literals {
 template<StaticString tString>
-inline constexpr auto operator""_sstr() {
+constexpr auto operator""_sstr() {
   return tString;
 }
 } // namespace literals
 
 template<StaticString tString>
-inline constexpr auto to_snake_case() {
+constexpr auto to_snake_case() {
   constexpr std::size_t size = [] {
     std::size_t num = 0;
     for (std::size_t i = 1; i < tString.size; ++i) {

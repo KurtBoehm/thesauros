@@ -11,6 +11,7 @@
 #include "format/formatter.hpp"
 #include "format/json.hpp"
 #include "format/macropolis.hpp"
+#include "format/multi-size.hpp"
 #include "format/quantity.hpp"
 #include "format/ranges.hpp"
 #include "format/static-capacity-string.hpp"

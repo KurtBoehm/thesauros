@@ -16,7 +16,7 @@
 
 namespace thes::star {
 template<typename TIdx, typename TSize, std::size_t tSize>
-inline constexpr auto index_to_position(TIdx index, const std::array<TSize, tSize>& sizes) {
+constexpr auto index_to_position(TIdx index, const std::array<TSize, tSize>& sizes) {
   auto impl = [&sizes]<typename... TArgs>(auto& self, TIdx idx, auto end, TArgs&&... args) {
     static_assert(tSize > 0);
 

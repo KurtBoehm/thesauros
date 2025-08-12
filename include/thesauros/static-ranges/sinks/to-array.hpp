@@ -15,18 +15,19 @@
 #include "thesauros/macropolis/inlining.hpp"
 #include "thesauros/static-ranges/definitions/concepts.hpp"
 #include "thesauros/static-ranges/definitions/size.hpp"
-#include "thesauros/static-ranges/definitions/type-traits.hpp"
-#include "thesauros/static-ranges/sinks/to-container.hpp"
+#include "thesauros/static-ranges/definitions/static-apply.hpp"
 
 namespace thes::star {
 struct ToArrayGenerator : public ConsumerGeneratorBase {
   template<typename TRange>
   THES_ALWAYS_INLINE constexpr auto operator()(TRange&& range) const {
     using Range = std::decay_t<TRange>;
-    using Value = star::Value<Range>;
     constexpr std::size_t size = thes::star::size<Range>;
 
-    return to_container<std::array<Value, size>>(std::forward<TRange>(range));
+    return star::static_apply<size>([range = std::forward<TRange>(range)]<std::size_t... tIdxs>() {
+      using std::get;
+      return std::array{get<tIdxs>(range)...};
+    });
   }
 };
 
