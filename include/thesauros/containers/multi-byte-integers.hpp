@@ -149,7 +149,9 @@ struct MultiByteIntegersBase {
       store(ptr_, load(ref.ptr_));
       return *this;
     }
-    IntRef& operator=(Value value) {
+    // This is required to be const for iterators to support std::indirectly_writable,
+    // which is required for C++20 ranges
+    const IntRef& operator=(Value value) const { // NOLINT
       if constexpr (!tOptional) {
         assert(value == (value & mask));
       }
@@ -496,19 +498,25 @@ struct MultiByteIntegerArray
               std::byte{std::numeric_limits<unsigned char>::max()});
   }
 
-  iterator insert_uninit(const_iterator pos, Size size) {
+  // TODO This is quite inefficient!
+  iterator insert_any(const_iterator pos, Size ins_size, Size pad_end = 0) {
+    const std::ptrdiff_t offset = pos.raw() - span().data();
     const Size old_bsize = byte_size(storage().size());
     assert(array().size() == old_bsize + 2 * padding_bytes);
 
+    const Size size = ins_size + pad_end;
+    if (size == 0) {
+      return iterator{span().data() + offset};
+    }
     const Size new_bsize = old_bsize + byte_size(size);
-    const std::ptrdiff_t offset = pos.raw() - span().data();
 
     array().expand(new_bsize + 2 * padding_bytes);
     storage().size() += size;
 
     std::byte* new_begin = span().data();
     std::byte* dst = new_begin + offset;
-    std::move_backward(dst, new_begin + old_bsize, new_begin + new_bsize);
+    std::byte* old_end = new_begin + old_bsize;
+    std::move_backward(dst, old_end, old_end + byte_size(ins_size));
 
     return iterator{dst};
   }

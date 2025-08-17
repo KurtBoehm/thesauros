@@ -16,6 +16,7 @@
 #include "thesauros/static-ranges/definitions/concepts.hpp"
 #include "thesauros/static-ranges/definitions/size.hpp"
 #include "thesauros/static-ranges/definitions/static-apply.hpp"
+#include "thesauros/static-ranges/definitions/type-traits.hpp"
 
 namespace thes::star {
 struct ToArrayGenerator : public ConsumerGeneratorBase {
@@ -24,10 +25,15 @@ struct ToArrayGenerator : public ConsumerGeneratorBase {
     using Range = std::decay_t<TRange>;
     constexpr std::size_t size = thes::star::size<Range>;
 
-    return star::static_apply<size>([range = std::forward<TRange>(range)]<std::size_t... tIdxs>() {
-      using std::get;
-      return std::array{get<tIdxs>(range)...};
-    });
+    if constexpr (size > 0) {
+      return star::static_apply<size>(
+        [range = std::forward<TRange>(range)]<std::size_t... tIdxs>() {
+          using std::get;
+          return std::array{get<tIdxs>(range)...};
+        });
+    } else {
+      return std::array<star::Value<Range>, size>{};
+    }
   }
 };
 

@@ -264,6 +264,47 @@ template<std::integral T, T tSize>
 constexpr StaticSizeIotaRange<T, tSize> range_size(T begin, ValueTag<T, tSize> /*tag*/) {
   return StaticSizeIotaRange<T, tSize>{begin};
 }
+
+template<typename T>
+struct IotaTrait;
+template<typename T>
+struct IotaTrait<IotaRange<T>> {
+  using Value = T;
+
+  static constexpr T front(const IotaRange<T>& r) {
+    return r.begin_value();
+  }
+  static constexpr T bound(const IotaRange<T>& r) {
+    return r.end_value();
+  }
+};
+
+template<typename T>
+struct IotaInfo {
+  T front;
+  T bound;
+
+  [[nodiscard]] constexpr std::pair<T, T> range() const {
+    return {front, bound};
+  }
+
+  [[nodiscard]] constexpr auto size() const {
+    if constexpr (requires(T& mref, const T& cref) { mref -= cref; }) {
+      T out = bound;
+      out -= front;
+      return out;
+    } else {
+      return bound - front;
+    }
+  }
+};
+
+template<typename TRange>
+constexpr IotaInfo<typename IotaTrait<TRange>::Value> iota_info(const TRange& range) {
+  using Trait = IotaTrait<TRange>;
+  using Value = Trait::Value;
+  return IotaInfo<Value>{Trait::front(range), Trait::bound(range)};
+}
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_RANGES_IOTA_HPP

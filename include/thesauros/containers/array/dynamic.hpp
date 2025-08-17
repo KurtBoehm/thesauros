@@ -279,26 +279,34 @@ struct DynamicArray {
     return last;
   }
 
-  constexpr iterator insert_uninit(const_iterator pos, Size add_size) {
+  constexpr iterator insert_any(const_iterator pos, Size ins_size, Size pad_end = 0) {
     const auto offset = pos - allocation_.begin();
     iterator mut_pos = allocation_.begin() + offset;
 
     const Size old_size = size();
+    const Size add_size = ins_size + pad_end;
     const Size new_size = old_size + add_size;
 
     if (new_size <= allocation_.size()) {
-      std::move_backward(mut_pos, data_end_, data_end_ + add_size);
+      std::move_backward(mut_pos, data_end_, data_end_ + ins_size);
       data_end_ += add_size;
-      std::destroy(mut_pos, mut_pos + add_size);
+      const Size soff = *safe_cast<Size>(offset);
+      const Size post_move = soff + ins_size;
+      const Size moved_end = std::min(post_move, old_size);
+      initialize(allocation_.begin() + moved_end, allocation_.begin() + post_move);
+      initialize(data_end_ - pad_end, data_end_);
       return mut_pos;
     }
 
     allocation_.expand(grown_size(new_size),
-                       [&](iterator old_begin, iterator /*old_end*/, iterator new_begin) {
-                         iterator target = new_begin + offset;
+                       [&](iterator old_begin, iterator old_end, iterator new_begin) {
+                         iterator moved_start = new_begin + offset;
+                         iterator moved_end = moved_start + ins_size;
 
                          std::uninitialized_move(old_begin, mut_pos, new_begin);
-                         std::uninitialized_move(mut_pos, data_end_, target + add_size);
+                         initialize(moved_start, moved_end);
+                         std::uninitialized_move(mut_pos, old_end, moved_end);
+                         initialize(new_begin + (old_size + ins_size), new_begin + new_size);
 
                          std::destroy(old_begin, data_end_);
                        });

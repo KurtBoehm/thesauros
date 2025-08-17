@@ -134,7 +134,7 @@ struct SubMultiSize {
   constexpr SubMultiSize(std::array<TIndex, tDimNum> offsets, std::array<TIndex, tDimNum> sizes)
       : offsets_(offsets), ms_(sizes) {}
 
-  [[nodiscard]] MultiSize<TIndex, tDimNum> multisizes() const {
+  [[nodiscard]] MultiSize<TIndex, tDimNum> multisize() const {
     return ms_;
   }
 

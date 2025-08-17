@@ -4,18 +4,24 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
 
 #include "thesauros/containers.hpp"
+#include "thesauros/format.hpp"
 #include "thesauros/ranges.hpp"
 #include "thesauros/test.hpp"
 
 namespace test = thes::test;
 
 struct S {
-  S() = default;
-  explicit S(int j) : i(j) {}
+  S() {
+    fmt::print("S{{}}\n");
+  }
+  explicit S(int j) : i(j) {
+    fmt::print("S{{{}}}\n", i);
+  }
 
   S(const S&) = default;
   S(S&&) = default;
@@ -23,6 +29,7 @@ struct S {
   S& operator=(S&&) = default;
 
   ~S() {
+    fmt::print("~S({})\n", i);
     ++counter();
   }
 
@@ -34,6 +41,13 @@ struct S {
   }
 
   bool operator==(const S&) const = default;
+};
+template<>
+struct fmt::formatter<S> : public fmt::nested_formatter<int> {
+  auto format(const S& s, format_context& ctx) const {
+    return this->write_padded(
+      ctx, [&](auto out) { return fmt::format_to(out, "S{{{}}}", nested(s.i)); });
+  }
 };
 
 int main() {
@@ -100,7 +114,21 @@ int main() {
     THES_ASSERT(
       test::range_eq(darray4, std::array{S{}, S{}, S{}, S{0}, S{1}, S{2}, S{3}, S{4}, S{5}}));
 
+    // fill with S{0}
+    std::ranges::fill(darray4, S{0});
+    THES_ASSERT(
+      test::range_eq(darray4, std::array{S{0}, S{0}, S{0}, S{0}, S{0}, S{0}, S{0}, S{0}, S{0}}));
+
     S::counter() = 0;
   }
   THES_ASSERT(S::counter() == 9);
+
+  thes::DynamicArray<S, thes::ValueInit> darray5(5);
+  darray5.reserve(16);
+  for (const auto i : thes::range(5ZU)) {
+    darray5[i] = S{int(i)};
+  }
+  fmt::print("{}\n", darray5);
+  darray5.insert_any(darray5.begin() + 2, 4, 3);
+  fmt::print("{}\n", darray5);
 }
