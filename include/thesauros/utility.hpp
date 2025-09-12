@@ -13,6 +13,7 @@
 #include "utility/info-result.hpp"
 #include "utility/init-required.hpp"
 #include "utility/integral-value.hpp"
+#include "utility/kind-convert.hpp"
 #include "utility/move-detector.hpp"
 #include "utility/multi-bit-reference.hpp"
 #include "utility/multi-size.hpp"
