@@ -66,12 +66,12 @@ concept AnyBoolTag = TypedValueTag<TValueTag, bool>;
 
 template<AnyValueTag TTag1, AnyValueTag TTag2>
 requires std::same_as<typename TTag1::Value, typename TTag2::Value>
-inline constexpr bool operator==(TTag1 tag1, TTag2 tag2) {
+constexpr bool operator==(TTag1 tag1, TTag2 tag2) {
   return tag1.value == tag2.value;
 }
 template<DerivedValueTag TTag1, DerivedValueTag TTag2>
 requires std::same_as<typename TTag1::Value, typename TTag2::Value>
-inline constexpr bool operator==(TTag1 tag1, TTag2 tag2) = delete;
+constexpr bool operator==(TTag1 tag1, TTag2 tag2) = delete;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_TYPES_VALUE_TAG_HPP

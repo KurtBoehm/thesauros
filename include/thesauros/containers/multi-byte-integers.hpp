@@ -466,6 +466,12 @@ struct MultiByteIntegerArray
     return mbi;
   }
 
+  static MultiByteIntegerArray create_zero(std::size_t size) {
+    MultiByteIntegerArray mbi(size);
+    std::fill_n(mbi.span().data(), byte_size(mbi.size()), std::byte{0});
+    return mbi;
+  }
+
   MultiByteIntegerArray() : Base(Storage{}) {};
   explicit MultiByteIntegerArray(std::size_t size) : Base(Storage{size}) {}
   MultiByteIntegerArray(std::initializer_list<Value> init) : Base(Storage{init.size()}) {

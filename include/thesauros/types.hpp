@@ -10,6 +10,7 @@
 #include "types/type-sequence.hpp"
 #include "types/type-tag.hpp"
 #include "types/type-transformations.hpp"
+#include "types/value-tag-literal.hpp"
 #include "types/value-tag.hpp"
 #include "types/void-storage.hpp"
 // IWYU pragma: end_exports
