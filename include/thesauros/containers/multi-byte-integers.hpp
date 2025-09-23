@@ -538,7 +538,7 @@ struct MultiByteIntegerArray
   template<typename TIt>
   void insert(const_iterator pos, TIt first, TIt last) {
     const auto insize = *safe_cast<Size>(std::distance(first, last));
-    copy_uninit(insert_uninit(pos, insize), first, last);
+    copy_uninit(insert_any(pos, insize), first, last);
   }
 
 private:

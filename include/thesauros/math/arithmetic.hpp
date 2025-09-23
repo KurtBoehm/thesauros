@@ -110,17 +110,17 @@ inline constexpr T combine_bits(TArgs... bits) {
 }
 
 // Computes floor(x^(1/n)) precisely. The complexity is Θ(log2(x)/n).
-template<auto tExponent, std::unsigned_integral T>
-THES_ALWAYS_INLINE inline constexpr T int_root(T x) {
+template<std::unsigned_integral T>
+THES_ALWAYS_INLINE inline constexpr T isqrt_floor(T x) {
   if (x < 2) {
     return x;
   }
-  const unsigned bit_num = log2_floor(x) / tExponent;
+  const unsigned bit_num = log2_floor(x) >> 1;
   T root = T{1} << bit_num;
   T bit = root >> 1;
   for (T i = 0; i < std::numeric_limits<T>::digits; ++i) {
     const T part = root | bit;
-    const T sq = pow<tExponent>(part);
+    const T sq = part * part;
     root = (x >= sq) ? part : root;
     bit >>= 1;
     if (bit == 0) {
@@ -130,9 +130,16 @@ THES_ALWAYS_INLINE inline constexpr T int_root(T x) {
   return root;
 }
 
+// Computes ceil(x^(1/n)) precisely. The complexity is Θ(log2(x)/n).
+template<std::unsigned_integral T>
+THES_ALWAYS_INLINE inline constexpr T isqrt_ceil(T x) {
+  const T lb = isqrt_floor(x);
+  return (lb * lb == x) ? lb : (lb + 1);
+}
+
 template<typename T>
 inline constexpr T greatest_divisor(T value) {
-  for (T counter = int_root<2>(value); counter > 1; --counter) {
+  for (T counter = isqrt(value); counter > 1; --counter) {
     if (value % counter == 0) {
       return counter;
     }
