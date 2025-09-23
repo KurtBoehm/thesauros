@@ -4,6 +4,7 @@
 // IWYU pragma: begin_exports
 #include "math/arithmetic.hpp"
 #include "math/bit.hpp"
+#include "math/compile-time.hpp"
 #include "math/divmod.hpp"
 #include "math/factorization.hpp"
 #include "math/fast.hpp"
