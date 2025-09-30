@@ -104,6 +104,15 @@ TypeTag<T> tuple_element_tag(const detail::TupleLeaf<tIdx, T>&);
 
 template<std::size_t tIdx, typename TTuple>
 using TupleElement = decltype(tuple_element_tag<tIdx>(std::declval<TTuple>()))::Type;
+
+template<typename T, typename TIdxs>
+struct SizedTupleTrait;
+template<typename T, std::size_t... tI>
+struct SizedTupleTrait<T, std::index_sequence<tI...>> {
+  using Type = Tuple<std::conditional_t<tI == 0, T, T>...>;
+};
+template<typename T, std::size_t tSize>
+using SizedTuple = SizedTupleTrait<T, std::make_index_sequence<tSize>>::Type;
 } // namespace thes
 
 // Add support for structured bindings
