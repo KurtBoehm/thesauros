@@ -1,14 +1,13 @@
 project(
   'thesauros',
   'cpp',
-  default_options: ['cpp_std=c++20', 'warning_level=3'],
+  default_options: ['cpp_std=c++23', 'warning_level=3'],
 )
 
 thesauros_dep = declare_dependency(
   include_directories: include_directories('include'),
   dependencies: [
     dependency('boost-preprocessor'),
-    dependency('expected'),
     dependency('fmt'),
     dependency('openmp'),
     dependency('unordered_dense'),

@@ -65,7 +65,6 @@ Dependencies are handled using Meson subprojects, which make it possible to use 
 The Meson subprojects are managed by [Tlaxcaltin](https://github.com/KurtBoehm/tlaxcaltin) and are:
 
 - [The Boost Preprocessing library](https://github.com/boostorg/preprocessor): Simplifies the use of macros very significantly. Foundational to Macropolis.
-- [`expected`](https://github.com/TartanLlama/expected): A backport of `std::expected` to C++ versions before C++23.
 - [`{fmt}`](https://github.com/fmtlib/fmt): Use for virtually all string formatting and printing tasks.
 - [`options`](https://github.com/KurtBoehm/tlaxcaltin/blob/main/options/meson.build): Compiler options to enable more warnings and optimization settings.
 - [`ankerl::unordered_dense::{map, set}`](https://github.com/martinus/unordered_dense): A fast dense hash map/set used for the factorization.

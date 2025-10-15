@@ -8,14 +8,13 @@
 #define INCLUDE_THESAUROS_EXECUTION_SYSTEM_AFFINITY_HPP
 
 #include <cstddef>
+#include <expected>
 #include <ranges>
 #include <stdexcept>
 #include <thread>
 
 #include <pthread.h>
 #include <sched.h>
-
-#include "tl/expected.hpp"
 
 #include "thesauros/ranges/iota.hpp"
 #include "thesauros/utility/as-expected.hpp"
@@ -72,7 +71,7 @@ private:
   cpu_set_t cpu_set_{};
 };
 
-inline tl::expected<void, int> set_affinity(std::thread& thread, const CpuSet& cpu_set) {
+inline std::expected<void, int> set_affinity(std::thread& thread, const CpuSet& cpu_set) {
   const auto ret =
     pthread_setaffinity_np(thread.native_handle(), sizeof(cpu_set_t), &cpu_set.base());
   return as_expected(ret);

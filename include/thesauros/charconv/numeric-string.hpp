@@ -11,10 +11,9 @@
 #include <charconv>
 #include <concepts>
 #include <cstddef>
+#include <expected>
 #include <limits>
 #include <system_error>
-
-#include "tl/expected.hpp"
 
 #include "thesauros/math/arithmetic.hpp"
 #include "thesauros/math/integer-cast.hpp"
@@ -55,7 +54,7 @@ template<typename T>
 inline constexpr unsigned max_char_num = MaxCharNumTrait<T>::char_num;
 
 template<typename T>
-constexpr tl::expected<StaticCapacityString<max_char_num<T>>, std::errc>
+constexpr std::expected<StaticCapacityString<max_char_num<T>>, std::errc>
 numeric_string(const T& value) {
   StaticCapacityString<max_char_num<T>> out{};
   auto res = std::to_chars(out.data(), out.data() + max_char_num<T>, value);
@@ -63,7 +62,7 @@ numeric_string(const T& value) {
     out.size() = safe_cast<std::size_t>(res.ptr - out.data()).valid_value();
     return out;
   }
-  return tl::unexpected(res.ec);
+  return std::unexpected(res.ec);
 }
 } // namespace thes
 
