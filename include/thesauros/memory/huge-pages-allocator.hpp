@@ -14,6 +14,8 @@
 
 #include <sys/mman.h>
 
+#include "thesauros/macropolis/platform.hpp"
+
 namespace thes {
 template<typename T>
 struct HugePagesAllocator {
@@ -28,7 +30,9 @@ struct HugePagesAllocator {
     }
     void* p = nullptr;
     posix_memalign(&p, huge_page_size, n * sizeof(T));
+#if THES_LINUX
     madvise(p, n * sizeof(T), MADV_HUGEPAGE);
+#endif
     if (p == nullptr) {
       throw std::bad_alloc{};
     }

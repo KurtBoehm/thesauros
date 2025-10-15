@@ -7,11 +7,11 @@
 #include <filesystem>
 #include <iterator>
 #include <limits>
+#include <map>
 #include <numbers>
 #include <optional>
 #include <string>
 #include <string_view>
-#include <unordered_map>
 #include <vector>
 
 #include "thesauros/charconv.hpp"
@@ -33,19 +33,19 @@ THES_CREATE_TYPE(SNAKE_CASE(Test3), NORMAL_CONSTRUCTOR,
 THES_CREATE_TYPE(SNAKE_CASE(Test4), NORMAL_CONSTRUCTOR,
                  MEMBERS((KEEP(a), int), (KEEP(b), std::vector<double>)))
 THES_CREATE_TYPE(SNAKE_CASE(Test4b), NORMAL_CONSTRUCTOR, LAYOUT_INFO(false),
-                 MEMBERS((KEEP(a), int), (KEEP(b), (std::unordered_map<std::string, double>))))
+                 MEMBERS((KEEP(a), int), (KEEP(b), (std::map<std::string, double>))))
 
 int main() {
+  using namespace thes::primitives;
   using namespace std::string_view_literals;
 
   // thes::numeric_string
 
   THES_ASSERT(test::string_eq("3.141592653589793", thes::numeric_string(std::numbers::pi).value()));
-  THES_ASSERT(
-    test::string_eq("3.3621031431120935063e-4932",
-                    thes::numeric_string(std::numeric_limits<long double>::min()).value()));
   THES_ASSERT(test::string_eq("3.4028235e+38",
-                              thes::numeric_string(std::numeric_limits<float>::max()).value()));
+                              thes::numeric_string(std::numeric_limits<f32>::max()).value()));
+  THES_ASSERT(test::string_eq("2.2250738585072014e-308",
+                              thes::numeric_string(std::numeric_limits<f64>::min()).value()));
   THES_ASSERT(test::string_eq("-9223372036854775808",
                               thes::numeric_string(std::numeric_limits<long>::lowest()).value()));
   THES_ASSERT(
@@ -60,10 +60,9 @@ int main() {
   // thes::json_print
 
   THES_ASSERT(test::string_eq("3.141592653589793", thes::json_print(std::numbers::pi)));
-  THES_ASSERT(test::string_eq("3.3621031431120935063e-4932",
-                              thes::json_print(std::numeric_limits<long double>::min())));
+  THES_ASSERT(test::string_eq("3.4028235e+38", thes::json_print(std::numeric_limits<f32>::max())));
   THES_ASSERT(
-    test::string_eq("3.4028235e+38", thes::json_print(std::numeric_limits<float>::max())));
+    test::string_eq("2.2250738585072014e-308", thes::json_print(std::numeric_limits<f64>::min())));
   THES_ASSERT(
     test::string_eq("-9223372036854775808", thes::json_print(std::numeric_limits<long>::lowest())));
   THES_ASSERT(test::string_eq("18446744073709551615",
@@ -99,10 +98,10 @@ int main() {
   THES_ASSERT(test::string_eq("{\n  \"a\": 0,\n  \"b\": [\n    1,\n    2\n  ]\n}",
                               thes::json_print(Test4{0, {1, 2}}, thes::Indentation{2})));
 
-  THES_ASSERT(test::string_eq(R"({ "a": 0, "b": { "b": 3, "a": 2 } })",
+  THES_ASSERT(test::string_eq(R"({ "a": 0, "b": { "a": 2, "b": 3 } })",
                               thes::json_print(Test4b{0, {{"a", 2}, {"b", 3}}})));
   THES_ASSERT(
-    test::string_eq("{\n  \"a\": 0,\n  \"b\": {\n    \"b\": 3,\n    \"a\": 2\n  }\n}",
+    test::string_eq("{\n  \"a\": 0,\n  \"b\": {\n    \"a\": 2,\n    \"b\": 3\n  }\n}",
                     thes::json_print(Test4b{0, {{"a", 2}, {"b", 3}}}, thes::Indentation{2})));
 
   // thes::write_json

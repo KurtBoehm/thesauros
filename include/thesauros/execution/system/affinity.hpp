@@ -10,19 +10,42 @@
 #include <cstddef>
 #include <expected>
 #include <ranges>
-#include <stdexcept>
 #include <thread>
 
 #include <pthread.h>
 #include <sched.h>
 
-#include "thesauros/ranges/iota.hpp"
+#include "thesauros/macropolis/platform.hpp"
 #include "thesauros/utility/as-expected.hpp"
+
+#if THES_LINUX
+#include <stdexcept>
+
+#include "thesauros/ranges/iota.hpp"
+#elif THES_APPLE
+#include <mach/mach.h>
+
+#include "thesauros/format/fmtlib.hpp"
+#include "thesauros/math/integer-cast.hpp"
+#endif
 
 namespace thes {
 struct CpuSet {
+#if THES_LINUX
+  using Base = cpu_set_t;
+#elif THES_APPLE
+  // The best alternative to thread pinning on macOS is to assign each thread
+  // a different affinity tag
+  // For this, we just store a single CPU, which will become the tag assigned to the thread
+  // Sadly, this does not seem to work on M-series processors, as mentioned in
+  // https://github.com/RenderKit/embree/blob/master/common/sys/thread.cpp
+  using Base = integer_t;
+#endif
+
   CpuSet() {
+#if THES_LINUX
     CPU_ZERO(&cpu_set_);
+#endif
   }
 
   CpuSet(const CpuSet& other) = delete;
@@ -37,6 +60,8 @@ struct CpuSet {
     output.set(i);
     return output;
   }
+  // There does not seem to be an equivalent on macOS
+#if THES_LINUX
   static CpuSet affinity(std::thread& thread) {
     CpuSet out{};
     const auto ret =
@@ -46,6 +71,7 @@ struct CpuSet {
     }
     return out;
   }
+#endif
   static CpuSet from_cpu_infos(const auto& infos) {
     CpuSet output{};
     for (const auto& cpu : infos) {
@@ -55,26 +81,53 @@ struct CpuSet {
   }
 
   void set(std::size_t i) {
+#if THES_LINUX
     CPU_SET(i, &cpu_set_);
+#elif THES_APPLE
+    if (cpu_set_ != integer_t(-1)) {
+      fmt::print(stderr, "On macOS, multi-CPU sets are not supported! Overwriting existing entry.");
+    }
+    cpu_set_ = *safe_cast<Base>(i);
+#endif
   }
 
   [[nodiscard]] auto cpus() const {
+#if THES_LINUX
     return range<std::size_t>(CPU_SETSIZE) |
            std::views::filter([&](std::size_t i) { return CPU_ISSET(i, &cpu_set_); });
+#elif THES_APPLE
+    return std::views::single(cpu_set_);
+#endif
   }
 
-  [[nodiscard]] const cpu_set_t& base() const {
+  [[nodiscard]] const Base& base() const {
     return cpu_set_;
   }
 
 private:
-  cpu_set_t cpu_set_{};
+#if THES_LINUX
+  Base cpu_set_{};
+#elif THES_APPLE
+  Base cpu_set_ = -1;
+#endif
 };
 
-inline std::expected<void, int> set_affinity(std::thread& thread, const CpuSet& cpu_set) {
-  const auto ret =
-    pthread_setaffinity_np(thread.native_handle(), sizeof(cpu_set_t), &cpu_set.base());
+inline std::expected<void, int> set_affinity(std::thread::native_handle_type handle,
+                                             const CpuSet& cpu_set) {
+#if THES_LINUX
+  const auto ret = pthread_setaffinity_np(handle, sizeof(cpu_set_t), &cpu_set.base());
+#elif THES_APPLE
+  // based on https://www.hybridkernel.com/2015/01/18/binding_threads_to_cores_osx.html
+  // and https://developer.apple.com/library/archive/releasenotes/Performance/RN-AffinityAPI/
+  const auto mach_thread = pthread_mach_thread_np(handle);
+  thread_affinity_policy_data_t policy{cpu_set.base()};
+  const kern_return_t ret = thread_policy_set(mach_thread, THREAD_AFFINITY_POLICY,
+                                              reinterpret_cast<thread_policy_t>(&policy), 1);
+#endif
   return as_expected(ret);
+}
+inline std::expected<void, int> set_affinity(std::thread& thread, const CpuSet& cpu_set) {
+  return set_affinity(thread.native_handle(), cpu_set);
 }
 } // namespace thes
 

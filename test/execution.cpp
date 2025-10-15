@@ -9,6 +9,7 @@
 
 #include "thesauros/algorithms.hpp"
 #include "thesauros/execution.hpp"
+#include "thesauros/resources.hpp"
 #include "thesauros/test.hpp"
 
 int main() {
@@ -33,4 +34,8 @@ int main() {
   };
   op(thes::FixedStdThreadPool{2});
   op(thes::FixedOpenMpThreadPool{2});
+
+  fmt::print("logical: {}\n", thes::CpuInfo::logical());
+  fmt::print("physical: {}\n", thes::CpuInfo::physical());
+  fmt::print("physical 0/2: {}\n", thes::CpuInfo::physical_part(0, 2));
 }
