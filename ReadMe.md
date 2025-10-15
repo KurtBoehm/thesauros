@@ -21,7 +21,6 @@ Its structure is somewhat inspired by the standard library with its functionalit
 - `macropolis`: Macropolis (_Μακρόπολις_, a portmanteau of _macro_ and _Acropolis_) is a set of preprocessor-based tools, including macros to define classes and enumerations with information enabling compile-time reflection and macros which disable warnings or ensure/prevent inlining.
 - `math`: A collection of mathematical functions, including:
   - Simple functions such as integer division rounded upwards, `pow` with a (compile-time constant) integer exponent, bit manipulation, etc.
-  - Fast `sqrt` and `hypot`, exploiting SSE when possible, as well as fast `isfinite` and conversion into a finite value (by replacing NaN with 0).
   - Bounded addition/subtraction, overflow-/underflow-aware arithmetic, saturated arithmetic operations, and safe integer casts.
   - Fast integer division and modulo for run-time fixed divisors inspired by https://arxiv.org/abs/1902.01961 and its implementation in https://github.com/lemire/fastmod.
   - Integer factorization and tessellating a hypercube with integer dimensions equidistantly in each dimension.

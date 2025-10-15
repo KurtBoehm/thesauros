@@ -7,8 +7,6 @@
 #include "math/compile-time.hpp"
 #include "math/divmod.hpp"
 #include "math/factorization.hpp"
-#include "math/fast.hpp"
-#include "math/finite.hpp"
 #include "math/float-fraction.hpp"
 #include "math/integer-cast.hpp"
 #include "math/integer-tessellation.hpp"

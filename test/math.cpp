@@ -4,9 +4,6 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#include <cmath>
-#include <limits>
-
 #include "thesauros/math.hpp"
 #include "thesauros/static-ranges.hpp"
 #include "thesauros/test.hpp"
@@ -21,31 +18,6 @@ static_assert(thes::sub_min<unsigned>(5, 7, 2) == 2);
 
 template<typename T>
 void run() {
-  auto test = [](T v, bool is_finite) {
-    if (is_finite) {
-      THES_ASSERT(thes::is_finite(v));
-      THES_ASSERT(thes::make_finite(v) == v);
-    } else {
-      THES_ASSERT(!thes::is_finite(v));
-      THES_ASSERT(thes::make_finite(v) == T{});
-    }
-  };
-
-  test(T{1}, true);
-  test(+T{0}, true);
-  test(-T{0}, true);
-  test(std::numeric_limits<T>::denorm_min(), true);
-  test(std::numeric_limits<T>::epsilon(), true);
-  test(std::numeric_limits<T>::lowest(), true);
-  test(std::numeric_limits<T>::max(), true);
-  test(std::numeric_limits<T>::min(), true);
-  test(std::numeric_limits<T>::round_error(), true);
-  test(std::numeric_limits<T>::infinity(), false);
-  test(-std::numeric_limits<T>::infinity(), false);
-  test(std::numeric_limits<T>::quiet_NaN(), false);
-  test(std::numeric_limits<T>::signaling_NaN(), false);
-  test(T(std::nan("BEEF")), false);
-
   static_assert(thes::isqrt_floor(0U) == 0);
   static_assert(thes::isqrt_ceil(0U) == 0);
   thes::star::iota<1, 200> | thes::star::for_each([](auto i) {
