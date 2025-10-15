@@ -10,9 +10,7 @@
 #include <cassert>
 #include <cstddef>
 #include <ranges>
-#include <string_view>
 
-#include "thesauros/charconv/string-convert.hpp"
 #include "thesauros/format/fmtlib.hpp"
 #include "thesauros/macropolis/platform.hpp"
 #include "thesauros/ranges/iota.hpp"

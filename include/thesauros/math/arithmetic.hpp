@@ -10,23 +10,12 @@
 #include <algorithm>
 #include <bit>
 #include <cassert>
-#include <cmath>
 #include <concepts>
 #include <cstddef>
 #include <limits>
 #include <utility>
 
 namespace thes {
-// This function is not guaranteed to transform -1 to 1
-template<typename T>
-constexpr T abs(T value) {
-  if consteval {
-    return value < 0 ? -value : value;
-  } else {
-    return std::abs(value);
-  }
-}
-
 template<std::unsigned_integral T>
 constexpr T add_max(T a, T b, T max) {
   const T ub = std::numeric_limits<T>::max() - a;
