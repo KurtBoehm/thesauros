@@ -19,6 +19,18 @@ namespace thes {
 #else
 #define THES_GCC_COMPAT false
 #endif
+
+#ifdef __linux__
+#define THES_LINUX true
+#else
+#define THES_LINUX false
+#endif
+
+#ifdef __APPLE__
+#define THES_APPLE true
+#else
+#define THES_APPLE false
+#endif
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_MACROPOLIS_PLATFORM_HPP

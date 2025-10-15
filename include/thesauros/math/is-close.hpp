@@ -15,7 +15,7 @@
 
 namespace thes {
 template<std::floating_point T, typename... TArgs>
-inline constexpr bool is_close(const T a, const T b, TArgs&&... kwargs) {
+constexpr bool is_close(const T a, const T b, TArgs&&... kwargs) {
   using namespace literals;
 
   const StaticMap kwargs_map{std::forward<TArgs>(kwargs)...};
@@ -23,7 +23,9 @@ inline constexpr bool is_close(const T a, const T b, TArgs&&... kwargs) {
   const T rel_tol = kwargs_map.get(auto_tag<"rel_tol"_sstr>, T(1e-9));
   const T abs_tol = kwargs_map.get(auto_tag<"abs_tol"_sstr>, T(0.0));
 
-  return std::abs(a - b) <= std::max(rel_tol * std::max(std::abs(a), std::abs(b)), abs_tol);
+  // As of macOS Tahoe, Apple Clang does not provide constexpr abs, even for C++23,
+  // so a compatibility function is used
+  return thes::abs(a - b) <= std::max(rel_tol * std::max(thes::abs(a), thes::abs(b)), abs_tol);
 }
 } // namespace thes
 

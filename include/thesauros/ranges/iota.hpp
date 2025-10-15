@@ -7,6 +7,7 @@
 #ifndef INCLUDE_THESAUROS_RANGES_IOTA_HPP
 #define INCLUDE_THESAUROS_RANGES_IOTA_HPP
 
+#include <algorithm>
 #include <cassert>
 #include <concepts>
 #include <cstddef>

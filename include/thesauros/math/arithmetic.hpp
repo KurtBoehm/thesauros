@@ -10,33 +10,42 @@
 #include <algorithm>
 #include <bit>
 #include <cassert>
+#include <cmath>
 #include <concepts>
 #include <cstddef>
 #include <limits>
 #include <utility>
 
-#include "thesauros/macropolis/inlining.hpp"
-
 namespace thes {
+// This function is not guaranteed to transform -1 to 1
+template<typename T>
+constexpr T abs(T value) {
+  if consteval {
+    return value < 0 ? -value : value;
+  } else {
+    return std::abs(value);
+  }
+}
+
 template<std::unsigned_integral T>
-inline constexpr T add_max(T a, T b, T max) {
+constexpr T add_max(T a, T b, T max) {
   const T ub = std::numeric_limits<T>::max() - a;
   const T satsum = a + std::min(b, ub);
   return std::min(satsum, max);
 }
 template<std::unsigned_integral T>
-inline constexpr T sub_min(T a, T b, T min) {
+constexpr T sub_min(T a, T b, T min) {
   const T satdif = a - std::min(a, b);
   return std::max(satdif, min);
 }
 
 template<typename T>
-inline constexpr T div_ceil(const T dividend, const T divisor) {
-  return static_cast<T>(dividend / divisor + T{dividend % divisor != 0});
+constexpr T div_ceil(const T dividend, const T divisor) {
+  return T((dividend / divisor) + T{dividend % divisor != 0});
 }
 
 template<typename TBase, std::unsigned_integral TUInt>
-inline constexpr TBase pow(TBase x, const TUInt exponent) {
+constexpr TBase pow(TBase x, const TUInt exponent) {
   const unsigned iter = std::bit_width(exponent);
   TBase y = 1;
   for (unsigned i = 0; i < iter; ++i, x *= x) {
@@ -46,7 +55,7 @@ inline constexpr TBase pow(TBase x, const TUInt exponent) {
 }
 
 template<std::size_t tExponent, typename T>
-inline constexpr T pow(const T& value) {
+constexpr T pow(const T& value) {
   if constexpr (tExponent == 0) {
     return T{1};
   }
@@ -62,23 +71,23 @@ inline constexpr T pow(const T& value) {
   }
 }
 
-inline constexpr unsigned log2_floor(const auto n) {
+constexpr unsigned log2_floor(const auto n) {
   assert(n != 0);
   return static_cast<unsigned>(std::bit_width(n) - 1);
 }
-inline constexpr unsigned log2_ceil(const auto n) {
+constexpr unsigned log2_ceil(const auto n) {
   assert(n != 0);
   return static_cast<unsigned>(std::bit_width(n - 1));
 }
 
 template<typename T>
-inline constexpr T bit_mask(T a) {
+constexpr T bit_mask(T a) {
   const auto w = std::countl_zero(a);
   return (w == std::numeric_limits<T>::digits) ? 0 : (std::numeric_limits<T>::max() >> w);
 }
 
 template<typename T>
-inline consteval unsigned abs_log_ceil(T base, T num) {
+consteval unsigned abs_log_ceil(T base, T num) {
   unsigned out = 0;
   if (num < 0) {
     const auto nbase = static_cast<T>(-base);
@@ -92,16 +101,16 @@ inline consteval unsigned abs_log_ceil(T base, T num) {
 }
 
 template<std::unsigned_integral T>
-inline constexpr T set_bit(T value, auto bit_index, bool bit_value) {
+constexpr T set_bit(T value, auto bit_index, bool bit_value) {
   return static_cast<T>((value & T(~(T{1} << bit_index))) + (T{bit_value} << bit_index));
 }
 template<std::unsigned_integral T>
-inline constexpr bool get_bit(T value, auto bit_index) {
+constexpr bool get_bit(T value, auto bit_index) {
   return value & T(T{1} << bit_index);
 }
 template<std::unsigned_integral T, typename... TArgs>
 requires(... && std::same_as<TArgs, bool>)
-inline constexpr T combine_bits(TArgs... bits) {
+constexpr T combine_bits(TArgs... bits) {
   return [bits...]<std::size_t... tIdxs>(std::index_sequence<tIdxs...> /*idxs*/) {
     T out{};
     (out += ... += T(T{bits} << tIdxs));
@@ -111,7 +120,7 @@ inline constexpr T combine_bits(TArgs... bits) {
 
 // Computes floor(x^(1/n)) precisely. The complexity is Θ(log2(x)/n).
 template<std::unsigned_integral T>
-THES_ALWAYS_INLINE inline constexpr T isqrt_floor(T x) {
+constexpr T isqrt_floor(T x) {
   if (x < 2) {
     return x;
   }
@@ -132,13 +141,13 @@ THES_ALWAYS_INLINE inline constexpr T isqrt_floor(T x) {
 
 // Computes ceil(x^(1/n)) precisely. The complexity is Θ(log2(x)/n).
 template<std::unsigned_integral T>
-THES_ALWAYS_INLINE inline constexpr T isqrt_ceil(T x) {
+constexpr T isqrt_ceil(T x) {
   const T lb = isqrt_floor(x);
   return (lb * lb == x) ? lb : (lb + 1);
 }
 
 template<typename T>
-inline constexpr T greatest_divisor(T value) {
+constexpr T greatest_divisor(T value) {
   for (T counter = isqrt(value); counter > 1; --counter) {
     if (value % counter == 0) {
       return counter;

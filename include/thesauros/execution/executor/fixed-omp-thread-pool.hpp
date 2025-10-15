@@ -68,7 +68,7 @@ struct FixedOpenMpThreadPool {
 #pragma omp parallel for num_threads(thread_num_)
     for (std::size_t t = 0; t < tnum; ++t) {
       if (cpu_sets_.has_value()) {
-        pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &(*cpu_sets_)[t].base());
+        (void)set_affinity(pthread_self(), (*cpu_sets_)[t]);
       }
       task(t);
     }
