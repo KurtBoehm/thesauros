@@ -117,7 +117,7 @@ struct JsonWriter<TBool> {
   }
 };
 template<typename TNum>
-requires(std::integral<TNum> || std::floating_point<TNum>)
+requires((std::integral<TNum> || std::floating_point<TNum>) && !std::same_as<TNum, bool>)
 struct JsonWriter<TNum> {
   static auto write(auto it, const TNum value, Indentation /*indent*/ = {}) {
     const auto str = numeric_string(value).value();
