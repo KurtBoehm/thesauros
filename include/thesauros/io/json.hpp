@@ -15,6 +15,7 @@
 #include <string_view>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #include "thesauros/charconv/numeric-string.hpp"
 #include "thesauros/charconv/string-escape.hpp"
@@ -107,15 +108,16 @@ inline auto json_print(T&& value, Indentation indent = {}) {
   return JsonPrinter<T>{std::forward<T>(value), indent};
 }
 
-template<>
-struct JsonWriter<bool> {
+template<typename TBool>
+requires(std::same_as<TBool, bool> || std::same_as<TBool, std::vector<bool>::const_reference>)
+struct JsonWriter<TBool> {
   static auto write(auto it, const bool value, Indentation /*indent*/ = {}) {
     const std::string_view str = value ? "true" : "false";
     return std::copy(str.begin(), str.end(), it);
   }
 };
 template<typename TNum>
-requires std::integral<TNum> || std::floating_point<TNum>
+requires(std::integral<TNum> || std::floating_point<TNum>)
 struct JsonWriter<TNum> {
   static auto write(auto it, const TNum value, Indentation /*indent*/ = {}) {
     const auto str = numeric_string(value).value();
