@@ -19,9 +19,11 @@
 #if THES_LINUX
 #include <algorithm>
 #include <filesystem>
+#include <string_view>
 #include <utility>
 #include <vector>
 
+#include "thesauros/charconv/string-convert.hpp"
 #include "thesauros/containers/array.hpp"
 #include "thesauros/io/file-reader.hpp"
 #elif THES_APPLE
@@ -71,7 +73,7 @@ struct CpuInfo {
   }
 
   static auto physical() {
-    return present() | std::views::filter([&](const CpuInfo& cpu) {
+    return logical() | std::views::filter([&](const CpuInfo& cpu) {
              return cpu.id == std::ranges::min(cpu.core_cpus());
            });
   }
