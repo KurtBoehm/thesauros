@@ -25,7 +25,7 @@ struct FileWriter {
   FileWriter& operator=(FileWriter&&) = delete;
 
   explicit FileWriter(std::filesystem::path path)
-      : path_(std::move(path)), handle_(std::fopen(path_.c_str(), "wb+")) {
+      : path_(std::move(path)), handle_(std::fopen(path_string(path_).c_str(), "wb+")) {
     if (handle_ == nullptr) {
       throw FileException(fmt::format("fopen failed: {}", errno));
     }

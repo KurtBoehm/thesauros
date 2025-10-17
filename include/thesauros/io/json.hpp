@@ -127,7 +127,7 @@ struct JsonWriter<TNum> {
 
 template<CharacterType TChar>
 struct JsonWriter<std::basic_string_view<TChar>> {
-  static auto write(auto it, std::string_view value, Indentation /*indent*/ = {}) {
+  static auto write(auto it, std::basic_string_view<TChar> value, Indentation /*indent*/ = {}) {
     *it++ = '"';
     it = escape_string(value, it);
     *it++ = '"';
@@ -158,7 +158,11 @@ template<>
 struct JsonWriter<std::filesystem::path> {
   using Path = std::filesystem::path;
   static auto write(auto it, const Path& p, Indentation indent = {}) {
+#if THES_LINUX || THES_APPLE
     return JsonWriter<Path::string_type>::write(it, p.native(), indent);
+#else
+    return JsonWriter<std::u8string_view>::write(it, p.u8string(), indent);
+#endif
   }
 };
 

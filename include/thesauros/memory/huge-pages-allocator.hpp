@@ -12,9 +12,11 @@
 #include <limits>
 #include <new>
 
-#include <sys/mman.h>
-
 #include "thesauros/macropolis/platform.hpp"
+
+#if THES_LINUX || THES_APPLE
+#include <sys/mman.h>
+#endif
 
 namespace thes {
 template<typename T>
@@ -29,7 +31,11 @@ struct HugePagesAllocator {
       throw std::bad_alloc{};
     }
     void* p = nullptr;
+#if THES_LINUX || THES_APPLE
     posix_memalign(&p, huge_page_size, n * sizeof(T));
+#elif THES_WINDOWS
+    p = _aligned_malloc(n * sizeof(T), huge_page_size);
+#endif
 #if THES_LINUX
     madvise(p, n * sizeof(T), MADV_HUGEPAGE);
 #endif
@@ -40,7 +46,11 @@ struct HugePagesAllocator {
   }
 
   void deallocate(T* p, std::size_t /*n*/) {
+#if THES_LINUX || THES_APPLE
     std::free(p);
+#elif THES_WINDOWS
+    _aligned_free(p);
+#endif
   }
 };
 } // namespace thes

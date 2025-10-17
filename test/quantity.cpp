@@ -15,7 +15,8 @@
 #include "thesauros/resources.hpp"
 
 namespace {
-auto convert_time(thes::Quantity<long, thes::unit::microsecond> q) {
+using Dur = thes::ResourceUsage::Duration;
+auto convert_time(Dur q) {
   return quantity_cast<thes::Quantity<double, thes::unit::second>>(q);
 }
 } // namespace

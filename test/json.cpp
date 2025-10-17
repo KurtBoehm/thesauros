@@ -18,6 +18,7 @@
 #include "thesauros/io.hpp"
 #include "thesauros/macropolis.hpp"
 #include "thesauros/test.hpp"
+#include "thesauros/types.hpp"
 
 namespace test = thes::test;
 
@@ -46,11 +47,12 @@ int main() {
                               thes::numeric_string(std::numeric_limits<f32>::max()).value()));
   THES_ASSERT(test::string_eq("2.2250738585072014e-308",
                               thes::numeric_string(std::numeric_limits<f64>::min()).value()));
-  THES_ASSERT(test::string_eq("-9223372036854775808",
-                              thes::numeric_string(std::numeric_limits<long>::lowest()).value()));
+  THES_ASSERT(
+    test::string_eq("-9223372036854775808",
+                    thes::numeric_string(std::numeric_limits<long long>::lowest()).value()));
   THES_ASSERT(
     test::string_eq("18446744073709551615",
-                    thes::numeric_string(std::numeric_limits<unsigned long>::max()).value()));
+                    thes::numeric_string(std::numeric_limits<unsigned long long>::max()).value()));
 
   // thes::escaped_string
 
@@ -63,10 +65,10 @@ int main() {
   THES_ASSERT(test::string_eq("3.4028235e+38", thes::json_print(std::numeric_limits<f32>::max())));
   THES_ASSERT(
     test::string_eq("2.2250738585072014e-308", thes::json_print(std::numeric_limits<f64>::min())));
-  THES_ASSERT(
-    test::string_eq("-9223372036854775808", thes::json_print(std::numeric_limits<long>::lowest())));
+  THES_ASSERT(test::string_eq("-9223372036854775808",
+                              thes::json_print(std::numeric_limits<long long>::lowest())));
   THES_ASSERT(test::string_eq("18446744073709551615",
-                              thes::json_print(std::numeric_limits<unsigned long>::max())));
+                              thes::json_print(std::numeric_limits<unsigned long long>::max())));
 
   THES_ASSERT(test::string_eq("\"abc\\\"\\r\\n\"", thes::json_print("abc\"\r\n")));
   THES_ASSERT(test::string_eq("\"\\u0007\"", thes::json_print("\a")));
