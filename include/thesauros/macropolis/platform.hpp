@@ -7,7 +7,6 @@
 #ifndef INCLUDE_THESAUROS_MACROPOLIS_PLATFORM_HPP
 #define INCLUDE_THESAUROS_MACROPOLIS_PLATFORM_HPP
 
-namespace thes {
 #ifdef __clang__
 #define THES_CLANG true
 #else
@@ -31,6 +30,11 @@ namespace thes {
 #else
 #define THES_APPLE false
 #endif
-} // namespace thes
+
+#ifdef _WIN64
+#define THES_WINDOWS true
+#else
+#define THES_WINDOWS false
+#endif
 
 #endif // INCLUDE_THESAUROS_MACROPOLIS_PLATFORM_HPP

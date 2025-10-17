@@ -11,9 +11,16 @@
 #include <cstddef>
 #include <cstdio>
 #include <exception>
+#include <filesystem>
 #include <string>
 #include <type_traits>
 #include <utility>
+
+#include "thesauros/macropolis/platform.hpp"
+
+#if THES_WINDOWS
+#include <ranges>
+#endif
 
 namespace thes {
 template<typename T>
@@ -41,6 +48,14 @@ private:
 };
 
 enum struct Seek : int { set = SEEK_SET, cur = SEEK_CUR, end = SEEK_END };
+
+inline decltype(auto) path_string(const std::filesystem::path& path) {
+#if THES_WINDOWS
+  return std::string(std::from_range, path.u8string());
+#else
+  return path;
+#endif
+}
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_IO_FILE_HPP

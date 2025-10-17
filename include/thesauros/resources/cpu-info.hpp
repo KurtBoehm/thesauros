@@ -30,6 +30,14 @@
 #include <stdexcept>
 
 #include <sys/sysctl.h>
+#elif THES_WINDOWS
+#include <memory>
+
+#include <minwindef.h>
+#include <processthreadsapi.h>
+#include <winnt.h>
+
+#include "thesauros/types/primitives.hpp"
 #endif
 
 namespace thes {
@@ -79,8 +87,7 @@ struct CpuInfo {
   }
 
   static auto physical_part(std::size_t idx, std::size_t num) {
-    auto common = std::ranges::common_view(CpuInfo::physical());
-    std::vector<CpuInfo> one_per_core(common.begin(), common.end());
+    std::vector<CpuInfo> one_per_core(std::from_range, CpuInfo::physical());
     const auto subsizes = UniformIndexSegmenter{one_per_core.size(), num}.segment_range(idx);
     return std::move(one_per_core) | std::views::drop(subsizes.begin_value()) |
            std::views::take(subsizes.size());
@@ -114,6 +121,85 @@ struct CpuInfo {
     const auto physical_cores = *safe_cast<std::size_t>(read_sysctl<int>("hw.physicalcpu"));
     return UniformIndexSegmenter{physical_cores, num}.segment_range(idx) |
            std::views::transform([](std::size_t i) { return CpuInfo{i}; });
+  }
+};
+#elif THES_WINDOWS
+struct CpuInfo {
+  DWORD id;
+  WORD group;
+  BYTE logical_processor_index;
+  BYTE core_index;
+  BYTE numa_node_index;
+  BYTE efficiency_class;
+
+  BYTE parked : 1;
+  BYTE allocated : 1;
+  BYTE allocated_to_target_process : 1;
+  BYTE real_time : 1;
+
+  BYTE scheduling_class;
+  DWORD64 allocation_tag;
+
+  static std::vector<CpuInfo> logical() {
+    // Based on https://github.com/GameTechDev/HybridDetect
+    HANDLE current_process = GetCurrentProcess();
+
+    // get the number of bytes in the data structure
+    ULONG buffer_size{};
+    GetSystemCpuSetInformation(nullptr, 0, &buffer_size, current_process, 0);
+
+    // get all CPU set elements
+    auto buffer = std::make_unique<u8[]>(buffer_size);
+    const WINBOOL ret = GetSystemCpuSetInformation(
+      reinterpret_cast<SYSTEM_CPU_SET_INFORMATION*>(buffer.get()), // NOLINT
+      buffer_size, &buffer_size, current_process, 0);
+    if (ret != TRUE) {
+      throw std::runtime_error{fmt::format("GetSystemCpuSetInformation failed: {}", ret)};
+    }
+
+    u8* cpu_set_ptr = buffer.get();
+    std::vector<CpuInfo> cores{};
+
+    for (ULONG cpu_set_size = 0; cpu_set_size < buffer_size;) {
+      auto* next_cpu_set = reinterpret_cast<SYSTEM_CPU_SET_INFORMATION*>(cpu_set_ptr); // NOLINT
+
+      if (next_cpu_set->Type == CPU_SET_INFORMATION_TYPE::CpuSetInformation) {
+        // Store Logical Processor Information for Later Use.
+        CpuInfo core{
+          .id = next_cpu_set->CpuSet.Id, // NOLINT
+          .group = next_cpu_set->CpuSet.Group, // NOLINT
+          .logical_processor_index = next_cpu_set->CpuSet.LogicalProcessorIndex, // NOLINT
+          .core_index = next_cpu_set->CpuSet.CoreIndex, // NOLINT
+          .numa_node_index = next_cpu_set->CpuSet.NumaNodeIndex, // NOLINT
+          .efficiency_class = next_cpu_set->CpuSet.EfficiencyClass, // NOLINT
+          .parked = next_cpu_set->CpuSet.Parked, // NOLINT
+          .allocated = next_cpu_set->CpuSet.Allocated, // NOLINT
+          .allocated_to_target_process = next_cpu_set->CpuSet.AllocatedToTargetProcess, // NOLINT
+          .real_time = next_cpu_set->CpuSet.RealTime, // NOLINT
+          .scheduling_class = next_cpu_set->CpuSet.SchedulingClass, // NOLINT
+          .allocation_tag = next_cpu_set->CpuSet.AllocationTag, // NOLINT
+        };
+        cores.push_back(core);
+      }
+
+      cpu_set_ptr += next_cpu_set->Size;
+      cpu_set_size += next_cpu_set->Size;
+    }
+
+    return cores;
+  }
+
+  static auto physical() {
+    return logical() | std::views::filter([](const CpuInfo& info) {
+             return info.logical_processor_index == info.core_index;
+           });
+  }
+
+  static auto physical_part(std::size_t idx, std::size_t num) {
+    std::vector<CpuInfo> one_per_core(std::from_range, CpuInfo::physical());
+    const auto subsizes = UniformIndexSegmenter{one_per_core.size(), num}.segment_range(idx);
+    return std::move(one_per_core) | std::views::drop(subsizes.begin_value()) |
+           std::views::take(subsizes.size());
   }
 };
 #endif

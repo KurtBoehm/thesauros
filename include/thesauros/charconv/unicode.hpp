@@ -9,16 +9,17 @@
 
 #include <array>
 #include <bit>
-#include <cstdint>
 #include <stdexcept>
 #include <string_view>
 #include <tuple>
 #include <utility>
 
+#include "thesauros/types/primitives.hpp"
+
 namespace thes {
 struct UnicodeDecoder {
-  using CodePoint = std::uint32_t;
-  enum struct State : std::uint8_t {
+  using CodePoint = u32;
+  enum struct State : u8 {
     ACCEPTED = 0,
     REJECTED = 12,
   };
@@ -27,9 +28,9 @@ struct UnicodeDecoder {
   // See http://bjoern.hoehrmann.de/utf-8/decoder/dfa/ for details.
   // Originally licenced under the MIT licence.
   // Modified to be more C++
-  std::pair<CodePoint, State> decode(const std::uint8_t byte) noexcept {
+  std::pair<CodePoint, State> decode(const u8 byte) noexcept {
     // Map a character to its character class.
-    static const std::array<std::uint8_t, 256> char_kind = {
+    static const std::array<u8, 256> char_kind = {
       0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0…
       0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 1…
       0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 2…
@@ -50,7 +51,7 @@ struct UnicodeDecoder {
 
     // A transition table that maps a combination of a state of the automaton and a character class
     // to a state (multiplied by 12, i.e. the number of states)
-    static const std::array<std::uint8_t, 108> trans = {
+    static const std::array<u8, 108> trans = {
       0,  12, 24, 36, 60, 96, 84, 12, 12, 12, 48, 72, // s0
       12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, // s1
       12, 0,  12, 12, 12, 12, 12, 0,  12, 0,  12, 12, // s2
@@ -62,7 +63,7 @@ struct UnicodeDecoder {
       12, 36, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
     };
 
-    const std::uint8_t kind = char_kind[byte];
+    const u8 kind = char_kind[byte];
 
     codep_ = (state_ != 0) ? (byte & 0x3FU) | (codep_ << 6U) : (0xFFU >> kind) & (byte);
     state_ = trans[state_ + kind];
@@ -70,10 +71,10 @@ struct UnicodeDecoder {
     return {codep_, State{state_}};
   }
 
-  std::pair<std::uint32_t, std::string_view> decode(std::string_view str) {
+  std::pair<u32, std::string_view> decode(std::string_view str) {
     const char* end = str.end();
     for (const char* ptr = str.begin(); ptr != end; ++ptr) {
-      const auto [codep, state] = decode(std::bit_cast<std::uint8_t>(*ptr));
+      const auto [codep, state] = decode(std::bit_cast<u8>(*ptr));
       switch (state) {
         case State::ACCEPTED: {
           return {codep, {ptr + 1, end}};
@@ -92,13 +93,13 @@ struct UnicodeDecoder {
   }
 
 private:
-  std::uint32_t codep_{};
-  std::uint8_t state_{};
+  u32 codep_{};
+  u8 state_{};
 };
 
 template<typename TStr>
 struct UnicodeStringView {
-  using CodePoint = std::uint32_t;
+  using CodePoint = u32;
 
   UnicodeStringView(TStr&& str) : str_(std::forward<TStr>(str)) {}
 
@@ -110,7 +111,7 @@ struct UnicodeStringView {
       }
     }
 
-    std::uint32_t operator*() {
+    CodePoint operator*() {
       return codep_;
     }
 

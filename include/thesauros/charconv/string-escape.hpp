@@ -8,8 +8,8 @@
 #define INCLUDE_THESAUROS_CHARCONV_STRING_ESCAPE_HPP
 
 #include <bit>
+#include <concepts>
 #include <cstddef>
-#include <cstdint>
 #include <iterator>
 #include <stdexcept>
 #include <string_view>
@@ -19,19 +19,25 @@
 #include "thesauros/concepts/type-traits.hpp"
 #include "thesauros/math/safe-integer.hpp"
 #include "thesauros/string/static-capacity-string.hpp"
+#include "thesauros/types/primitives.hpp"
 
 namespace thes {
-inline auto escape_string(std::string_view in, auto out_it) {
+namespace detail {
+template<typename TChar>
+requires(std::same_as<TChar, char> || std::same_as<TChar, char8_t>)
+inline auto escape_string(std::basic_string_view<TChar> in, auto out_it) {
   using enum UnicodeDecoder::State;
   auto extend = [&out_it]<typename... Ts>(Ts... chars) { ((*out_it++ = chars), ...); };
 
   UnicodeDecoder decoder{};
 
-  const char* end = in.end();
-  for (const char* ptr = in.begin(); ptr != end; ++ptr) {
+  const TChar* end = in.end();
+  for (const TChar* ptr = in.begin(); ptr != end; ++ptr) {
     const auto c = *ptr;
+    const auto cc = std::bit_cast<char>(c);
+    const auto c8 = std::bit_cast<u8>(c);
 
-    const auto [codep, state] = decoder.decode(std::bit_cast<std::uint8_t>(c));
+    const auto [codep, state] = decoder.decode(c8);
     switch (state) {
       case ACCEPTED: {
         switch (codep) {
@@ -66,8 +72,8 @@ inline auto escape_string(std::string_view in, auto out_it) {
           default:
             if (codep <= 0x1F) {
               using SI = SafeInt<char>;
-              const SI c1 = SI{'0'} + (SI{c} >> 4);
-              const SI c2a = SI{c} & SI{0xF};
+              const SI c1 = SI{'0'} + (SI{cc} >> 4);
+              const SI c2a = SI{cc} & SI{0xF};
               const SI c2b = (c2a < SI{10}) ? (SI{'0'} + c2a) : (SI{'A'} + (c2a - SI{10}));
 
               extend('\\', 'u', '0', '0', c1.unsafe(), c2b.unsafe());
@@ -93,6 +99,14 @@ inline auto escape_string(std::string_view in, auto out_it) {
   }
 
   return out_it;
+}
+} // namespace detail
+
+inline auto escape_string(std::string_view in, auto out_it) {
+  return detail::escape_string(in, out_it);
+}
+inline auto escape_string(std::u8string_view in, auto out_it) {
+  return detail::escape_string(in, out_it);
 }
 
 template<typename TString>

@@ -24,7 +24,8 @@
 
 namespace thes {
 struct FileReader {
-  explicit FileReader(const std::filesystem::path& path) : handle_(std::fopen(path.c_str(), "rb")) {
+  explicit FileReader(const std::filesystem::path& path)
+      : handle_(std::fopen(path_string(path).c_str(), "rb")) {
     if (handle_ == nullptr) {
       throw FileException{fmt::format("fopen failed: {}", errno)};
     }

@@ -7,11 +7,13 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_AS_EXPECTED_HPP
 #define INCLUDE_THESAUROS_UTILITY_AS_EXPECTED_HPP
 
+#include <concepts>
 #include <expected>
 
 namespace thes {
-constexpr std::expected<void, int> as_expected(int ret) {
-  using Out = std::expected<void, int>;
+template<std::integral T>
+constexpr std::expected<void, T> as_expected(T ret) {
+  using Out = std::expected<void, T>;
 
   Out out{};
   if (ret != 0) {

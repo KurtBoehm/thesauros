@@ -26,7 +26,8 @@ constexpr bool is_close(const T a, const T b, TArgs&&... kwargs) {
 
   // As of macOS Tahoe, Apple Clang does not provide constexpr abs, even for C++23,
   // so a compatibility function is used
-  return thes::ctm::abs(a - b) <= std::max(rel_tol * std::max(thes::ctm::abs(a), thes::ctm::abs(b)), abs_tol);
+  return thes::ctm::abs(a - b) <=
+         std::max(rel_tol * std::max(thes::ctm::abs(a), thes::ctm::abs(b)), abs_tol);
 }
 } // namespace thes
 
