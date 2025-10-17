@@ -139,7 +139,8 @@ struct CpuSet {
   [[nodiscard]] decltype(auto) cpu_ids() const {
 #if THES_LINUX
     return range<std::size_t>(CPU_SETSIZE) |
-           std::views::filter([&](std::size_t i) { return CPU_ISSET(i, &cpu_set_); });
+           std::views::filter(
+             [cpu_set = cpu_set_](std::size_t i) { return CPU_ISSET(i, &cpu_set); });
 #elif THES_APPLE
     return std::views::single(cpu_set_);
 #else
