@@ -6,6 +6,7 @@ project(
 
 fmt_sub = subproject('fmt', default_options: ['default_library=static'])
 fmt_dep = fmt_sub.get_variable('fmt_dep')
+
 cpp_args = []
 if host_machine.system() == 'windows'
   cpp_args += ['-DWINVER=0x0A00', '-D_WIN32_WINNT=0x0A00']
