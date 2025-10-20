@@ -5,10 +5,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 cmake_minimum_required(VERSION 3.20)
-
 project(thesauros LANGUAGES CXX)
-
-include(FetchContent)
 
 # Build options
 option(THESAUROS_BUILD_TESTS "Build tests" OFF)
@@ -18,6 +15,8 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build static libraries" FORCE)
 set(FMT_DOC OFF CACHE BOOL "" FORCE)
 set(FMT_TEST OFF CACHE BOOL "" FORCE)
 set(FMT_INSTALL OFF CACHE BOOL "" FORCE)
+
+include(FetchContent)
 
 # Fetch cmop to add functions that add target options
 FetchContent_Declare(
@@ -48,14 +47,6 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(fmt)
 
-# pcg-cpp does not provide CMake build files
-FetchContent_Declare(
-  pcg_cpp
-  GIT_REPOSITORY https://github.com/imneme/pcg-cpp.git
-  GIT_TAG 428802d1a5634f96bcd0705fab379ff0113bcf13
-)
-FetchContent_MakeAvailable(pcg_cpp)
-
 FetchContent_Declare(
   unordered_dense
   URL
@@ -76,7 +67,6 @@ target_include_directories(
   INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
-    ${pcg_cpp_SOURCE_DIR}/include
 )
 target_link_libraries(
   ${PROJECT_NAME}
@@ -88,6 +78,14 @@ target_link_libraries(
 )
 
 if(THESAUROS_BUILD_TESTS)
+  # pcg-cpp does not provide CMake build files
+  FetchContent_Declare(
+    pcg_cpp
+    GIT_REPOSITORY https://github.com/imneme/pcg-cpp.git
+    GIT_TAG 428802d1a5634f96bcd0705fab379ff0113bcf13
+  )
+  FetchContent_MakeAvailable(pcg_cpp)
+
   include(CTest)
   foreach(
     TEST_NAME
@@ -130,6 +128,10 @@ if(THESAUROS_BUILD_TESTS)
     add_executable(${PROJECT_NAME}_${TEST_NAME} test/${TEST_NAME}.cpp)
     target_compile_features(${PROJECT_NAME}_${TEST_NAME} PRIVATE cxx_std_23)
     target_link_libraries(${PROJECT_NAME}_${TEST_NAME} PRIVATE ${PROJECT_NAME})
+    target_include_directories(
+      ${PROJECT_NAME}_${TEST_NAME}
+      PRIVATE ${pcg_cpp_SOURCE_DIR}/include
+    )
     cmop_add_warnings(${PROJECT_NAME}_${TEST_NAME})
     cmop_add_info(${PROJECT_NAME}_${TEST_NAME})
     add_test(
