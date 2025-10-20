@@ -16,6 +16,7 @@
 #include <utility>
 #include <vector>
 
+#include <omp.h>
 #include <pthread.h>
 #include <sched.h>
 
@@ -65,6 +66,10 @@ struct FixedOpenMpThreadPool {
                std::optional<std::size_t> used_thread_num = {}) const {
     assert(!used_thread_num.has_value() || *used_thread_num <= thread_num_);
     const std::size_t tnum = used_thread_num.value_or(thread_num_);
+    if (omp_get_max_threads() < thread_num_) {
+      throw std::runtime_error{fmt::format("The thread pool needs {} threads, but the max is {}",
+                                           thread_num_, omp_get_max_threads())};
+    }
 #pragma omp parallel for num_threads(thread_num_)
     for (std::size_t t = 0; t < tnum; ++t) {
       if (cpu_sets_.has_value()) {

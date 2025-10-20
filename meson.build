@@ -1,3 +1,9 @@
+# This file is part of https://github.com/KurtBoehm/thesauros.
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 project(
   'thesauros',
   'cpp',
@@ -22,14 +28,15 @@ thesauros_dep = declare_dependency(
   ],
 )
 
-# install_subdir('include/thesauros', install_dir: 'include')
-
-# pc = import('pkgconfig')
-# pc.generate(
-#   name: 'thesauros',
-#   version: meson.project_version(),
-#   description: 'thesauros',
-# )
+if not meson.is_subproject()
+  install_subdir('include/thesauros', install_dir: 'include')
+  pc = import('pkgconfig')
+  pc.generate(
+    name: 'thesauros',
+    version: meson.project_version(),
+    description: 'thesauros',
+  )
+endif
 
 if get_option('test')
   subdir('test')
