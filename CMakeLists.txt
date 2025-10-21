@@ -18,14 +18,6 @@ set(FMT_INSTALL OFF CACHE BOOL "" FORCE)
 
 include(FetchContent)
 
-# Fetch cmop to add functions that add target options
-FetchContent_Declare(
-  cmop
-  GIT_REPOSITORY https://github.com/KurtBoehm/cmop.git
-  GIT_TAG main
-)
-FetchContent_MakeAvailable(cmop)
-
 find_package(OpenMP COMPONENTS CXX)
 
 FetchContent_Declare(
@@ -78,6 +70,14 @@ target_link_libraries(
 )
 
 if(THESAUROS_BUILD_TESTS)
+  # Fetch cmop to add functions that add target options
+  FetchContent_Declare(
+    cmop
+    GIT_REPOSITORY https://github.com/KurtBoehm/cmop.git
+    GIT_TAG main
+  )
+  FetchContent_MakeAvailable(cmop)
+
   # pcg-cpp does not provide CMake build files
   FetchContent_Declare(
     pcg_cpp

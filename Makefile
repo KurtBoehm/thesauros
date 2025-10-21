@@ -1,4 +1,4 @@
-SETUP_BASE=meson setup -Dtest=true --wrap-mode=forcefallback
+SETUP_BASE=meson setup -Dbuild_tests=true --wrap-mode=forcefallback
 
 clear:
 	rm -rf build

@@ -39,6 +39,6 @@ if not meson.is_subproject()
   )
 endif
 
-if get_option('test')
+if get_option('build_tests')
   subdir('test')
 endif
