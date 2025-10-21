@@ -53,6 +53,12 @@ add_library(${PROJECT_NAME} INTERFACE)
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_23)
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+  target_compile_definitions(
+    ${PROJECT_NAME}
+    INTERFACE "WINVER=0x0A00" "_WIN32_WINNT=0x0A00"
+  )
+endif()
 
 target_include_directories(
   ${PROJECT_NAME}
@@ -87,8 +93,9 @@ if(THESAUROS_BUILD_TESTS)
   FetchContent_MakeAvailable(pcg_cpp)
 
   include(CTest)
+
   foreach(
-    TEST_NAME
+    test_name
     IN
     ITEMS
       "arrays"
@@ -125,18 +132,16 @@ if(THESAUROS_BUILD_TESTS)
       "type-seq"
       "value-tag"
   )
-    add_executable(${PROJECT_NAME}_${TEST_NAME} test/${TEST_NAME}.cpp)
-    target_compile_features(${PROJECT_NAME}_${TEST_NAME} PRIVATE cxx_std_23)
-    target_link_libraries(${PROJECT_NAME}_${TEST_NAME} PRIVATE ${PROJECT_NAME})
+    set(test_target ${PROJECT_NAME}_${test_name})
+    add_executable(${test_target} test/${test_name}.cpp)
+    target_compile_features(${test_target} PRIVATE cxx_std_23)
+    target_link_libraries(${test_target} PRIVATE ${PROJECT_NAME})
     target_include_directories(
-      ${PROJECT_NAME}_${TEST_NAME}
+      ${test_target}
       PRIVATE ${pcg_cpp_SOURCE_DIR}/include
     )
-    cmop_add_warnings(${PROJECT_NAME}_${TEST_NAME})
-    cmop_add_info(${PROJECT_NAME}_${TEST_NAME})
-    add_test(
-      NAME ${PROJECT_NAME}.${TEST_NAME}
-      COMMAND ${PROJECT_NAME}_${TEST_NAME}
-    )
+    cmop_add_warnings(${test_target})
+    cmop_add_info(${test_target})
+    add_test(NAME ${PROJECT_NAME}.${test_name} COMMAND ${test_target})
   endforeach()
 endif()
