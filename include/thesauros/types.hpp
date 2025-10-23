@@ -6,6 +6,7 @@
 #include "types/literals.hpp"
 #include "types/numeric-info.hpp"
 #include "types/primitives.hpp"
+#include "types/signedness.hpp"
 #include "types/type-name.hpp"
 #include "types/type-sequence.hpp"
 #include "types/type-tag.hpp"

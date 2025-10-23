@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <functional>
 #include <numeric>
+#include <tuple>
 
 #include "thesauros/format.hpp"
 #include "thesauros/ranges.hpp"
@@ -90,5 +91,14 @@ int main() {
     static constexpr auto r_base = thes::range(10);
     static constexpr auto r = thes::transform_range([](auto v) { return 2 * v; }, r_base);
     static_assert(thes::reduce(r, 0, std::plus{}) == 90);
+  }
+
+  {
+    static constexpr auto prod = thes::views::cartesian_product(thes::range(2), thes::range(3));
+    static_assert(
+      thes::test::range_eq(prod, std::array{std::tuple{0, 0}, std::tuple{0, 1}, std::tuple{0, 2},
+                                            std::tuple{1, 0}, std::tuple{1, 1}, std::tuple{1, 2}}));
+    static_assert(*(prod.begin() += 2) == std::tuple{0, 2});
+    fmt::print("prod: {}\n", prod);
   }
 }

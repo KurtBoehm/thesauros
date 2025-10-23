@@ -2,8 +2,10 @@
 #define INCLUDE_THESAUROS_RANGES_HPP
 
 // IWYU pragma: begin_exports
+#include "ranges/cartesian-product.hpp"
 #include "ranges/concepts.hpp"
 #include "ranges/enumerate.hpp"
+#include "ranges/exposition.hpp"
 #include "ranges/iota.hpp"
 #include "ranges/reduce.hpp"
 #include "ranges/reversed.hpp"

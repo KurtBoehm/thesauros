@@ -23,6 +23,7 @@
 #include "thesauros/execution/system.hpp"
 #include "thesauros/execution/system/affinity.hpp"
 #include "thesauros/format/fmtlib.hpp"
+#include "thesauros/math/integer-cast.hpp"
 #include "thesauros/utility/empty.hpp"
 
 namespace thes {
@@ -66,7 +67,7 @@ struct FixedOpenMpThreadPool {
                std::optional<std::size_t> used_thread_num = {}) const {
     assert(!used_thread_num.has_value() || *used_thread_num <= thread_num_);
     const std::size_t tnum = used_thread_num.value_or(thread_num_);
-    if (omp_get_max_threads() < thread_num_) {
+    if (*thes::safe_cast<std::size_t>(omp_get_max_threads()) < thread_num_) {
       throw std::runtime_error{fmt::format("The thread pool needs {} threads, but the max is {}",
                                            thread_num_, omp_get_max_threads())};
     }
