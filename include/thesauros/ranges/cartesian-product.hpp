@@ -237,33 +237,33 @@ struct CartesianProductView
         : parent_(std::addressof(parent)), current_(std::move(current)) {}
 
     // C++23 26.7.32.3 §4-5
-    template<std::size_t tNum = sizeof...(TVs)>
+    template<std::size_t tN = sizeof...(TVs)>
     constexpr void next() {
-      auto& it = std::get<tNum>(current_);
+      auto& it = std::get<tN>(current_);
       ++it;
-      if constexpr (tNum > 0) {
-        if (it == std::ranges::end(std::get<tNum>(parent_->bases_))) {
-          it = std::ranges::begin(std::get<tNum>(parent_->bases_));
-          next<tNum - 1>();
+      if constexpr (tN > 0) {
+        if (it == std::ranges::end(std::get<tN>(parent_->bases_))) {
+          it = std::ranges::begin(std::get<tN>(parent_->bases_));
+          next<tN - 1>();
         }
       }
     }
 
     // C++23 26.7.32.3 §6
-    template<std::size_t tNum = sizeof...(TVs)>
+    template<std::size_t tN = sizeof...(TVs)>
     constexpr void prev() {
-      auto& it = std::get<tNum>(current_);
-      if constexpr (tNum > 0) {
-        if (it == std::ranges::begin(std::get<tNum>(parent_->bases_))) {
-          it = exposition::cartesian_common_arg_end(std::get<tNum>(parent_->bases_));
-          prev<tNum - 1>();
+      auto& it = std::get<tN>(current_);
+      if constexpr (tN > 0) {
+        if (it == std::ranges::begin(std::get<tN>(parent_->bases_))) {
+          it = exposition::cartesian_common_arg_end(std::get<tN>(parent_->bases_));
+          prev<tN - 1>();
         }
       }
       --it;
     }
 
     // Compile-time recursive implementation, constant-time of C++23 26.7.32.3 §18-22
-    template<std::size_t tDimension = sizeof...(TVs)>
+    template<std::size_t tN = sizeof...(TVs)>
     constexpr void advance(difference_type delta)
     requires(exposition::cartesian_product_is_random_access<tConst, TFirst, TVs...>)
     {
@@ -271,13 +271,13 @@ struct CartesianProductView
       // is better (a more thorough derivation of the algorithm is in the companion Markdown file).
       // More efficient handling for increment/decrement
       if (delta == 1) {
-        next<tDimension>();
+        next<tN>();
       } else if (delta == -1) {
-        prev<tDimension>();
+        prev<tN>();
       } else if (delta != 0) {
-        auto& r = std::get<tDimension>(parent_->bases_);
-        auto& it = std::get<tDimension>(current_);
-        if constexpr (tDimension == 0) {
+        auto& r = std::get<tN>(parent_->bases_);
+        auto& it = std::get<tN>(current_);
+        if constexpr (tN == 0) {
           it += delta;
         } else {
           const auto size = std::ranges::ssize(r);
@@ -292,7 +292,7 @@ struct CartesianProductView
             --rec_offset;
           }
           it = begin + dim_new; // the iterator corresponding to q_i
-          advance<tDimension - 1>(rec_offset); // the recursive step
+          advance<tN - 1>(rec_offset); // the recursive step
         }
       }
     }
