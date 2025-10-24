@@ -51,7 +51,7 @@ enum struct Seek : int { set = SEEK_SET, cur = SEEK_CUR, end = SEEK_END };
 
 inline decltype(auto) path_string(const std::filesystem::path& path) {
 #if THES_WINDOWS
-  return std::string(std::from_range, path.u8string());
+  return std::ranges::to<std::string>(path.u8string());
 #else
   return path;
 #endif

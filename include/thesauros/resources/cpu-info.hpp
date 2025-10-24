@@ -87,7 +87,7 @@ struct CpuInfo {
   }
 
   static auto physical_part(std::size_t idx, std::size_t num) {
-    std::vector<CpuInfo> one_per_core(std::from_range, CpuInfo::physical());
+    auto one_per_core = std::ranges::to<std::vector<CpuInfo>>(CpuInfo::physical());
     const auto subsizes = UniformIndexSegmenter{one_per_core.size(), num}.segment_range(idx);
     return std::move(one_per_core) | std::views::drop(subsizes.begin_value()) |
            std::views::take(subsizes.size());
@@ -196,7 +196,7 @@ struct CpuInfo {
   }
 
   static auto physical_part(std::size_t idx, std::size_t num) {
-    std::vector<CpuInfo> one_per_core(std::from_range, CpuInfo::physical());
+    auto one_per_core = std::ranges::to<std::vector<CpuInfo>>(CpuInfo::physical());
     const auto subsizes = UniformIndexSegmenter{one_per_core.size(), num}.segment_range(idx);
     return std::move(one_per_core) | std::views::drop(subsizes.begin_value()) |
            std::views::take(subsizes.size());

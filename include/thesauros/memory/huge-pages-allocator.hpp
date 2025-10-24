@@ -32,7 +32,9 @@ struct HugePagesAllocator {
     }
     void* p = nullptr;
 #if THES_LINUX || THES_APPLE
-    (void)posix_memalign(&p, huge_page_size, n * sizeof(T));
+    if (posix_memalign(&p, huge_page_size, n * sizeof(T)) != 0) {
+      throw std::bad_alloc{};
+    }
 #elif THES_WINDOWS
     p = _aligned_malloc(n * sizeof(T), huge_page_size);
 #endif

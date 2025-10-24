@@ -42,14 +42,14 @@ int main() {
   op(thes::FixedStdThreadPool{2});
   op(thes::FixedOpenMpThreadPool{2});
 
-  const std::vector<thes::CpuInfo> logical(std::from_range, thes::CpuInfo::logical());
+  const auto logical = std::ranges::to<std::vector<thes::CpuInfo>>(thes::CpuInfo::logical());
   fmt::print("{}x logical: {}\n", logical.size(), logical);
 
-  const std::vector<thes::CpuInfo> physical(std::from_range, thes::CpuInfo::physical());
+  const auto physical = std::ranges::to<std::vector<thes::CpuInfo>>(thes::CpuInfo::physical());
   fmt::print("{}x physical: {}\n", physical.size(), physical);
 
-  const std::vector<thes::CpuInfo> physical_part(std::from_range,
-                                                 thes::CpuInfo::physical_part(0, 2));
+  const auto physical_part =
+    std::ranges::to<std::vector<thes::CpuInfo>>(thes::CpuInfo::physical_part(0, 2));
   fmt::print("{}x physical 0/2: {}\n", physical_part.size(), physical_part);
 
 #if THES_LINUX || THES_WINDOWS
