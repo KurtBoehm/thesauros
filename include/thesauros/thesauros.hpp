@@ -7,6 +7,7 @@
 #include "concepts.hpp"
 #include "containers.hpp"
 #include "execution.hpp"
+#include "filesystem.hpp"
 #include "format.hpp"
 #include "functional.hpp"
 #include "io.hpp"

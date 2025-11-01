@@ -37,6 +37,7 @@ foreach name, deps : {
   'static-string': [],
   'std-extensions': [],
   'swap-or-equal': [],
+  'tempfile': [],
   'tessellation': [],
   'tiling': [],
   'tuples': [],

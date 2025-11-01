@@ -39,6 +39,14 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(fmt)
 
+# pcg-cpp does not provide CMake build files
+FetchContent_Declare(
+  pcg_cpp
+  GIT_REPOSITORY https://github.com/imneme/pcg-cpp.git
+  GIT_TAG 428802d1a5634f96bcd0705fab379ff0113bcf13
+)
+FetchContent_MakeAvailable(pcg_cpp)
+
 FetchContent_Declare(
   unordered_dense
   URL
@@ -65,6 +73,7 @@ target_include_directories(
   INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
+    ${pcg_cpp_SOURCE_DIR}/include
 )
 target_link_libraries(
   ${PROJECT_NAME}
@@ -83,14 +92,6 @@ if(THESAUROS_BUILD_TESTS)
     GIT_TAG main
   )
   FetchContent_MakeAvailable(cmop)
-
-  # pcg-cpp does not provide CMake build files
-  FetchContent_Declare(
-    pcg_cpp
-    GIT_REPOSITORY https://github.com/imneme/pcg-cpp.git
-    GIT_TAG 428802d1a5634f96bcd0705fab379ff0113bcf13
-  )
-  FetchContent_MakeAvailable(pcg_cpp)
 
   include(CTest)
 
@@ -136,10 +137,6 @@ if(THESAUROS_BUILD_TESTS)
     add_executable(${test_target} test/${test_name}.cpp)
     target_compile_features(${test_target} PRIVATE cxx_std_23)
     target_link_libraries(${test_target} PRIVATE ${PROJECT_NAME})
-    target_include_directories(
-      ${test_target}
-      PRIVATE ${pcg_cpp_SOURCE_DIR}/include
-    )
     cmop_add_warnings(${test_target})
     cmop_add_info(${test_target})
     add_test(NAME ${PROJECT_NAME}.${test_name} COMMAND ${test_target})

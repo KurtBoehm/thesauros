@@ -25,6 +25,7 @@ thesauros_dep = declare_dependency(
     fmt_dep,
     dependency('boost-preprocessor'),
     dependency('openmp'),
+    dependency('pcg-cpp'),
     dependency('unordered_dense'),
   ],
 )
