@@ -58,7 +58,7 @@ struct MultiBitIntegers {
       if (value) {
         ref.fetch_or(bmask, mem_order);
       } else {
-        ref.fetch_and(~bmask, mem_order);
+        ref.fetch_and(Chunk(~bmask), mem_order);
       }
     }
 
@@ -66,7 +66,7 @@ struct MultiBitIntegers {
       return thes::get_bit<Chunk>(chunk, index + offset);
     }
 
-    [[nodiscard]] constexpr operator Chunk() const {
+    [[nodiscard]] constexpr operator Chunk() const { // NOLINT
       return (chunk >> offset) & mask;
     }
 

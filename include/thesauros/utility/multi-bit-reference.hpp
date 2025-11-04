@@ -20,7 +20,7 @@ struct MutableBitReference {
 
   constexpr MutableBitReference(Chunk& chunk, std::size_t index) : chunk_{chunk}, index_{index} {}
 
-  constexpr operator bool() const {
+  constexpr operator bool() const { // NOLINT
     return chunk_ & mask();
   }
 
@@ -36,7 +36,7 @@ struct MutableBitReference {
     if (value) {
       std::atomic_ref{chunk_}.fetch_or(mask(), order);
     } else {
-      std::atomic_ref{chunk_}.fetch_and(~mask(), order);
+      std::atomic_ref{chunk_}.fetch_and(Chunk(~mask()), order);
     }
     return *this;
   }
