@@ -37,10 +37,14 @@
 #include <processthreadsapi.h>
 #include <winnt.h>
 
+#include "ankerl/unordered_dense.h"
+
 #include "thesauros/types/primitives.hpp"
 #endif
 
 namespace thes {
+enum struct EfficiencyClass : u8 { any, efficiency, performance };
+
 #if THES_LINUX
 template<typename TChars>
 auto cpu_range(TChars&& full) {
@@ -189,14 +193,58 @@ struct CpuInfo {
     return cores;
   }
 
+  static std::vector<CpuInfo> logical(EfficiencyClass efficiency_class) {
+    using CpuInfos = std::vector<CpuInfo>;
+    CpuInfos infos = logical();
+    if (efficiency_class == EfficiencyClass::any) {
+      return infos;
+    }
+
+    ankerl::unordered_dense::set<BYTE> efficiency_set{};
+    for (const CpuInfo& info : infos) {
+      efficiency_set.emplace(info.efficiency_class);
+    }
+    if (efficiency_set.empty()) {
+      throw std::runtime_error{"There are no efficiency classes (somehow)!"};
+    }
+    if (efficiency_set.size() > 2) {
+      throw std::runtime_error{"There are too many efficiency classes!"};
+    }
+    std::vector<BYTE> efficiencies = std::move(efficiency_set).extract();
+    std::ranges::sort(efficiencies);
+
+    const BYTE selected_class = [&] {
+      switch (efficiency_class) {
+        case EfficiencyClass::efficiency: return efficiencies.front();
+        case EfficiencyClass::performance: return efficiencies.back();
+        default: throw std::runtime_error{"Unsupported efficiency class!"};
+      }
+    }();
+    auto range = std::move(infos) | std::views::filter([selected_class](const CpuInfo& info) {
+                   return info.efficiency_class == selected_class;
+                 });
+    return std::ranges::to<CpuInfos>(range);
+  }
+
   static auto physical() {
     return logical() | std::views::filter([](const CpuInfo& info) {
+             return info.logical_processor_index == info.core_index;
+           });
+  }
+  static auto physical(EfficiencyClass efficiency_class) {
+    return logical(efficiency_class) | std::views::filter([](const CpuInfo& info) {
              return info.logical_processor_index == info.core_index;
            });
   }
 
   static auto physical_part(std::size_t idx, std::size_t num) {
     auto one_per_core = std::ranges::to<std::vector<CpuInfo>>(CpuInfo::physical());
+    const auto subsizes = UniformIndexSegmenter{one_per_core.size(), num}.segment_range(idx);
+    return std::move(one_per_core) | std::views::drop(subsizes.begin_value()) |
+           std::views::take(subsizes.size());
+  }
+  static auto physical_part(EfficiencyClass efficiency_class, std::size_t idx, std::size_t num) {
+    auto one_per_core = std::ranges::to<std::vector<CpuInfo>>(CpuInfo::physical(efficiency_class));
     const auto subsizes = UniformIndexSegmenter{one_per_core.size(), num}.segment_range(idx);
     return std::move(one_per_core) | std::views::drop(subsizes.begin_value()) |
            std::views::take(subsizes.size());
