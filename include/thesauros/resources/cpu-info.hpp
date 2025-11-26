@@ -67,6 +67,11 @@ auto cpu_range(TChars&& full) {
 
 struct CpuInfo {
   static constexpr auto cpu_path_cstr = "/sys/devices/system/cpu/";
+  static constexpr auto cpu_atom_path_cstr = "/sys/devices/cpu_atom/cpus";
+  static constexpr auto cpu_core_path_cstr = "/sys/devices/cpu_core/cpus";
+
+  static constexpr auto physical_filter =
+    std::views::filter([](const auto& cpu) { return cpu.id == std::ranges::min(cpu.core_cpus()); });
 
   std::size_t id;
 
@@ -83,18 +88,50 @@ struct CpuInfo {
     return cpu_range(read_file<DynamicArray<char>>(present_path)) |
            std::views::transform([](std::size_t i) { return CpuInfo{i}; });
   }
-
-  static auto physical() {
-    return logical() | std::views::filter([&](const CpuInfo& cpu) {
-             return cpu.id == std::ranges::min(cpu.core_cpus());
-           });
+  static auto logical(EfficiencyClass efficiency_class) {
+    const auto cores_path = [&] {
+      switch (efficiency_class) {
+        case EfficiencyClass::any: return std::filesystem::path{cpu_path_cstr} / "present";
+        case EfficiencyClass::efficiency: {
+          const std::filesystem::path atom_path{cpu_atom_path_cstr};
+          return std::filesystem::exists(atom_path)
+                   ? atom_path
+                   : (std::filesystem::path{cpu_path_cstr} / "present");
+        }
+        case EfficiencyClass::performance: {
+          const std::filesystem::path core_path{cpu_core_path_cstr};
+          return std::filesystem::exists(core_path)
+                   ? core_path
+                   : (std::filesystem::path{cpu_path_cstr} / "present");
+        }
+        default: throw std::invalid_argument{"Unsupported efficiency class!"};
+      }
+    }();
+    return cpu_range(read_file<DynamicArray<char>>(cores_path)) |
+           std::views::transform([](std::size_t i) { return CpuInfo{i}; });
   }
 
-  static auto physical_part(std::size_t idx, std::size_t num) {
-    auto one_per_core = std::ranges::to<std::vector<CpuInfo>>(CpuInfo::physical());
+  static auto physical() {
+    return logical() | physical_filter;
+  }
+  static auto physical(EfficiencyClass efficiency_class) {
+    return logical(efficiency_class) | physical_filter;
+  }
+
+  template<typename TCpuInfoRange>
+  static auto cpu_infos_part(TCpuInfoRange&& cpu_infos, std::size_t idx, std::size_t num) {
+    auto one_per_core =
+      std::ranges::to<std::vector<CpuInfo>>(std::forward<TCpuInfoRange>(cpu_infos));
     const auto subsizes = UniformIndexSegmenter{one_per_core.size(), num}.segment_range(idx);
     return std::move(one_per_core) | std::views::drop(subsizes.begin_value()) |
            std::views::take(subsizes.size());
+  }
+
+  static auto physical_part(std::size_t idx, std::size_t num) {
+    return cpu_infos_part(physical(), idx, num);
+  }
+  static auto physical_part(EfficiencyClass efficiency_class, std::size_t idx, std::size_t num) {
+    return cpu_infos_part(physical(efficiency_class), idx, num);
   }
 };
 #elif THES_APPLE
