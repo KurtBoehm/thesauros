@@ -53,49 +53,11 @@ struct AnyIndexPositionTrait<IndexPosition<TSize, TPos>> : public std::true_type
 template<typename T>
 concept AnyIndexPosition = AnyIndexPositionTrait<T>::value;
 
-// Split the hypercube described by “ranges” into tiles and iterate over them
-template<IterDirection tDir, typename TRanges, typename TFixedAxes>
-THES_ALWAYS_INLINE inline constexpr void for_each_tile(const TRanges& ranges,
-                                                       const auto& tile_sizes,
-                                                       const TFixedAxes& fixed_axes, auto&& fun) {
-  using Size = star::Value<star::Value<TRanges>>;
-  constexpr std::size_t dim_num = star::size<TRanges>;
-
-  if constexpr (dim_num == 0) {
-    return;
-  } else {
-    auto impl = [&](auto dim, auto rec, auto... args) THES_ALWAYS_INLINE {
-      static_assert(dim <= dim_num && sizeof...(args) == dim);
-      if constexpr (dim == dim_num) {
-        fun(args...);
-      } else if constexpr (TFixedAxes::contains(dim)) {
-        rec(index_tag<dim + 1>, rec, args..., fixed_axes.get(dim));
-      } else {
-        const auto dim_range = star::get_at<dim>(ranges);
-        const auto begin = dim_range.begin_value();
-        const auto end = dim_range.end_value();
-        const auto tile_size = star::get_at<dim>(tile_sizes);
-        if constexpr (tDir == IterDirection::FORWARD) {
-          for (Size i = begin; i < end; i += tile_size) {
-            rec(index_tag<dim + 1>, rec, args..., range(i, std::min(i + tile_size, end)));
-          }
-        } else {
-          const Size size = end - begin;
-          const Size size_tile = div_ceil(size, Size{tile_size}) * tile_size;
-          for (Size i = size_tile; i > 0; i -= tile_size) {
-            const Size idx = i + begin;
-            rec(index_tag<dim + 1>, rec, args..., range(idx - tile_size, std::min(idx, end)));
-          }
-        }
-      }
-    };
-    impl(index_tag<0>, impl);
-  }
-}
+namespace detail {
 template<IterDirection tDir, typename TRanges, typename TFixedAxes>
 THES_ALWAYS_INLINE inline constexpr void
 for_each_tile(const TRanges& ranges, const auto& tile_sizes, const TFixedAxes& fixed_axes,
-              auto&& full_fun, auto&& part_fun, [[maybe_unused]] AnyIndexTag auto vec_size) {
+              auto&& full_fun, auto&& part_fun) {
   using Size = star::Value<star::Value<TRanges>>;
   constexpr std::size_t dim_num = star::size<TRanges>;
 
@@ -111,12 +73,10 @@ for_each_tile(const TRanges& ranges, const auto& tile_sizes, const TFixedAxes& f
 
       static_assert(!TFixedAxes::contains(thes::index_tag<dim_num - 1>));
       if constexpr (dim + 1 == dim_num) {
-        assert(tile_size % vec_size == 0);
-
         if constexpr (tDir == IterDirection::FORWARD) {
           Size i = begin;
           for (; i + tile_size <= end; i += tile_size) {
-            full_fun(args..., range(i, i + tile_size));
+            full_fun(args..., range_size(i, tile_size));
           }
           if (i != end) {
             part_fun(args..., range(i, end));
@@ -127,12 +87,12 @@ for_each_tile(const TRanges& ranges, const auto& tile_sizes, const TFixedAxes& f
             part_fun(args..., range(full_tile_end, end));
           }
           for (Size i = full_tile_end; i > 0; i -= tile_size) {
-            full_fun(args..., range(i - tile_size, i));
+            full_fun(args..., range_size(i - tile_size, tile_size));
           }
         }
       } else if constexpr (TFixedAxes::contains(dim)) {
         const auto idx = fixed_axes.get(dim);
-        rec(index_tag<dim + 1>, rec, args..., range(idx, idx + 1));
+        rec(index_tag<dim + 1>, rec, args..., range_size(idx, value_tag<Size, 1>));
       } else {
         if constexpr (tDir == IterDirection::FORWARD) {
           for (Size i = begin; i < end; i += tile_size) {
@@ -149,6 +109,26 @@ for_each_tile(const TRanges& ranges, const auto& tile_sizes, const TFixedAxes& f
     };
     impl(index_tag<0>, impl);
   }
+}
+} // namespace detail
+
+// Split the hyperrectangle described by “ranges” into tiles and iterate over them
+template<IterDirection tDir, typename TRanges, typename TFixedAxes>
+THES_ALWAYS_INLINE inline constexpr void for_each_tile(const TRanges& ranges,
+                                                       const auto& tile_sizes,
+                                                       const TFixedAxes& fixed_axes, auto&& fun) {
+  detail::for_each_tile<tDir>(ranges, tile_sizes, fixed_axes, fun, fun);
+}
+template<IterDirection tDir, typename TRanges, typename TFixedAxes>
+THES_ALWAYS_INLINE inline constexpr void
+for_each_tile(const TRanges& ranges, const auto& tile_sizes, const TFixedAxes& fixed_axes,
+              auto&& full_fun, auto&& part_fun, [[maybe_unused]] AnyIndexTag auto vec_size) {
+  constexpr std::size_t dim_num = star::size<TRanges>;
+  assert(star::static_apply<dim_num>([&]<std::size_t... tIdxs>() {
+    return (... && (TFixedAxes::contains(index_tag<tIdxs>) ||
+                    star::get_at<tIdxs>(tile_sizes) % vec_size == 0));
+  }));
+  detail::for_each_tile<tDir>(ranges, tile_sizes, fixed_axes, full_fun, part_fun);
 }
 
 // Iterate over the cells in a tile
