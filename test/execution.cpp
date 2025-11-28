@@ -44,13 +44,37 @@ int main() {
 
   const auto logical = std::ranges::to<std::vector<thes::CpuInfo>>(thes::CpuInfo::logical());
   fmt::print("{}x logical: {}\n", logical.size(), logical);
+#if THES_WINDOWS || THES_LINUX
+  const auto logical_effi = std::ranges::to<std::vector<thes::CpuInfo>>(
+    thes::CpuInfo::logical(thes::EfficiencyClass::efficiency));
+  fmt::print("{}x logical efficiency: {}\n", logical_effi.size(), logical_effi);
+  const auto logical_perf = std::ranges::to<std::vector<thes::CpuInfo>>(
+    thes::CpuInfo::logical(thes::EfficiencyClass::performance));
+  fmt::print("{}x logical performance: {}\n", logical_perf.size(), logical_perf);
+#endif
 
   const auto physical = std::ranges::to<std::vector<thes::CpuInfo>>(thes::CpuInfo::physical());
   fmt::print("{}x physical: {}\n", physical.size(), physical);
+#if THES_WINDOWS || THES_LINUX
+  const auto physical_effi = std::ranges::to<std::vector<thes::CpuInfo>>(
+    thes::CpuInfo::physical(thes::EfficiencyClass::efficiency));
+  fmt::print("{}x physical efficiency: {}\n", physical_effi.size(), physical_effi);
+  const auto physical_perf = std::ranges::to<std::vector<thes::CpuInfo>>(
+    thes::CpuInfo::physical(thes::EfficiencyClass::performance));
+  fmt::print("{}x physical performance: {}\n", physical_perf.size(), physical_perf);
+#endif
 
   const auto physical_part =
     std::ranges::to<std::vector<thes::CpuInfo>>(thes::CpuInfo::physical_part(0, 2));
   fmt::print("{}x physical 0/2: {}\n", physical_part.size(), physical_part);
+#if THES_LINUX || THES_WINDOWS
+  const auto physical_part_effi = std::ranges::to<std::vector<thes::CpuInfo>>(
+    thes::CpuInfo::physical_part(thes::EfficiencyClass::efficiency, 0, 2));
+  fmt::print("{}x physical efficiency 0/2: {}\n", physical_part_effi.size(), physical_part_effi);
+  const auto physical_part_perf = std::ranges::to<std::vector<thes::CpuInfo>>(
+    thes::CpuInfo::physical_part(thes::EfficiencyClass::performance, 0, 2));
+  fmt::print("{}x physical performance 0/2: {}\n", physical_part_perf.size(), physical_part_perf);
+#endif
 
 #if THES_LINUX || THES_WINDOWS
   {

@@ -37,7 +37,7 @@ inline std::filesystem::path mkdtemp() {
     }
     name[11] = 0;
 
-    const auto dir = tmp_dir / std::string_view{name};
+    const auto dir = tmp_dir / std::string_view{name.data(), 11};
     const bool created = std::filesystem::create_directories(dir);
     if (created) {
       return dir;
