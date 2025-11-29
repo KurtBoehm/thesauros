@@ -208,8 +208,7 @@ constexpr IotaRange<T> range(T end) {
   return range(T(), end);
 }
 
-template<typename TRange>
-constexpr auto iter_range(TRange&& container) {
+constexpr auto iter_range(auto&& container) {
   return IotaRange{container.begin(), container.end()};
 }
 template<typename TIter>

@@ -14,7 +14,6 @@
 
 #include "thesauros/functional/no-op.hpp"
 #include "thesauros/macropolis/inlining.hpp"
-#include "thesauros/math/arithmetic.hpp"
 #include "thesauros/ranges.hpp"
 #include "thesauros/static-ranges/definitions/size.hpp"
 #include "thesauros/static-ranges/definitions/type-traits.hpp"
@@ -54,6 +53,28 @@ template<typename T>
 concept AnyIndexPosition = AnyIndexPositionTrait<T>::value;
 
 namespace detail {
+template<IterDirection tDir, typename TSize>
+THES_ALWAYS_INLINE inline constexpr void
+for_each_tile_unroll(TSize begin, TSize end, auto tile_size, auto&& full_fun, auto&& part_fun) {
+  if constexpr (tDir == IterDirection::FORWARD) {
+    TSize i = begin;
+    for (; i + tile_size <= end; i += tile_size) {
+      full_fun(range_size(i, tile_size));
+    }
+    if (i != end) {
+      part_fun(range(i, end));
+    }
+  } else {
+    const TSize full_tile_end = end - ((end - begin) % tile_size);
+    if (full_tile_end != end) {
+      part_fun(range(full_tile_end, end));
+    }
+    for (TSize i = full_tile_end; i > begin; i -= tile_size) {
+      full_fun(range_size(i - tile_size, tile_size));
+    }
+  }
+}
+
 template<IterDirection tDir, typename TRanges, typename TFixedAxes>
 THES_ALWAYS_INLINE inline constexpr void
 for_each_tile(const TRanges& ranges, const auto& tile_sizes, const TFixedAxes& fixed_axes,
@@ -73,38 +94,15 @@ for_each_tile(const TRanges& ranges, const auto& tile_sizes, const TFixedAxes& f
 
       static_assert(!TFixedAxes::contains(thes::index_tag<dim_num - 1>));
       if constexpr (dim + 1 == dim_num) {
-        if constexpr (tDir == IterDirection::FORWARD) {
-          Size i = begin;
-          for (; i + tile_size <= end; i += tile_size) {
-            full_fun(args..., range_size(i, tile_size));
-          }
-          if (i != end) {
-            part_fun(args..., range(i, end));
-          }
-        } else {
-          const Size full_tile_end = end - (dim_range.size() % tile_size);
-          if (full_tile_end != end) {
-            part_fun(args..., range(full_tile_end, end));
-          }
-          for (Size i = full_tile_end; i > 0; i -= tile_size) {
-            full_fun(args..., range_size(i - tile_size, tile_size));
-          }
-        }
+        for_each_tile_unroll<tDir>(
+          begin, end, tile_size, [&](auto range) { full_fun(args..., range); },
+          [&](auto range) { part_fun(args..., range); });
       } else if constexpr (TFixedAxes::contains(dim)) {
         const auto idx = fixed_axes.get(dim);
         rec(index_tag<dim + 1>, rec, args..., range_size(idx, value_tag<Size, 1>));
       } else {
-        if constexpr (tDir == IterDirection::FORWARD) {
-          for (Size i = begin; i < end; i += tile_size) {
-            rec(index_tag<dim + 1>, rec, args..., range(i, std::min(i + tile_size, end)));
-          }
-        } else {
-          const Size size = end - begin;
-          const Size size_tile = div_ceil(size, Size{tile_size}) * tile_size;
-          for (Size i = begin + size_tile; i > begin; i -= tile_size) {
-            rec(index_tag<dim + 1>, rec, args..., range(i - tile_size, std::min(i, end)));
-          }
-        }
+        auto op = [&](auto range) { rec(index_tag<dim + 1>, rec, args..., range); };
+        for_each_tile_unroll<tDir>(begin, end, tile_size, op, op);
       }
     };
     impl(index_tag<0>, impl);
