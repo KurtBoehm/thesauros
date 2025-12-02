@@ -52,6 +52,9 @@ struct AnyIndexPositionTrait<IndexPosition<TSize, TPos>> : public std::true_type
 template<typename T>
 concept AnyIndexPosition = AnyIndexPositionTrait<T>::value;
 
+template<typename TRanges>
+using NestedValueType = TransformedTypeSeq<star::ValueSeq<TRanges>, star::Value>::Unique;
+
 namespace detail {
 template<IterDirection tDir, typename TSize>
 THES_ALWAYS_INLINE inline constexpr void
@@ -79,7 +82,7 @@ template<IterDirection tDir, typename TRanges, typename TFixedAxes>
 THES_ALWAYS_INLINE inline constexpr void
 for_each_tile(const TRanges& ranges, const auto& tile_sizes, const TFixedAxes& fixed_axes,
               auto&& full_fun, auto&& part_fun) {
-  using Size = star::Value<star::Value<TRanges>>;
+  using Size = NestedValueType<TRanges>;
   constexpr std::size_t dim_num = star::size<TRanges>;
 
   if constexpr (dim_num == 0) {
@@ -130,12 +133,11 @@ for_each_tile(const TRanges& ranges, const auto& tile_sizes, const TFixedAxes& f
 }
 
 // Iterate over the cells in a tile
-template<IterDirection tDir, typename TRanges, typename TIdx = star::Value<star::Value<TRanges>>>
+template<IterDirection tDir, typename TRanges, typename TIdx = NestedValueType<TRanges>>
 THES_ALWAYS_INLINE inline constexpr void tile_for_each(const auto& multi_size,
                                                        const TRanges& ranges, auto&& fun,
                                                        TypeTag<TIdx> /*tag*/ = {}) {
-  using Range = star::Value<TRanges>;
-  using Size = star::Value<Range>;
+  using Size = NestedValueType<TRanges>;
   constexpr std::size_t dim_num = star::size<TRanges>;
   using IndexPos = IndexPosition<TIdx, std::array<Size, dim_num>>;
 
@@ -166,11 +168,11 @@ THES_ALWAYS_INLINE inline constexpr void tile_for_each(const auto& multi_size,
   };
   impl(index_tag<0>, impl, Size{0});
 }
-template<IterDirection tDir, typename TRanges, typename TIdx = star::Value<star::Value<TRanges>>>
+template<IterDirection tDir, typename TRanges, typename TIdx = NestedValueType<TRanges>>
 THES_ALWAYS_INLINE inline constexpr void
 tile_for_each(const auto& multi_size, const TRanges& ranges, auto&& full_fun, auto&& part_fun,
               AnyIndexTag auto vec_size, AnyBoolTag auto has_part, TypeTag<TIdx> /*tag*/ = {}) {
-  using Size = TransformedTypeSeq<TupleTypeSeq<TRanges>, star::Value>::Unique;
+  using Size = NestedValueType<TRanges>;
   constexpr std::size_t dim_num = star::size<TRanges>;
   using IndexPos = IndexPosition<TIdx, std::array<Size, dim_num>>;
   constexpr auto vsize = static_cast<Size>(vec_size);
@@ -235,7 +237,7 @@ tile_for_each(const auto& multi_size, const TRanges& ranges, auto&& full_fun, au
 }
 
 // Iterate over the elements described by “ranges” in a tiled fashion
-template<IterDirection tDir, typename TRanges, typename TIdx = star::Value<star::Value<TRanges>>>
+template<IterDirection tDir, typename TRanges, typename TIdx = NestedValueType<TRanges>>
 THES_ALWAYS_INLINE inline constexpr void
 tiled_for_each(const auto& multi_size, const TRanges& ranges, const auto& tile_sizes,
                const auto& fixed_axes, auto&& fun, TypeTag<TIdx> tag = {}) {
@@ -243,7 +245,7 @@ tiled_for_each(const auto& multi_size, const TRanges& ranges, const auto& tile_s
     tile_for_each<tDir>(multi_size, Tuple{std::move(args)...}, fun, tag);
   });
 }
-template<IterDirection tDir, typename TRanges, typename TIdx = star::Value<star::Value<TRanges>>>
+template<IterDirection tDir, typename TRanges, typename TIdx = NestedValueType<TRanges>>
 THES_ALWAYS_INLINE inline constexpr void
 tiled_for_each(const auto& multi_size, const TRanges& ranges, const auto& tile_sizes,
                const auto& fixed_axes, auto&& full_fun, auto&& part_fun, AnyIndexTag auto vec_size,
