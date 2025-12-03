@@ -124,8 +124,7 @@ template<IterDirection tDir, typename TRanges, typename TFixedAxes>
 THES_ALWAYS_INLINE inline constexpr void
 for_each_tile(const TRanges& ranges, const auto& tile_sizes, const TFixedAxes& fixed_axes,
               auto&& full_fun, auto&& part_fun, [[maybe_unused]] AnyIndexTag auto vec_size) {
-  constexpr std::size_t dim_num = star::size<TRanges>;
-  assert(star::static_apply<dim_num>([&]<std::size_t... tIdxs>() {
+  assert(star::static_apply<star::size<TRanges>>([&]<std::size_t... tIdxs>() {
     return (... && (TFixedAxes::contains(index_tag<tIdxs>) ||
                     star::get_at<tIdxs>(tile_sizes) % vec_size == 0));
   }));
