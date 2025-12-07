@@ -29,7 +29,11 @@ namespace thes {
 #if THES_LINUX || THES_APPLE
 struct ResourceUsage {
   using Duration = Quantity<long, unit::microsecond>;
+#if THES_APPLE
+  using Memory = Quantity<long, unit::byte>;
+#else
   using Memory = Quantity<long, unit::kibibyte>;
+#endif
 
   ResourceUsage() : ResourceUsage(get_rusage()) {}
 
