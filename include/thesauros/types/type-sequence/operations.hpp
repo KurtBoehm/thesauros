@@ -36,29 +36,29 @@ template<AnyTypeSeq... TSeqs>
 using JoinedTypeSeq = JoinedTypeSeqTrait<TSeqs...>::Type;
 
 template<AnyTypeSeq... TSeqs>
-inline constexpr JoinedTypeSeq<TSeqs...> join_type_seqs(TSeqs... /*seqs*/) {
+constexpr JoinedTypeSeq<TSeqs...> join_type_seqs(TSeqs... /*seqs*/) {
   return {};
 }
 template<AnyTypeSeq... TSeqs>
 requires(sizeof...(TSeqs) > 0)
-inline constexpr auto join(TSeqs... seqs) {
+constexpr auto join(TSeqs... seqs) {
   return join_type_seqs(seqs...);
 }
 
 // Cartesian product
 
 template<typename T, AnyTypeSeq... TSeqs>
-inline constexpr auto cartesian_product(TypeSeq<T> /*seq*/) {
+constexpr auto cartesian_product(TypeSeq<T> /*seq*/) {
   return TypeSeq<TypeSeq<T>>{};
 }
 template<typename T, AnyTypeSeq... TSeqs>
-inline constexpr auto cartesian_product(TypeSeq<T> /*head*/, TSeqs... tail) {
+constexpr auto cartesian_product(TypeSeq<T> /*head*/, TSeqs... tail) {
   return []<AnyTypeSeq... TProds>(TypeSeq<TProds...>) {
     return TypeSeq<typename TProds::template Prepended<T>...>{};
   }(cartesian_product(tail...));
 }
 template<typename... Ts, AnyTypeSeq... TSeqs>
-inline constexpr auto cartesian_product(TypeSeq<Ts...> /*head*/, TSeqs... tail) {
+constexpr auto cartesian_product(TypeSeq<Ts...> /*head*/, TSeqs... tail) {
   return join_type_seqs(cartesian_product(TypeSeq<Ts>{}, tail...)...);
 }
 
@@ -83,7 +83,7 @@ template<AnyTypeSeq TSeq>
 using FlatTypeSeq = FlatTypeSeqTrait<TSeq>::Type;
 
 template<AnyTypeSeq TSeq>
-inline constexpr FlatTypeSeq<TSeq> flatten(TSeq /*seq*/) {
+constexpr FlatTypeSeq<TSeq> flatten(TSeq /*seq*/) {
   return {};
 }
 
@@ -127,7 +127,7 @@ struct FunFilterTlax {
 };
 } // namespace detail
 
-inline constexpr auto filter(AnyTypeSeq auto seq, auto filter) {
+constexpr auto filter(AnyTypeSeq auto seq, auto filter) {
   return FilteredTypeSeq<decltype(seq), detail::FunFilterTlax<decltype(filter)>::template Filter>{};
 }
 

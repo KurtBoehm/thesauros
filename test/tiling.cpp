@@ -164,10 +164,12 @@ void test_vectorized() {
 
 constexpr void test_small() {
   using namespace thes::literals;
-  // tiled_base(
-  //   forward, std::array{4_u32, 9_u32, 7_u32},
-  //   std::array{thes::range(2_u32, 4_u32), thes::range(0_u32, 9_u32), thes::range(0_u32, 7_u32)},
-  //   std::array{8_u32, 8_u32, 8_u32}, thes::StaticMap{});
+#if false
+  tiled_base(
+    forward, std::array{4_u32, 9_u32, 7_u32},
+    std::array{thes::range(2_u32, 4_u32), thes::range(0_u32, 9_u32), thes::range(0_u32, 7_u32)},
+    std::array{8_u32, 8_u32, 8_u32}, thes::StaticMap{});
+#endif
 
   std::vector<thes::u32> idxs{};
   thes::tiled_for_each<backward>(

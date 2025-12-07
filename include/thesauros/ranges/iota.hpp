@@ -208,8 +208,7 @@ constexpr IotaRange<T> range(T end) {
   return range(T(), end);
 }
 
-template<typename TRange>
-constexpr auto iter_range(TRange&& container) {
+constexpr auto iter_range(auto&& container) {
   return IotaRange{container.begin(), container.end()};
 }
 template<typename TIter>
@@ -224,8 +223,8 @@ struct StaticSizeIotaRange {
   using const_iterator = iota_impl::ConstIterator<T>;
   using const_reverse_iterator = iota_impl::ConstReverseIterator<T>;
 
-  explicit StaticSizeIotaRange(T begin) : begin_{begin} {}
-  explicit StaticSizeIotaRange(T begin, ValueTag<T, tSize> /*tag*/) : begin_{begin} {}
+  explicit constexpr StaticSizeIotaRange(T begin) : begin_{begin} {}
+  explicit constexpr StaticSizeIotaRange(T begin, ValueTag<T, tSize> /*tag*/) : begin_{begin} {}
 
   [[nodiscard]] constexpr const_iterator begin() const {
     return const_iterator{begin_};
