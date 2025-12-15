@@ -3,6 +3,7 @@
 
 // IWYU pragma: begin_exports
 #include "resources/cpu-info.hpp"
+#include "resources/prefetch.hpp"
 #include "resources/resource-usage.hpp"
 // IWYU pragma: end_exports
 
