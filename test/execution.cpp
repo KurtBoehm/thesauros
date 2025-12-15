@@ -30,6 +30,13 @@ int main() {
     scanned_ref.push_back(accum);
   }
 
+#if THES_X86_64
+  fmt::print("x86-64\n");
+#endif
+#if THES_ARM64
+  fmt::print("ARM64\n");
+#endif
+
   auto op = [&](auto pool) {
     thes::LinearExecutionPolicy expo{pool};
 
