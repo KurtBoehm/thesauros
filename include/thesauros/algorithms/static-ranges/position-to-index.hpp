@@ -19,7 +19,7 @@ namespace thes::star {
 template<typename TPos, typename TProds>
 requires(std::same_as<star::Value<TPos>, star::Value<TProds>> &&
          star::size<TPos> + 1 == star::size<TProds>)
-inline constexpr auto position_to_index(const TPos& pos, const TProds& incl_postfix_products) {
+constexpr auto position_to_index(const TPos& pos, const TProds& incl_postfix_products) {
   constexpr auto size = star::size<TPos>;
   return [&]<std::size_t... tIdxs>(std::index_sequence<tIdxs...> /*idxs*/) {
     return (... + (star::get_at<tIdxs>(pos) * star::get_at<tIdxs + 1>(incl_postfix_products)));

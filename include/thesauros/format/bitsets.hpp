@@ -16,7 +16,7 @@
 #include "thesauros/format/formatter.hpp"
 
 namespace thes::detail {
-inline constexpr auto write_bitset(const auto& bs, auto it) {
+constexpr auto write_bitset(const auto& bs, auto it) {
   for (std::size_t i = bs.size(); i > 0; --i) {
     *it++ = bs[i - 1] ? '1' : '0';
   }

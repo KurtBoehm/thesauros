@@ -21,16 +21,16 @@
 namespace thes {
 namespace impl {
 template<typename T1, typename T2>
-inline constexpr bool member_ptrs_eq(const T1& /*value1*/, const T2& /*value2*/) {
+constexpr bool member_ptrs_eq(const T1& /*value1*/, const T2& /*value2*/) {
   return false;
 }
 template<typename TClass, typename TMember>
-inline constexpr bool member_ptrs_eq(TMember TClass::* ptr1, TMember TClass::* ptr2) {
+constexpr bool member_ptrs_eq(TMember TClass::* ptr1, TMember TClass::* ptr2) {
   return ptr1 == ptr2;
 }
 
 template<typename TTypeInfo, auto tPtr>
-inline constexpr auto member_info_of() {
+constexpr auto member_info_of() {
   constexpr auto members = TTypeInfo::members;
 
   auto impl = [&]<std::size_t tHead, std::size_t... tTail>(auto rec,
@@ -111,7 +111,7 @@ struct FlattenType<T> {
 };
 
 template<typename T>
-inline constexpr decltype(auto) flatten_type(T&& value) {
+constexpr decltype(auto) flatten_type(T&& value) {
   return FlattenType<std::decay_t<T>>::flatten(std::forward<T>(value));
 }
 

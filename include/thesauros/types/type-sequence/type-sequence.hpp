@@ -40,7 +40,7 @@ struct TypeSeq : public TypeSeqBase<Ts...> {
   using Prepended = TypeSeq<T, Ts...>;
 
   template<typename... TOthers>
-  inline constexpr TypeSeq<TOthers..., Ts...> prepend(TypeSeq<TOthers...> /*seq*/) const {
+  constexpr TypeSeq<TOthers..., Ts...> prepend(TypeSeq<TOthers...> /*seq*/) const {
     return {};
   }
 };
@@ -52,7 +52,7 @@ struct IsTypeSeqTrait<TypeSeq<Ts...>> : public std::true_type {};
 template<typename T>
 concept AnyTypeSeq = IsTypeSeqTrait<T>::value;
 
-inline consteval bool operator==(AnyTypeSeq auto seq1, AnyTypeSeq auto seq2) {
+consteval bool operator==(AnyTypeSeq auto seq1, AnyTypeSeq auto seq2) {
   return std::same_as<decltype(seq1), decltype(seq2)>;
 }
 

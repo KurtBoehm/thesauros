@@ -40,7 +40,7 @@ inline constexpr std::array fg_bright_rainbow{
   fg_bright_cyan, fg_bright_blue,   fg_bright_magenta,
 };
 
-inline constexpr fmt::text_style rainbow_fg(std::size_t idx) {
+constexpr fmt::text_style rainbow_fg(std::size_t idx) {
   return fg_rainbow[idx % fg_rainbow.size()];
 }
 inline fmt::text_style next_rainbow_fg() {
@@ -48,7 +48,7 @@ inline fmt::text_style next_rainbow_fg() {
   return rainbow_fg(idx++);
 }
 
-inline constexpr fmt::text_style bright_rainbow_fg(std::size_t idx) {
+constexpr fmt::text_style bright_rainbow_fg(std::size_t idx) {
   return fg_bright_rainbow[idx % fg_bright_rainbow.size()];
 }
 inline fmt::text_style next_bright_rainbow_fg() {

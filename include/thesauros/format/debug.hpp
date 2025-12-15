@@ -18,7 +18,7 @@ struct DebugPrinter {
 };
 
 template<typename T>
-inline constexpr DebugPrinter<T> debug_view(T&& value) {
+constexpr DebugPrinter<T> debug_view(T&& value) {
   return DebugPrinter<T>{std::forward<T>(value)};
 }
 } // namespace thes

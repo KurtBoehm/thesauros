@@ -13,8 +13,7 @@
 
 namespace thes {
 template<typename T>
-inline constexpr void swap_or_equal(std::remove_reference_t<T>& v1,
-                                    std::remove_reference_t<T>& v2) {
+constexpr void swap_or_equal(std::remove_reference_t<T>& v1, std::remove_reference_t<T>& v2) {
   if constexpr (std::is_reference_v<T>) {
     assert(&v1 == &v2);
   } else {

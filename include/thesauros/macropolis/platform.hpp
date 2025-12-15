@@ -37,4 +37,16 @@
 #define THES_WINDOWS false
 #endif
 
+#if defined(__x86_64__) || defined(_M_X64)
+#define THES_X86_64 true
+#else
+#define THES_X86_64 false
+#endif
+
+#if defined(__aarch64__) || defined(_M_ARM64)
+#define THES_ARM64 true
+#else
+#define THES_ARM64 false
+#endif
+
 #endif // INCLUDE_THESAUROS_MACROPOLIS_PLATFORM_HPP
