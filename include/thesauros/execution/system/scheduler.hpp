@@ -14,18 +14,36 @@
 #include <pthread.h>
 #include <sched.h>
 
+#include "thesauros/macropolis/platform.hpp"
 #include "thesauros/types/primitives.hpp"
 #include "thesauros/utility/as-expected.hpp"
 
 namespace thes {
-enum struct Scheduler : u8 { FIFO = SCHED_FIFO, ROUND_ROBIN = SCHED_RR };
+#if THES_LINUX || THES_APPLE
+enum struct Scheduler : u8 { fifo = SCHED_FIFO, round_robin = SCHED_RR };
 
-inline std::expected<void, int> set_scheduler(std::thread& thread, const Scheduler scheduler) {
+inline std::expected<void, int> set_scheduler(std::thread::native_handle_type thread,
+                                              const Scheduler scheduler) {
   const int int_sched = static_cast<std::underlying_type_t<Scheduler>>(scheduler);
   sched_param param{};
   param.sched_priority = sched_get_priority_max(int_sched);
-  const auto ret = pthread_setschedparam(thread.native_handle(), int_sched, &param);
+  const auto ret = pthread_setschedparam(thread, int_sched, &param);
   return as_expected(ret);
+}
+#elif THES_WINDOWS
+enum struct Scheduler : u8 { fifo, round_robin };
+inline std::expected<void, WINBOOL> set_scheduler(std::thread::native_handle_type thread,
+                                                  const Scheduler scheduler) {
+  const WINBOOL ret = SetThreadPriority(pthread_gethandle(handle), THREAD_PRIORITY_HIGHEST);
+  if (ret == 0) {
+    return std::unexpected(ret);
+  }
+  return {};
+}
+#endif
+
+inline auto set_scheduler(std::thread& thread, const Scheduler scheduler) {
+  return set_scheduler(thread.native_handle(), scheduler);
 }
 } // namespace thes
 

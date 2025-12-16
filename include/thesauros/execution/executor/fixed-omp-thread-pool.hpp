@@ -18,7 +18,6 @@
 
 #include <omp.h>
 #include <pthread.h>
-#include <sched.h>
 
 #include "thesauros/execution/system.hpp"
 #include "thesauros/execution/system/affinity.hpp"
@@ -73,9 +72,11 @@ struct FixedOpenMpThreadPool {
     }
 #pragma omp parallel for num_threads(thread_num_)
     for (std::size_t t = 0; t < tnum; ++t) {
+      decltype(auto) thread = pthread_self();
       if (cpu_sets_.has_value()) {
-        (void)set_affinity(pthread_self(), (*cpu_sets_)[t]);
+        (void)set_affinity(thread, (*cpu_sets_)[t]);
       }
+      (void)set_scheduler(thread, Scheduler::FIFO);
       task(t);
     }
   }
