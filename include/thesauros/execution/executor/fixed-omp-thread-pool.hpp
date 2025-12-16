@@ -76,7 +76,6 @@ struct FixedOpenMpThreadPool {
       if (cpu_sets_.has_value()) {
         (void)set_affinity(thread, (*cpu_sets_)[t]);
       }
-      (void)set_scheduler(thread, Scheduler::fifo);
       task(t);
     }
   }

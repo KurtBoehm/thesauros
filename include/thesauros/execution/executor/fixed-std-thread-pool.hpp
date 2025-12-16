@@ -74,7 +74,6 @@ struct FixedStdThreadPool {
       if constexpr (!std::same_as<TCpuSets, Empty>) {
         (void)set_affinity(threads_[i], cpu_sets[i]);
       }
-      (void)set_scheduler(threads_[i], Scheduler::fifo);
     }
   }
 
