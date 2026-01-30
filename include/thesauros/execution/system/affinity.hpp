@@ -211,6 +211,9 @@ inline std::expected<void, WINBOOL> set_affinity(std::thread::native_handle_type
 inline auto set_affinity(std::thread& thread, const CpuSet& cpu_set) {
   return set_affinity(thread.native_handle(), cpu_set);
 }
+inline auto set_affinity(std::jthread& thread, const CpuSet& cpu_set) {
+  return set_affinity(thread.native_handle(), cpu_set);
+}
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_EXECUTION_SYSTEM_AFFINITY_HPP
