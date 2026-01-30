@@ -29,11 +29,13 @@
 namespace thes {
 struct FixedStdThreadPool {
   using Op = std::function<void(std::size_t)>;
+
   struct Task {
     Op fun;
     std::optional<std::size_t> used_thread_num;
   };
-  using Threads = FixedAllocArray<std::thread>;
+
+  using Threads = FixedAllocArray<std::jthread>;
   using TaskID = std::size_t;
 
   template<typename TCpuSets = Empty>
@@ -49,7 +51,7 @@ struct FixedStdThreadPool {
 
     for (const std::size_t i : range(size)) {
       threads_.emplace_back([this, i] {
-        TaskID last_id{0};
+        TaskID last_id = 0;
 
         while (true) {
           std::unique_lock lock{work_mutex_};
@@ -71,6 +73,7 @@ struct FixedStdThreadPool {
           end_work_.notify_all();
         }
       });
+
       if constexpr (!std::same_as<TCpuSets, Empty>) {
         (void)set_affinity(threads_[i], cpu_sets[i]);
       }
@@ -100,17 +103,15 @@ struct FixedStdThreadPool {
       ++task_id_;
     }
     start_work_.notify_all();
-    for (std::thread& t : threads_) {
-      t.join();
-    }
   }
 
-  [[nodiscard]] std::size_t thread_num() const {
+  [[nodiscard]] std::size_t thread_num() const noexcept {
     return threads_.size();
   }
 
   void execute(Op task, std::optional<std::size_t> used_thread_num = {}) const {
     assert(!used_thread_num.has_value() || *used_thread_num <= threads_.size());
+
     {
       const std::lock_guard lock{work_mutex_};
       task_.emplace(std::move(task), used_thread_num);
@@ -118,9 +119,10 @@ struct FixedStdThreadPool {
       ++task_id_;
     }
     start_work_.notify_all();
+
     {
       std::unique_lock lock{work_mutex_};
-      end_work_.wait(lock, [&unfinished = unfinished_] { return unfinished == 0; });
+      end_work_.wait(lock, [this] { return unfinished_ == 0; });
       task_.reset();
     }
   }

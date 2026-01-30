@@ -22,7 +22,6 @@
 #include "thesauros/execution/system.hpp"
 #include "thesauros/execution/system/affinity.hpp"
 #include "thesauros/format/fmtlib.hpp"
-#include "thesauros/math/integer-cast.hpp"
 #include "thesauros/utility/empty.hpp"
 
 namespace thes {
@@ -30,11 +29,12 @@ struct FixedOpenMpThreadPool {
   template<typename TCpuSets = Empty>
   explicit FixedOpenMpThreadPool(std::size_t size, TCpuSets cpu_sets = {}) : thread_num_(size) {
     if constexpr (!std::same_as<TCpuSets, Empty>) {
-      if (size > cpu_sets.size()) {
+      if (size > std::size(cpu_sets)) {
         throw std::invalid_argument{fmt::format("{} threads have been requested, "
                                                 "but there are only {} entries in the CPU set!",
-                                                size, cpu_sets.size())};
+                                                size, std::size(cpu_sets))};
       }
+
       auto rng = std::views::common(std::move(cpu_sets));
       cpu_sets_.emplace(rng.begin(), rng.end());
     }
@@ -58,25 +58,28 @@ struct FixedOpenMpThreadPool {
 
   ~FixedOpenMpThreadPool() = default;
 
-  [[nodiscard]] std::size_t thread_num() const {
+  [[nodiscard]] std::size_t thread_num() const noexcept {
     return thread_num_;
   }
 
   void execute(std::invocable<std::size_t> auto task,
                std::optional<std::size_t> used_thread_num = {}) const {
-    assert(!used_thread_num.has_value() || *used_thread_num <= thread_num_);
-    const std::size_t tnum = used_thread_num.value_or(thread_num_);
-    if (*thes::safe_cast<std::size_t>(omp_get_max_threads()) < thread_num_) {
+    const auto tnum = used_thread_num.value_or(thread_num_);
+    assert(tnum <= thread_num_);
+
+    const int max_threads = omp_get_max_threads();
+    if (max_threads < 0 || std::size_t(max_threads) < thread_num_) {
       throw std::runtime_error{fmt::format("The thread pool needs {} threads, but the max is {}",
-                                           thread_num_, omp_get_max_threads())};
+                                           thread_num_, max_threads)};
     }
+
 #pragma omp parallel for num_threads(thread_num_)
     for (std::size_t t = 0; t < tnum; ++t) {
-      decltype(auto) thread = pthread_self();
+      auto thread = pthread_self();
       if (cpu_sets_.has_value()) {
         (void)set_affinity(thread, (*cpu_sets_)[t]);
       }
-      task(t);
+      std::invoke(task, t);
     }
   }
 

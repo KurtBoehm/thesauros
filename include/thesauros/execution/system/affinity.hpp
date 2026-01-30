@@ -51,16 +51,16 @@ struct CpuSet {
   using Base = cpu_set_t;
 #elif THES_APPLE
   // The best alternative to thread pinning on macOS is to assign each thread
-  // a different affinity tag
-  // For this, we just store a single CPU, which will become the tag assigned to the thread
-  // Sadly, this does not seem to work on M-series processors, as mentioned in
+  // a different affinity tag.
+  // For this, we just store a single CPU, which will become the tag assigned to the thread.
+  // This does not seem to work on M-series processors, as mentioned in
   // https://github.com/RenderKit/embree/blob/master/common/sys/thread.cpp
   using Id = integer_t;
   using Base = Id;
 #elif THES_WINDOWS
-  // With CPU Sets, the affinity is simply provided as an array of CPU IDs
+  // With CPU Sets, the affinity is simply provided as an array of CPU IDs.
   // To avoid duplicates, we use an unordered set which stores its values in an std::vector,
-  // allowing for efficient access
+  // allowing for efficient access.
   using Id = ULONG;
   using Base = ankerl::unordered_dense::set<Id>;
 #endif
@@ -71,10 +71,10 @@ struct CpuSet {
 #endif
   }
 
-  CpuSet(const CpuSet& other) = delete;
-  CpuSet(CpuSet&& other) = default;
-  CpuSet& operator=(const CpuSet& other) = delete;
-  CpuSet& operator=(CpuSet&& other) = default;
+  CpuSet(const CpuSet&) = delete;
+  CpuSet(CpuSet&&) = default;
+  CpuSet& operator=(const CpuSet&) = delete;
+  CpuSet& operator=(CpuSet&&) = default;
 
   ~CpuSet() = default;
 
@@ -83,6 +83,7 @@ struct CpuSet {
     output.set(i);
     return output;
   }
+
   // There does not seem to be an equivalent on macOS
 #if THES_LINUX
   static CpuSet affinity(std::thread& thread) {
@@ -96,26 +97,25 @@ struct CpuSet {
   }
 #elif THES_WINDOWS
   static CpuSet affinity(std::thread& thread) {
-    // This implementation is just based around CPU sets; if the affinity was specified using
-    // the older affinity API, this is (probably) not reflected here.
+    // Implementation based around CPU sets; if affinity was set via the older mask API,
+    // this is (probably) not reflected here.
 
     auto* handle = pthread_gethandle(thread.native_handle());
 
     ULONG required_id_count{};
     GetThreadSelectedCpuSets(handle, nullptr, 0, &required_id_count);
-    auto cpus = std::make_unique<ULONG>(required_id_count);
+    auto cpus = std::make_unique<ULONG[]>(required_id_count);
+
     ULONG size{};
-    {
-      const WINBOOL ret = GetThreadSelectedCpuSets(handle, cpus.get(), required_id_count, &size);
-      if (ret != TRUE) {
-        throw std::runtime_error{
-          fmt::format("GetThreadSelectedCpuSets failed: {}", GetLastError())};
-      }
+    const WINBOOL ret = GetThreadSelectedCpuSets(handle, cpus.get(), required_id_count, &size);
+    if (ret != TRUE) {
+      throw std::runtime_error{fmt::format("GetThreadSelectedCpuSets failed: {}", GetLastError())};
     }
     return CpuSet{Base{cpus.get(), cpus.get() + size}};
   }
 #endif
-  static CpuSet from_cpu_infos(const auto& infos) {
+
+  static CpuSet from_cpu_infos(const std::ranges::input_range auto& infos) {
     CpuSet output{};
     for (const auto& cpu : infos) {
       output.set(cpu.id);
@@ -139,8 +139,7 @@ struct CpuSet {
   [[nodiscard]] decltype(auto) cpu_ids() const {
 #if THES_LINUX
     return range<std::size_t>(CPU_SETSIZE) |
-           std::views::filter(
-             [cpu_set = cpu_set_](std::size_t i) { return CPU_ISSET(i, &cpu_set); });
+           std::views::filter([this](std::size_t i) { return CPU_ISSET(i, &cpu_set_); });
 #elif THES_APPLE
     return std::views::single(cpu_set_);
 #else
@@ -148,7 +147,7 @@ struct CpuSet {
 #endif
   }
 
-  [[nodiscard]] const Base& base() const {
+  [[nodiscard]] const Base& base() const noexcept {
     return cpu_set_;
   }
 
@@ -173,7 +172,7 @@ inline std::expected<void, int> set_affinity(std::thread::native_handle_type han
 #elif THES_APPLE
 inline std::expected<void, kern_return_t> set_affinity(std::thread::native_handle_type handle,
                                                        const CpuSet& cpu_set) {
-  // based on https://www.hybridkernel.com/2015/01/18/binding_threads_to_cores_osx.html
+  // Based on https://www.hybridkernel.com/2015/01/18/binding_threads_to_cores_osx.html
   // and https://developer.apple.com/library/archive/releasenotes/Performance/RN-AffinityAPI/
   const auto mach_thread = pthread_mach_thread_np(handle);
   thread_affinity_policy_data_t policy{cpu_set.base()};
@@ -181,7 +180,7 @@ inline std::expected<void, kern_return_t> set_affinity(std::thread::native_handl
                                               reinterpret_cast<thread_policy_t>(&policy), 1);
   return as_expected(ret);
 }
-#else
+#elif THES_WINDOWS
 inline std::expected<void, WINBOOL> set_affinity(std::thread::native_handle_type handle,
                                                  const CpuSet& cpu_set) {
   // Windows has two APIs to change thread affinity, as discussed in
@@ -208,6 +207,7 @@ inline std::expected<void, WINBOOL> set_affinity(std::thread::native_handle_type
   return {};
 }
 #endif
+
 inline auto set_affinity(std::thread& thread, const CpuSet& cpu_set) {
   return set_affinity(thread.native_handle(), cpu_set);
 }

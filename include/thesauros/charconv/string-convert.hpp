@@ -15,10 +15,15 @@
 
 namespace thes {
 template<std::integral T>
-inline std::optional<T> string_to_integral(std::string_view sv) {
+[[nodiscard]] constexpr std::optional<T> string_to_integral(std::string_view sv,
+                                                            int base = 10) noexcept {
   T ret{};
-  const auto res = std::from_chars(sv.begin(), sv.end(), ret);
-  if (res.ec == std::errc{} && res.ptr == sv.end()) {
+  const auto* const begin = sv.data();
+  const auto* const end = sv.data() + sv.size();
+
+  const auto res = std::from_chars(begin, end, ret, base);
+
+  if (res.ec == std::errc{} && res.ptr == end) {
     return ret;
   }
   return std::nullopt;
