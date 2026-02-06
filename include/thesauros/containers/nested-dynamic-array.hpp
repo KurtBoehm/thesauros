@@ -17,6 +17,7 @@
 #include "thesauros/io.hpp"
 #include "thesauros/iterator/facades.hpp"
 #include "thesauros/iterator/provider-map.hpp"
+#include "thesauros/ranges/iota.hpp"
 #include "thesauros/types/type-transformations.hpp"
 
 namespace thes {
@@ -206,6 +207,10 @@ public:
   void to_file(FileWriter& writer) const {
     offsets_.to_file(writer);
     values_.to_file(writer);
+  }
+
+  IotaRange<Size> offsets_of(Size i) const {
+    return range(offsets_[i], offsets_[i + 1]);
   }
 
 private:
