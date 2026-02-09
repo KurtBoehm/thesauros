@@ -109,6 +109,25 @@ public:
     return span_impl<true>(values_.begin(), offsets_.begin() + index);
   }
 
+  // element access: outer groups
+  std::span<value_type> front() {
+    assert(!empty());
+    return (*this)[0];
+  }
+  std::span<const value_type> front() const {
+    assert(!empty());
+    return (*this)[0];
+  }
+
+  std::span<value_type> back() {
+    assert(!empty());
+    return (*this)[size() - 1];
+  }
+  std::span<const value_type> back() const {
+    assert(!empty());
+    return (*this)[size() - 1];
+  }
+
   struct FlatBuilder {
     FlatBuilder() = default;
 
@@ -200,8 +219,18 @@ public:
     assert(!offsets_.empty());
     return offsets_.size() - 1;
   }
+  [[nodiscard]] Size size() const noexcept {
+    return group_num();
+  }
+  [[nodiscard]] bool empty() const noexcept {
+    return size() == 0;
+  }
+
   [[nodiscard]] Size element_num() const {
     return values_.size();
+  }
+  [[nodiscard]] Size flat_size() const noexcept {
+    return element_num();
   }
 
   void to_file(FileWriter& writer) const {
