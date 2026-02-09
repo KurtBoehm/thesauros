@@ -114,6 +114,7 @@ struct MultiByteIntegersBase {
                   std::endian::native == std::endian::big,
                 "Only big and little endian systems are supported!");
 
+  using Storage = std::decay_t<TStorage>;
   using BaseValue = TByteInt::Unsigned;
   static constexpr BaseValue int_bytes = sizeof(BaseValue);
   static constexpr BaseValue mask = TByteInt::max;
@@ -123,17 +124,15 @@ struct MultiByteIntegersBase {
   using Value = std::conditional_t<tOptional, ValueOptional<BaseValue, mask>, BaseValue>;
   using Size = std::size_t;
 
-  using value_type = Value;
-  using size_type = Size;
-
   static constexpr std::size_t padding_bytes = tPaddingBytes;
   static constexpr std::size_t element_bytes = TByteInt::byte_num;
   static constexpr std::size_t overhead_bits = TByteInt::overhead_bit_num;
 
-  using Storage = std::decay_t<TStorage>;
-
   static_assert(element_bytes <= int_bytes);
   static_assert(padding_bytes >= int_bytes);
+
+  using value_type = Value;
+  using size_type = Size;
 
   struct IntRef {
     explicit IntRef(std::byte* ptr) : ptr_(ptr) {}
@@ -285,10 +284,17 @@ struct MultiByteIntegersBase {
   const_iterator begin() const {
     return const_iterator(span().data());
   }
+  const_iterator cbegin() const {
+    return const_iterator(span().data());
+  }
+
   iterator end() {
     return iterator(span().data() + byte_size(storage_.size()));
   }
   const_iterator end() const {
+    return const_iterator(span().data() + byte_size(storage_.size()));
+  }
+  const_iterator cend() const {
     return const_iterator(span().data() + byte_size(storage_.size()));
   }
 
@@ -298,15 +304,25 @@ struct MultiByteIntegersBase {
   const_reverse_iterator rbegin() const {
     return const_reverse_iterator(span().data() + byte_size(storage_.size()));
   }
+  const_reverse_iterator crbegin() const {
+    return const_reverse_iterator(span().data() + byte_size(storage_.size()));
+  }
+
   reverse_iterator rend() {
     return reverse_iterator(span().data());
   }
   const_reverse_iterator rend() const {
     return const_reverse_iterator(span().data());
   }
+  const_reverse_iterator crend() const {
+    return const_reverse_iterator(span().data());
+  }
 
   [[nodiscard]] Size size() const {
     return storage_.size();
+  }
+  [[nodiscard]] bool empty() const {
+    return storage_.size() == 0;
   }
 
   decltype(auto) operator[](Size i) const {
@@ -316,13 +332,18 @@ struct MultiByteIntegersBase {
   decltype(auto) operator[](Size i)
   requires(!is_mutable)
   {
+    assert(i < size());
     return IntRef{span().data() + byte_size(i)};
   }
 
   decltype(auto) front() const {
+    assert(size() > 0);
     return load(span().data());
   }
-  decltype(auto) front() {
+  decltype(auto) front()
+  requires(!is_mutable)
+  {
+    assert(size() > 0);
     return IntRef{span().data()};
   }
 
@@ -330,7 +351,9 @@ struct MultiByteIntegersBase {
     assert(storage_.size() > 0);
     return load(span().data() + byte_size(storage_.size() - 1));
   }
-  decltype(auto) back() {
+  decltype(auto) back()
+  requires(!is_mutable)
+  {
     assert(storage_.size() > 0);
     return IntRef{span().data() + byte_size(storage_.size() - 1)};
   }
