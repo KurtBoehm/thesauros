@@ -11,6 +11,7 @@
 #include <limits>
 #include <utility>
 
+#include "thesauros/macropolis/inlining.hpp"
 #include "thesauros/types/fixed-size-integer.hpp"
 #include "thesauros/types/numeric-info.hpp"
 #include "thesauros/types/primitives.hpp"
@@ -92,11 +93,11 @@ private:
 };
 
 template<typename T>
-constexpr std::pair<T, T> divmod(T dividend, T divisor) {
+THES_ALWAYS_INLINE constexpr std::pair<T, T> divmod(T dividend, T divisor) {
   return {dividend / divisor, dividend % divisor};
 }
 template<typename T>
-constexpr std::pair<T, T> divmod(T dividend, const Divisor<T>& divisor) {
+THES_ALWAYS_INLINE constexpr std::pair<T, T> divmod(T dividend, const Divisor<T>& divisor) {
   const auto div = dividend / divisor;
   return {div, dividend - div * divisor.mod_factor()};
 }
