@@ -19,6 +19,7 @@
 #include "utility/multi-size.hpp"
 #include "utility/optional.hpp"
 #include "utility/static-map.hpp"
+#include "utility/time-guard.hpp"
 #include "utility/tuple.hpp"
 #include "utility/unreachable.hpp"
 #include "utility/unwrap.hpp"
