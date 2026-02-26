@@ -218,6 +218,13 @@ struct BlockedIndexSegmenter {
     return range(segment_start(segment), segment_end(segment));
   }
 
+  /** Segment containing index. */
+  [[nodiscard]] constexpr Segment segment_of(Size index) const noexcept {
+    assert(index < size_);
+    const Size block_index = index / block_size_;
+    return block_seg_.segment_of(block_index);
+  }
+
   /** Total number of indices. */
   [[nodiscard]] constexpr Size size() const noexcept {
     return size_;
