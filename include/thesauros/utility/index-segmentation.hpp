@@ -30,7 +30,7 @@ struct UniformIndexSegmenter {
   using Segment = TSegment;
   using Shared = Union<Size, Segment>;
 
-  /** Constructs a segmenter for [0,size) into segment_num segments. */
+  /** Constructs a segmenter for [0, size) into segment_num segments. */
   constexpr UniformIndexSegmenter(Size size, Segment segment_num) noexcept
       : size_{size}, segment_num_{segment_num}, div_{Size(size / segment_num)},
         mod_{Size(size % segment_num)} {}
@@ -129,9 +129,9 @@ struct AffineUniformIndexSegmenter : public UniformIndexSegmenter<TSize, TSegmen
   using Segment = TSegment;
 
   /** Constructs an affine uniform segmenter. */
-  constexpr AffineUniformIndexSegmenter(Size offset, Size factor, Size size,
+  constexpr AffineUniformIndexSegmenter(Size factor, Size offset, Size size,
                                         Segment segment_num) noexcept
-      : Uniform{size, segment_num}, offset_{offset}, factor_{factor} {}
+      : Uniform{size, segment_num}, factor_{factor}, offset_{offset} {}
 
   /** First index of a segment after affine transform. */
   [[nodiscard]] constexpr Size segment_start(const Segment segment) const noexcept {
@@ -155,8 +155,8 @@ struct AffineUniformIndexSegmenter : public UniformIndexSegmenter<TSize, TSegmen
   }
 
 private:
-  Size offset_;
   Size factor_;
+  Size offset_;
 };
 
 /**
