@@ -154,6 +154,11 @@ struct AffineUniformIndexSegmenter : public UniformIndexSegmenter<TSize, TSegmen
     return Uniform::segment_of(Size((index - offset_) / factor_));
   }
 
+  /** Total number of indices. */
+  [[nodiscard]] constexpr Size size() const noexcept {
+    return Uniform::size() * factor_;
+  }
+
 private:
   Size factor_;
   Size offset_;
