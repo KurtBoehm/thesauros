@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <concepts>
 #include <optional>
 
 #include "thesauros/math/arithmetic.hpp"
@@ -18,6 +19,23 @@
 #include "thesauros/types/type-transformations.hpp"
 
 namespace thes {
+template<typename T>
+concept IndexSegmenter = requires(const T& seg, typename T::Size size, typename T::Segment s) {
+  // associated types
+  typename T::Size;
+  typename T::Segment;
+
+  // basic accessors
+  { seg.size() } -> std::same_as<typename T::Size>;
+  { seg.segment_num() } -> std::same_as<typename T::Segment>;
+
+  // segment boundaries
+  { seg.segment_start(s) } -> std::same_as<typename T::Size>;
+  { seg.segment_end(s) } -> std::same_as<typename T::Size>;
+  { seg.segment_range(s) } -> std::same_as<thes::IotaRange<typename T::Size>>;
+  { seg.segment_of(size) } -> std::same_as<typename T::Segment>;
+};
+
 /**
  * Uniformly partitions contiguous indices into segments.
  *
@@ -219,6 +237,92 @@ private:
   Size size_;
   Size block_size_;
   UniformIndexSegmenter<TSize, TSegment> block_seg_;
+};
+
+/**
+ * Adapter that pads an existing index segmenter with extra indices at the beginning and at the end.
+ *
+ * Let the wrapped segmenter cover [A, B) with segments 0 .. N-1.
+ *
+ * This adapter exposes indices in [A, B + n0 + n1) such that:
+ *  - All original indices are shifted by n0 in the global index space.
+ *  - n0 new indices [A, A + n0) are prepended to segment 0.
+ *  - n1 new indices [B + n0, B + n0 + n1) are appended to segment N-1.
+ *
+ * Template parameter `TSeg` must model `IndexSegmenter`.
+ */
+template<IndexSegmenter TSeg>
+struct PaddedIndexSegmenter {
+  using Size = TSeg::Size;
+  using Segment = TSeg::Segment;
+
+  /** Construct padding adapter around an existing segmenter. */
+  constexpr PaddedIndexSegmenter(const TSeg& base, Size n0, Size n1) noexcept
+      : base_{base}, n0_{n0}, n1_{n1} {}
+
+  /** Total number of indices including padding. */
+  [[nodiscard]] constexpr Size size() const noexcept {
+    return Size(base_.size() + n0_ + n1_);
+  }
+
+  /** Number of segments (same as the base segmenter). */
+  [[nodiscard]] constexpr Segment segment_num() const noexcept {
+    return base_.segment_num();
+  }
+
+  /** First index of a segment with padding applied. */
+  [[nodiscard]] constexpr Size segment_start(const Segment s) const noexcept {
+    assert(s < segment_num());
+
+    if (s == Segment(0)) {
+      // First segment: prepend n0 indices.
+      return Size(0);
+    }
+    // Other segments start at the base's start + n0 shift.
+    return Size(base_.segment_start(s) + n0_);
+  }
+
+  /** One-past-last index of a segment with padding applied. */
+  [[nodiscard]] constexpr Size segment_end(const Segment s) const noexcept {
+    assert(s < segment_num());
+
+    if (Segment(s + 1) == segment_num()) {
+      // Last segment: append n1 indices.
+      return Size(base_.segment_end(s) + n0_ + n1_);
+    }
+    // Other segments end at the base's end + n0 shift.
+    return Size(base_.segment_end(s) + n0_);
+  }
+
+  /** [segment_start, segment_end) as an iota range. */
+  [[nodiscard]] constexpr IotaRange<Size> segment_range(const Segment s) const noexcept {
+    return range(segment_start(s), segment_end(s));
+  }
+
+  /** Segment containing a given global index with padding. */
+  [[nodiscard]] constexpr Segment segment_of(Size idx) const noexcept {
+    assert(idx < size());
+
+    const Segment last_seg = Segment(segment_num() - 1);
+    const Size base_first = base_.segment_start(0) + n0_;
+    const Size base_last = base_.segment_end(last_seg) + n0_;
+
+    if (idx < base_first) {
+      // In leading padding; belongs to segment 0.
+      return Segment(0);
+    }
+    if (idx >= base_last) {
+      // In trailing padding; belongs to last segment.
+      return last_seg;
+    }
+    // In the shifted base range: map back, query base, then reuse segment.
+    return base_.segment_of(Size(idx - n0_));
+  }
+
+private:
+  TSeg base_;
+  Size n0_;
+  Size n1_;
 };
 } // namespace thes
 
