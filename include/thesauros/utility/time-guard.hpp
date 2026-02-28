@@ -13,7 +13,7 @@
 namespace thes {
 /** RAII class to add the duration of a scope to a `std::chrono::duration`. */
 template<typename TDuration, typename TClock = std::chrono::steady_clock>
-requires(!std::is_const_v<TDuration> && std::chrono::is_clock_v<TClock>)
+requires(!std::is_const_v<TDuration>) // std::chrono::is_clock_v<TClock>
 struct TimeGuard {
   using Clock = TClock;
   using TimePoint = Clock::time_point;
