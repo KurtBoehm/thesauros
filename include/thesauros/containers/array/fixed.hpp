@@ -15,6 +15,7 @@
 #include <stdexcept>
 #include <utility>
 
+#include "thesauros/containers/array/construction.hpp"
 #include "thesauros/containers/array/initialization-policy.hpp"
 #include "thesauros/containers/array/typed-chunk.hpp"
 #include "thesauros/format/fmtlib.hpp"
@@ -66,6 +67,15 @@ struct FixedArray {
 
   constexpr FixedArray(std::initializer_list<Value> init) : allocation_(init.size()) {
     std::uninitialized_copy(init.begin(), init.end(), begin());
+  }
+
+  // Per-element placement-new construction
+  explicit constexpr FixedArray(UninitializedConstruct /*tag*/, Size size, auto op)
+      : allocation_(size) {
+    TValue* ptr = allocation_.data();
+    for (Size i = 0; i < size; ++i) {
+      op(i, ptr + i);
+    }
   }
 
   constexpr FixedArray(FixedArray&& other) noexcept : allocation_(std::move(other.allocation_)) {}

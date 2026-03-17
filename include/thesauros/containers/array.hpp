@@ -2,6 +2,7 @@
 #define INCLUDE_THESAUROS_CONTAINERS_ARRAY_HPP
 
 // IWYU pragma: begin_exports
+#include "array/construction.hpp"
 #include "array/dynamic.hpp"
 #include "array/fixed-alloc.hpp"
 #include "array/fixed.hpp"
