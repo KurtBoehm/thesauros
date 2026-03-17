@@ -7,12 +7,16 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_INIT_REQUIRED_HPP
 #define INCLUDE_THESAUROS_UTILITY_INIT_REQUIRED_HPP
 
+#include "thesauros/macropolis/warnings.hpp"
+
 namespace thes {
 // TODO Is there a better solution?
+THES_POLIS_DIAGNOSTICS_IGNORED_PUSH(gcc, "-Wundefined-internal")
 inline constexpr struct {
   template<typename T>
   operator T() const;
 } init_required{};
+THES_POLIS_DIAGNOSTICS_IGNORED_POP(gcc)
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_UTILITY_INIT_REQUIRED_HPP
