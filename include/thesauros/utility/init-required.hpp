@@ -11,12 +11,12 @@
 
 namespace thes {
 // TODO Is there a better solution?
-THES_POLIS_DIAGNOSTICS_IGNORED_PUSH(gcc, "-Wundefined-internal")
+THES_POLIS_DIAGNOSTICS_IGNORED_PUSH(clang, "-Wundefined-internal")
 inline constexpr struct {
   template<typename T>
-  operator T() const;
+  operator T() const; // NOLINT
 } init_required{};
-THES_POLIS_DIAGNOSTICS_IGNORED_POP(gcc)
+THES_POLIS_DIAGNOSTICS_IGNORED_POP(clang)
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_UTILITY_INIT_REQUIRED_HPP

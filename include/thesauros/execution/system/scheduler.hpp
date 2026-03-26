@@ -9,14 +9,22 @@
 
 #include <expected>
 #include <thread>
-#include <type_traits>
 
 #include <pthread.h>
 #include <sched.h>
 
 #include "thesauros/macropolis/platform.hpp"
 #include "thesauros/types/primitives.hpp"
+
+#if THES_LINUX || THES_APPLE
+#include <type_traits>
+
 #include "thesauros/utility/as-expected.hpp"
+#elif THES_WINDOWS
+#include <processthreadsapi.h>
+#include <windef.h>
+#include <windows.h>
+#endif
 
 namespace thes {
 #if THES_LINUX || THES_APPLE
@@ -37,7 +45,7 @@ enum struct Scheduler : u8 { fifo, round_robin };
 
 [[nodiscard]] inline std::expected<void, WINBOOL>
 set_scheduler(std::thread::native_handle_type thread, Scheduler /*scheduler*/) {
-  const WINBOOL ret = SetThreadPriority(pthread_gethandle(handle), THREAD_PRIORITY_HIGHEST);
+  const WINBOOL ret = SetThreadPriority(pthread_gethandle(thread), THREAD_PRIORITY_HIGHEST);
   if (ret == 0) {
     return std::unexpected(ret);
   }
