@@ -23,6 +23,7 @@ using Mbi = thes::MultiByteIntegers<ByteInt, 13>;
 
 inline constexpr UInt modulus = UInt{1} << (CHAR_BIT * ByteInt::byte_num);
 
+namespace {
 void body(auto... values) {
   Mbi integers{values...};
   std::vector<UInt> vec{values...};
@@ -30,7 +31,7 @@ void body(auto... values) {
   auto elem_assert = [&integers, &vec] {
     fmt::print("{} {}\n", fmt::styled(integers, fmt::fg(fmt::terminal_color::green)),
                fmt::styled(vec, fmt::fg(fmt::terminal_color::blue)));
-    THES_ASSERT(test::range_eq(integers, vec));
+    THES_ALWAYS_ASSERT(test::range_eq(integers, vec));
   };
   auto push_back = [&integers, &vec](UInt v) {
     integers.push_back(v);
@@ -87,23 +88,23 @@ void body(auto... values) {
     using std::swap;
 
     swap(integers[1], integers[3]);
-    THES_ASSERT(integers[1] == vec[3]);
-    THES_ASSERT(integers[3] == vec[1]);
+    THES_ALWAYS_ASSERT(integers[1] == vec[3]);
+    THES_ALWAYS_ASSERT(integers[3] == vec[1]);
     swap(vec[1], vec[3]);
     elem_assert();
 
     const UInt v0 = 12;
     UInt v = v0;
     swap(integers[0], v);
-    THES_ASSERT(integers[0] == v0);
-    THES_ASSERT(v == vec[0]);
+    THES_ALWAYS_ASSERT(integers[0] == v0);
+    THES_ALWAYS_ASSERT(v == vec[0]);
     vec[0] = v0;
     elem_assert();
 
     const UInt v2 = v;
     swap(v, integers[2]);
-    THES_ASSERT(integers[2] == v2);
-    THES_ASSERT(v == vec[2]);
+    THES_ALWAYS_ASSERT(integers[2] == v2);
+    THES_ALWAYS_ASSERT(v == vec[2]);
     vec[2] = v2;
     elem_assert();
   }
@@ -119,6 +120,7 @@ void body(auto... values) {
     elem_assert();
   }
 }
+} // namespace
 
 int main() {
   body();

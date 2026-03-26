@@ -12,6 +12,7 @@
 
 using Size = unsigned int;
 
+namespace {
 void run(const Size size) {
   fmt::print("test {}\n", size);
   auto arr = std::views::iota(Size{0}, size);
@@ -22,8 +23,9 @@ void run(const Size size) {
     fmt::print("{}\n", perm);
   }
   std::ranges::sort(perm);
-  THES_ASSERT(std::ranges::equal(arr, perm));
+  THES_ALWAYS_ASSERT(std::ranges::equal(arr, perm));
 }
+} // namespace
 
 int main() {
   for (Size size : thes::range<Size>(100)) {

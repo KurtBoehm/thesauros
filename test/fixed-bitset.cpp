@@ -31,7 +31,7 @@ int main() {
 
   auto assert_eq = [&] {
     fmt::print("{}\n", bitset);
-    THES_ASSERT(test::range_eq(bitset, ref));
+    THES_ALWAYS_ASSERT(test::range_eq(bitset, ref));
   };
 
   auto set = [&](std::size_t idx) {
@@ -47,7 +47,7 @@ int main() {
   auto get = [&](std::size_t idx) {
     const bool v1 = bitset.get(idx);
     const bool v2 = ref[idx];
-    THES_ASSERT(v1 == v2);
+    THES_ALWAYS_ASSERT(v1 == v2);
     fmt::print("@{}: {}\n", idx, v1);
   };
   auto countr_one = [&] {
@@ -62,7 +62,7 @@ int main() {
       }
       return count;
     }();
-    THES_ASSERT(v1 == v2);
+    THES_ALWAYS_ASSERT(v1 == v2);
     fmt::print("countr_one: {}\n", v1);
   };
   auto countr_zero = [&] {
@@ -77,7 +77,7 @@ int main() {
       }
       return count;
     }();
-    THES_ASSERT(v1 == v2);
+    THES_ALWAYS_ASSERT(v1 == v2);
     fmt::print("countr_zero: {}\n", v1);
   };
 

@@ -49,7 +49,7 @@ constexpr auto tiled_base(auto tag, auto sizes, auto ranges, auto tile_sizes, au
   if (!std::is_constant_evaluated()) {
     fmt::print("{}: [{}, {}] → {}, {}\n\n", idxs, min, max, max - min, idxs.size());
   }
-  THES_ASSERT(max + 1 - min == idxs.size());
+  THES_ALWAYS_ASSERT(max + 1 - min == idxs.size());
 }
 
 void test_scalar() {
@@ -183,7 +183,7 @@ constexpr void test_small() {
   if (!std::is_constant_evaluated()) {
     fmt::print("{}: [{}, {}] → {}, {}\n\n", idxs, min, max, max - min, idxs.size());
   }
-  THES_ASSERT(max + 1 - min == idxs.size());
+  THES_ALWAYS_ASSERT(max + 1 - min == idxs.size());
 }
 } // namespace
 

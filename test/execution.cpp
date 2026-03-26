@@ -5,6 +5,8 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <chrono>
+#include <cstdio>
+#include <exception>
 #include <functional>
 #include <ranges>
 #include <thread>
@@ -18,8 +20,9 @@
 #include "thesauros/macropolis/platform.hpp"
 #include "thesauros/resources.hpp"
 #include "thesauros/test.hpp"
+#include "thesauros/types/type-name.hpp"
 
-int main() {
+int main() try {
   using Type = int;
 
   std::vector<Type> values{5, 8, 9, 4, 2, -10, 22};
@@ -44,7 +47,7 @@ int main() {
       expo, values.begin(), values.end(), scanned.begin(), std::plus<>{}, [](Type v) { return v; },
       Type{0});
 
-    THES_ASSERT(scanned == scanned_ref);
+    THES_ALWAYS_ASSERT(scanned == scanned_ref);
   };
   op(thes::FixedStdThreadPool{2});
   op(thes::FixedOpenMpThreadPool{2});
@@ -103,9 +106,12 @@ int main() {
     auto post = thes::CpuSet::affinity(thread).cpu_ids();
     const Ids post_set(post.begin(), post.end());
     fmt::print("set after: {}\n", post);
-    THES_ASSERT(post_set == Ids(info_ids.begin(), info_ids.end()));
+    THES_ALWAYS_ASSERT(post_set == Ids(info_ids.begin(), info_ids.end()));
 
     thread.join();
   }
 #endif
+} catch (const std::exception& ex) {
+  fmt::print(stderr, "Unhandled std::exception: type={}; what={}\n",
+             thes::demangle(typeid(ex).name()), ex.what());
 }

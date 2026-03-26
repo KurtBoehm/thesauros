@@ -20,7 +20,7 @@ int main() {
 
   auto assert_eq = [&] {
     fmt::print("{}\n", map);
-    THES_ASSERT(test::range_eq(map, ref));
+    THES_ALWAYS_ASSERT(test::range_eq(map, ref));
   };
 
   auto insert = [&](int key, int value) {
@@ -33,7 +33,7 @@ int main() {
       std::sort(ref.begin(), ref.end());
     }
 
-    THES_ASSERT(res1 == res2);
+    THES_ALWAYS_ASSERT(res1 == res2);
     fmt::print("{} {}\n", key, res1 ? "inserted" : "not inserted");
     assert_eq();
   };
@@ -47,7 +47,7 @@ int main() {
       ref.erase(it);
     }
 
-    THES_ASSERT(res1 == res2);
+    THES_ALWAYS_ASSERT(res1 == res2);
     fmt::print("{} {}\n", key, res1 ? "found" : "not found");
     assert_eq();
   };

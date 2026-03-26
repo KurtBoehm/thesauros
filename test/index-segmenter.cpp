@@ -35,32 +35,32 @@ void check_segmenter_partition(const TSeg& seg) {
     const Size end = seg.segment_end(s);
 
     // Basic invariants
-    THES_ASSERT(start <= end);
-    THES_ASSERT(start == last_end); // contiguous
+    THES_ALWAYS_ASSERT(start <= end);
+    THES_ALWAYS_ASSERT(start == last_end); // contiguous
     last_end = end;
     sum += end - start;
 
     // Range object matches start/end
     const auto r = seg.segment_range(s);
-    THES_ASSERT(r.begin_value() == start);
-    THES_ASSERT(r.end_value() == end);
+    THES_ALWAYS_ASSERT(r.begin_value() == start);
+    THES_ALWAYS_ASSERT(r.end_value() == end);
 
     // segment_of(i) should return s for all i in this segment
     for (Size i : range(start, end)) {
       const Segment s2 = seg.segment_of(i);
-      THES_ASSERT(s2 == s);
-      THES_ASSERT(seg.segment_range(s2).contains(i));
+      THES_ALWAYS_ASSERT(s2 == s);
+      THES_ALWAYS_ASSERT(seg.segment_range(s2).contains(i));
     }
   }
 
-  THES_ASSERT(last_end == total);
-  THES_ASSERT(sum == total);
+  THES_ALWAYS_ASSERT(last_end == total);
+  THES_ALWAYS_ASSERT(sum == total);
 
   // Check that segment_of() never goes out of range for all indices
   for (Size i : range(total)) {
     const Segment s = seg.segment_of(i);
-    THES_ASSERT(s < num_seg);
-    THES_ASSERT(seg.segment_range(s).contains(i));
+    THES_ALWAYS_ASSERT(s < num_seg);
+    THES_ALWAYS_ASSERT(seg.segment_range(s).contains(i));
   }
 }
 } // namespace
@@ -83,14 +83,14 @@ int main() {
 
       fmt::print("{}→{}:{}\n", j0, j1, j1 - j0);
 
-      THES_ASSERT(j0 == start);
+      THES_ALWAYS_ASSERT(j0 == start);
       start = j1;
       sum += j1 - j0;
     }
-    THES_ASSERT(sum == size);
+    THES_ALWAYS_ASSERT(sum == size);
 
-    THES_ASSERT(seg.segment_start(0) == 0);
-    THES_ASSERT(seg.segment_end(seg_num - 1) == size);
+    THES_ALWAYS_ASSERT(seg.segment_start(0) == 0);
+    THES_ALWAYS_ASSERT(seg.segment_end(seg_num - 1) == size);
   }
   fmt::print("\n");
 
@@ -107,20 +107,21 @@ int main() {
             for (const auto i : range(blocks)) {
               const auto i1 = seg.segment_start(i);
               const auto i2 = seg.segment_start(i + 1);
-              THES_ASSERT(i1 <= i2);
+              THES_ALWAYS_ASSERT(i1 <= i2);
               const auto block_size = i2 - i1;
               // each block differs by at most 1 from the floor
-              THES_ASSERT(block_size == block_num || block_size == block_num + 1 || block_num == 0);
+              THES_ALWAYS_ASSERT(block_size == block_num || block_size == block_num + 1 ||
+                                 block_num == 0);
               sum += block_size;
 
               // ranges must be non-empty except possibly when num < blocks
               if (num >= blocks) {
-                THES_ASSERT(block_size > 0);
+                THES_ALWAYS_ASSERT(block_size > 0);
               }
             }
-            THES_ASSERT(sum == num);
-            THES_ASSERT(seg.size() == num);
-            THES_ASSERT(seg.segment_num() == blocks);
+            THES_ALWAYS_ASSERT(sum == num);
+            THES_ALWAYS_ASSERT(seg.size() == num);
+            THES_ALWAYS_ASSERT(seg.segment_num() == blocks);
           }
 
           // segment_of coverage
@@ -128,8 +129,8 @@ int main() {
             const thes::UniformIndexSegmenter seg{num, blocks};
             for (const auto i : range(num)) {
               const auto s = seg.segment_of(i);
-              THES_ASSERT(s < blocks);
-              THES_ASSERT(seg.segment_range(s).contains(i));
+              THES_ALWAYS_ASSERT(s < blocks);
+              THES_ALWAYS_ASSERT(seg.segment_range(s).contains(i));
             }
           }
         }
@@ -149,8 +150,8 @@ int main() {
           thes::OffsetUniformIndexSegmenter seg{offset, size, seg_num};
 
           // Basic invariants: total size and num segments
-          THES_ASSERT(seg.size() == size);
-          THES_ASSERT(seg.segment_num() == seg_num);
+          THES_ALWAYS_ASSERT(seg.size() == size);
+          THES_ALWAYS_ASSERT(seg.segment_num() == seg_num);
 
           // Contiguous coverage of [offset, offset + size)
           Size last_end = offset;
@@ -158,25 +159,25 @@ int main() {
           for (Segment s : range(seg_num)) {
             const Size start = seg.segment_start(s);
             const Size end = seg.segment_end(s);
-            THES_ASSERT(start <= end);
-            THES_ASSERT(start == last_end);
+            THES_ALWAYS_ASSERT(start <= end);
+            THES_ALWAYS_ASSERT(start == last_end);
             last_end = end;
             sum += end - start;
 
             // Check that segment_of() in mapped domain is correct
             for (Size i : range(start, end)) {
               const Segment s2 = seg.segment_of(i);
-              THES_ASSERT(s2 == s);
-              THES_ASSERT(seg.segment_range(s2).contains(i));
+              THES_ALWAYS_ASSERT(s2 == s);
+              THES_ALWAYS_ASSERT(seg.segment_range(s2).contains(i));
             }
           }
-          THES_ASSERT(last_end == offset + size);
-          THES_ASSERT(sum == size);
+          THES_ALWAYS_ASSERT(last_end == offset + size);
+          THES_ALWAYS_ASSERT(sum == size);
 
           // segment_of should hit the right segment for all indices in [offset, offset + size)
           for (Size i : range(offset, offset + size)) {
             const Segment s = seg.segment_of(i);
-            THES_ASSERT(seg.segment_range(s).contains(i));
+            THES_ALWAYS_ASSERT(seg.segment_range(s).contains(i));
           }
         }
       }
@@ -194,8 +195,8 @@ int main() {
             thes::AffineUniformIndexSegmenter seg{factor, offset, base_size, seg_num};
 
             // Total size must be factor * base_size
-            THES_ASSERT(seg.size() == base_size * factor);
-            THES_ASSERT(seg.segment_num() == seg_num);
+            THES_ALWAYS_ASSERT(seg.size() == base_size * factor);
+            THES_ALWAYS_ASSERT(seg.segment_num() == seg_num);
 
             // Check contiguous coverage of [offset, offset + factor * base_size)
             Size last_end = offset;
@@ -203,24 +204,24 @@ int main() {
             for (Segment s : range(seg_num)) {
               const Size start = seg.segment_start(s);
               const Size end = seg.segment_end(s);
-              THES_ASSERT(start <= end);
-              THES_ASSERT(start == last_end);
+              THES_ALWAYS_ASSERT(start <= end);
+              THES_ALWAYS_ASSERT(start == last_end);
               last_end = end;
               sum += end - start;
 
               // all indices in [start, end) must map back to this segment
               for (Size i : range(start, end)) {
                 const Segment s2 = seg.segment_of(i);
-                THES_ASSERT(s2 == s);
-                THES_ASSERT(seg.segment_range(s2).contains(i));
+                THES_ALWAYS_ASSERT(s2 == s);
+                THES_ALWAYS_ASSERT(seg.segment_range(s2).contains(i));
               }
             }
-            THES_ASSERT(last_end == offset + factor * base_size);
-            THES_ASSERT(sum == factor * base_size);
+            THES_ALWAYS_ASSERT(last_end == offset + factor * base_size);
+            THES_ALWAYS_ASSERT(sum == factor * base_size);
 
             for (Size i : range(offset, offset + factor * base_size)) {
               const Segment s = seg.segment_of(i);
-              THES_ASSERT(seg.segment_range(s).contains(i));
+              THES_ALWAYS_ASSERT(seg.segment_range(s).contains(i));
             }
           }
         }
@@ -252,9 +253,9 @@ int main() {
         for (Size block_size : {Size(1), Size(2), Size(3), Size(4), Size(16)}) {
           thes::BlockedIndexSegmenter<Size, Segment> seg{size, seg_num, block_size};
 
-          THES_ASSERT(seg.size() == size);
-          THES_ASSERT(seg.segment_num() == seg_num);
-          THES_ASSERT(seg.block_size() == block_size);
+          THES_ALWAYS_ASSERT(seg.size() == size);
+          THES_ALWAYS_ASSERT(seg.segment_num() == seg_num);
+          THES_ALWAYS_ASSERT(seg.block_size() == block_size);
 
           // Basic partition test
           check_segmenter_partition(seg);
@@ -272,16 +273,16 @@ int main() {
       thes::PaddedIndexSegmenter padded{base, n0, n1};
 
       // Global expected range is [0, size + n0 + n1)
-      THES_ASSERT(padded.size() == size + n0 + n1);
-      THES_ASSERT(padded.segment_num() == seg_num);
+      THES_ALWAYS_ASSERT(padded.size() == size + n0 + n1);
+      THES_ALWAYS_ASSERT(padded.segment_num() == seg_num);
 
       // First and last segments must reflect padding correctly
       if (seg_num > 0) {
-        THES_ASSERT(padded.segment_start(0) == 0);
-        THES_ASSERT(padded.segment_end(0) >= n0); // at least includes the leading pad
+        THES_ALWAYS_ASSERT(padded.segment_start(0) == 0);
+        THES_ALWAYS_ASSERT(padded.segment_end(0) >= n0); // at least includes the leading pad
 
         const Segment last = seg_num - 1;
-        THES_ASSERT(padded.segment_end(last) == base.segment_end(last) + n0 + n1);
+        THES_ALWAYS_ASSERT(padded.segment_end(last) == base.segment_end(last) + n0 + n1);
       }
 
       // Generic partition test (contiguous coverage, segment_of matches)
@@ -294,21 +295,21 @@ int main() {
         const Segment s_b = base.segment_of(i);
 
         // padded and base must agree on segment indices in the shifted region
-        THES_ASSERT(s_p == s_b);
+        THES_ALWAYS_ASSERT(s_p == s_b);
 
         const auto r_p = padded.segment_range(s_p);
         const auto r_b = base.segment_range(s_b);
 
         // ranges should be shifted by n0 in this “inner” region,
         // though note padding may extend first/last segments beyond this area.
-        THES_ASSERT(r_p.contains(global_i));
-        THES_ASSERT(r_b.contains(i));
+        THES_ALWAYS_ASSERT(r_p.contains(global_i));
+        THES_ALWAYS_ASSERT(r_b.contains(i));
       }
 
       // Leading padding [0, n0) belongs entirely to segment 0 if seg_num > 0
       if (seg_num > 0 && n0 > 0) {
         for (Size i : range<Size>(n0)) {
-          THES_ASSERT(padded.segment_of(i) == Segment(0));
+          THES_ALWAYS_ASSERT(padded.segment_of(i) == Segment(0));
         }
       }
 
@@ -316,7 +317,7 @@ int main() {
       if (seg_num > 0 && n1 > 0) {
         const Segment last = seg_num - 1;
         for (Size i : range<Size>(n0 + size, n0 + size + n1)) {
-          THES_ASSERT(padded.segment_of(i) == last);
+          THES_ALWAYS_ASSERT(padded.segment_of(i) == last);
         }
       }
     };
