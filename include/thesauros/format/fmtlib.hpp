@@ -7,7 +7,7 @@
 #ifndef INCLUDE_THESAUROS_FORMAT_FMTLIB_HPP
 #define INCLUDE_THESAUROS_FORMAT_FMTLIB_HPP
 
-#include "thesauros/macropolis/warnings.hpp"
+#include "thesauros/macropolis/diagnostics.hpp"
 
 THES_POLIS_DIAGNOSTICS_IGNORED_PUSH(gcc, "-Wsign-conversion")
 // IWYU pragma: begin_exports

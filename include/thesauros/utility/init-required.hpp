@@ -7,7 +7,7 @@
 #ifndef INCLUDE_THESAUROS_UTILITY_INIT_REQUIRED_HPP
 #define INCLUDE_THESAUROS_UTILITY_INIT_REQUIRED_HPP
 
-#include "thesauros/macropolis/warnings.hpp"
+#include "thesauros/macropolis/diagnostics.hpp"
 
 namespace thes {
 // TODO Is there a better solution?
