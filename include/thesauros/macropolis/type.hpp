@@ -51,10 +51,10 @@ struct MemberLayoutInfo {
 };
 
 template<typename T>
-concept HasMemoryLayoutInfo = requires { typename T::MemoryLayoutInfo; };
+concept HasMemoryLayoutInfo = requires() { memory_layout_info_adl(std::declval<T*>()); };
 
 template<typename T>
-inline constexpr auto memory_layout_info = T::MemoryLayoutInfo::members;
+inline constexpr auto memory_layout_info = memory_layout_info_adl(static_cast<T*>(nullptr));
 
 template<typename T, auto tName, auto tSerialName, auto tMembers, auto tStaticMembers>
 struct TypeInfoTemplate {
@@ -126,7 +126,7 @@ THES_POLIS_PRIMITIVE_NAME(f64)
 
 template<typename T>
 requires(CompleteType<SerialNameTrait<T>>)
-inline constexpr auto serial_name_of() {
+constexpr auto serial_name_of() {
   return SerialNameTrait<T>::name();
 }
 
@@ -335,26 +335,22 @@ inline constexpr auto serial_name_of() {
   BOOST_PP_LIST_FOR_EACH(THES_POLIS_BODIES, TYPENAME, BODIES)
 
 #define THES_CREATE_TYPE_IMPL_LAYOUT(TYPENAME, FULL_NAME, TEMPLATE_PARAMS, MEMBERS) \
-  BOOST_PP_REMOVE_PARENS(BOOST_PP_IIF(BOOST_PP_LIST_IS_NIL(TEMPLATE_PARAMS), (), \
-                                      (THES_POLIS_TEMPLATE_SPEC(TYPENAME, TEMPLATE_PARAMS)))) \
-  struct BOOST_PP_REMOVE_PARENS(FULL_NAME)::MemoryLayoutInfo { \
+  friend consteval auto memory_layout_info_adl(BOOST_PP_REMOVE_PARENS(FULL_NAME)*) { \
     using Self = BOOST_PP_REMOVE_PARENS(FULL_NAME); \
-    static constexpr ::thes::Tuple members{ \
-      BOOST_PP_LIST_FOR_EACH_I(THES_POLIS_MEMBER_OFFSET, Self, MEMBERS)}; \
-  };
+    return ::thes::Tuple{BOOST_PP_LIST_FOR_EACH_I(THES_POLIS_MEMBER_OFFSET, Self, MEMBERS)}; \
+  }
 
 #define THES_CREATE_TYPE_IMPL_INNER(TYPE, TYPENAME, FULL_NAME, CONSTRUCTOR, TEMPLATE_PARAMS, \
                                     STATIC_MEMBERS, MEMBERS, BODIES, INCL_LAYOUT) \
   BOOST_PP_REMOVE_PARENS(BOOST_PP_IIF(BOOST_PP_LIST_IS_NIL(TEMPLATE_PARAMS), (), \
                                       (THES_POLIS_TEMPLATE_SPEC(TYPENAME, TEMPLATE_PARAMS)))) \
   struct TYPENAME { \
-    BOOST_PP_REMOVE_PARENS(BOOST_PP_IIF(INCL_LAYOUT, (struct MemoryLayoutInfo;), ())) \
     THES_DEFINE_TYPE_IMPL(TYPE, TYPENAME, CONSTRUCTOR, TEMPLATE_PARAMS, STATIC_MEMBERS, MEMBERS, \
                           BODIES, INCL_LAYOUT) \
-  }; \
-  BOOST_PP_REMOVE_PARENS(BOOST_PP_IIF( \
-    INCL_LAYOUT, (THES_CREATE_TYPE_IMPL_LAYOUT(TYPENAME, FULL_NAME, TEMPLATE_PARAMS, MEMBERS)), \
-    ()))
+    BOOST_PP_REMOVE_PARENS(BOOST_PP_IIF( \
+      INCL_LAYOUT, (THES_CREATE_TYPE_IMPL_LAYOUT(TYPENAME, FULL_NAME, TEMPLATE_PARAMS, MEMBERS)), \
+      ())) \
+  };
 
 #define THES_CREATE_TYPE_IMPL(TYPE, TYPENAME, CONSTRUCTOR, TEMPLATE_PARAMS, STATIC_MEMBERS, \
                               MEMBERS, BODIES, INCL_LAYOUT) \

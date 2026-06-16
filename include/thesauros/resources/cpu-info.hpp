@@ -29,7 +29,14 @@
 #elif THES_APPLE
 #include <stdexcept>
 
+// Fixes incompatibilities between Clang and GCC in newer Xcode versions
+#if THES_GCC
+#define _Static_assert static_assert
+#endif
 #include <sys/sysctl.h>
+#if THES_GCC
+#undef _Static_assert
+#endif
 #elif THES_WINDOWS
 #include <memory>
 
