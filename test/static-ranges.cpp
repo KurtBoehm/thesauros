@@ -429,6 +429,15 @@ int main() {
     static_assert(red == thes::Tuple{0, 8, 6, 2});
   }
 
+  // as_index_sequence
+  {
+    static constexpr thes::Tuple idxs{thes::index_tag<0>, thes::index_tag<2>};
+    static constexpr auto idxs_seq = star::as_index_sequence<idxs>;
+    using IdxsSeq = star::AsIndexSequence<idxs>;
+    static_assert(std::same_as<std::decay_t<decltype(idxs_seq)>, std::index_sequence<0, 2>>);
+    static_assert(std::same_as<IdxsSeq, std::index_sequence<0, 2>>);
+  }
+
   // for_each
   {
     static constexpr std::array arr{0, 4, 3, 1};

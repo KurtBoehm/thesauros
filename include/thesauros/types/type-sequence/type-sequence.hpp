@@ -29,6 +29,7 @@ struct TypeSeqBase<THead, TTail...> {
 template<typename... Ts>
 struct TypeSeq : public TypeSeqBase<Ts...> {
   using AsTuple = Tuple<Ts...>;
+  static constexpr std::size_t size = sizeof...(Ts);
 
   template<std::size_t tIndex>
   using At = TupleElement<tIndex, AsTuple>;

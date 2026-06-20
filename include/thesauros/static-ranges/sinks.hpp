@@ -4,6 +4,7 @@
 // IWYU pragma: begin_exports
 #include "sinks/all-different.hpp"
 #include "sinks/apply.hpp"
+#include "sinks/as-index-sequence.hpp"
 #include "sinks/contains.hpp"
 #include "sinks/first-value.hpp"
 #include "sinks/for-each.hpp"
