@@ -214,8 +214,9 @@ constexpr auto serial_name_of() {
 #define THES_POLIS_MEMBER_OFFSET(REC, TYPENAME, IDX, ELEM) \
   BOOST_PP_COMMA_IF(IDX) \
   ::thes::MemberLayoutInfo<THES_POLIS_MEMBER_TYPE(ELEM), THES_POLIS_MEMBER_NAME_STR(ELEM), \
-                           &TYPENAME::THES_POLIS_MEMBER_NAME(ELEM), \
-                           offsetof(TYPENAME, THES_POLIS_MEMBER_NAME(ELEM))> {}
+                           &BOOST_PP_REMOVE_PARENS(TYPENAME)::THES_POLIS_MEMBER_NAME(ELEM), \
+                           offsetof(BOOST_PP_REMOVE_PARENS(TYPENAME), \
+                                    THES_POLIS_MEMBER_NAME(ELEM))> {}
 
 // The constructor implementation
 
@@ -336,8 +337,7 @@ constexpr auto serial_name_of() {
 
 #define THES_CREATE_TYPE_IMPL_LAYOUT(TYPENAME, FULL_NAME, TEMPLATE_PARAMS, MEMBERS) \
   friend consteval auto memory_layout_info_adl(BOOST_PP_REMOVE_PARENS(FULL_NAME)*) { \
-    using Self = BOOST_PP_REMOVE_PARENS(FULL_NAME); \
-    return ::thes::Tuple{BOOST_PP_LIST_FOR_EACH_I(THES_POLIS_MEMBER_OFFSET, Self, MEMBERS)}; \
+    return ::thes::Tuple{BOOST_PP_LIST_FOR_EACH_I(THES_POLIS_MEMBER_OFFSET, FULL_NAME, MEMBERS)}; \
   }
 
 #define THES_CREATE_TYPE_IMPL_INNER(TYPE, TYPENAME, FULL_NAME, CONSTRUCTOR, TEMPLATE_PARAMS, \
