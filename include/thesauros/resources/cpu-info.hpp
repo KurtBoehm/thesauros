@@ -29,10 +29,6 @@
 #elif THES_APPLE
 #include <stdexcept>
 
-// Fixes incompatibilities between Clang and GCC in newer Xcode versions
-#if THES_GCC
-#define _Static_assert static_assert
-#endif
 #include <sys/sysctl.h>
 #elif THES_WINDOWS
 #include <memory>
@@ -47,7 +43,7 @@
 #endif
 
 namespace thes {
-enum struct EfficiencyClass : u8 { any, efficiency, performance };
+enum struct EfficiencyClass : u8 { any, efficiency, medium, performance };
 
 #if THES_LINUX
 template<typename TChars>
@@ -139,9 +135,14 @@ struct CpuInfo {
   }
 };
 #elif THES_APPLE
+#ifndef THES_USE_IOKIT
+#define THES_USE_IOKIT false
+#endif
+
+namespace detail {
 template<typename T>
 inline T read_sysctl(const char* name) {
-  T value;
+  T value{};
   std::size_t size = sizeof(T);
   const int ret = sysctlbyname(name, &value, &size, nullptr, 0);
   if (ret != 0) {
@@ -149,23 +150,183 @@ inline T read_sysctl(const char* name) {
   }
   return value;
 }
+
+template<typename T>
+inline std::optional<T> query_sysctl(const char* name) {
+  T value{};
+  std::size_t size = sizeof(T);
+  const int ret = sysctlbyname(name, &value, &size, nullptr, 0);
+  if (ret != 0) {
+    return std::nullopt;
+  }
+  return value;
+}
+
+struct PerfLevel {
+  int index; // perflevelN index
+  std::string name; // hw.perflevelN.name
+  EfficiencyClass eff_class = EfficiencyClass::any; // mapped to our EfficiencyClass
+  int physical_cpus; // hw.perflevelN.physicalcpu
+  int logical_cpus; // hw.perflevelN.logicalcpu (optional; may be equal)
+};
+
+inline std::vector<PerfLevel> read_perflevels() {
+  std::vector<PerfLevel> levels;
+
+  // As of 2026, none of Apple’s CPUs has more than two performance levels, but be conservative.
+  for (int i = 0; i < 4; ++i) {
+    const auto base = fmt::format("hw.perflevel{}", i);
+
+    const auto name_key = fmt::format("{}.name", base);
+    const auto name_arr = query_sysctl<std::array<char, 128>>(name_key.c_str());
+    if (!name_arr.has_value()) {
+      break;
+    }
+    std::string name{name_arr->data(), strnlen(name_arr->data(), name_arr->size())};
+
+    const auto phys_key = base + ".physicalcpu";
+    const auto phys = read_sysctl<int>(phys_key.c_str());
+
+    const auto log_key = base + ".logicalcpu";
+    const auto log = read_sysctl<int>(log_key.c_str());
+
+    // The efficiency class will be determined later
+    levels.push_back(PerfLevel{
+      .index = i,
+      .name = std::move(name),
+      .physical_cpus = phys,
+      .logical_cpus = log,
+    });
+  }
+
+  if (levels.empty()) {
+    throw std::runtime_error{"No performance levels"};
+  }
+
+  // Check whether any core is a “Super” core:
+  // - “Super” exists: “Super” → `performance`, “Performance” → `medium`
+  // - “Super” does not exist: “Performance” → `performance`
+  // “Efficiency” is always mapped to `efficiency`.
+  const bool any_super =
+    std::ranges::any_of(levels, [](const PerfLevel& level) { return level.name == "Super"; });
+  const EfficiencyClass perf_class =
+    any_super ? EfficiencyClass::medium : EfficiencyClass::performance;
+  for (auto& level : levels) {
+    if (level.name == "Super") {
+      level.eff_class = EfficiencyClass::performance;
+    } else if (level.name == "Performance") {
+      level.eff_class = perf_class;
+    } else if (level.name == "Efficiency") {
+      level.eff_class = EfficiencyClass::efficiency;
+    } else {
+      throw std::runtime_error{"Unsupported efficiency class " + level.name};
+    }
+  }
+
+  // Sort by ascending performance level, which is what IOKit seems to do.
+  std::ranges::sort(levels, {}, &PerfLevel::eff_class);
+
+  return levels;
+}
+
+#if THES_USE_IOKIT
+//--------------------------------------------------------------------------------------------------
+// macOS CPU topology discovery via IORegistry
+//--------------------------------------------------------------------------------------------------
+struct CpuEntry {
+  std::size_t logical_id;
+  EfficiencyClass efficiency_class;
+};
+
+std::vector<CpuEntry> compute_cpu_topology();
+
+inline const std::vector<CpuEntry>& apple_cpu_topology() {
+  static const std::vector<CpuEntry> cache = compute_cpu_topology();
+  return cache;
+}
+#endif
+} // namespace detail
+
 struct CpuInfo {
   std::size_t id;
+  EfficiencyClass efficiency_class = EfficiencyClass::any;
 
-  static auto logical() {
-    const auto logical_cores = *safe_cast<std::size_t>(read_sysctl<int>("hw.logicalcpu"));
-    return range(logical_cores) | std::views::transform([](std::size_t i) { return CpuInfo{i}; });
+  static std::vector<CpuInfo> logical() {
+#if THES_USE_IOKIT
+    const auto& topo = detail::apple_cpu_topology();
+    if (!topo.empty()) {
+      return std::ranges::to<std::vector<CpuInfo>>(
+        topo | std::views::transform([](detail::CpuEntry entry) {
+          return CpuInfo{.id = entry.logical_id, .efficiency_class = entry.efficiency_class};
+        }));
+    }
+#endif
+
+    const auto levels = detail::read_perflevels();
+    const auto logicalcpu = *safe_cast<std::size_t>(detail::read_sysctl<int>("hw.logicalcpu"));
+
+    if (std::ranges::fold_left(levels | std::views::transform([](const detail::PerfLevel& level) {
+                                 return *safe_cast<std::size_t>(level.logical_cpus);
+                               }),
+                               0UZ, std::plus{}) != logicalcpu) {
+      throw std::runtime_error{"Inconsistent CPU count"};
+    }
+
+    std::vector<CpuInfo> infos{};
+    infos.reserve(logicalcpu);
+
+    std::size_t current_id = 0;
+    for (const auto& lvl : levels) {
+      for (int i = 0; i < lvl.logical_cpus && current_id < logicalcpu; ++i) {
+        infos.push_back({.id = current_id++, .efficiency_class = lvl.eff_class});
+      }
+    }
+
+    return infos;
   }
-  // Warning: In contrast to the Linux version, `logical` and `physical` do not share an index set!
-  static auto physical() {
-    const auto physical_cores = *safe_cast<std::size_t>(read_sysctl<int>("hw.physicalcpu"));
-    return range(physical_cores) | std::views::transform([](std::size_t i) { return CpuInfo{i}; });
+
+  static std::vector<CpuInfo> logical(EfficiencyClass efficiency_class) {
+    if (efficiency_class == EfficiencyClass::any) {
+      return logical();
+    }
+    return std::ranges::to<std::vector<CpuInfo>>(logical() |
+                                                 std::views::filter([&](const CpuInfo& info) {
+                                                   return info.efficiency_class == efficiency_class;
+                                                 }));
   }
-  // Warning: In contrast to the Linux version, `logical` and `physical` do not share an index set!
+
+  static std::vector<CpuInfo> physical() {
+    const auto logicalcpu = *safe_cast<std::size_t>(detail::read_sysctl<int>("hw.logicalcpu"));
+    const auto physicalcpu = *safe_cast<std::size_t>(detail::read_sysctl<int>("hw.physicalcpu"));
+    if (logicalcpu != physicalcpu) {
+      throw std::runtime_error{"Number of logical and physical CPUs does not match;"
+                               "Apple Silicon does not use SMT and that is all that we support"};
+    }
+    return logical();
+  }
+
+  static std::vector<CpuInfo> physical(EfficiencyClass efficiency_class) {
+    const auto logicalcpu = *safe_cast<std::size_t>(detail::read_sysctl<int>("hw.logicalcpu"));
+    const auto physicalcpu = *safe_cast<std::size_t>(detail::read_sysctl<int>("hw.physicalcpu"));
+    if (logicalcpu != physicalcpu) {
+      throw std::runtime_error{"Number of logical and physical CPUs does not match;"
+                               "Apple Silicon does not use SMT and that is all that we support"};
+    }
+    return logical(efficiency_class);
+  }
+
   static auto physical_part(std::size_t idx, std::size_t num) {
-    const auto physical_cores = *safe_cast<std::size_t>(read_sysctl<int>("hw.physicalcpu"));
-    return UniformIndexSegmenter{physical_cores, num}.segment_range(idx) |
-           std::views::transform([](std::size_t i) { return CpuInfo{i}; });
+    auto one_per_core = physical();
+    const auto subsizes = UniformIndexSegmenter{one_per_core.size(), num}.segment_range(idx);
+    return std::move(one_per_core) | std::views::drop(subsizes.begin_value()) |
+           std::views::take(subsizes.size());
+  }
+
+  static auto physical_part(EfficiencyClass efficiency_class, std::size_t idx, std::size_t num) {
+    auto one_per_core = physical(efficiency_class);
+    const auto subsizes = UniformIndexSegmenter{one_per_core.size(), num}.segment_range(idx);
+    return std::move(one_per_core) | std::views::drop(subsizes.begin_value()) |
+           std::views::take(subsizes.size());
   }
 };
 #elif THES_WINDOWS

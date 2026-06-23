@@ -13,16 +13,40 @@
 
 #if THES_LINUX || THES_APPLE
 #include <cstddef>
-#elif THES_WINDOWS
+#endif
+#if THES_APPLE || THES_WINDOWS
 #include "thesauros/format/formatter.hpp"
 #endif
 
-#if THES_LINUX || THES_APPLE
+template<>
+struct fmt::formatter<thes::EfficiencyClass> : public thes::SimpleFormatter<> {
+  auto format(const thes::EfficiencyClass& eff, fmt::format_context& ctx) const {
+    return this->write_padded(ctx, [&](auto it) {
+      switch (eff) {
+        case thes::EfficiencyClass::efficiency: return (it++ = 'E');
+        case thes::EfficiencyClass::medium: return (it++ = 'M');
+        case thes::EfficiencyClass::performance: return (it++ = 'P');
+        default: return it;
+      }
+    });
+  }
+};
+
+#if THES_LINUX
 template<>
 struct fmt::formatter<thes::CpuInfo> : public fmt::nested_formatter<std::size_t> {
   auto format(const thes::CpuInfo& info, fmt::format_context& ctx) const {
     return this->write_padded(
       ctx, [&](auto it) { return fmt::format_to(it, "cpu{}", this->nested(info.id)); });
+  }
+};
+#elif THES_APPLE
+template<>
+struct fmt::formatter<thes::CpuInfo> : public fmt::nested_formatter<std::size_t> {
+  auto format(const thes::CpuInfo& info, fmt::format_context& ctx) const {
+    return this->write_padded(ctx, [&](auto it) {
+      return fmt::format_to(it, "CPU{}{}", this->nested(info.id), info.efficiency_class);
+    });
   }
 };
 #else

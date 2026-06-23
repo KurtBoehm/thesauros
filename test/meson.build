@@ -50,9 +50,9 @@ foreach name, deps : {
     executable(
       f'test-@name@',
       [f'@name@.cpp'],
+      dependencies: [thesauros_dep] + deps,
       override_options: opts,
       cpp_args: args,
-      dependencies: [thesauros_dep] + deps,
     ),
   )
 endforeach
