@@ -9,16 +9,86 @@ project(thesauros LANGUAGES CXX)
 
 # Build options
 option(THESAUROS_BUILD_TESTS "Build tests" OFF)
+option(THESAUROS_USE_IOKIT "Use macOS IOKit/CoreFoundation for CPU info" OFF)
+
+# On macOS, _Static_assert is used in system headers, which GCC does not support
+# in C++ mode
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND APPLE)
+  add_compile_definitions(_Static_assert=static_assert)
+endif()
 
 # Ensure we build {fmt} as a static library and don’t pull in extra stuff
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build static libraries" FORCE)
 set(FMT_DOC OFF CACHE BOOL "" FORCE)
 set(FMT_TEST OFF CACHE BOOL "" FORCE)
 set(FMT_INSTALL OFF CACHE BOOL "" FORCE)
+set(FMT_SHARED OFF CACHE BOOL "Build fmt as a shared library" FORCE)
 
 include(FetchContent)
 
+# Try CMake’s OpenMP module first
 find_package(OpenMP COMPONENTS CXX)
+
+# Figure out what to link for OpenMP
+set(THESAUROS_OPENMP_TARGET "")
+
+if(TARGET OpenMP::OpenMP_CXX)
+  # Normal case: CMake found OpenMP and created the imported target
+  set(THESAUROS_OPENMP_TARGET OpenMP::OpenMP_CXX)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+  # Meson-like fallback for Apple Clang: `-Xpreprocessor -fopenmp` + `libomp`
+
+  # User-configurable OpenMP runtime prefix
+  set(THESAUROS_OPENMP_ROOT "" CACHE PATH "Prefix where libomp is installed")
+
+  # Collect candidate prefixes
+  set(_omp_prefixes "")
+
+  if(THESAUROS_OPENMP_ROOT)
+    list(APPEND _omp_prefixes "${THESAUROS_OPENMP_ROOT}")
+  else()
+    # If Homebrew is available, ask it for libomp’s prefix
+    find_program(HOMEBREW_EXECUTABLE brew)
+    if(HOMEBREW_EXECUTABLE)
+      execute_process(
+        COMMAND ${HOMEBREW_EXECUTABLE} --prefix libomp
+        RESULT_VARIABLE _brew_result
+        OUTPUT_VARIABLE
+          _brew_prefix OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET
+      )
+      if(_brew_result EQUAL 0 AND EXISTS "${_brew_prefix}")
+        list(APPEND _omp_prefixes "${_brew_prefix}")
+      endif()
+    endif()
+  endif()
+
+  # Search for the library
+  find_library(
+    THESAUROS_OMP_LIB
+    NAMES omp
+    HINTS ${_omp_prefixes} PATH_SUFFIXES lib lib64
+    REQUIRED
+  )
+
+  # Search for the header
+  find_path(
+    THESAUROS_OMP_INCLUDE_DIR
+    NAMES omp.h
+    HINTS ${_omp_prefixes} PATH_SUFFIXES include
+    REQUIRED
+  )
+
+  add_library(thesauros_openmp INTERFACE)
+  target_compile_options(thesauros_openmp INTERFACE -Xpreprocessor -fopenmp)
+  target_link_libraries(thesauros_openmp INTERFACE ${THESAUROS_OMP_LIB})
+  target_include_directories(
+    thesauros_openmp
+    INTERFACE ${THESAUROS_OMP_INCLUDE_DIR}
+  )
+
+  set(THESAUROS_OPENMP_TARGET thesauros_openmp)
+else()
+  message(FATAL_ERROR "OpenMP C++ support not found, but it is required.")
+endif()
 
 FetchContent_Declare(
   boost_preprocessor
@@ -57,14 +127,22 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(unordered_dense)
 
+# Main interface library
 add_library(${PROJECT_NAME} INTERFACE)
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_23)
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+
+target_compile_definitions(
+  ${PROJECT_NAME}
+  INTERFACE "THES_USE_IOKIT=$<BOOL:${THESAUROS_USE_IOKIT}>"
+)
+
+# Meson: On Windows set WINVER/_WIN32_WINNT
+if(WIN32)
   target_compile_definitions(
     ${PROJECT_NAME}
-    INTERFACE "WINVER=0x0A00" "_WIN32_WINNT=0x0A00"
+    INTERFACE WINVER=0x0A00 _WIN32_WINNT=0x0A00
   )
 endif()
 
@@ -72,17 +150,40 @@ target_include_directories(
   ${PROJECT_NAME}
   INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
-    ${pcg_cpp_SOURCE_DIR}/include
+    $<INSTALL_INTERFACE:include> ${pcg_cpp_SOURCE_DIR}/include
 )
 target_link_libraries(
   ${PROJECT_NAME}
   INTERFACE
-    Boost::preprocessor
-    fmt::fmt
-    OpenMP::OpenMP_CXX
+    Boost::preprocessor fmt::fmt ${THESAUROS_OPENMP_TARGET}
     unordered_dense::unordered_dense
 )
+
+# Optional library on macOS when THESAUROS_USE_IOKIT is true
+if(APPLE AND THESAUROS_USE_IOKIT)
+  add_library(${PROJECT_NAME}_macos STATIC src/resources/cpu-info-macos.cpp)
+
+  target_compile_features(${PROJECT_NAME}_macos PRIVATE cxx_std_23)
+
+  target_include_directories(
+    ${PROJECT_NAME}_macos
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
+  )
+
+  target_compile_definitions(${PROJECT_NAME}_macos PRIVATE THES_USE_IOKIT=1)
+
+  find_library(COREFOUNDATION_FRAMEWORK CoreFoundation REQUIRED)
+  find_library(IOKIT_FRAMEWORK IOKit REQUIRED)
+
+  target_link_libraries(
+    ${PROJECT_NAME}_macos
+    PRIVATE
+      ${COREFOUNDATION_FRAMEWORK} ${IOKIT_FRAMEWORK} Boost::preprocessor
+      fmt::fmt ${THESAUROS_OPENMP_TARGET} unordered_dense::unordered_dense
+  )
+
+  target_link_libraries(${PROJECT_NAME} INTERFACE ${PROJECT_NAME}_macos)
+endif()
 
 if(THESAUROS_BUILD_TESTS)
   # Fetch cmop to add functions that add target options
@@ -99,39 +200,40 @@ if(THESAUROS_BUILD_TESTS)
     test_name
     IN
     ITEMS
-      "arrays"
-      "chunked-dynamic-array"
-      "concepts"
-      "divisor"
-      "dynamic-bitset"
-      "empty"
-      "execution"
-      "factorization"
-      "fancy-visit"
-      "fixed-bitset"
-      "flat"
-      "format"
-      "index-position-wrapper"
-      "index-segmenter"
-      "json"
-      "macropolis"
-      "math"
-      "multi-byte-integers"
-      "primitives"
-      "quantity"
-      "randomize-range"
-      "ranges"
-      "static-bitset"
-      "static-map"
-      "static-ranges"
-      "static-string"
-      "std-extensions"
-      "swap-or-equal"
-      "tessellation"
-      "tiling"
-      "tuples"
-      "type-seq"
-      "value-tag"
+    "arrays"
+    "chunked-dynamic-array"
+    "concepts"
+    "divisor"
+    "dynamic-bitset"
+    "empty"
+    "execution"
+    "factorization"
+    "fancy-visit"
+    "fixed-bitset"
+    "flat"
+    "format"
+    "index-position-wrapper"
+    "index-segmenter"
+    "json"
+    "macropolis"
+    "math"
+    "multi-byte-integers"
+    "primitives"
+    "quantity"
+    "randomize-range"
+    "ranges"
+    "static-bitset"
+    "static-map"
+    "static-ranges"
+    "static-string"
+    "std-extensions"
+    "swap-or-equal"
+    "tempfile"
+    "tessellation"
+    "tiling"
+    "tuples"
+    "type-seq"
+    "value-tag"
   )
     set(test_target ${PROJECT_NAME}_${test_name})
     add_executable(${test_target} test/${test_name}.cpp)
