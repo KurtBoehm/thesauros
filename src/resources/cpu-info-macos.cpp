@@ -1,7 +1,12 @@
+#include <stdexcept>
+
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/IOKitLib.h>
 
 #include "thesauros/resources/cpu-info.hpp"
+
+// The approach is based on https://github.com/open-mpi/hwloc/blob/master/hwloc/topology-darwin.c,
+// but heavily modernized and somewhat optimized.
 
 namespace {
 //--------------------------------------------------------------------------------------------------
@@ -50,7 +55,7 @@ struct CfRef {
     return static_cast<T>(ptr_);
   }
 
-  [[nodiscard]] explicit operator bool() const {
+  [[nodiscard]] bool has_value() const {
     return ptr_ != nullptr;
   }
 
@@ -95,7 +100,7 @@ struct IoObject {
     return obj_;
   }
 
-  [[nodiscard]] explicit operator bool() const {
+  [[nodiscard]] bool has_value() const {
     return obj_ != 0;
   }
 
@@ -118,20 +123,20 @@ inline thes::EfficiencyClass cluster_type_to_efficiency_class(thes::u8 cluster_t
 std::vector<thes::detail::CpuEntry> thes::detail::compute_cpu_topology() {
   const auto logical_cores = *thes::safe_cast<std::size_t>(read_sysctl<int>("hw.logicalcpu"));
   if (logical_cores == 0) {
-    return {};
+    throw std::runtime_error{"No logical cores detected"};
   }
 
   constexpr char dt_plane_name[] = "IODeviceTree";
   constexpr char cpu_plane_path[] = "IODeviceTree:/cpus";
 
   IoObject cpus_root{IORegistryEntryFromPath(kIOMainPortDefault, cpu_plane_path)};
-  if (!cpus_root) {
-    return {};
+  if (!cpus_root.has_value()) {
+    throw std::runtime_error{"No registry entry at IODeviceTree:/cpus found"};
   }
 
   io_iterator_t raw_iter{};
   if (IORegistryEntryGetChildIterator(cpus_root.get(), dt_plane_name, &raw_iter) != KERN_SUCCESS) {
-    return {};
+    throw std::runtime_error{"Getting children of IODeviceTree:/cpus failed"};
   }
 
   IoObject cpus_iter{raw_iter};
@@ -139,13 +144,13 @@ std::vector<thes::detail::CpuEntry> thes::detail::compute_cpu_topology() {
 
   while (true) {
     IoObject cpus_child{IOIteratorNext(cpus_iter.get())};
-    if (!cpus_child) {
+    if (!cpus_child.has_value()) {
       break;
     }
 
     CfRef logical_id_ref{IORegistryEntrySearchCFProperty(
       cpus_child.get(), dt_plane_name, CFSTR("logical-cpu-id"), kCFAllocatorDefault, kNilOptions)};
-    if (!logical_id_ref) {
+    if (!logical_id_ref.has_value()) {
       continue;
     }
     if (CFGetTypeID(logical_id_ref.get()) != CFNumberGetTypeID()) {
@@ -168,7 +173,7 @@ std::vector<thes::detail::CpuEntry> thes::detail::compute_cpu_topology() {
 
     CfRef cluster_ref{IORegistryEntrySearchCFProperty(
       cpus_child.get(), dt_plane_name, CFSTR("cluster-type"), kCFAllocatorDefault, kNilOptions)};
-    if (cluster_ref && CFGetTypeID(cluster_ref.get()) == CFDataGetTypeID()) {
+    if (cluster_ref.has_value() && CFGetTypeID(cluster_ref.get()) == CFDataGetTypeID()) {
       const auto* const data_ref = cluster_ref.as<CFDataRef>();
       const CFIndex length = CFDataGetLength(data_ref);
       if (length >= 1) {
@@ -183,17 +188,18 @@ std::vector<thes::detail::CpuEntry> thes::detail::compute_cpu_topology() {
   }
 
   if (entries.empty()) {
-    return {};
+    throw std::runtime_error{"No CPUs found under IODeviceTree:/cpus"};
   }
 
   std::ranges::sort(entries, {}, &CpuEntry::logical_id);
 
   if (entries.size() != logical_cores) {
-    return {};
+    throw std::runtime_error{"The number of CPUs under IODeviceTree:/cpus does not match the number"
+                             "of logical CPUs"};
   }
   for (std::size_t i = 0; i < entries.size(); ++i) {
     if (entries[i].logical_id != i) {
-      return {};
+      throw std::runtime_error{"The logical ID of a CPU does not match its index"};
     }
   }
 

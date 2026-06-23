@@ -200,7 +200,7 @@ inline std::vector<PerfLevel> read_perflevels() {
   }
 
   if (levels.empty()) {
-    throw std::runtime_error{"No performance levels"};
+    throw std::runtime_error{"No performance levels found through sysctl"};
   }
 
   // Check whether any core is a “Super” core:
@@ -253,13 +253,10 @@ struct CpuInfo {
 
   static std::vector<CpuInfo> logical() {
 #if THES_USE_IOKIT
-    const auto& topo = detail::apple_cpu_topology();
-    if (!topo.empty()) {
-      return std::ranges::to<std::vector<CpuInfo>>(
-        topo | std::views::transform([](detail::CpuEntry entry) {
-          return CpuInfo{.id = entry.logical_id, .efficiency_class = entry.efficiency_class};
-        }));
-    }
+    return std::ranges::to<std::vector<CpuInfo>>(
+      detail::apple_cpu_topology() | std::views::transform([](detail::CpuEntry entry) {
+        return CpuInfo{.id = entry.logical_id, .efficiency_class = entry.efficiency_class};
+      }));
 #endif
 
     const auto levels = detail::read_perflevels();
