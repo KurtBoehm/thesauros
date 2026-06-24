@@ -11,6 +11,7 @@
 #include <limits>
 #include <type_traits>
 
+#include "thesauros/concepts/type-traits.hpp"
 #include "thesauros/types/fixed-size-integer.hpp"
 
 namespace thes {
@@ -40,6 +41,9 @@ using ConditionalConst = std::conditional_t<tConst, const T, T>;
 
 template<typename TFrom, typename TTo>
 using TransferConst = std::conditional_t<std::is_const_v<TFrom>, const TTo, TTo>;
+
+template<typename TFrom, typename TTo>
+using TransferConstAccess = std::conditional_t<thes::ConstAccess<TFrom>, const TTo, TTo>;
 
 template<typename T, typename TDummy>
 using First = T;
