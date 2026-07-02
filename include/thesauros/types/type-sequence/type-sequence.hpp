@@ -86,6 +86,17 @@ struct ConvertedTypeSeq<TypeSeq<Ts...>> {
 } // namespace impl
 template<typename T>
 using ConvertedTypeSeq = impl::ConvertedTypeSeq<T>::Type;
+
+namespace impl {
+template<template<typename...> typename TupleLike, typename Seq>
+struct ToTupleLike;
+template<template<typename...> typename TupleLike, typename... Ts>
+struct ToTupleLike<TupleLike, TypeSeq<Ts...>> {
+  using Type = TupleLike<Ts...>;
+};
+} // namespace impl
+template<template<typename...> typename TupleLike, typename Seq>
+using ToTupleLike = impl::ToTupleLike<TupleLike, Seq>::Type;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_TYPES_TYPE_SEQUENCE_TYPE_SEQUENCE_HPP
