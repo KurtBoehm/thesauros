@@ -23,6 +23,7 @@ foreach name, deps : {
   'format': [],
   'index-position-wrapper': [],
   'index-segmenter': [],
+  'iterator-facades': [],
   'json': [],
   'macropolis': [],
   'math': [],

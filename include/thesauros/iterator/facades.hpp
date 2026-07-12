@@ -16,233 +16,255 @@
 #include "thesauros/utility/arrow-proxy.hpp"
 
 namespace thes {
-// The iter needs to be a forward iter at least.
-// Bi-directional and random-access iters are detected automatically.
-//
-// In any case (i.e. at least a forward iter), “Provider” needs to provide
-// the following static member functions:
-// * deref(const Derived&) -> convertible_to<Ref>
-// * incr(Derived&)
-// * eq(const Derived&, const Derived&) -> convertible_to<bool>
-//
-// If the iter is bi-directional, “Provider” additionally needs to provide
-// the following static member function:
-// * decr(Derived&)
-//
-// If the iter is random-access, “Provider” additionally needs to provide
-// the following static member functions:
-// * iadd(Derived&, Dif)
-// * sub(const Derived&, const Derived&) -> convertible_to<Dif>
-// * three_way(const Derived&, const Derived&) -> convertible_to<std::strong_ordering>
-//
-// The following functions may additionally be provided to replace the default implementations
-// of certain operators:
-// * isub(Derived&, Dif)
-//   * This is used for “operator-=” and “operator-”, which are defined by default through
-//     “iadd(d, -n)”, with “Derived& d” and “Dif n”.
-// * get_item(const Derived&, Dif)
-//   * This is used for “operator[]”, which is defined through “iadd” and “deref”
-//     by default.
-//
-// TODO: Consider adding default implementations for the comparison operators if “sub” is
-// available.
-template<typename TDerived, typename TProvider>
+/**
+ * A CRTP base that implements the iterator operators of `Derived` in terms of operations supplied
+ * by `Provider`.
+ *
+ * `Derived` must be at least a forward iterator; bidirectional and random-access support are
+ * detected automatically based on which operations `Provider` supplies.
+ *
+ * `Provider` must always provide the following static member functions, where `State` is
+ * `Provider::FacadeState` if defined, or `Derived` otherwise:
+ * - `deref(const State&) -> convertible_to<reference>`
+ * - `incr(State&)`
+ * - `eq(const State&, const State&) -> convertible_to<bool>`
+ *
+ * For a bidirectional iterator, `Provider` must additionally provide `decr(State&)`.
+ *
+ * For a random-access iterator, `Provider` must additionally provide:
+ * - `iadd(State&, difference_type)`
+ * - `sub(const State&, const State&) -> convertible_to<difference_type>`
+ * - `three_way(const State&, const State&) -> convertible_to<std::strong_ordering>`
+ *
+ * The following functions may optionally be provided to replace the default implementations of some
+ * operators:
+ * - `isub(State&, difference_type)`, used for `operator-=` and `operator-`, which otherwise
+ *   default to `iadd(state, -n)`.
+ * - `get_item(const State&, difference_type)`, used for `operator[]`, which otherwise defaults
+ *   to `iadd` followed by `deref`.
+ *
+ * @tparam Derived The iterator type deriving from this facade.
+ * @tparam Provider The type providing the iterator operations.
+ */
+// TODO: Consider adding default implementations for the comparison operators if `sub` is available.
+template<typename Derived, typename Provider>
 struct IteratorFacade {
-  using IterTypes = TProvider::IterTypes;
+  using IterTypes = Provider::IterTypes;
 
   using value_type = IterTypes::IterValue;
   using reference = IterTypes::IterRef;
   using pointer = IterTypes::IterPtr;
   using difference_type = IterTypes::IterDiff;
 
-  static constexpr bool has_state = requires { typename TProvider::FacadeState; };
-  template<bool tState, typename = void>
+  static constexpr bool has_state = requires { typename Provider::FacadeState; };
+
+  /** Resolves to `Provider::FacadeState` if it exists, or `Derived` otherwise. */
+  template<bool HasState, typename = void>
   struct StateTrait;
-  template<typename TDummy>
-  struct StateTrait<true, TDummy> {
-    using Type = TProvider::FacadeState;
+  template<typename Dummy>
+  struct StateTrait<true, Dummy> {
+    using Type = Provider::FacadeState;
   };
-  template<typename TDummy>
-  struct StateTrait<false, TDummy> {
-    using Type = TDerived;
+  template<typename Dummy>
+  struct StateTrait<false, Dummy> {
+    using Type = Derived;
   };
   using State = StateTrait<has_state>::Type;
 
-  static_assert(iter_provider::ForwardIterProvider<State, TProvider>,
+  static_assert(iter_provider::ForwardIterProvider<State, Provider>,
                 "The implementation assumes at least a forward iterator!");
   static constexpr bool is_forward_iter = true;
   static constexpr bool is_bidirectional_iter =
-    iter_provider::BidirectionalIterProvider<State, TProvider>;
+    iter_provider::BidirectionalIterProvider<State, Provider>;
   static constexpr bool is_random_access_iter =
-    iter_provider::RandomAccessIterProvider<State, TProvider>;
+    iter_provider::RandomAccessIterProvider<State, Provider>;
 
   using iterator_category =
     std::conditional_t<is_random_access_iter, std::random_access_iterator_tag,
                        std::conditional_t<is_bidirectional_iter, std::bidirectional_iterator_tag,
                                           std::forward_iterator_tag>>;
 
-  // forward iter stuff
+  //------------------------------------------------------------------------------------------------
+  // Forward iterator operations
+  //------------------------------------------------------------------------------------------------
 
-  constexpr friend reference operator*(const TDerived& self) {
-    return TProvider::deref(state(self));
+  /** Dereferences the iterator. */
+  constexpr friend reference operator*(const Derived& self) {
+    return Provider::deref(state(self));
   }
-  constexpr friend reference operator*(TDerived& self) {
-    return TProvider::deref(state(self));
+  constexpr friend reference operator*(Derived& self) {
+    return Provider::deref(state(self));
   }
-  constexpr friend reference operator*(TDerived&& self) {
-    return TProvider::deref(state(std::move(self)));
+  constexpr friend reference operator*(Derived&& self) {
+    return Provider::deref(state(std::move(self)));
   }
 
+  /** Provides member access to the dereferenced value. */
   constexpr pointer operator->() const
   requires(!std::same_as<pointer, void>)
   {
-    return ArrowCreator<value_type, pointer>::create(TProvider::deref(state(derived())));
+    return ArrowCreator<value_type, pointer>::create(Provider::deref(state(derived())));
   }
 
-  constexpr friend TDerived& operator++(TDerived& self) {
-    TProvider::incr(state(self));
+  /** Advances the iterator by one element. */
+  constexpr friend Derived& operator++(Derived& self) {
+    Provider::incr(state(self));
     return self;
   }
-  constexpr friend TDerived operator++(TDerived& self, int) {
-    TDerived tmp{self};
-    TProvider::incr(state(self));
+  constexpr friend Derived operator++(Derived& self, int) {
+    Derived tmp{self};
+    Provider::incr(state(self));
     return tmp;
   }
 
-  constexpr friend bool operator==(const TDerived& d1, const TDerived& d2) {
-    return TProvider::eq(state(d1), state(d2));
+  /** Compares two iterators for equality. */
+  constexpr friend bool operator==(const Derived& d1, const Derived& d2) {
+    return Provider::eq(state(d1), state(d2));
   }
 
-  // bi-directional iter stuff
+  //------------------------------------------------------------------------------------------------
+  // Bidirectional iterator operations
+  //------------------------------------------------------------------------------------------------
 
-  constexpr friend TDerived& operator--(TDerived& self)
-  requires iter_provider::Decr<State, TProvider>
+  /** Moves the iterator back by one element. */
+  constexpr friend Derived& operator--(Derived& self)
+  requires(iter_provider::Decr<State, Provider>)
   {
-    TProvider::decr(state(self));
+    Provider::decr(state(self));
     return self;
   }
-
-  constexpr friend TDerived operator--(TDerived& self, int)
-  requires iter_provider::Decr<State, TProvider>
+  constexpr friend Derived operator--(Derived& self, int)
+  requires(iter_provider::Decr<State, Provider>)
   {
-    TDerived tmp = self;
-    TProvider::decr(state(self));
+    Derived tmp{self};
+    Provider::decr(state(self));
     return tmp;
   }
 
-  // random-access iter stuff
+  //------------------------------------------------------------------------------------------------
+  // Random-access iterator operations
+  //------------------------------------------------------------------------------------------------
 
-  constexpr friend TDerived& operator+=(TDerived& self, auto n)
-  requires iter_provider::InPlaceAdd<State, TProvider>
+  /** Advances the iterator by `n` elements. */
+  constexpr friend Derived& operator+=(Derived& self, auto n)
+  requires(iter_provider::InPlaceAdd<State, Provider>)
   {
-    TProvider::iadd(state(self), n);
+    Provider::iadd(state(self), n);
     return self;
   }
-  constexpr friend TDerived operator+(const TDerived& self, auto n)
-  requires iter_provider::InPlaceAdd<State, TProvider>
+  constexpr friend Derived operator+(const Derived& self, auto n)
+  requires(iter_provider::InPlaceAdd<State, Provider>)
   {
-    TDerived tmp = self;
-    TProvider::iadd(state(tmp), n);
+    Derived tmp{self};
+    Provider::iadd(state(tmp), n);
     return tmp;
   }
-  constexpr friend TDerived operator+(auto n, const TDerived& self)
-  requires iter_provider::InPlaceAdd<State, TProvider>
+  constexpr friend Derived operator+(auto n, const Derived& self)
+  requires(iter_provider::InPlaceAdd<State, Provider>)
   {
     return self + n;
   }
 
-  constexpr friend TDerived& operator-=(TDerived& self, auto n)
-  requires iter_provider::InPlaceAdd<TDerived, TProvider>
+  /** Moves the iterator back by `n` elements. */
+  constexpr friend Derived& operator-=(Derived& self, auto n)
+  requires(iter_provider::InPlaceAdd<State, Provider>)
   {
-    if constexpr (iter_provider::InPlaceSub<State, TProvider>) {
-      TProvider::isub(state(self), n);
+    if constexpr (iter_provider::InPlaceSub<State, Provider>) {
+      Provider::isub(state(self), n);
     } else {
-      TProvider::iadd(state(self), -n);
+      Provider::iadd(state(self), -n);
     }
     return self;
   }
-
-  constexpr friend TDerived operator-(const TDerived& self, auto n)
-  requires iter_provider::InPlaceAdd<State, TProvider>
+  constexpr friend Derived operator-(const Derived& self, auto n)
+  requires(iter_provider::InPlaceAdd<State, Provider>)
   {
-    TDerived tmp = self;
-    if constexpr (iter_provider::InPlaceSub<State, TProvider>) {
-      TProvider::isub(state(tmp), n);
+    Derived tmp{self};
+    if constexpr (iter_provider::InPlaceSub<State, Provider>) {
+      Provider::isub(state(tmp), n);
     } else {
-      TProvider::iadd(state(tmp), -n);
+      Provider::iadd(state(tmp), -n);
     }
     return tmp;
   }
 
+  /** Accesses the element `n` positions away from the iterator. */
   constexpr reference operator[](auto n) const
-  requires iter_provider::InPlaceAdd<State, TProvider>
+  requires(iter_provider::InPlaceAdd<State, Provider>)
   {
-    if constexpr (iter_provider::GetItem<State, TProvider>) {
-      return TProvider::get_item(state(derived()), n);
+    if constexpr (iter_provider::GetItem<State, Provider>) {
+      return Provider::get_item(state(derived()), n);
     } else {
       return *(derived() + n);
     }
   }
 
-  constexpr friend difference_type operator-(const TDerived& self, const TDerived& other)
-  requires iter_provider::Sub<State, TProvider>
+  /** Computes the distance between two iterators. */
+  constexpr friend difference_type operator-(const Derived& self, const Derived& other)
+  requires(iter_provider::Sub<State, Provider>)
   {
-    return TProvider::sub(state(self), state(other));
+    return Provider::sub(state(self), state(other));
   }
 
-  friend std::strong_ordering operator<=>(const TDerived& d1, const TDerived& d2)
-  requires iter_provider::ThreeWayCmp<State, TProvider>
+  /** Establishes a strict total order between two iterators. */
+  friend std::strong_ordering operator<=>(const Derived& d1, const Derived& d2)
+  requires(iter_provider::ThreeWayCmp<State, Provider>)
   {
-    return TProvider::three_way(state(d1), state(d2));
+    return Provider::three_way(state(d1), state(d2));
   }
 
 private:
-  constexpr TDerived& derived() {
-    return static_cast<TDerived&>(*this);
+  static constexpr State& state(Derived& d) {
+    if constexpr (has_state) {
+      return d.state();
+    } else {
+      return d;
+    }
   }
-  constexpr const TDerived& derived() const {
-    return static_cast<const TDerived&>(*this);
+  static constexpr const State& state(const Derived& d) {
+    if constexpr (has_state) {
+      return d.state();
+    } else {
+      return d;
+    }
   }
 
-  static constexpr State& state(TDerived& d) {
-    if constexpr (has_state) {
-      return d.state();
-    } else {
-      return d;
-    }
+  constexpr Derived& derived() {
+    return static_cast<Derived&>(*this);
   }
-  static constexpr const State& state(const TDerived& d) {
-    if constexpr (has_state) {
-      return d.state();
-    } else {
-      return d;
-    }
+  constexpr const Derived& derived() const {
+    return static_cast<const Derived&>(*this);
   }
 };
 
 namespace iter_provider {
-template<typename TValue, typename TDiff>
+/** The default `IterTypes` for an iterator dereferencing to a reference. */
+template<typename Value, typename Diff>
 struct DefaultTypes {
-  using IterValue = TValue;
-  using IterRef = TValue&;
-  using IterPtr = TValue*;
-  using IterDiff = TDiff;
+  using IterValue = Value;
+  using IterRef = Value&;
+  using IterPtr = Value*;
+  using IterDiff = Diff;
 };
 
-template<typename TValue, typename TDiff>
+/**
+ * The `IterTypes` for an iterator dereferencing to a value, using `ArrowProxy` for `operator->`.
+ */
+template<typename Value, typename Diff>
 struct ValueTypes {
-  using IterValue = TValue;
-  using IterRef = TValue;
-  using IterPtr = ArrowProxy<TValue>;
-  using IterDiff = TDiff;
+  using IterValue = Value;
+  using IterRef = Value;
+  using IterPtr = ArrowProxy<Value>;
+  using IterDiff = Diff;
 };
 
-template<typename TDiff>
+/** The `IterTypes` for an iterator that does not support dereferencing. */
+template<typename Diff>
 struct VoidTypes {
   using IterValue = void;
   using IterRef = void;
   using IterPtr = void;
-  using IterDiff = TDiff;
+  using IterDiff = Diff;
 };
 } // namespace iter_provider
 } // namespace thes
