@@ -10,7 +10,7 @@
 #include <compare>
 #include <cstddef>
 
-#include "thesauros/iterator/facades.hpp"
+#include "thesauros/iterator/facade.hpp"
 
 namespace thes {
 template<typename T>
@@ -18,13 +18,20 @@ struct LCG {
   explicit constexpr LCG(T seed, T increment, T size)
       : seed_(seed), increment_(increment), size_(size) {}
 
-  struct IterProvider {
-    using Value = T;
+  struct ConstIterator : public IteratorFacade<iter::ValueTypes<T, std::ptrdiff_t>> {
     using Diff = std::ptrdiff_t;
 
-    using IterTypes = iter_provider::ValueTypes<Value, Diff>;
+    friend IteratorFacade<iter::ValueTypes<T, Diff>>;
 
-    static constexpr Value deref(const auto& self) {
+    constexpr ConstIterator(const LCG& lcg, T index, T value)
+        : lcg_(&lcg), index_(index), value_(value) {}
+
+    constexpr T index() const {
+      return index_;
+    }
+
+  private:
+    static constexpr T deref(const auto& self) {
       return self.value_;
     }
     static constexpr void incr(auto& self) {
@@ -49,7 +56,6 @@ struct LCG {
       return static_cast<Diff>(i1.index_) - static_cast<Diff>(i2.index_);
     }
 
-  private:
     static constexpr T added(const auto& self, T value, T step) {
       const auto ref = self.lcg_->size_ - step;
       return (value < ref) ? (value + step) : (value - ref);
@@ -67,22 +73,13 @@ struct LCG {
 
       return prod;
     }
-  };
 
-  struct const_iterator : public IteratorFacade<const_iterator, IterProvider> {
-    friend IterProvider;
-    constexpr const_iterator(const LCG& lcg, T index, T value)
-        : lcg_(&lcg), index_(index), value_(value) {}
-
-    constexpr T index() const {
-      return index_;
-    }
-
-  private:
     LCG const* lcg_;
     T index_;
     T value_;
   };
+
+  using const_iterator = ConstIterator;
 
   [[nodiscard]] constexpr T seed() const {
     return seed_;

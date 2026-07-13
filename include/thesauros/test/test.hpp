@@ -92,13 +92,26 @@ constexpr bool range_eq(TRange1&& r1, TRange2&& r2, TEqual equal = {}, TPrint pr
     return (it1 == end1) == (it2 == end2);
   }
   if constexpr (detail::AreAccessRanges<TRange1, TRange2>) {
-    const auto size1{r1.size()};
-    const auto size2{r2.size()};
+    const auto size1 = r1.size();
+    const auto size2 = r2.size();
     if (size1 != size2) {
       return false;
     }
-    for (std::decay_t<decltype(size1)> i = 0; i < size1; ++i) {
-      if (r1[i] != r2[i]) {
+
+    auto i1 = [] {
+      using Range1 = std::decay_t<TRange1>;
+      if constexpr (requires { typename Range1::size_type; }) {
+        return typename Range1::size_type{};
+      } else if constexpr (std::ranges::range<Range1>) {
+        return std::ranges::range_difference_t<Range1>{};
+      } else {
+        return std::decay_t<decltype(size1)>{};
+      }
+    }();
+    std::decay_t<decltype(size2)> i2 = 0;
+
+    for (; i1 < size1 && i2 < size2; ++i1, ++i2) {
+      if (r1[i1] != r2[i2]) {
         return false;
       }
     }

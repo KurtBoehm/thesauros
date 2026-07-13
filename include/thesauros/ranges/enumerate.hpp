@@ -10,8 +10,8 @@
 #include <cstddef>
 #include <utility>
 
-#include "thesauros/iterator/facades.hpp"
-#include "thesauros/iterator/provider-map.hpp"
+#include "thesauros/iterator/facade.hpp"
+#include "thesauros/iterator/state-facade.hpp"
 #include "thesauros/math/integer-cast.hpp"
 
 namespace thes {
@@ -19,30 +19,20 @@ template<typename TSize, typename TIter>
 struct EnumerateRange {
   using Value = std::pair<TSize, decltype(*std::declval<TIter>())>;
 
-private:
-  struct IterProv {
-    struct IterTypes : public iter_provider::ValueTypes<Value, std::ptrdiff_t> {
-      using IterState = TIter;
-    };
+  struct const_iterator : public StateIteratorFacade<iter::ValueTypes<Value, std::ptrdiff_t>> {
+    friend StateIteratorFacade<iter::ValueTypes<Value, std::ptrdiff_t>>;
 
-    static constexpr Value deref(const auto& self) {
-      return Value{*safe_cast<TSize>(self.it_ - self.begin_), *self.it_};
-    }
-
-    static constexpr TIter& state(auto& self) {
-      return self.it_;
-    }
-    static constexpr const TIter& state(const auto& self) {
-      return self.it_;
-    }
-  };
-
-public:
-  struct const_iterator : public IteratorFacade<const_iterator, iter_provider::Map<IterProv>> {
-    friend IterProv;
     explicit constexpr const_iterator(TIter begin, TIter it) : begin_(begin), it_(std::move(it)) {}
 
   private:
+    constexpr Value value() const {
+      return Value{*safe_cast<TSize>(it_ - begin_), *it_};
+    }
+
+    constexpr auto& state(this auto& self) {
+      return self.it_;
+    }
+
     TIter begin_;
     TIter it_;
   };

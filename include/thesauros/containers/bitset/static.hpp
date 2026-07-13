@@ -13,6 +13,7 @@
 #include <climits>
 #include <concepts>
 #include <cstddef>
+#include <type_traits>
 #include <utility>
 
 #include "thesauros/containers/bitset/iterator.hpp"
@@ -27,10 +28,19 @@
 #include "thesauros/utility/multi-bit-reference.hpp"
 
 namespace thes {
-template<std::size_t tSize, std::size_t tChunkByteNum = sizeof(std::size_t)>
+/**
+ * A fixed-size bitset which, unlike `std::bitset`, is also a proper `std::ranges::range`: it
+ * exposes both a read-only `const_iterator` and a writable `iterator` whose reference type is
+ * `MutBitRef`, so bits can be assigned to through iteration, not only through `operator[]`.
+ */
+template<std::size_t Size, std::size_t ChunkByteNum = sizeof(std::size_t)>
 struct StaticBitset {
-  static constexpr std::size_t static_size = tSize;
-  static constexpr std::size_t chunk_byte_num = tChunkByteNum;
+  using value_type = bool;
+  using size_type = std::size_t;
+  using difference_type = std::ptrdiff_t;
+
+  static constexpr std::size_t static_size = Size;
+  static constexpr std::size_t chunk_byte_num = ChunkByteNum;
   static constexpr std::size_t chunk_bit_num = CHAR_BIT * chunk_byte_num;
   static constexpr std::size_t static_chunk_num = div_ceil(static_size, chunk_bit_num);
 
@@ -39,7 +49,12 @@ struct StaticBitset {
   static constexpr Chunk one_chunk = static_cast<Chunk>(~zero_chunk);
 
   using MutBitRef = MutableBitReference<chunk_byte_num>;
-  using const_iterator = detail::BitsetIterator<StaticBitset>;
+  using reference = MutBitRef;
+  using const_reference = bool;
+  template<bool IsConst>
+  using BaseIterator = detail::BitsetIterator<StaticBitset, IsConst>;
+  using iterator = BaseIterator<false>;
+  using const_iterator = BaseIterator<true>;
 
   constexpr StaticBitset() = default;
   explicit constexpr StaticBitset(bool value)
@@ -96,28 +111,38 @@ struct StaticBitset {
     chunks_.fill(value ? one_chunk : zero_chunk);
   }
 
-  constexpr bool operator[](std::size_t index) const {
-    return get(index);
-  }
-  constexpr MutBitRef operator[](std::size_t index) {
-    assert(index < static_size);
-    if constexpr (static_chunk_num == 1) {
-      return MutBitRef{std::get<0>(chunks_), index};
+  /** Indexed access: `bool` on a `const` bitset, an assignable `MutBitRef` otherwise. */
+  template<typename Self>
+  [[nodiscard]] constexpr auto operator[](this Self& self, std::size_t index) {
+    if constexpr (std::is_const_v<Self>) {
+      return self.get(index);
     } else {
-      return MutBitRef{chunks_[index / chunk_bit_num], index % chunk_bit_num};
+      assert(index < static_size);
+      if constexpr (static_chunk_num == 1) {
+        return MutBitRef{std::get<0>(self.chunks_), index};
+      } else {
+        return MutBitRef{self.chunks_[index / chunk_bit_num], index % chunk_bit_num};
+      }
     }
   }
 
-  constexpr const_iterator begin() const {
-    return const_iterator{0, *this};
+  /** Yields `const_iterator` on a `const` bitset, the writable `iterator` otherwise. */
+  template<typename Self>
+  [[nodiscard]] constexpr auto begin(this Self& self) {
+    return BaseIterator<std::is_const_v<Self>>{0, self};
   }
-  constexpr const_iterator end() const {
-    return const_iterator{static_size, *this};
+  template<typename Self>
+  [[nodiscard]] constexpr auto end(this Self& self) {
+    return BaseIterator<std::is_const_v<Self>>{static_size, self};
+  }
+  [[nodiscard]] constexpr const_iterator cbegin() const {
+    return begin();
+  }
+  [[nodiscard]] constexpr const_iterator cend() const {
+    return end();
   }
 
 private:
-  std::array<Chunk, static_chunk_num> chunks_;
-
   template<typename... TArgs>
   static constexpr auto generate(TArgs&&... args) {
     const auto data = std::make_tuple(std::forward<TArgs>(args)...);
@@ -170,8 +195,10 @@ private:
   }
 
   static constexpr Chunk mask(std::size_t i) {
-    return Chunk{1} << i;
+    return Chunk(Chunk{1} << i);
   }
+
+  std::array<Chunk, static_chunk_num> chunks_;
 };
 
 template<typename... TArgs>

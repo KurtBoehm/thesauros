@@ -15,8 +15,8 @@
 
 #include "thesauros/containers/array/typed-chunk.hpp"
 #include "thesauros/io.hpp"
-#include "thesauros/iterator/facades.hpp"
-#include "thesauros/iterator/provider-map.hpp"
+#include "thesauros/iterator/facade.hpp"
+#include "thesauros/iterator/state-facade.hpp"
 #include "thesauros/ranges/iota.hpp"
 #include "thesauros/types/type-transformations.hpp"
 
@@ -42,43 +42,32 @@ struct NestedDynamicArrayBase {
     return TDerived{std::move(offsets), std::move(values)};
   }
 
-private:
-  template<bool tConst>
-  struct IterProv {
-    using Val = std::span<ConditionalConst<tConst, Value>>;
-    using State = Size;
-
-    struct IterTypes : public iter_provider::ValueTypes<Val, std::ptrdiff_t> {
-      using IterState = State;
-    };
-
-    static Val deref(const auto& self) {
-      return span_impl<tConst>(self.value_begin_, self.offset_begin_ + self.index_);
-    }
-    static State& state(auto& self) {
-      return self.index_;
-    }
-    static const State& state(const auto& self) {
-      return self.index_;
-    }
-
-    static void test_if_cmp([[maybe_unused]] const auto& i1, [[maybe_unused]] const auto& i2) {
-      assert(i1.offset_begin_ == i2.offset_begin_);
-      assert(i1.value_begin_ == i2.value_begin_);
-    }
-  };
-
-public:
-  template<bool tConst>
-  struct Iterator : public IteratorFacade<Iterator<tConst>, iter_provider::Map<IterProv<tConst>>> {
-    friend IterProv<tConst>;
-    using CValue = ConditionalConst<tConst, Value>;
+  template<bool IsConst>
+  struct Iterator
+      : public StateIteratorFacade<
+          iter::ValueTypes<std::span<ConditionalConst<IsConst, Value>>, std::ptrdiff_t>> {
+    using DValue = std::span<ConditionalConst<IsConst, Value>>;
+    using CValue = ConditionalConst<IsConst, Value>;
     using CSpan = std::span<CValue>;
+
+    friend StateIteratorFacade<iter::ValueTypes<DValue, std::ptrdiff_t>>;
 
     Iterator(const Size* offset_begin, CValue* value_begin, Size index)
         : index_(index), offset_begin_(offset_begin), value_begin_(value_begin) {}
 
   private:
+    DValue value() const {
+      return span_impl<IsConst>(value_begin_, offset_begin_ + index_);
+    }
+    auto& state(this auto& self) {
+      return self.index_;
+    }
+
+    void test_if_cmp([[maybe_unused]] const auto& other) const {
+      assert(offset_begin_ == other.offset_begin_);
+      assert(value_begin_ == other.value_begin_);
+    }
+
     Size index_;
     const Size* offset_begin_;
     CValue* value_begin_;
@@ -243,12 +232,12 @@ public:
   }
 
 private:
-  template<bool tConst>
-  static std::span<ConditionalConst<tConst, Value>>
-  span_impl(ConditionalConst<tConst, Value>* value_begin, const Size* offset_current) {
+  template<bool IsConst>
+  static std::span<ConditionalConst<IsConst, Value>>
+  span_impl(ConditionalConst<IsConst, Value>* value_begin, const Size* offset_current) {
     assert(offset_current[0] <= offset_current[1]);
-    return std::span<ConditionalConst<tConst, Value>>(value_begin + offset_current[0],
-                                                      value_begin + offset_current[1]);
+    return std::span<ConditionalConst<IsConst, Value>>(value_begin + offset_current[0],
+                                                       value_begin + offset_current[1]);
   }
 
   SizeStorage offsets_;

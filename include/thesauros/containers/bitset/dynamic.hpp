@@ -15,6 +15,7 @@
 #include <cstddef>
 #include <limits>
 #include <memory>
+#include <type_traits>
 
 #include "thesauros/containers/array.hpp"
 #include "thesauros/containers/bitset/iterator.hpp"
@@ -23,6 +24,11 @@
 #include "thesauros/utility/multi-bit-reference.hpp"
 
 namespace thes {
+/**
+ * A bitset whose bits are packed into chunks of `TChunk`, growing dynamically via `push_back` and
+ * `resize`. Models `std::ranges::sized_range` and `std::ranges::random_access_range`, with a
+ * writable `iterator` in addition to the read-only `const_iterator`.
+ */
 template<std::unsigned_integral TChunk = std::size_t, typename TAllocator = std::allocator<TChunk>>
 struct DynamicBitset {
   static_assert(std::numeric_limits<TChunk>::radix == 2);
@@ -30,8 +36,16 @@ struct DynamicBitset {
   static constexpr std::size_t chunk_byte_num = sizeof(Chunk);
   static constexpr std::size_t chunk_bit_num = CHAR_BIT * chunk_byte_num;
 
+  using value_type = bool;
+  using size_type = std::size_t;
+  using difference_type = std::ptrdiff_t;
   using MutBitRef = MutableBitReference<chunk_byte_num>;
-  using const_iterator = detail::BitsetIterator<DynamicBitset>;
+  using reference = MutBitRef;
+  using const_reference = bool;
+  template<bool IsConst>
+  using BaseIterator = detail::BitsetIterator<DynamicBitset, IsConst>;
+  using iterator = BaseIterator<false>;
+  using const_iterator = BaseIterator<true>;
 
   DynamicBitset() = default;
   explicit DynamicBitset(std::size_t size) : chunks_(div_ceil(size, chunk_bit_num)), size_{size} {}
@@ -53,7 +67,7 @@ struct DynamicBitset {
     return chunks_[index / chunk_bit_num] & mask(index % chunk_bit_num);
   }
 
-  // Return true if set, false if already set
+  /** Atomically sets a bit, returning whether it was previously unset. */
   [[nodiscard]] bool set_if_unset(std::size_t index) {
     assert(index < size_);
     const auto index_mask = mask(index % chunk_bit_num);
@@ -102,27 +116,36 @@ struct DynamicBitset {
     std::fill(chunks_.begin(), chunks_.end(), value ? one_chunk : zero_chunk);
   }
 
-  bool operator[](std::size_t index) const {
-    return get(index);
-  }
-  MutBitRef operator[](std::size_t i) {
-    assert(i < size_);
-    return MutBitRef{chunks_[i / chunk_bit_num], i % chunk_bit_num};
+  /** Indexed access: `bool` on a `const` bitset, an assignable `MutBitRef` otherwise. */
+  template<typename Self>
+  [[nodiscard]] auto operator[](this Self& self, std::size_t index) {
+    if constexpr (std::is_const_v<Self>) {
+      return self.get(index);
+    } else {
+      assert(index < self.size_);
+      return MutBitRef{self.chunks_[index / chunk_bit_num], index % chunk_bit_num};
+    }
   }
 
-  constexpr const_iterator begin() const {
-    return const_iterator{0, *this};
+  /** Yields `const_iterator` on a `const` bitset, the writable `iterator` otherwise. */
+  template<typename Self>
+  [[nodiscard]] constexpr auto begin(this Self& self) {
+    return BaseIterator<std::is_const_v<Self>>{0, self};
   }
-  constexpr const_iterator end() const {
-    return const_iterator{size_, *this};
+  template<typename Self>
+  [[nodiscard]] constexpr auto end(this Self& self) {
+    return BaseIterator<std::is_const_v<Self>>{self.size_, self};
+  }
+  [[nodiscard]] constexpr const_iterator cbegin() const {
+    return begin();
+  }
+  [[nodiscard]] constexpr const_iterator cend() const {
+    return end();
   }
 
 private:
   static constexpr Chunk zero_chunk{0};
   static constexpr Chunk one_chunk{static_cast<Chunk>(~zero_chunk)};
-
-  DynamicArray<Chunk, DefaultInit, DoublingGrowth, TAllocator> chunks_{};
-  std::size_t size_{0};
 
   template<typename TCounter>
   std::size_t count(TCounter counter) const {
@@ -145,6 +168,9 @@ private:
   static constexpr Chunk mask(std::size_t i) {
     return Chunk(Chunk{1} << i);
   }
+
+  DynamicArray<Chunk, DefaultInit, DoublingGrowth, TAllocator> chunks_{};
+  std::size_t size_ = 0;
 };
 } // namespace thes
 

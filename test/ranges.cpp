@@ -57,14 +57,14 @@ int main() {
 
   {
     static constexpr auto r_base = thes::range(10);
-    static constexpr auto r = thes::transform_range([](auto v) { return 2 * v; }, r_base);
+    static constexpr auto r = r_base | std::views::transform([](auto v) { return 2 * v; });
     static_assert(thes::test::range_eq(r, std::array{0, 2, 4, 6, 8, 10, 12, 14, 16, 18}));
     static_assert(r.begin()[1] == 2);
   }
 
   {
     static constexpr auto r_base = thes::range(10);
-    static constexpr auto r_trans = thes::transform_range([](auto v) { return 2 * v; }, r_base);
+    static constexpr auto r_trans = r_base | std::views::transform([](auto v) { return 2 * v; });
     static constexpr auto r = thes::value_range(r_trans.begin(), r_trans.end());
     static_assert(thes::test::range_eq(r, std::array{0, 2, 4, 6, 8, 10, 12, 14, 16, 18}));
     static_assert(r.begin()[1] == 2);
@@ -89,7 +89,7 @@ int main() {
 
   {
     static constexpr auto r_base = thes::range(10);
-    static constexpr auto r = thes::transform_range([](auto v) { return 2 * v; }, r_base);
+    static constexpr auto r = r_base | std::views::transform([](auto v) { return 2 * v; });
     static_assert(thes::reduce(r, 0, std::plus{}) == 90);
   }
 

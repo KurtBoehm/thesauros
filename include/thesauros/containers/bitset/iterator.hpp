@@ -8,41 +8,44 @@
 #define INCLUDE_THESAUROS_CONTAINERS_BITSET_ITERATOR_HPP
 
 #include <cassert>
-#include <climits>
 #include <cstddef>
+#include <memory>
+#include <type_traits>
 
 #include "thesauros/iterator.hpp"
 
 namespace thes::detail {
-struct BitsetIterStateProv {
-  struct IterTypes : public iter_provider::ValueTypes<bool, std::ptrdiff_t> {
-    using IterState = std::size_t;
-  };
+/**
+ * An iterator over `Bitset`. If `IsConst` is `false`, dereferencing yields `Bitset::MutBitRef`,
+ * allowing bits to be assigned to through the iterator; otherwise it yields `bool` by value.
+ */
+template<typename Bitset, bool IsConst>
+struct BitsetIterator
+    : public StateIteratorFacade<iter::ValueTypes<
+        std::conditional_t<IsConst, bool, typename Bitset::MutBitRef>, std::ptrdiff_t>> {
+  using Facade = StateIteratorFacade<iter::ValueTypes<
+    std::conditional_t<IsConst, bool, typename Bitset::MutBitRef>, std::ptrdiff_t>>;
+  friend Facade;
 
-  static constexpr std::size_t& state(auto& self) {
-    return self.idx_;
-  }
-  static constexpr const std::size_t& state(const auto& self) {
-    return self.idx_;
-  }
-  static constexpr bool deref(const auto& self) {
-    return self.self_.get(self.idx_);
-  }
-  static constexpr void test_if_cmp([[maybe_unused]] const auto& i1,
-                                    [[maybe_unused]] const auto& i2) {
-    assert(&i1.self_ == &i2.self_);
-  }
-};
+  using Container = std::conditional_t<IsConst, const Bitset, Bitset>;
 
-template<typename TBitset>
-struct BitsetIterator : public IteratorFacade<BitsetIterator<TBitset>,
-                                              iter_provider::Map<detail::BitsetIterStateProv>> {
-  friend detail::BitsetIterStateProv;
-  constexpr BitsetIterator(std::size_t idx, const TBitset& self) : idx_(idx), self_(self) {}
+  constexpr BitsetIterator() = default;
+  constexpr BitsetIterator(std::size_t idx, Container& self)
+      : idx_(idx), self_(std::addressof(self)) {}
 
 private:
-  std::size_t idx_;
-  const TBitset& self_;
+  [[nodiscard]] constexpr decltype(auto) value() const {
+    return (*self_)[idx_];
+  }
+  [[nodiscard]] constexpr auto& state(this auto& self) {
+    return self.idx_;
+  }
+  constexpr void test_if_cmp([[maybe_unused]] const BitsetIterator& other) const {
+    assert(self_ == other.self_);
+  }
+
+  std::size_t idx_{};
+  Container* self_{};
 };
 } // namespace thes::detail
 

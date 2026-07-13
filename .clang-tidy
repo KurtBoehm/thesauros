@@ -45,6 +45,10 @@ CheckOptions:
   - { key: readability-identifier-naming.EnumCase, value: CamelCase }
   - { key: readability-identifier-naming.TypeAliasCase, value: CamelCase }
   - {
+      key: readability-identifier-naming.TypeAliasIgnoredRegexp,
+      value: "^(const_)?(iterator|reverse_iterator|reference|pointer)$|^(value|size|difference|key|mapped|allocator|char|traits|hasher|key_equal)_type$",
+    }
+  - {
       key: readability-identifier-naming.TemplateParameterCase,
       value: CamelCase,
     }

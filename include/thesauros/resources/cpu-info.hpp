@@ -411,9 +411,10 @@ struct CpuInfo {
 
 #if THES_USE_IOKIT
     const auto& topo = detail::apple_cpu_topology();
-    return std::ranges::count_if(topo, [efficiency_class](const detail::CpuEntry& entry) {
+    auto count = std::ranges::count_if(topo, [efficiency_class](const detail::CpuEntry& entry) {
       return entry.efficiency_class == efficiency_class;
     });
+    return *safe_cast<std::size_t>(count);
 #else
     const auto levels = detail::read_perflevels();
     return std::ranges::fold_left(

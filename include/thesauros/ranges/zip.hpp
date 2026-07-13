@@ -20,44 +20,40 @@ struct ZipRange {
   using Value = Tuple<decltype(*std::declval<typename std::decay_t<TRanges>::const_iterator>())...>;
   using Iterators = Tuple<typename std::decay_t<TRanges>::const_iterator...>;
 
-private:
-  struct IterProv {
-    // TODO Replace ptrdiff_t?
-    using IterTypes = iter_provider::ValueTypes<Value, std::ptrdiff_t>;
+  struct ConstIterator : public IteratorFacade<iter::ValueTypes<Value, std::ptrdiff_t>> {
+    friend IteratorFacade<iter::ValueTypes<Value, std::ptrdiff_t>>;
 
-    static constexpr Value deref(auto& self) {
-      return self.its_ | star::transform([](const auto& it) -> decltype(auto) { return *it; }) |
-             star::to_tuple;
-    }
-    static constexpr void incr(auto& self) {
-      self.its_ | star::for_each([](auto& it) { ++it; });
-    }
-    static constexpr bool eq(auto& its1, auto& its2) {
-      assert(star::transform([](auto i1, auto i2) { return i1 == i2; }, its1.its_, its2.its_) |
-             star::has_unique_value);
-      return star::get_at<0>(its1.its_) == star::get_at<0>(its2.its_);
-    }
-  };
-
-public:
-  struct const_iterator : public IteratorFacade<const_iterator, IterProv> {
-    friend IterProv;
-    constexpr const_iterator() = default;
-    explicit constexpr const_iterator(Iterators&& iterators) : its_(std::move(iterators)) {}
+    constexpr ConstIterator() = default;
+    explicit constexpr ConstIterator(Iterators&& iterators) : its_(std::move(iterators)) {}
 
   private:
+    constexpr Value deref() const {
+      return its_ | star::transform([](const auto& it) -> decltype(auto) { return *it; }) |
+             star::to_tuple;
+    }
+    constexpr void incr() {
+      its_ | star::for_each([](auto& it) { ++it; });
+    }
+    constexpr bool eq(const ConstIterator& other) const {
+      assert(star::transform([](auto i1, auto i2) { return i1 == i2; }, its_, other.its_) |
+             star::has_unique_value);
+      return star::get_at<0>(its_) == star::get_at<0>(other.its_);
+    }
+
     Iterators its_{};
   };
 
+  using const_iterator = ConstIterator;
+
   explicit constexpr ZipRange(TRanges&&... ranges) : ranges_{std::forward<TRanges>(ranges)...} {}
 
-  constexpr const_iterator begin() const {
-    return const_iterator(ranges_ | star::transform([](const auto& r) { return std::begin(r); }) |
-                          star::to_tuple);
+  constexpr ConstIterator begin() const {
+    return ConstIterator(ranges_ | star::transform([](const auto& r) { return std::begin(r); }) |
+                         star::to_tuple);
   }
-  constexpr const_iterator end() const {
-    return const_iterator(ranges_ | star::transform([](const auto& r) { return std::end(r); }) |
-                          star::to_tuple);
+  constexpr ConstIterator end() const {
+    return ConstIterator(ranges_ | star::transform([](const auto& r) { return std::end(r); }) |
+                         star::to_tuple);
   }
 
   constexpr auto size() const {

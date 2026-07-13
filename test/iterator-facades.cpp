@@ -9,7 +9,7 @@
 #include <ranges>
 #include <vector>
 
-#include "thesauros/iterator/facades.hpp"
+#include "thesauros/iterator.hpp"
 #include "thesauros/test/test.hpp"
 
 namespace {
@@ -17,49 +17,34 @@ namespace {
 // A random-access iterator with no external state, wrapping a raw pointer directly
 //====================================================================================================
 
-struct PointerIter;
-
-struct PointerIterProvider {
-  using IterTypes = thes::iter_provider::DefaultTypes<int, std::ptrdiff_t>;
-
-  static int& deref(const PointerIter& self);
-  static void incr(PointerIter& self);
-  static void decr(PointerIter& self);
-  static bool eq(const PointerIter& d1, const PointerIter& d2);
-  static void iadd(PointerIter& self, std::ptrdiff_t n);
-  static std::ptrdiff_t sub(const PointerIter& d1, const PointerIter& d2);
-  static std::strong_ordering three_way(const PointerIter& d1, const PointerIter& d2);
-};
-
-struct PointerIter : thes::IteratorFacade<PointerIter, PointerIterProvider> {
+struct PointerIter : thes::IteratorFacade<thes::iter::DefaultTypes<int, std::ptrdiff_t>> {
   PointerIter() = default;
   explicit PointerIter(int* p) : ptr{p} {}
 
+  [[nodiscard]] int& deref() const {
+    return *ptr;
+  }
+  void incr() {
+    ++ptr;
+  }
+  void decr() {
+    --ptr;
+  }
+  [[nodiscard]] bool eq(const PointerIter& other) const {
+    return ptr == other.ptr;
+  }
+  void iadd(std::ptrdiff_t n) {
+    ptr += n;
+  }
+  [[nodiscard]] std::ptrdiff_t sub(const PointerIter& other) const {
+    return ptr - other.ptr;
+  }
+  [[nodiscard]] std::strong_ordering three_way(const PointerIter& other) const {
+    return ptr <=> other.ptr;
+  }
+
   int* ptr = nullptr;
 };
-
-inline int& PointerIterProvider::deref(const PointerIter& self) {
-  return *self.ptr;
-}
-inline void PointerIterProvider::incr(PointerIter& self) {
-  ++self.ptr;
-}
-inline void PointerIterProvider::decr(PointerIter& self) {
-  --self.ptr;
-}
-inline bool PointerIterProvider::eq(const PointerIter& d1, const PointerIter& d2) {
-  return d1.ptr == d2.ptr;
-}
-inline void PointerIterProvider::iadd(PointerIter& self, std::ptrdiff_t n) {
-  self.ptr += n;
-}
-inline std::ptrdiff_t PointerIterProvider::sub(const PointerIter& d1, const PointerIter& d2) {
-  return d1.ptr - d2.ptr;
-}
-inline std::strong_ordering PointerIterProvider::three_way(const PointerIter& d1,
-                                                           const PointerIter& d2) {
-  return d1.ptr <=> d2.ptr;
-}
 
 void test_pointer_like_random_access() {
   static_assert(std::random_access_iterator<PointerIter>);
@@ -100,40 +85,37 @@ void test_pointer_like_random_access() {
 }
 
 //====================================================================================================
-// A bidirectional-only iterator using explicit facade state (a strided iterator)
+// A bidirectional-only iterator built on `StateFacade`, using a strided pointer as state
 //====================================================================================================
 
 struct StridedState {
-  int* ptr;
-  std::ptrdiff_t stride;
-};
+  int* ptr = nullptr;
+  std::ptrdiff_t stride = 1;
 
-struct StridedIterProvider {
-  using IterTypes = thes::iter_provider::DefaultTypes<int, std::ptrdiff_t>;
-  using FacadeState = StridedState;
-
-  static int& deref(const StridedState& self) {
-    return *self.ptr;
+  constexpr StridedState& operator++() {
+    ptr += stride;
+    return *this;
   }
-  static void incr(StridedState& self) {
-    self.ptr += self.stride;
+  constexpr StridedState& operator--() {
+    ptr -= stride;
+    return *this;
   }
-  static void decr(StridedState& self) {
-    self.ptr -= self.stride;
-  }
-  static bool eq(const StridedState& d1, const StridedState& d2) {
-    return d1.ptr == d2.ptr;
+  friend constexpr bool operator==(const StridedState& s1, const StridedState& s2) {
+    return s1.ptr == s2.ptr;
   }
 };
 
-struct StridedIter : thes::IteratorFacade<StridedIter, StridedIterProvider> {
+struct StridedIter : thes::StateIteratorFacade<thes::iter::DefaultTypes<int, std::ptrdiff_t>> {
   StridedIter() = default;
-  StridedIter(int* ptr, std::ptrdiff_t stride) : state_{ptr, stride} {}
+  StridedIter(int* ptr, std::ptrdiff_t stride) : state_{.ptr = ptr, .stride = stride} {}
 
-  StridedState& state() {
+  [[nodiscard]] int& value() const {
+    return *state_.ptr;
+  }
+  [[nodiscard]] StridedState& state() {
     return state_;
   }
-  const StridedState& state() const {
+  [[nodiscard]] const StridedState& state() const {
     return state_;
   }
 
@@ -141,7 +123,7 @@ private:
   StridedState state_{};
 };
 
-void test_strided_bidirectional_with_facade_state() {
+void test_strided_bidirectional_with_state_facade() {
   static_assert(std::bidirectional_iterator<StridedIter>);
   static_assert(!std::random_access_iterator<StridedIter>);
 
@@ -163,56 +145,59 @@ void test_strided_bidirectional_with_facade_state() {
 }
 
 //====================================================================================================
-// A value-returning random-access iterator with custom `isub` and `get_item`
+// A value-returning random-access iterator with counting state and a custom `get_item`
 //====================================================================================================
 
 struct CountingState {
   int value = 0;
+  int incr_calls = 0;
   int add_calls = 0;
+  int decr_calls = 0;
   int sub_calls = 0;
   mutable int get_item_calls = 0;
-};
 
-struct CountingIterProvider {
-  using IterTypes = thes::iter_provider::ValueTypes<int, std::ptrdiff_t>;
-  using FacadeState = CountingState;
+  constexpr CountingState& operator++() {
+    ++value;
+    ++incr_calls;
+    return *this;
+  }
+  constexpr CountingState& operator+=(std::ptrdiff_t n) {
+    value += static_cast<int>(n);
+    ++add_calls;
+    return *this;
+  }
 
-  static int deref(const CountingState& self) {
-    return self.value;
+  constexpr CountingState& operator--() {
+    --value;
+    ++decr_calls;
+    return *this;
   }
-  static void incr(CountingState& self) {
-    self.value += 1;
+  constexpr CountingState& operator-=(std::ptrdiff_t n) {
+    value -= static_cast<int>(n);
+    ++sub_calls;
+    return *this;
   }
-  static void decr(CountingState& self) {
-    self.value -= 1;
+
+  friend constexpr std::ptrdiff_t operator-(const CountingState& s1, const CountingState& s2) {
+    return s1.value - s2.value;
   }
-  static bool eq(const CountingState& d1, const CountingState& d2) {
-    return d1.value == d2.value;
-  }
-  static void iadd(CountingState& self, std::ptrdiff_t n) {
-    self.value += static_cast<int>(n);
-    ++self.add_calls;
-  }
-  static void isub(CountingState& self, std::ptrdiff_t n) {
-    self.value -= static_cast<int>(n);
-    ++self.sub_calls;
-  }
-  static std::ptrdiff_t sub(const CountingState& d1, const CountingState& d2) {
-    return d1.value - d2.value;
-  }
-  static std::strong_ordering three_way(const CountingState& d1, const CountingState& d2) {
-    return d1.value <=> d2.value;
-  }
-  static int get_item(const CountingState& self, std::ptrdiff_t n) {
-    ++self.get_item_calls;
-    return self.value + static_cast<int>(n);
+  friend constexpr std::strong_ordering operator<=>(const CountingState& s1,
+                                                    const CountingState& s2) {
+    return s1.value <=> s2.value;
   }
 };
 
-struct CountingIter : thes::IteratorFacade<CountingIter, CountingIterProvider> {
+struct CountingIter : thes::StateIteratorFacade<thes::iter::ValueTypes<int, std::ptrdiff_t>> {
   CountingIter() = default;
   explicit CountingIter(int value) : state_{.value = value} {}
 
+  int value() const {
+    return state_.value;
+  }
+  int get_item(std::ptrdiff_t n) const {
+    ++state_.get_item_calls;
+    return state_.value + static_cast<int>(n);
+  }
   CountingState& state() {
     return state_;
   }
@@ -224,7 +209,7 @@ private:
   CountingState state_{};
 };
 
-void test_value_iterator_with_custom_isub_and_get_item() {
+void test_counting_iterator_with_custom_get_item() {
   static_assert(std::random_access_iterator<CountingIter>);
   static_assert(std::same_as<std::iter_value_t<CountingIter>, int>);
 
@@ -253,31 +238,27 @@ void test_value_iterator_with_custom_isub_and_get_item() {
 
 struct ForwardOnlyState {
   int value = 0;
-};
 
-struct ForwardOnlyProvider {
-  using IterTypes = thes::iter_provider::ValueTypes<int, std::ptrdiff_t>;
-  using FacadeState = ForwardOnlyState;
-
-  static int deref(const ForwardOnlyState& self) {
-    return self.value;
+  constexpr ForwardOnlyState& operator++() {
+    ++value;
+    return *this;
   }
-  static void incr(ForwardOnlyState& self) {
-    self.value += 1;
-  }
-  static bool eq(const ForwardOnlyState& d1, const ForwardOnlyState& d2) {
-    return d1.value == d2.value;
+  friend constexpr bool operator==(const ForwardOnlyState& s1, const ForwardOnlyState& s2) {
+    return s1.value == s2.value;
   }
 };
 
-struct ForwardOnlyIter : thes::IteratorFacade<ForwardOnlyIter, ForwardOnlyProvider> {
+struct ForwardOnlyIter : thes::StateIteratorFacade<thes::iter::ValueTypes<int, std::ptrdiff_t>> {
   ForwardOnlyIter() = default;
   explicit ForwardOnlyIter(int value) : state_{value} {}
 
-  ForwardOnlyState& state() {
+  [[nodiscard]] int value() const {
+    return state_.value;
+  }
+  [[nodiscard]] ForwardOnlyState& state() {
     return state_;
   }
-  const ForwardOnlyState& state() const {
+  [[nodiscard]] const ForwardOnlyState& state() const {
     return state_;
   }
 
@@ -300,8 +281,8 @@ void test_forward_only_iterator() {
 
 int main() {
   test_pointer_like_random_access();
-  test_strided_bidirectional_with_facade_state();
-  test_value_iterator_with_custom_isub_and_get_item();
+  test_strided_bidirectional_with_state_facade();
+  test_counting_iterator_with_custom_get_item();
   test_forward_only_iterator();
 
   fmt::print("All tests passed.\n");
