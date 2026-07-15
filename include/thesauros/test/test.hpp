@@ -7,160 +7,364 @@
 #ifndef INCLUDE_THESAUROS_TEST_TEST_HPP
 #define INCLUDE_THESAUROS_TEST_TEST_HPP
 
-#include <cstdlib>
-#include <functional>
+#include <concepts>
+#include <cstddef>
+#include <exception>
 #include <source_location>
+#include <string>
 #include <string_view>
-#include <type_traits>
+#include <utility>
+#include <vector>
 
 #include "thesauros/format.hpp"
-#include "thesauros/functional/no-op.hpp"
-#include "thesauros/io.hpp"
-#include "thesauros/types/value-tag.hpp"
 
 namespace thes::test {
-#define THES_ALWAYS_ASSERT(expr) ((expr) ? void(0) : ::thes::test::assert_fail(#expr, [] {}))
-#define THES_ALWAYS_ASSERT_ACTION(expr, action) \
-  ((expr) ? void(0) : ::thes::test::assert_fail(#expr, action))
+//==================================================================================================
+// Core types
+//==================================================================================================
 
-#ifdef NDEBUG
-#define THES_ASSERT(expr)
-#define THES_ASSERT_ACTION(expr, action)
-#else
-#define THES_ASSERT(expr) THES_ALWAYS_ASSERT(expr)
-#define THES_ASSERT_ACTION(expr, action) THES_ALWAYS_ASSERT_ACTION(expr, action)
-#endif
-
-/** Fails the current test, prints location, executes `fun`, then aborts. */
-inline void assert_fail(const char* assertion, auto fun,
-                        const std::source_location location = std::source_location::current()) {
-  fmt::print(stderr, "Assertion “{}” failed in {} @ {}:{}:{}\n", assertion,
-             location.function_name(), location.file_name(), location.line(), location.column());
-  fun();
-  std::abort();
-}
-
-namespace detail {
-template<typename TRange>
-concept IsIterRange = requires(TRange&& r) {
-  std::begin(r);
-  std::end(r);
+/** The outcome of a single check or require. */
+struct CheckResult {
+  bool passed{};
+  std::string expression{};
+  std::string message{};
+  std::source_location location{};
 };
-template<typename TRange>
-concept IsAccessRange = requires(TRange&& r) { r[r.size()]; };
 
-template<typename TRange1, typename TRange2>
-concept AreIterRanges = IsIterRange<TRange1> && IsIterRange<TRange2>;
-template<typename TRange1, typename TRange2>
-concept AreAccessRanges = IsAccessRange<TRange1> && IsAccessRange<TRange2>;
+/** A single named test case registered via `THES_TEST_CASE`. */
+struct TestCase {
+  using Fn = void (*)();
 
-template<typename TRange1, typename TRange2>
-concept AreRanges = AreIterRanges<TRange1, TRange2> || AreAccessRanges<TRange1, TRange2>;
-} // namespace detail
+  std::string_view name{};
+  std::string_view tags{};
+  Fn function{};
+};
 
-template<typename TRange1, typename TRange2, typename TEqual = std::equal_to<>,
-         typename TPrint = NoOp<>>
-constexpr bool range_eq(TRange1&& r1, TRange2&& r2, TEqual equal = {}, TPrint printer = {}) {
-  static_assert(detail::AreRanges<TRange1, TRange2>);
+/** Thrown by `THES_REQUIRE` to abort the current test case after a failed check. */
+struct AssertionFailure : std::exception {
+  explicit AssertionFailure(std::string_view expression) : expression_{expression} {}
 
-  if constexpr (detail::AreIterRanges<TRange1, TRange2>) {
-    auto it1 = std::begin(r1);
-    auto end1 = std::end(r1);
-    auto it2 = std::begin(r2);
-    auto end2 = std::end(r2);
+  [[nodiscard]] const char* what() const noexcept override {
+    return expression_.c_str();
+  }
 
-    constexpr bool print = !AnyNoOp<TPrint>;
-    if constexpr (print) {
-      printer("range_eq: ");
+private:
+  std::string expression_{};
+};
+
+//==================================================================================================
+// Registry
+//==================================================================================================
+
+/** Collects all registered test cases and runs them in registration order. */
+struct Registry {
+  static Registry& instance() {
+    static Registry inst{};
+    return inst;
+  }
+
+  void add(TestCase tc) {
+    cases.push_back(tc);
+  }
+
+  void record(CheckResult res) {
+    if (!res.passed) {
+      ++current_failures;
     }
-    std::size_t counter = 0;
-    for (Delimiter delim{", "}; it1 != end1 && it2 != end2; ++it1, ++it2) {
-      if constexpr (print) {
-        printer("{}", delim);
-        printer(rainbow_fg(counter++), "{}/{}", *it1, *it2);
+    results.push_back(std::move(res));
+  }
+
+  /** Runs every registered test case and returns a process exit code. */
+  int run() {
+    std::size_t total_checks{};
+    std::size_t failed_checks{};
+    std::size_t failed_cases{};
+
+    for (const auto& tc : cases) {
+      results.clear();
+      current_failures = 0;
+
+      fmt::print("[ RUN      ] {}\n", tc.name);
+      try {
+        tc.function();
+      } catch (const std::exception& error) {
+        fmt::print("  Uncaught exception: {}\n", error.what());
+        ++current_failures;
+      } catch (...) {
+        fmt::print("  Uncaught exception of unknown type.\n");
+        ++current_failures;
       }
-      if (!equal(*it1, *it2)) {
-        if constexpr (print) {
-          printer("\n");
+
+      for (const auto& res : results) {
+        ++total_checks;
+        if (!res.passed) {
+          ++failed_checks;
+          fmt::print("  FAILED: {}\n", res.expression);
+          if (!res.message.empty()) {
+            fmt::print("    reason: {}\n", res.message);
+          }
+          fmt::print("    at {}:{}\n", res.location.file_name(), res.location.line());
         }
-        return false;
       }
-    }
-    if constexpr (print) {
-      printer("\n");
-    }
-    return (it1 == end1) == (it2 == end2);
-  }
-  if constexpr (detail::AreAccessRanges<TRange1, TRange2>) {
-    const auto size1 = r1.size();
-    const auto size2 = r2.size();
-    if (size1 != size2) {
-      return false;
+
+      fmt::print("[{}] {}\n", current_failures > 0 ? "  FAILED  " : "       OK ", tc.name);
+      failed_cases += current_failures > 0 ? 1 : 0;
     }
 
-    auto i1 = [] {
-      using Range1 = std::decay_t<TRange1>;
-      if constexpr (requires { typename Range1::size_type; }) {
-        return typename Range1::size_type{};
-      } else if constexpr (std::ranges::range<Range1>) {
-        return std::ranges::range_difference_t<Range1>{};
-      } else {
-        return std::decay_t<decltype(size1)>{};
-      }
-    }();
-    std::decay_t<decltype(size2)> i2 = 0;
+    fmt::print("\n");
+    fmt::print("{}/{} test cases passed, {}/{} checks passed.\n", cases.size() - failed_cases,
+               cases.size(), total_checks - failed_checks, total_checks);
 
-    for (; i1 < size1 && i2 < size2; ++i1, ++i2) {
-      if (r1[i1] != r2[i2]) {
-        return false;
-      }
-    }
-    return true;
-  }
-}
-template<typename TPrint>
-inline bool string_eq(const std::string_view s1, const std::string_view s2, TPrint printer) {
-  const bool eq = s1 == s2;
-
-  if constexpr (!AnyNoOp<TPrint>) {
-    if (eq) {
-      printer(fg_green, "{}\n", s1);
-    } else {
-      for (Delimiter delim{", "}; char c : s1) {
-        printer("{}{}", delim, int(c));
-      }
-      printer(" vs. ");
-      for (Delimiter delim{", "}; char c : s2) {
-        printer("{}{}", delim, int(c));
-      }
-      printer("\n");
-
-      printer("{} {} {}\n", fmt::styled(s1, fg_red), eq ? "==" : "!=", fmt::styled(s2, fg_red));
-    }
+    return failed_cases == 0 ? 0 : 1;
   }
 
-  return eq;
-}
+  std::vector<TestCase> cases{};
+  std::vector<CheckResult> results{};
+  std::size_t current_failures{};
+};
 
-struct StringEqPrinter {
-  template<typename... TArgs>
-  void operator()(fmt::format_string<TArgs...> fmt, TArgs&&... args) {
-    fmt::print(fmt, std::forward<TArgs>(args)...);
-  }
-  template<typename... TArgs>
-  void operator()(const fmt::text_style& ts, fmt::format_string<TArgs...> fmt, TArgs&&... args) {
-    fmt::print(ts, fmt, std::forward<TArgs>(args)...);
+//==================================================================================================
+// Registration helper
+//==================================================================================================
+
+/** Registers a `TestCase` with the `Registry` during static initialization. */
+struct AutoRegister {
+  AutoRegister(std::string_view name, std::string_view tags, TestCase::Fn function) noexcept {
+    Registry::instance().add({.name = name, .tags = tags, .function = function});
   }
 };
 
-template<bool tVerbose = true>
-inline bool string_eq(const std::string_view s1, const auto& v, BoolTag<tVerbose> verbose = {}) {
-  const auto s2 = fmt::format("{}", v);
-  if constexpr (verbose) {
-    return string_eq(s1, std::string_view{s2}, StringEqPrinter{});
+//--------------------------------------------------------------------------------------------------
+// Comparison helpers
+//--------------------------------------------------------------------------------------------------
+
+/**
+ * Compares `lhs` and `rhs` for equality, using `std::cmp_equal` for integral operands to avoid
+ *  sign-compare warnings and pitfalls when their signedness differs.
+ */
+template<typename Lhs, typename Rhs>
+constexpr bool safe_eq(const Lhs& lhs, const Rhs& rhs) {
+  if constexpr (std::integral<Lhs> && std::integral<Rhs>) {
+    return std::cmp_equal(lhs, rhs);
+  } else {
+    return lhs == rhs;
   }
-  return string_eq(s1, std::string_view{s2}, NoOp{});
+}
+
+/** Compares `lhs` and `rhs` for inequality, using `std::cmp_not_equal` for integral operands. */
+template<typename Lhs, typename Rhs>
+constexpr bool safe_ne(const Lhs& lhs, const Rhs& rhs) {
+  if constexpr (std::integral<Lhs> && std::integral<Rhs>) {
+    return std::cmp_not_equal(lhs, rhs);
+  } else {
+    return lhs != rhs;
+  }
+}
+
+//==================================================================================================
+// Expression decomposition
+//==================================================================================================
+
+/** The result of evaluating a (possibly decomposed) expression passed to `THES_CHECK`. */
+struct DecomposedExpression {
+  bool passed{};
+  std::string message{};
+};
+
+/**
+ * Captures the left-hand side of an expression passed to `THES_CHECK`/`THES_REQUIRE`, so that a
+ * subsequent comparison operator, if any, can be intercepted and both operands recorded for a
+ * descriptive failure message; converts directly to a `DecomposedExpression` if no comparison
+ * operator follows, via `to_decomposed()`.
+ */
+template<typename Lhs>
+struct ExpressionCapture {
+  const Lhs& lhs;
+
+  template<typename Rhs>
+  requires(std::equality_comparable_with<Lhs, Rhs>)
+  DecomposedExpression operator==(const Rhs& rhs) const {
+    return compare(safe_eq(lhs, rhs), "==", rhs);
+  }
+
+  template<typename Rhs>
+  requires(std::equality_comparable_with<Lhs, Rhs>)
+  DecomposedExpression operator!=(const Rhs& rhs) const {
+    return compare(safe_ne(lhs, rhs), "!=", rhs);
+  }
+
+  template<typename Rhs>
+  requires(std::totally_ordered_with<Lhs, Rhs>)
+  DecomposedExpression operator<(const Rhs& rhs) const {
+    return compare(lhs < rhs, "<", rhs);
+  }
+
+  template<typename Rhs>
+  requires(std::totally_ordered_with<Lhs, Rhs>)
+  DecomposedExpression operator<=(const Rhs& rhs) const {
+    return compare(lhs <= rhs, "<=", rhs);
+  }
+
+  template<typename Rhs>
+  requires(std::totally_ordered_with<Lhs, Rhs>)
+  DecomposedExpression operator>(const Rhs& rhs) const {
+    return compare(lhs > rhs, ">", rhs);
+  }
+
+  template<typename Rhs>
+  requires(std::totally_ordered_with<Lhs, Rhs>)
+  DecomposedExpression operator>=(const Rhs& rhs) const {
+    return compare(lhs >= rhs, ">=", rhs);
+  }
+
+private:
+  template<typename Rhs>
+  DecomposedExpression compare(bool passed, std::string_view op, const Rhs& rhs) const {
+    std::string message{};
+    if (!passed) {
+      if constexpr (fmt::formattable<Lhs> && fmt::formattable<Rhs>) {
+        message = fmt::format("expected {} {} {}", lhs, op, rhs);
+      } else {
+        message = fmt::format("comparison `{}` failed", op);
+      }
+    }
+    return DecomposedExpression{.passed = passed, .message = std::move(message)};
+  }
+};
+
+/**
+ * Binds to an expression’s left-hand side via `operator<=>`, whose precedence sits between
+ * arithmetic operators (tighter) and equality operators (looser), so a sub-expression like
+ * `it - begin` binds as a single unit before capture, and `== 2` still applies afterward.
+ */
+struct ExpressionDecomposer {
+  template<typename Lhs>
+  ExpressionCapture<Lhs> operator<=>(const Lhs& lhs) const {
+    return ExpressionCapture<Lhs>{.lhs = lhs};
+  }
+};
+
+/** Finalizes the unary case, e.g. `THES_CHECK(some_flag)`, where no comparison operator ran. */
+template<typename Lhs>
+DecomposedExpression to_decomposed(const ExpressionCapture<Lhs>& capture) {
+  const bool passed = static_cast<bool>(capture.lhs);
+  std::string message{};
+  if (!passed) {
+    if constexpr (fmt::formattable<Lhs>) {
+      message = fmt::format("expected {} to be truthy", capture.lhs);
+    }
+  }
+  return DecomposedExpression{.passed = passed, .message = std::move(message)};
+}
+
+/**
+ * Finalizes the binary case, where a comparison operator already produced a `DecomposedExpression`.
+ */
+inline DecomposedExpression to_decomposed(DecomposedExpression expression) {
+  return expression;
+}
+
+//==================================================================================================
+// Assertions
+//==================================================================================================
+
+/** Records a `DecomposedExpression` outcome against the currently running test case. */
+inline void record(DecomposedExpression expression, std::string_view expression_text,
+                   std::source_location location = std::source_location::current()) {
+  Registry::instance().record({
+    .passed = expression.passed,
+    .expression = std::string{expression_text},
+    .message = std::move(expression.message),
+    .location = location,
+  });
+}
+
+/** Returns whether invoking `fn` throws an exception convertible to `Exception`. */
+template<typename Exception, typename Fn>
+requires(std::invocable<Fn>)
+bool throws_as(Fn&& fn) {
+  try {
+    std::forward<Fn>(fn)();
+  } catch (const Exception&) {
+    return true;
+  } catch (...) {
+    return false;
+  }
+  return false;
+}
+
+/** Returns whether invoking `fn` completes without throwing. */
+template<typename Fn>
+requires(std::invocable<Fn>)
+bool does_not_throw(Fn&& fn) {
+  try {
+    std::forward<Fn>(fn)();
+  } catch (...) {
+    return false;
+  }
+  return true;
 }
 } // namespace thes::test
+
+//--------------------------------------------------------------------------------------------------
+// Macros
+//--------------------------------------------------------------------------------------------------
+
+#define THES_CONCAT_(a, b) a##b
+#define THES_CONCAT(a, b) THES_CONCAT_(a, b)
+
+#define THES_TEST_CASE(name, tags) \
+  static void THES_CONCAT(thes_test_case_, __LINE__)(); \
+  static const ::thes::test::AutoRegister THES_CONCAT(thes_test_reg_, __LINE__){ \
+    [] noexcept { \
+      using namespace std::literals::string_view_literals; \
+      return name##sv; \
+    }(), \
+    [] noexcept { \
+      using namespace std::literals::string_view_literals; \
+      return tags##sv; \
+    }(), \
+    &THES_CONCAT(thes_test_case_, __LINE__)}; \
+  static void THES_CONCAT(thes_test_case_, __LINE__)()
+
+#define THES_CHECK(expr) \
+  ::thes::test::record( \
+    ::thes::test::to_decomposed(::thes::test::ExpressionDecomposer{} <=> expr /*NOLINT*/), #expr)
+
+#define THES_CHECK_MESSAGE(expr, msg) \
+  ::thes::test::record(::thes::test::DecomposedExpression{ \
+    .passed = static_cast<bool>(expr), \
+    .message = (msg), \
+  })
+
+#define THES_CHECK_THROWS_AS(expr, exception_type) \
+  ::thes::test::record( \
+    ::thes::test::DecomposedExpression{ \
+      .passed = ::thes::test::throws_as<exception_type>([&] { (void)(expr); }), \
+    }, \
+    #expr " throws " #exception_type)
+
+#define THES_CHECK_NOTHROW(expr) \
+  ::thes::test::record( \
+    ::thes::test::DecomposedExpression{ \
+      .passed = ::thes::test::does_not_throw([&] { (void)(expr); }), \
+    }, \
+    #expr " does not throw")
+
+#define THES_REQUIRE(expr) \
+  ([&](std::source_location thes_location_) { \
+    const auto thes_decomposed_ = \
+      ::thes::test::to_decomposed(::thes::test::ExpressionDecomposer{} <=> expr /*NOLINT*/); \
+    const bool thes_passed_ = thes_decomposed_.passed; \
+    ::thes::test::record(thes_decomposed_, #expr, thes_location_); \
+    if (!thes_passed_) { \
+      throw ::thes::test::AssertionFailure{#expr}; \
+    } \
+  }(std::source_location::current()))
+
+#define THES_TEST_MAIN() \
+  int main() { \
+    return ::thes::test::Registry::instance().run(); \
+  }
 
 #endif // INCLUDE_THESAUROS_TEST_TEST_HPP

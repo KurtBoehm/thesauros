@@ -2,6 +2,8 @@
 #define INCLUDE_THESAUROS_TEST_HPP
 
 // IWYU pragma: begin_exports
+#include "test/assert.hpp"
+#include "test/equality.hpp"
 #include "test/test.hpp"
 // IWYU pragma: end_exports
 

@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "thesauros/iterator.hpp"
-#include "thesauros/test/test.hpp"
+#include "thesauros/test.hpp"
 
 namespace {
 //====================================================================================================
