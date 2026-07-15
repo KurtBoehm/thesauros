@@ -46,42 +46,43 @@ struct PointerIter : thes::IteratorFacade<thes::iter::DefaultTypes<int, std::ptr
   int* ptr = nullptr;
 };
 
-void test_pointer_like_random_access() {
+/** Checks pointer-like arithmetic, comparisons and range-algorithm compatibility. */
+THES_TEST_CASE("pointer-like random access", "[iterator-facades]") {
   static_assert(std::random_access_iterator<PointerIter>);
 
   std::vector<int> data{1, 2, 3, 4, 5};
   PointerIter begin{data.data()};
   PointerIter end{data.data() + data.size()};
 
-  THES_ALWAYS_ASSERT(*begin == 1);
-  THES_ALWAYS_ASSERT(end - begin == 5);
-  THES_ALWAYS_ASSERT(*(begin + 2) == 3);
-  THES_ALWAYS_ASSERT(*(2 + begin) == 3);
-  THES_ALWAYS_ASSERT(begin[3] == 4);
+  THES_REQUIRE(*begin == 1);
+  THES_CHECK(end - begin == 5);
+  THES_CHECK(*(begin + 2) == 3);
+  THES_CHECK(*(2 + begin) == 3);
+  THES_CHECK(begin[3] == 4);
 
   PointerIter it = begin;
   ++it;
-  THES_ALWAYS_ASSERT(*it == 2);
+  THES_REQUIRE(*it == 2);
   it++;
-  THES_ALWAYS_ASSERT(*it == 3);
+  THES_REQUIRE(*it == 3);
   --it;
-  THES_ALWAYS_ASSERT(*it == 2);
+  THES_REQUIRE(*it == 2);
   it--;
-  THES_ALWAYS_ASSERT(*it == 1);
+  THES_CHECK(*it == 1);
 
   it += 4;
-  THES_ALWAYS_ASSERT(*it == 5);
+  THES_REQUIRE(*it == 5);
   it -= 4;
-  THES_ALWAYS_ASSERT(*it == 1);
+  THES_CHECK(*it == 1);
 
-  THES_ALWAYS_ASSERT(begin < end);
-  THES_ALWAYS_ASSERT(begin <= begin);
-  THES_ALWAYS_ASSERT(end > begin);
-  THES_ALWAYS_ASSERT(begin == PointerIter{data.data()});
+  THES_CHECK(begin < end);
+  THES_CHECK(begin <= begin);
+  THES_CHECK(end > begin);
+  THES_CHECK(begin == PointerIter{data.data()});
 
   const auto sum = std::ranges::fold_left(begin, end, 0, std::plus{});
-  THES_ALWAYS_ASSERT(sum == 15);
-  THES_ALWAYS_ASSERT(std::ranges::equal(begin, end, data.begin(), data.end()));
+  THES_CHECK(sum == 15);
+  THES_CHECK(std::ranges::equal(begin, end, data.begin(), data.end()));
 }
 
 //====================================================================================================
@@ -100,7 +101,7 @@ struct StridedState {
     ptr -= stride;
     return *this;
   }
-  friend constexpr bool operator==(const StridedState& s1, const StridedState& s2) {
+  friend constexpr bool operator==(const StridedState& s1, const StridedState& s2) { // NOLINT
     return s1.ptr == s2.ptr;
   }
 };
@@ -123,25 +124,26 @@ private:
   StridedState state_{};
 };
 
-void test_strided_bidirectional_with_state_facade() {
+/** Checks bidirectional stepping and equality for a `StateIteratorFacade`-based iterator. */
+THES_TEST_CASE("strided bidirectional with state facade", "[iterator-facades]") {
   static_assert(std::bidirectional_iterator<StridedIter>);
   static_assert(!std::random_access_iterator<StridedIter>);
 
   std::vector<int> data{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
   StridedIter it{data.data(), 3};
 
-  THES_ALWAYS_ASSERT(*it == 0);
+  THES_REQUIRE(*it == 0);
   ++it;
-  THES_ALWAYS_ASSERT(*it == 3);
+  THES_REQUIRE(*it == 3);
   ++it;
-  THES_ALWAYS_ASSERT(*it == 6);
+  THES_REQUIRE(*it == 6);
   --it;
-  THES_ALWAYS_ASSERT(*it == 3);
+  THES_CHECK(*it == 3);
 
   StridedIter other{data.data() + 3, 3};
-  THES_ALWAYS_ASSERT(it == other);
+  THES_CHECK(it == other);
   ++other;
-  THES_ALWAYS_ASSERT(it != other);
+  THES_CHECK(it != other);
 }
 
 //====================================================================================================
@@ -181,7 +183,7 @@ struct CountingState {
   friend constexpr std::ptrdiff_t operator-(const CountingState& s1, const CountingState& s2) {
     return s1.value - s2.value;
   }
-  friend constexpr std::strong_ordering operator<=>(const CountingState& s1,
+  friend constexpr std::strong_ordering operator<=>(const CountingState& s1, // NOLINT
                                                     const CountingState& s2) {
     return s1.value <=> s2.value;
   }
@@ -209,27 +211,28 @@ private:
   CountingState state_{};
 };
 
-void test_counting_iterator_with_custom_get_item() {
+/** Checks that a custom `get_item` is used for `operator[]` and that call counters advance. */
+THES_TEST_CASE("counting iterator with custom get_item", "[iterator-facades]") {
   static_assert(std::random_access_iterator<CountingIter>);
   static_assert(std::same_as<std::iter_value_t<CountingIter>, int>);
 
   CountingIter it{10};
-  THES_ALWAYS_ASSERT(*it == 10);
-  THES_ALWAYS_ASSERT(it[5] == 15);
-  THES_ALWAYS_ASSERT(it.state().get_item_calls == 1);
+  THES_REQUIRE(*it == 10);
+  THES_CHECK(it[5] == 15);
+  THES_CHECK(it.state().get_item_calls == 1);
 
   it -= 3;
-  THES_ALWAYS_ASSERT(*it == 7);
-  THES_ALWAYS_ASSERT(it.state().sub_calls == 1);
-  THES_ALWAYS_ASSERT(it.state().add_calls == 0);
+  THES_REQUIRE(*it == 7);
+  THES_CHECK(it.state().sub_calls == 1);
+  THES_CHECK(it.state().add_calls == 0);
 
   CountingIter other = it - 2;
-  THES_ALWAYS_ASSERT(*other == 5);
-  THES_ALWAYS_ASSERT(other.state().sub_calls == 2);
+  THES_REQUIRE(*other == 5);
+  THES_CHECK(other.state().sub_calls == 2);
 
-  THES_ALWAYS_ASSERT(it - other == 2);
-  THES_ALWAYS_ASSERT(other < it);
-  THES_ALWAYS_ASSERT(it > other);
+  THES_CHECK(it - other == 2);
+  THES_CHECK(other < it);
+  THES_CHECK(it > other);
 }
 
 //====================================================================================================
@@ -266,7 +269,8 @@ private:
   ForwardOnlyState state_{};
 };
 
-void test_forward_only_iterator() {
+/** Checks that a minimal forward-only iterator works with `std::ranges::fold_left`. */
+THES_TEST_CASE("forward-only iterator", "[iterator-facades]") {
   static_assert(std::forward_iterator<ForwardOnlyIter>);
   static_assert(!std::bidirectional_iterator<ForwardOnlyIter>);
   static_assert(!std::random_access_iterator<ForwardOnlyIter>);
@@ -275,15 +279,8 @@ void test_forward_only_iterator() {
   ForwardOnlyIter end{5};
   const auto sum = std::ranges::fold_left(it, end, 0, std::plus{});
   const auto expected = std::ranges::fold_left(std::views::iota(0, 5), 0, std::plus{});
-  THES_ALWAYS_ASSERT(sum == expected);
+  THES_CHECK(sum == expected);
 }
 } // namespace
 
-int main() {
-  test_pointer_like_random_access();
-  test_strided_bidirectional_with_state_facade();
-  test_counting_iterator_with_custom_get_item();
-  test_forward_only_iterator();
-
-  fmt::print("All tests passed.\n");
-}
+THES_TEST_MAIN()

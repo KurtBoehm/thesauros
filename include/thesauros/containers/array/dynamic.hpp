@@ -12,7 +12,9 @@
 #include <concepts>
 #include <cstddef>
 #include <initializer_list>
+#include <iterator>
 #include <memory>
+#include <type_traits>
 #include <utility>
 
 #include "thesauros/containers/array/growth-policy.hpp"
@@ -20,23 +22,25 @@
 #include "thesauros/containers/array/typed-chunk.hpp"
 
 namespace thes {
-// A generic dynamic array class.
-//
-// The initialization policy `IP` is used to initialize newly created elements when no constructor
-// parameters are given, e.g. in the fixed-size constructor and `resize`.
-//
-// Independently of the initialization policy, many functions (e.g. copy construction and
-// assignment, destruction, `resize`, `push_back`, etc.) assume that all elements are in a state
-// that permits copying or moving (depending on the operation), e.g. the elements
-// need to have been constructed if they are of a class type.
-// If a initialization policy that does not initialize its elements (e.g. `NoInitPolicy`)
-// is used, it is the responsibility of the user to ensure that this assumption is true.
-//
-// In any case, no helper function for initialization is provided, as such a function makes
-// no sense if the elements are implicitly initialized by the initialization policy.
-//
-// The growth policy `GP` determines the growth behaviour when e.g. `resize` or `push_back` are
-// called.
+/**
+ * A generic dynamic array class.
+ *
+ * The initialization policy `IP` is used to initialize newly created elements when no constructor
+ * parameters are given, e.g. in the fixed-size constructor and `resize`.
+ *
+ * Independently of the initialization policy, many functions (e.g. copy construction and
+ * assignment, destruction, `resize`, `push_back`, etc.) assume that all elements are in a state
+ * that permits copying or moving (depending on the operation); the elements need to have been
+ * constructed if they are of a class type. If an initialization policy that does not initialize
+ * its elements (e.g. `NoInit`) is used, it is the responsibility of the user to ensure that this
+ * assumption holds.
+ *
+ * In any case, no helper function for initialization is provided, as such a function makes no
+ * sense if the elements are implicitly initialized by the initialization policy.
+ *
+ * The growth policy `GP` determines the growth behavior when e.g. `resize` or `push_back` are
+ * called.
+ */
 template<typename TValue, typename TInitPolicy = DefaultInit,
          typename TGrowthPolicy = DoublingGrowth, typename TAllocator = std::allocator<TValue>>
 struct DynamicArray {
@@ -47,7 +51,13 @@ struct DynamicArray {
   using Allocator = Data::Allocator;
 
   using value_type = Value;
+  using allocator_type = Allocator;
   using size_type = Size;
+  using difference_type = std::iter_difference_t<TValue*>;
+  using reference = Value&;
+  using const_reference = const Value&;
+  using pointer = Value*;
+  using const_pointer = const Value*;
 
   using iterator = Data::iterator;
   using const_iterator = Data::const_iterator;
@@ -83,7 +93,7 @@ struct DynamicArray {
       : allocation_(std::move(other.allocation_)), data_end_(other.data_end_) {
     other.data_end_ = nullptr;
   }
-  // WARNING Only valid if the data is fully initialized!
+  // Only valid if the data is fully initialized.
   constexpr DynamicArray(const DynamicArray& other)
       : allocation_(other.allocation_.size(), other.allocation_.allocator()),
         data_end_(allocation_.begin() + other.size()) {
@@ -99,20 +109,26 @@ struct DynamicArray {
     other.data_end_ = nullptr;
     return *this;
   }
-  // WARNING Only valid if the data is fully initialized!
+  // Only valid if the data is fully initialized.
   constexpr DynamicArray& operator=(const DynamicArray& other) {
     if (this != &other) {
       destroy();
       allocation_.reallocate_to_destroyed(other.allocation_);
-      std::uninitialized_copy(other.allocation_.begin(), other.data_end_, allocation_.begin());
+      std::uninitialized_copy(other.allocation_.begin(), other.end(), allocation_.begin());
       data_end_ = allocation_.begin() + other.size();
     }
     return *this;
   }
 
-  // WARNING Only valid if the data is fully initialized!
+  // Only valid if the data is fully initialized.
   constexpr ~DynamicArray() {
     destroy();
+  }
+
+  friend constexpr void swap(DynamicArray& lhs, DynamicArray& rhs) noexcept {
+    using std::swap;
+    swap(lhs.allocation_, rhs.allocation_);
+    swap(lhs.data_end_, rhs.data_end_);
   }
 
   template<typename... TArgs>
@@ -142,51 +158,39 @@ struct DynamicArray {
     return allocation_.begin() == data_end_;
   }
 
-  [[nodiscard]] constexpr TValue* data() {
-    return allocation_.data();
-  }
-  [[nodiscard]] constexpr const TValue* data() const {
-    return allocation_.data();
+  [[nodiscard]] constexpr auto data(this auto&& self) {
+    return self.allocation_.data();
   }
 
-  [[nodiscard]] constexpr iterator begin() noexcept {
-    return allocation_.begin();
+  [[nodiscard]] constexpr auto begin(this auto&& self) noexcept {
+    return self.allocation_.begin();
   }
-  [[nodiscard]] constexpr const_iterator begin() const noexcept {
-    return allocation_.begin();
-  }
-  [[nodiscard]] constexpr iterator end() noexcept {
-    return data_end_;
-  }
-  [[nodiscard]] constexpr const_iterator end() const noexcept {
-    return data_end_;
+  template<typename Self>
+  [[nodiscard]] constexpr std::conditional_t<std::is_const_v<std::remove_reference_t<Self>>,
+                                             const_iterator, iterator>
+  end(this Self&& self) noexcept {
+    return self.data_end_;
   }
 
-  [[nodiscard]] constexpr Value& operator[](Size index) {
-    assert(index < size());
-    return allocation_[index];
-  }
-  [[nodiscard]] constexpr const Value& operator[](Size index) const {
-    assert(index < size());
-    return allocation_[index];
+  [[nodiscard]] constexpr decltype(auto) operator[](this auto&& self, Size index) {
+    assert(index < self.size());
+    return self.allocation_[index];
   }
 
-  [[nodiscard]] constexpr Value& front() {
-    assert(!empty());
-    return allocation_.front();
+  [[nodiscard]] constexpr decltype(auto) front(this auto&& self) {
+    assert(!self.empty());
+    return self.allocation_.front();
   }
-  [[nodiscard]] constexpr const Value& front() const {
-    assert(!empty());
-    return allocation_.front();
+  template<typename Self>
+  [[nodiscard]] constexpr std::conditional_t<std::is_const_v<std::remove_reference_t<Self>>,
+                                             const_reference, reference>
+  back(this Self&& self) {
+    assert(!self.empty());
+    return *(self.data_end_ - 1);
   }
 
-  [[nodiscard]] constexpr Value& back() {
-    assert(!empty());
-    return *(data_end_ - 1);
-  }
-  [[nodiscard]] constexpr const Value& back() const {
-    assert(!empty());
-    return *(data_end_ - 1);
+  [[nodiscard]] friend constexpr bool operator==(const DynamicArray& lhs, const DynamicArray& rhs) {
+    return std::ranges::equal(lhs, rhs);
   }
 
   constexpr void clear() {
@@ -202,7 +206,6 @@ struct DynamicArray {
   constexpr void expand(Size new_size) {
     assert(new_size > size());
     if (new_size <= allocation_.size()) {
-      // initialize the requested number of elements
       iterator new_data_end = allocation_.begin() + new_size;
       initialize(data_end_, new_data_end);
       data_end_ = new_data_end;
@@ -314,7 +317,6 @@ struct DynamicArray {
     return allocation_.begin() + offset;
   }
 
-  // TODO Reduce duplication?
   constexpr iterator insert(iterator pos, Value value) {
     const auto offset = pos - allocation_.begin();
     iterator mut_pos = allocation_.begin() + offset;
@@ -366,7 +368,7 @@ private:
     return GrowthPolicy::new_allocation_size(size(), new_size_lower_bound);
   }
 
-  // WARNING Only valid if the data is fully initialized!
+  // Only valid if the data is fully initialized.
   constexpr void destroy() {
     std::destroy(allocation_.begin(), data_end_);
   }

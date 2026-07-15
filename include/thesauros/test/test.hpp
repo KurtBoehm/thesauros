@@ -134,33 +134,6 @@ struct AutoRegister {
   }
 };
 
-//--------------------------------------------------------------------------------------------------
-// Comparison helpers
-//--------------------------------------------------------------------------------------------------
-
-/**
- * Compares `lhs` and `rhs` for equality, using `std::cmp_equal` for integral operands to avoid
- *  sign-compare warnings and pitfalls when their signedness differs.
- */
-template<typename Lhs, typename Rhs>
-constexpr bool safe_eq(const Lhs& lhs, const Rhs& rhs) {
-  if constexpr (std::integral<Lhs> && std::integral<Rhs>) {
-    return std::cmp_equal(lhs, rhs);
-  } else {
-    return lhs == rhs;
-  }
-}
-
-/** Compares `lhs` and `rhs` for inequality, using `std::cmp_not_equal` for integral operands. */
-template<typename Lhs, typename Rhs>
-constexpr bool safe_ne(const Lhs& lhs, const Rhs& rhs) {
-  if constexpr (std::integral<Lhs> && std::integral<Rhs>) {
-    return std::cmp_not_equal(lhs, rhs);
-  } else {
-    return lhs != rhs;
-  }
-}
-
 //==================================================================================================
 // Expression decomposition
 //==================================================================================================
@@ -184,13 +157,27 @@ struct ExpressionCapture {
   template<typename Rhs>
   requires(std::equality_comparable_with<Lhs, Rhs>)
   DecomposedExpression operator==(const Rhs& rhs) const {
-    return compare(safe_eq(lhs, rhs), "==", rhs);
+    const bool cmp = [&] {
+      if constexpr (std::integral<Lhs> && std::integral<Rhs>) {
+        return std::cmp_equal(lhs, rhs);
+      } else {
+        return lhs == rhs;
+      }
+    }();
+    return compare(cmp, "==", rhs);
   }
 
   template<typename Rhs>
   requires(std::equality_comparable_with<Lhs, Rhs>)
   DecomposedExpression operator!=(const Rhs& rhs) const {
-    return compare(safe_ne(lhs, rhs), "!=", rhs);
+    const bool cmp = [&] {
+      if constexpr (std::integral<Lhs> && std::integral<Rhs>) {
+        return std::cmp_not_equal(lhs, rhs);
+      } else {
+        return lhs != rhs;
+      }
+    }();
+    return compare(cmp, "!=", rhs);
   }
 
   template<typename Rhs>
@@ -214,7 +201,14 @@ struct ExpressionCapture {
   template<typename Rhs>
   requires(std::totally_ordered_with<Lhs, Rhs>)
   DecomposedExpression operator>=(const Rhs& rhs) const {
-    return compare(lhs >= rhs, ">=", rhs);
+    const bool cmp = [&] {
+      if constexpr (std::integral<Lhs> && std::integral<Rhs>) {
+        return std::cmp_greater_equal(lhs, rhs);
+      } else {
+        return lhs >= rhs;
+      }
+    }();
+    return compare(cmp, ">=", rhs);
   }
 
 private:

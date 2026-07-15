@@ -7,11 +7,12 @@
 #ifndef INCLUDE_THESAUROS_CONTAINERS_ARRAY_FIXED_HPP
 #define INCLUDE_THESAUROS_CONTAINERS_ARRAY_FIXED_HPP
 
+#include <algorithm>
 #include <concepts>
 #include <cstddef>
 #include <initializer_list>
+#include <iterator>
 #include <memory>
-#include <span>
 #include <stdexcept>
 #include <utility>
 
@@ -31,7 +32,13 @@ struct FixedArray {
   using Allocator = Data::Allocator;
 
   using value_type = Value;
+  using allocator_type = Allocator;
   using size_type = Size;
+  using difference_type = std::iter_difference_t<TValue*>;
+  using reference = Value&;
+  using const_reference = const Value&;
+  using pointer = Value*;
+  using const_pointer = const Value*;
 
   using iterator = Data::iterator;
   using const_iterator = Data::const_iterator;
@@ -69,7 +76,7 @@ struct FixedArray {
     std::uninitialized_copy(init.begin(), init.end(), begin());
   }
 
-  // Per-element placement-new construction
+  // Per-element placement-new construction.
   explicit constexpr FixedArray(UninitializedConstruct /*tag*/, Size size, auto op)
       : allocation_(size) {
     TValue* ptr = allocation_.data();
@@ -79,7 +86,7 @@ struct FixedArray {
   }
 
   constexpr FixedArray(FixedArray&& other) noexcept : allocation_(std::move(other.allocation_)) {}
-  // WARNING Only valid if the data is fully initialized!
+  // Only valid if the data is fully initialized.
   constexpr FixedArray(const FixedArray& other) : allocation_(other.allocation_.size()) {
     std::uninitialized_copy(other.allocation_.begin(), other.allocation_.end(),
                             allocation_.begin());
@@ -90,7 +97,7 @@ struct FixedArray {
     allocation_.move_to_destroyed(std::move(other.allocation_));
     return *this;
   }
-  // WARNING Only valid if the data is fully initialized!
+  // Only valid if the data is fully initialized.
   constexpr FixedArray& operator=(const FixedArray& other) {
     if (this != &other) {
       allocation_.destroy_initialized();
@@ -118,9 +125,14 @@ struct FixedArray {
     initial_emplace(index, value);
   }
 
-  // WARNING Only valid if the data is fully initialized!
+  // Only valid if the data is fully initialized.
   ~FixedArray() {
     allocation_.destroy_initialized();
+  }
+
+  friend constexpr void swap(FixedArray& lhs, FixedArray& rhs) noexcept {
+    using std::swap;
+    swap(lhs.allocation_, rhs.allocation_);
   }
 
   [[nodiscard]] constexpr Size size() const noexcept {
@@ -130,65 +142,41 @@ struct FixedArray {
     return allocation_.empty();
   }
 
-  [[nodiscard]] constexpr TValue* data() {
-    return allocation_.data();
-  }
-  [[nodiscard]] constexpr const TValue* data() const {
-    return allocation_.data();
+  [[nodiscard]] constexpr auto data(this auto&& self) {
+    return self.allocation_.data();
   }
 
-  [[nodiscard]] constexpr iterator begin() noexcept {
-    return allocation_.begin();
+  [[nodiscard]] constexpr auto begin(this auto&& self) {
+    return self.allocation_.begin();
   }
-  [[nodiscard]] constexpr const_iterator begin() const noexcept {
-    return allocation_.begin();
-  }
-  [[nodiscard]] constexpr iterator end() noexcept {
-    return allocation_.end();
-  }
-  [[nodiscard]] constexpr const_iterator end() const noexcept {
-    return allocation_.end();
+  [[nodiscard]] constexpr auto end(this auto&& self) {
+    return self.allocation_.end();
   }
 
-  [[nodiscard]] constexpr Value& operator[](Size index) {
-    return allocation_[index];
-  }
-  [[nodiscard]] constexpr const Value& operator[](Size index) const {
-    return allocation_[index];
+  [[nodiscard]] constexpr decltype(auto) operator[](this auto&& self, Size index) {
+    return self.allocation_[index];
   }
 
-  [[nodiscard]] constexpr Value& at(Size index) {
-    if (index >= size()) {
-      throw std::out_of_range{fmt::format("Invalid index: {} >= {}", index, size())};
+  [[nodiscard]] constexpr decltype(auto) at(this auto&& self, Size index) {
+    if (index >= self.size()) {
+      throw std::out_of_range{fmt::format("Invalid index: {} >= {}", index, self.size())};
     }
-    return allocation_[index];
-  }
-  [[nodiscard]] constexpr const Value& at(Size index) const {
-    if (index >= size()) {
-      throw std::out_of_range{fmt::format("Invalid index: {} >= {}", index, size())};
-    }
-    return allocation_[index];
+    return self.allocation_[index];
   }
 
-  [[nodiscard]] constexpr Value& front() {
-    return allocation_.front();
+  [[nodiscard]] constexpr decltype(auto) front(this auto&& self) {
+    return self.allocation_.front();
   }
-  [[nodiscard]] constexpr const Value& front() const {
-    return allocation_.front();
-  }
-
-  [[nodiscard]] constexpr Value& back() {
-    return allocation_.back();
-  }
-  [[nodiscard]] constexpr const Value& back() const {
-    return allocation_.back();
+  [[nodiscard]] constexpr decltype(auto) back(this auto&& self) {
+    return self.allocation_.back();
   }
 
-  [[nodiscard]] constexpr std::span<Value> span() {
-    return {begin(), end()};
+  [[nodiscard]] constexpr auto span(this auto&& self) {
+    return self.allocation_.span();
   }
-  [[nodiscard]] constexpr std::span<const Value> span() const {
-    return {begin(), end()};
+
+  [[nodiscard]] friend constexpr bool operator==(const FixedArray& lhs, const FixedArray& rhs) {
+    return std::ranges::equal(lhs, rhs);
   }
 
 private:

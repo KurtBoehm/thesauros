@@ -10,24 +10,34 @@
 #include <cassert>
 #include <memory>
 #include <span>
+#include <type_traits>
 #include <utility>
 
 #include "thesauros/io.hpp"
 
 namespace thes::array {
-// A helper class managing a typed chunk of memory.
-//
-// Note that managing the lifetime of elements is the responsibility of the user — elements are
-// neither constructed or destroyed!
-template<typename TValue, typename TSize, typename TAllocator>
+/**
+ * A helper class managing a typed chunk of memory.
+ *
+ * Managing the lifetime of elements is the responsibility of the user; elements are neither
+ * constructed nor destroyed by this class.
+ */
+template<typename V, typename S, typename Alloc>
 struct TypedChunk {
-  using Value = TValue;
-  using Size = TSize;
-  using Allocator = TAllocator;
+  using Value = V;
+  using Size = S;
+  using Allocator = Alloc;
 
   using value_type = Value;
-  using iterator = TValue*;
-  using const_iterator = const TValue*;
+  using allocator_type = Allocator;
+  using size_type = Size;
+  using difference_type = std::make_signed_t<Size>;
+  using reference = Value&;
+  using const_reference = const Value&;
+  using pointer = Value*;
+  using const_pointer = const Value*;
+  using iterator = pointer;
+  using const_iterator = const_pointer;
 
   static TypedChunk from_file(FileReader& reader) {
     TypedChunk chunk(reader.read(type_tag<Size>));
@@ -51,29 +61,26 @@ struct TypedChunk {
     other.begin_ = nullptr;
     other.end_ = nullptr;
   }
-  // As this needs to copy data of unknown initialization status, it is disabled
+  // Copying requires knowledge of the elements’ initialization state, so it is disabled.
   TypedChunk(const TypedChunk&) = delete;
-  // Assignments should use the explicit functions defined below
+  // Assignment should use the explicit functions defined below.
   TypedChunk& operator=(TypedChunk&&) = delete;
   TypedChunk& operator=(const TypedChunk&) = delete;
 
-  // WARNING Only deallocates — destruction of the elements has to be handled by the deriving class!
+  // Only deallocates; destruction of the elements has to be handled by the deriving class.
   constexpr ~TypedChunk() {
     deallocate();
   }
 
-  friend void swap(TypedChunk& v1, TypedChunk& v2) noexcept {
+  friend constexpr void swap(TypedChunk& v1, TypedChunk& v2) noexcept {
     using std::swap;
     swap(v1.alloc_, v2.alloc_);
     swap(v1.begin_, v2.begin_);
     swap(v1.end_, v2.end_);
   }
 
-  [[nodiscard]] constexpr TValue* data() {
-    return begin_;
-  }
-  [[nodiscard]] constexpr const TValue* data() const {
-    return begin_;
+  [[nodiscard]] constexpr auto data(this auto&& self) {
+    return const_or_mut<decltype(self)>(self.begin_);
   }
 
   [[nodiscard]] constexpr Size size() const {
@@ -83,48 +90,27 @@ struct TypedChunk {
     return begin_ == end_;
   }
 
-  [[nodiscard]] constexpr iterator begin() {
-    return begin_;
+  [[nodiscard]] constexpr auto begin(this auto&& self) {
+    return const_or_mut<decltype(self)>(self.begin_);
   }
-  [[nodiscard]] constexpr const_iterator begin() const {
-    return begin_;
-  }
-
-  [[nodiscard]] constexpr iterator end() {
-    return end_;
-  }
-  [[nodiscard]] constexpr const_iterator end() const {
-    return end_;
+  [[nodiscard]] constexpr auto end(this auto&& self) {
+    return const_or_mut<decltype(self)>(self.end_);
   }
 
-  [[nodiscard]] constexpr Value& operator[](Size index) {
-    assert(index < size());
-    return begin_[index];
+  [[nodiscard]] constexpr decltype(auto) operator[](this auto&& self, Size index) {
+    assert(index < self.size());
+    return *(const_or_mut<decltype(self)>(self.begin_) + index);
   }
-  [[nodiscard]] constexpr const Value& operator[](Size index) const {
-    assert(index < size());
-    return begin_[index];
+  [[nodiscard]] constexpr decltype(auto) front(this auto&& self) {
+    assert(!self.empty());
+    return *const_or_mut<decltype(self)>(self.begin_);
   }
-
-  [[nodiscard]] constexpr Value& front() {
-    assert(!empty());
-    return *begin_;
-  }
-  [[nodiscard]] constexpr const Value& front() const {
-    assert(!empty());
-    return *begin_;
+  [[nodiscard]] constexpr decltype(auto) back(this auto&& self) {
+    assert(!self.empty());
+    return *(const_or_mut<decltype(self)>(self.end_) - 1);
   }
 
-  [[nodiscard]] constexpr Value& back() {
-    assert(!empty());
-    return *(end_ - 1);
-  }
-  [[nodiscard]] constexpr const Value& back() const {
-    assert(!empty());
-    return *(end_ - 1);
-  }
-
-  [[nodiscard]] constexpr TValue* allocate_memory(const Size size) {
+  [[nodiscard]] constexpr Value* allocate_memory(const Size size) {
     return std::allocator_traits<Allocator>::allocate(alloc_, size);
   }
   void allocate(const Size size) {
@@ -137,7 +123,7 @@ struct TypedChunk {
     return alloc_;
   }
 
-  // WARNING Only valid if the data is fully initialized!
+  // Only valid if the data is fully initialized.
   constexpr void destroy_initialized() {
     std::destroy(begin_, end_);
   }
@@ -146,6 +132,8 @@ struct TypedChunk {
       assert(end_ != nullptr);
       std::allocator_traits<Allocator>::deallocate(alloc_, begin_,
                                                    static_cast<Size>(end_ - begin_));
+      begin_ = nullptr;
+      end_ = nullptr;
     } else {
       assert(end_ == nullptr);
     }
@@ -155,7 +143,7 @@ struct TypedChunk {
     alloc_ = allocator;
   }
 
-  // WARNING Requires the data to be destroyed already!
+  // Requires the data to be destroyed already.
   void move_to_destroyed(TypedChunk&& other) noexcept {
     deallocate();
 
@@ -166,7 +154,7 @@ struct TypedChunk {
     end_ = other.end_;
     other.end_ = nullptr;
   }
-  // WARNING Requires the data to be destroyed already!
+  // Requires the data to be destroyed already.
   void reallocate_to_destroyed(const TypedChunk& other) {
     assert(this != &other);
 
@@ -183,7 +171,7 @@ struct TypedChunk {
     begin_ = allocate_memory(size);
     end_ = begin_ + size;
   }
-  // WARNING Only valid if the data is fully initialized!
+  // Only valid if the data is fully initialized.
   constexpr void expand(Size new_size, auto&& mover) {
     assert(new_size > size());
 
@@ -200,7 +188,7 @@ struct TypedChunk {
       std::destroy(old_begin, data_end);
     });
   }
-  // WARNING Only valid if the data is fully initialized!
+  // Only valid if the data is fully initialized.
   constexpr void shrink(Size new_size) {
     assert(new_size < size());
 
@@ -214,11 +202,11 @@ struct TypedChunk {
     end_ = new_begin + new_size;
   }
 
-  std::span<const Value> span() const {
-    return std::span{begin_, end_};
-  }
-  std::span<Value> span() {
-    return std::span{begin_, end_};
+  [[nodiscard]] constexpr auto span(this auto&& self) {
+    return std::span{
+      const_or_mut<decltype(self)>(self.begin_),
+      const_or_mut<decltype(self)>(self.end_),
+    };
   }
 
   void to_file(FileWriter& writer) const {
@@ -228,9 +216,19 @@ struct TypedChunk {
   }
 
 private:
-  [[no_unique_address]] TAllocator alloc_{};
-  TValue* begin_{nullptr};
-  TValue* end_{nullptr};
+  /** Converts `p` to a `const TValue*` if `Self` is const, otherwise leaves it as `TValue*`. */
+  template<typename Self>
+  static constexpr auto const_or_mut(Value* p) noexcept {
+    if constexpr (std::is_const_v<std::remove_reference_t<Self>>) {
+      return static_cast<const Value*>(p);
+    } else {
+      return p;
+    }
+  }
+
+  [[no_unique_address]] Alloc alloc_{};
+  V* begin_{nullptr};
+  V* end_{nullptr};
 };
 } // namespace thes::array
 
