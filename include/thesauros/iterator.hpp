@@ -3,6 +3,7 @@
 
 // IWYU pragma: begin_exports
 #include "iterator/facade.hpp"
+#include "iterator/reverse-facade.hpp"
 #include "iterator/state-facade.hpp"
 // IWYU pragma: end_exports
 

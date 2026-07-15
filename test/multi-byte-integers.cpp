@@ -515,6 +515,174 @@ void test_optional_variant() {
 }
 
 //==================================================================================================
+// insert_any: direct exercise of size/pad_end combinations, no-ops, and reallocation
+//==================================================================================================
+
+/**
+ * Directly exercises `insert_any` with a range of `ins_size`/`pad_end` combinations, both within
+ * existing capacity and forcing reallocation, checking the resulting size and that the gap is
+ * writable and previously-surrounding data is preserved.
+ */
+template<typename ByteInt, std::size_t PaddingBytes = 13>
+void test_insert_any_direct() {
+  using UInt = ByteInt::Unsigned;
+  using Mbi = thes::MultiByteIntegers<ByteInt, PaddingBytes>;
+
+  // No-op: ins_size == pad_end == 0 must not change size, contents, or the returned position.
+  {
+    Mbi mbi{wrap<ByteInt>(1), wrap<ByteInt>(2), wrap<ByteInt>(3)};
+    auto it = mbi.insert_any(mbi.begin() + 1, 0, 0);
+    THES_ALWAYS_ASSERT(mbi.size() == 3);
+    THES_ALWAYS_ASSERT(
+      test::range_eq(mbi, std::vector<UInt>{wrap<ByteInt>(1), wrap<ByteInt>(2), wrap<ByteInt>(3)}));
+    THES_ALWAYS_ASSERT(it == mbi.begin() + 1);
+  }
+
+  // Insert into a default-constructed (zero-capacity) container.
+  {
+    Mbi mbi{};
+    auto it = mbi.insert_any(mbi.begin(), 2, 0);
+    THES_ALWAYS_ASSERT(it == mbi.begin());
+    const std::vector<UInt> vals{wrap<ByteInt>(9), wrap<ByteInt>(8)};
+    mbi.copy_uninit(mbi.begin(), vals.begin(), vals.end());
+    THES_ALWAYS_ASSERT(mbi.size() == 2);
+    THES_ALWAYS_ASSERT(mbi[0] == wrap<ByteInt>(9) && mbi[1] == wrap<ByteInt>(8));
+  }
+
+  // pad_end > 0: size grows by ins_size + pad_end; the ins_size elements at the returned iterator
+  // and the trailing pad_end elements must be independently writable without disturbing the
+  // elements originally before or after the insertion point.
+  {
+    Mbi mbi{wrap<ByteInt>(1), wrap<ByteInt>(2), wrap<ByteInt>(3), wrap<ByteInt>(4)};
+    auto it = mbi.insert_any(mbi.begin() + 2, 2, 3);
+    THES_ALWAYS_ASSERT(mbi.size() == 4 + 2 + 3);
+    const std::vector<UInt> mid{wrap<ByteInt>(50), wrap<ByteInt>(51)};
+    mbi.copy_uninit(it, mid.begin(), mid.end());
+    for (std::size_t i = 0; i < 3; ++i) {
+      mbi[mbi.size() - 3 + i] = wrap<ByteInt>(90 + i);
+    }
+    const std::vector<UInt> expected{wrap<ByteInt>(1),  wrap<ByteInt>(2),  wrap<ByteInt>(50),
+                                     wrap<ByteInt>(51), wrap<ByteInt>(3),  wrap<ByteInt>(4),
+                                     wrap<ByteInt>(90), wrap<ByteInt>(91), wrap<ByteInt>(92)};
+    THES_ALWAYS_ASSERT(test::range_eq(mbi, expected));
+  }
+
+  // Force reallocation: reserve a small amount, then insert far more than the reserved headroom.
+  {
+    Mbi mbi{};
+    mbi.reserve(4);
+    for (std::size_t i = 0; i < 4; ++i) {
+      mbi.push_back(wrap<ByteInt>(i));
+    }
+    std::vector<UInt> big;
+    for (std::size_t i = 0; i < 100; ++i) {
+      big.push_back(wrap<ByteInt>(1000 + i));
+    }
+    mbi.insert(mbi.begin() + 2, big.begin(), big.end());
+    THES_ALWAYS_ASSERT(mbi.size() == 104);
+    std::vector<UInt> expected{wrap<ByteInt>(0), wrap<ByteInt>(1)};
+    expected.insert(expected.end(), big.begin(), big.end());
+    expected.push_back(wrap<ByteInt>(2));
+    expected.push_back(wrap<ByteInt>(3));
+    THES_ALWAYS_ASSERT(test::range_eq(mbi, expected));
+  }
+}
+
+//==================================================================================================
+// insert: exhaustive positions against std::vector, across repeated growth
+//==================================================================================================
+
+/**
+ * Inserts small chunks at a spread of positions (begin, middle, end) over several rounds, comparing
+ * against `std::vector` after every insertion, so both the in-capacity and reallocating branches of
+ * `insert_any` get exercised repeatedly and at varied offsets.
+ */
+template<typename ByteInt, std::size_t PaddingBytes = 13>
+void test_insert_all_positions() {
+  using UInt = ByteInt::Unsigned;
+  using Mbi = thes::MultiByteIntegers<ByteInt, PaddingBytes>;
+
+  Mbi mbi{};
+  std::vector<UInt> vec{};
+  std::uint64_t counter = 0;
+
+  for (int round = 0; round < 6; ++round) {
+    const std::size_t initial_size = vec.size();
+    for (std::size_t pos = 0; pos <= initial_size; ++pos) {
+      std::vector<UInt> chunk;
+      for (std::size_t i = 0; i < 3; ++i) {
+        chunk.push_back(wrap<ByteInt>(counter++));
+      }
+      mbi.insert(mbi.begin() + static_cast<std::ptrdiff_t>(pos), chunk.begin(), chunk.end());
+      vec.insert(vec.begin() + static_cast<std::ptrdiff_t>(pos), chunk.begin(), chunk.end());
+      THES_ALWAYS_ASSERT(mbi.size() == vec.size());
+      THES_ALWAYS_ASSERT(test::range_eq(mbi, vec));
+    }
+  }
+}
+
+//==================================================================================================
+// insert on the optional variant
+//==================================================================================================
+
+/**
+ * Checks that `insert` on `OptionalMultiByteIntegers` widens the array correctly and leaves values
+ * before and after the inserted range untouched.
+ */
+template<typename ByteInt, std::size_t PaddingBytes = 13>
+void test_optional_insert() {
+  using UInt = ByteInt::Unsigned;
+  using OptMbi = thes::OptionalMultiByteIntegers<ByteInt, PaddingBytes>;
+  using Opt = OptMbi::value_type;
+
+  OptMbi mbi = OptMbi::create_empty(3);
+  mbi[0] = UInt{1};
+  mbi[1] = UInt{2};
+  mbi[2] = UInt{3};
+
+  const std::vector<UInt> extra{UInt{7}, UInt{8}};
+  mbi.insert(mbi.begin() + 1, extra.begin(), extra.end());
+
+  THES_ALWAYS_ASSERT(mbi.size() == 5);
+  THES_ALWAYS_ASSERT(Opt{mbi[0]}.value() == UInt{1});
+  THES_ALWAYS_ASSERT(Opt{mbi[1]}.value() == UInt{7});
+  THES_ALWAYS_ASSERT(Opt{mbi[2]}.value() == UInt{8});
+  THES_ALWAYS_ASSERT(Opt{mbi[3]}.value() == UInt{2});
+  THES_ALWAYS_ASSERT(Opt{mbi[4]}.value() == UInt{3});
+}
+
+//==================================================================================================
+// Padding-boundary regression check
+//==================================================================================================
+
+/**
+ * With `PaddingBytes` set to exactly `int_bytes` (the minimum allowed), repeatedly prepends and
+ * appends so the data region's boundary crosses back and forth over the padding, catching
+ * off-by-one errors in how `insert_any` computes absolute offsets into the padded byte array.
+ */
+template<typename ByteInt>
+void test_insert_padding_boundary() {
+  using UInt = ByteInt::Unsigned;
+  static constexpr std::size_t padding = sizeof(typename ByteInt::Unsigned);
+  using Mbi = thes::MultiByteIntegers<ByteInt, padding>;
+
+  Mbi mbi{};
+  std::vector<UInt> vec{};
+
+  for (std::size_t i = 0; i < 20; ++i) {
+    const UInt v = wrap<ByteInt>(i);
+    if (i % 4 == 0) {
+      mbi.insert(mbi.begin(), &v, &v + 1);
+      vec.insert(vec.begin(), v);
+    } else {
+      mbi.push_back(v);
+      vec.push_back(v);
+    }
+    THES_ALWAYS_ASSERT(test::range_eq(mbi, vec));
+  }
+}
+
+//==================================================================================================
 // Suite runner
 //==================================================================================================
 
@@ -537,6 +705,10 @@ void run_full_suite() {
   test_reverse_iterator_with_algorithms<ByteInt>();
   test_optional_variant<ByteInt>();
   test_optional_reverse_iteration<ByteInt>();
+  test_insert_any_direct<ByteInt>();
+  test_insert_all_positions<ByteInt>();
+  test_optional_insert<ByteInt>();
+  test_insert_padding_boundary<ByteInt>();
 }
 } // namespace
 

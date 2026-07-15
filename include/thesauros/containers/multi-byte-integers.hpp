@@ -644,7 +644,6 @@ struct MultiByteIntegerArray
    * by `pad_end` uninitialized trailing elements, and returns an iterator to the first newly
    * inserted element.
    */
-  // TODO This is quite inefficient!
   iterator insert_any(const_iterator pos, Size ins_size, Size pad_end = 0) {
     const std::ptrdiff_t offset = pos.raw() - span().data();
     const Size old_bsize = byte_size(storage().size());
@@ -654,17 +653,25 @@ struct MultiByteIntegerArray
     if (size == 0) {
       return iterator{span().data() + offset};
     }
-    const Size new_bsize = old_bsize + byte_size(size);
+    const Size ins_bsize = byte_size(ins_size);
+    const Size pad_bsize = byte_size(pad_end);
 
-    array().expand(new_bsize + 2 * padding_bytes);
+    // Reserve once so neither `insert_any` call below reallocates a second time.
+    array().reserve(old_bsize + 2 * padding_bytes + ins_bsize + pad_bsize);
+
+    // Open the main gap: shifts `[pos, old_end + back_padding)` right by `ins_bsize` in a single
+    // pass (`uninitialized_move` directly into final position).
+    auto data_it =
+      array().insert_any(array().begin() + (std::ptrdiff_t{padding_bytes} + offset), ins_bsize);
+
+    // Open room for the trailing pad_end elements just before the back padding.
+    // This only has to move `padding_bytes` worth of bytes, not the whole tail.
+    if (pad_bsize > 0) {
+      array().insert_any(array().begin() + (padding_bytes + old_bsize + ins_bsize), pad_bsize);
+    }
+
     storage().size() += size;
-
-    std::byte* new_begin = span().data();
-    std::byte* dst = new_begin + offset;
-    std::byte* old_end = new_begin + old_bsize;
-    std::move_backward(dst, old_end, old_end + byte_size(ins_size));
-
-    return iterator{dst};
+    return iterator{data_it};
   }
 
   /** Copies `[first, last)` into the uninitialized elements starting at `pos`. */

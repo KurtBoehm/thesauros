@@ -345,8 +345,7 @@ struct DynamicArray {
   }
 
 private:
-  template<typename TInit>
-  constexpr void allocation_expand(const Size new_size, TInit&& initializer) {
+  constexpr void allocation_expand(const Size new_size, auto&& initializer) {
     allocation_.expand(
       grown_size(new_size),
       [&, old_data_end = data_end_](iterator old_begin, iterator /*old_end*/, iterator new_begin) {
