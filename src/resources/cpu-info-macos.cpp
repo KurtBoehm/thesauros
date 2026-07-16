@@ -1,3 +1,9 @@
+// This file is part of https://github.com/KurtBoehm/thesauros.
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 #include <stdexcept>
 
 #include <CoreFoundation/CoreFoundation.h>
@@ -10,103 +16,68 @@
 
 namespace {
 //--------------------------------------------------------------------------------------------------
-// RAII wrappers for CoreFoundation and IOKit
+// A generic RAII handle for release-function-style resources
 //--------------------------------------------------------------------------------------------------
 
-/** RAII wrapper for `CFTypeRef`. */
-struct CfRef {
-  CfRef() = default;
+/** A move-only RAII wrapper around a handle type `T` released via `Release`. */
+template<typename T, auto Release, T Invalid = T{}>
+struct UniqueHandle {
+  UniqueHandle() = default;
 
-  explicit CfRef(CFTypeRef ptr) : ptr_{ptr} {}
+  explicit UniqueHandle(T value) : value_{value} {}
 
-  CfRef(const CfRef&) = delete;
-  CfRef& operator=(const CfRef&) = delete;
+  UniqueHandle(const UniqueHandle&) = delete;
+  UniqueHandle& operator=(const UniqueHandle&) = delete;
 
-  CfRef(CfRef&& other) noexcept : ptr_{other.ptr_} {
-    other.ptr_ = nullptr;
+  UniqueHandle(UniqueHandle&& other) noexcept : value_{other.value_} {
+    other.value_ = Invalid;
   }
 
-  CfRef& operator=(CfRef&& other) noexcept {
+  UniqueHandle& operator=(UniqueHandle&& other) noexcept {
     if (this != &other) {
       reset();
-      ptr_ = other.ptr_;
-      other.ptr_ = nullptr;
+      value_ = other.value_;
+      other.value_ = Invalid;
     }
     return *this;
   }
 
-  ~CfRef() {
+  ~UniqueHandle() {
     reset();
   }
 
-  void reset(CFTypeRef new_ptr = nullptr) {
-    if (ptr_ != nullptr) {
-      CFRelease(ptr_);
+  /** Releases the current handle, if any, and replaces it with `new_value`. */
+  void reset(T new_value = Invalid) {
+    if (value_ != Invalid) {
+      Release(value_);
     }
-    ptr_ = new_ptr;
+    value_ = new_value;
   }
 
-  [[nodiscard]] CFTypeRef get() const {
-    return ptr_;
-  }
-
-  template<typename T>
-  [[nodiscard]] T as() const {
-    return static_cast<T>(ptr_);
+  [[nodiscard]] T get() const {
+    return value_;
   }
 
   [[nodiscard]] bool has_value() const {
-    return ptr_ != nullptr;
+    return value_ != Invalid;
   }
 
 private:
-  CFTypeRef ptr_ = nullptr;
+  T value_ = Invalid;
 };
 
-/** RAII wrapper for `io_object_t` and derived types. */
-struct IoObject {
-  IoObject() = default;
+using CfRef = UniqueHandle<CFTypeRef, CFRelease, nullptr>;
+using IoObject = UniqueHandle<io_object_t, IOObjectRelease, io_object_t{0}>;
 
-  explicit IoObject(io_object_t obj) : obj_{obj} {}
+/** Casts a `CfRef`’s underlying pointer to a more specific `CFTypeRef` subtype. */
+template<typename T>
+[[nodiscard]] T cf_as(const CfRef& ref) {
+  return static_cast<T>(ref.get());
+}
 
-  IoObject(const IoObject&) = delete;
-  IoObject& operator=(const IoObject&) = delete;
-
-  IoObject(IoObject&& other) noexcept : obj_{other.obj_} {
-    other.obj_ = 0;
-  }
-
-  IoObject& operator=(IoObject&& other) noexcept {
-    if (this != &other) {
-      reset();
-      obj_ = other.obj_;
-      other.obj_ = 0;
-    }
-    return *this;
-  }
-
-  ~IoObject() {
-    reset();
-  }
-
-  void reset(io_object_t new_obj = 0) {
-    if (obj_ != 0) {
-      IOObjectRelease(obj_);
-    }
-    obj_ = new_obj;
-  }
-
-  [[nodiscard]] io_object_t get() const {
-    return obj_;
-  }
-
-  [[nodiscard]] bool has_value() const {
-    return obj_ != 0;
-  }
-
-private:
-  io_object_t obj_ = 0;
-};
+//--------------------------------------------------------------------------------------------------
+// Topology helpers
+//--------------------------------------------------------------------------------------------------
 
 /** Maps a “cluster-type” byte to an efficiency class. */
 inline thes::EfficiencyClass cluster_type_to_efficiency_class(thes::u8 cluster_type) {
@@ -121,7 +92,7 @@ inline thes::EfficiencyClass cluster_type_to_efficiency_class(thes::u8 cluster_t
 } // namespace
 
 std::vector<thes::detail::CpuEntry> thes::detail::compute_cpu_topology() {
-  const auto logical_cores = *thes::safe_cast<std::size_t>(read_sysctl<int>("hw.logicalcpu"));
+  const auto logical_cores = *safe_cast<std::size_t>(read_sysctl<int>("hw.logicalcpu"));
   if (logical_cores == 0) {
     throw std::runtime_error{"No logical cores detected"};
   }
@@ -138,27 +109,19 @@ std::vector<thes::detail::CpuEntry> thes::detail::compute_cpu_topology() {
   if (IORegistryEntryGetChildIterator(cpus_root.get(), dt_plane_name, &raw_iter) != KERN_SUCCESS) {
     throw std::runtime_error{"Getting children of IODeviceTree:/cpus failed"};
   }
-
   IoObject cpus_iter{raw_iter};
+
   std::vector<CpuEntry> entries{};
-
-  while (true) {
-    IoObject cpus_child{IOIteratorNext(cpus_iter.get())};
-    if (!cpus_child.has_value()) {
-      break;
-    }
-
+  for (IoObject cpus_child{IOIteratorNext(cpus_iter.get())}; cpus_child.has_value();
+       cpus_child.reset(IOIteratorNext(cpus_iter.get()))) {
     CfRef logical_id_ref{IORegistryEntrySearchCFProperty(
       cpus_child.get(), dt_plane_name, CFSTR("logical-cpu-id"), kCFAllocatorDefault, kNilOptions)};
-    if (!logical_id_ref.has_value()) {
-      continue;
-    }
-    if (CFGetTypeID(logical_id_ref.get()) != CFNumberGetTypeID()) {
+    if (!logical_id_ref.has_value() || CFGetTypeID(logical_id_ref.get()) != CFNumberGetTypeID()) {
       continue;
     }
 
     long long logical_id_ll{};
-    const bool ok = CFNumberGetValue(logical_id_ref.as<CFNumberRef>(), kCFNumberLongLongType,
+    const bool ok = CFNumberGetValue(cf_as<CFNumberRef>(logical_id_ref), kCFNumberLongLongType,
                                      &logical_id_ll) != 0;
     if (!ok || logical_id_ll < 0) {
       continue;
@@ -169,22 +132,20 @@ std::vector<thes::detail::CpuEntry> thes::detail::compute_cpu_topology() {
       continue;
     }
 
-    EfficiencyClass efficiency = EfficiencyClass::any;
-
+    EfficiencyClass efficiency_class = EfficiencyClass::any;
     CfRef cluster_ref{IORegistryEntrySearchCFProperty(
       cpus_child.get(), dt_plane_name, CFSTR("cluster-type"), kCFAllocatorDefault, kNilOptions)};
     if (cluster_ref.has_value() && CFGetTypeID(cluster_ref.get()) == CFDataGetTypeID()) {
-      const auto* const data_ref = cluster_ref.as<CFDataRef>();
+      const auto* const data_ref = cf_as<CFDataRef>(cluster_ref);
       const CFIndex length = CFDataGetLength(data_ref);
       if (length >= 1) {
-        UInt8 buffer[2] = {0, 0};
-        const CFIndex copy_len = length >= 2 ? 2 : length;
-        CFDataGetBytes(data_ref, CFRangeMake(0, copy_len), buffer);
-        efficiency = cluster_type_to_efficiency_class(buffer[0]);
+        std::array<UInt8, 2> buffer{0, 0};
+        CFDataGetBytes(data_ref, CFRangeMake(0, std::min<CFIndex>(length, 2)), buffer.data());
+        efficiency_class = cluster_type_to_efficiency_class(buffer[0]);
       }
     }
 
-    entries.push_back({.logical_id = logical_id, .efficiency_class = efficiency});
+    entries.push_back({.logical_id = logical_id, .efficiency_class = efficiency_class});
   }
 
   if (entries.empty()) {
@@ -194,8 +155,8 @@ std::vector<thes::detail::CpuEntry> thes::detail::compute_cpu_topology() {
   std::ranges::sort(entries, {}, &CpuEntry::logical_id);
 
   if (entries.size() != logical_cores) {
-    throw std::runtime_error{"The number of CPUs under IODeviceTree:/cpus does not match the number"
-                             "of logical CPUs"};
+    throw std::runtime_error{
+      "The number of CPUs under IODeviceTree:/cpus does not match the number of logical CPUs"};
   }
   for (std::size_t i = 0; i < entries.size(); ++i) {
     if (entries[i].logical_id != i) {

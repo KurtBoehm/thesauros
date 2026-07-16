@@ -25,6 +25,7 @@
 #include "utility/unreachable.hpp"
 #include "utility/unwrap.hpp"
 #include "utility/value-optional.hpp"
+#include "utility/wait-for-debugger.hpp"
 // IWYU pragma: end_exports
 
 #endif // INCLUDE_THESAUROS_UTILITY_HPP
