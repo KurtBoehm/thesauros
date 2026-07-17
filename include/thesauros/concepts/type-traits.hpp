@@ -13,6 +13,9 @@
 
 namespace thes {
 template<typename T>
+concept Numeric = std::integral<T> || std::floating_point<T>;
+
+template<typename T>
 concept CharacterType =
   std::same_as<T, signed char> || std::same_as<T, unsigned char> || std::same_as<T, char> ||
   std::same_as<T, wchar_t> || std::same_as<T, char8_t> || std::same_as<T, char16_t> ||
@@ -21,11 +24,11 @@ concept CharacterType =
 template<typename T>
 concept ConstAccess = std::is_const_v<std::remove_reference_t<T>>;
 
-template<typename T, std::size_t tSize = 1>
+template<typename T, std::size_t Size = 1>
 struct IsCompleteTrait : public std::false_type {};
 
 template<typename T>
-struct IsCompleteTrait<T, sizeof(T) / sizeof(T)> : public std::true_type {};
+struct IsCompleteTrait<T, sizeof(T) / sizeof(T)> : public std::true_type {}; // NOLINT
 
 template<typename T>
 concept CompleteType = IsCompleteTrait<T>::value;

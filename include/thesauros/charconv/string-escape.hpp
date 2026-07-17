@@ -23,6 +23,20 @@
 
 namespace thes {
 namespace detail {
+/** Returns the one-character escape for `codep` (e.g. `n` for `\n`), or `'\0'` if none applies. */
+constexpr char escape_char(UnicodeDecoder::CodePoint codep) {
+  switch (codep) {
+    case '\b': return 'b';
+    case '\t': return 't';
+    case '\n': return 'n';
+    case '\f': return 'f';
+    case '\r': return 'r';
+    case '\"': return '"';
+    case '\\': return '\\';
+    default: return '\0';
+  }
+}
+
 template<typename TChar>
 requires(std::same_as<TChar, char> || std::same_as<TChar, char8_t>)
 inline auto escape_string(std::basic_string_view<TChar> in, auto out_it) {
@@ -34,53 +48,23 @@ inline auto escape_string(std::basic_string_view<TChar> in, auto out_it) {
   const TChar* end = in.end();
   for (const TChar* ptr = in.begin(); ptr != end; ++ptr) {
     const auto c = *ptr;
-    const auto cc = std::bit_cast<char>(c);
     const auto c8 = std::bit_cast<u8>(c);
 
     const auto [codep, state] = decoder.decode(c8);
     switch (state) {
       case ACCEPTED: {
-        switch (codep) {
-          case '\b': {
-            extend('\\', 'b');
-            break;
-          }
-          case '\t': {
-            extend('\\', 't');
-            break;
-          }
-          case '\n': {
-            extend('\\', 'n');
-            break;
-          }
-          case '\f': {
-            extend('\\', 'f');
-            break;
-          }
-          case '\r': {
-            extend('\\', 'r');
-            break;
-          }
-          case '\"': {
-            extend('\\', '"');
-            break;
-          }
-          case '\\': {
-            extend('\\', '\\');
-            break;
-          }
-          default:
-            if (codep <= 0x1F) {
-              using SI = SafeInt<char>;
-              const SI c1 = SI{'0'} + (SI{cc} >> 4);
-              const SI c2a = SI{cc} & SI{0xF};
-              const SI c2b = (c2a < SI{10}) ? (SI{'0'} + c2a) : (SI{'A'} + (c2a - SI{10}));
+        if (const char esc = escape_char(codep); esc != '\0') {
+          extend('\\', esc);
+        } else if (codep <= 0x1F) {
+          const auto cc = std::bit_cast<char>(c);
+          using SI = SafeInt<char>;
+          const SI c1 = SI{'0'} + (SI{cc} >> 4);
+          const SI c2a = SI{cc} & SI{0xF};
+          const SI c2b = (c2a < SI{10}) ? (SI{'0'} + c2a) : (SI{'A'} + (c2a - SI{10}));
 
-              extend('\\', 'u', '0', '0', c1.unsafe(), c2b.unsafe());
-            } else {
-              extend(c);
-            }
-            break;
+          extend('\\', 'u', '0', '0', c1.unsafe(), c2b.unsafe());
+        } else {
+          extend(c);
         }
         break;
       }
@@ -102,27 +86,32 @@ inline auto escape_string(std::basic_string_view<TChar> in, auto out_it) {
 }
 } // namespace detail
 
+/** Escapes control characters and `"`/`\` in `in`, writing the result to `out_it`. */
 inline auto escape_string(std::string_view in, auto out_it) {
   return detail::escape_string(in, out_it);
 }
+/** Escapes control characters and `"`/`\` in `in`, writing the result to `out_it`. */
 inline auto escape_string(std::u8string_view in, auto out_it) {
   return detail::escape_string(in, out_it);
 }
 
-template<typename TString>
+/** Customization point mapping a string-like type to its escaped representation. */
+template<typename String>
 struct StringEscape;
-template<std::size_t tSize>
-struct StringEscape<char[tSize]> {
-  static constexpr auto escape(const char value[tSize]) {
-    StaticCapacityString<6 * (tSize - 1)> s{};
+/** Escapes a string literal into a `StaticCapacityString` sized for the worst case. */
+template<std::size_t Size>
+struct StringEscape<char[Size]> {
+  [[nodiscard]] static constexpr auto escape(const char value[Size]) {
+    StaticCapacityString<6 * (Size - 1)> s{};
     escape_string(value, std::back_inserter(s));
     return s;
   }
 };
 
+/** Wraps a value so that formatting it (e.g. via `fmt`) produces its escaped representation. */
 template<typename T>
 struct EscapedPrinter {
-  explicit EscapedPrinter(T&& value) : value_(std::forward<T>(value)) {}
+  explicit EscapedPrinter(T&& value) : value_{std::forward<T>(value)} {}
 
   const T& value() const {
     return value_;
@@ -132,8 +121,12 @@ private:
   T value_;
 };
 
+/**
+ * Returns the escaped representation of `value`: a `StaticCapacityString` if `StringEscape<T>` is
+ * specialized for it, or an `EscapedPrinter` wrapping it for on-demand escaping otherwise.
+ */
 template<typename T>
-static constexpr auto escaped_string(T&& value) {
+[[nodiscard]] static constexpr auto escaped_string(T&& value) {
   if constexpr (CompleteType<StringEscape<T>>) {
     return StringEscape<T>::escape(value);
   } else {

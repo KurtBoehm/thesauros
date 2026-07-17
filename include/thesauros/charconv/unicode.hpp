@@ -17,8 +17,10 @@
 #include "thesauros/types/primitives.hpp"
 
 namespace thes {
+/** A streaming decoder that turns a sequence of UTF‑8 bytes into Unicode codepoints. */
 struct UnicodeDecoder {
   using CodePoint = u32;
+  /** The decoding automaton’s terminal states; other values mean decoding is in progress. */
   enum struct State : u8 {
     ACCEPTED = 0,
     REJECTED = 12,
@@ -27,10 +29,11 @@ struct UnicodeDecoder {
   // Copyright (c) 2008-2010 Bjoern Hoehrmann <bjoern@hoehrmann.de>
   // See http://bjoern.hoehrmann.de/utf-8/decoder/dfa/ for details.
   // Originally licenced under the MIT licence.
-  // Modified to be more C++
-  std::pair<CodePoint, State> decode(const u8 byte) noexcept {
+  // Modified to be more C++.
+  /** Feeds one byte into the decoder, returning the codepoint so far and the new state. */
+  constexpr std::pair<CodePoint, State> decode(const u8 byte) noexcept {
     // Map a character to its character class.
-    static const std::array<u8, 256> char_kind = {
+    static constexpr std::array<u8, 256> char_kind = {
       0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0…
       0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 1…
       0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 2…
@@ -50,8 +53,8 @@ struct UnicodeDecoder {
     };
 
     // A transition table that maps a combination of a state of the automaton and a character class
-    // to a state (multiplied by 12, i.e. the number of states)
-    static const std::array<u8, 108> trans = {
+    // to a state (multiplied by 12, i.e. the number of states).
+    static constexpr std::array<u8, 108> trans = {
       0,  12, 24, 36, 60, 96, 84, 12, 12, 12, 48, 72, // s0
       12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, // s1
       12, 0,  12, 12, 12, 12, 12, 0,  12, 0,  12, 12, // s2
@@ -71,7 +74,8 @@ struct UnicodeDecoder {
     return {codep_, State{state_}};
   }
 
-  std::pair<u32, std::string_view> decode(std::string_view str) {
+  /** Decodes the first codepoint of `str`, returning it along with the rest of the text. */
+  constexpr std::pair<u32, std::string_view> decode(std::string_view str) {
     const char* end = str.end();
     for (const char* ptr = str.begin(); ptr != end; ++ptr) {
       const auto [codep, state] = decode(std::bit_cast<u8>(*ptr));
@@ -88,7 +92,8 @@ struct UnicodeDecoder {
     throw std::invalid_argument{"The string is invalid!"};
   }
 
-  [[nodiscard]] State state() const {
+  /** The decoder’s current automaton state. */
+  [[nodiscard]] constexpr State state() const {
     return State{state_};
   }
 
@@ -97,25 +102,27 @@ private:
   u8 state_{};
 };
 
+/** A view over the Unicode codepoints decoded, lazily and on demand, from a UTF‑8 string. */
 template<typename TStr>
 struct UnicodeStringView {
   using CodePoint = u32;
 
-  UnicodeStringView(TStr&& str) : str_(std::forward<TStr>(str)) {}
+  constexpr explicit UnicodeStringView(TStr&& str) : str_(std::forward<TStr>(str)) {}
 
+  /** An iterator over the codepoints decoded from the referenced string. */
   struct Iterator {
-    Iterator(char* end) : view_{end, end} {}
-    Iterator(std::string_view view) : decoder_{}, view_{view} {
+    constexpr explicit Iterator(const char* end) : view_{end, end} {}
+    constexpr explicit Iterator(std::string_view view) : decoder_{}, view_{view} {
       if (!view_.empty()) {
         std::tie(codep_, next_view_) = decoder_.decode(view_);
       }
     }
 
-    CodePoint operator*() {
+    constexpr CodePoint operator*() const {
       return codep_;
     }
 
-    Iterator& operator++() {
+    constexpr Iterator& operator++() {
       view_ = next_view_;
       if (!view_.empty()) {
         std::tie(codep_, next_view_) = decoder_.decode(view_);
@@ -134,11 +141,11 @@ struct UnicodeStringView {
     CodePoint codep_{};
   };
 
-  Iterator begin() const {
-    return {str_};
+  [[nodiscard]] constexpr Iterator begin() const {
+    return Iterator{str_};
   }
-  Iterator end() const {
-    return {str_.end()};
+  [[nodiscard]] constexpr Iterator end() const {
+    return Iterator{str_.end()};
   }
 
 private:

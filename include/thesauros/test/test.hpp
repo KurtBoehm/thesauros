@@ -10,6 +10,8 @@
 #include <concepts>
 #include <cstddef>
 #include <exception>
+#include <functional>
+#include <initializer_list>
 #include <source_location>
 #include <string>
 #include <string_view>
@@ -17,6 +19,7 @@
 #include <vector>
 
 #include "thesauros/format.hpp"
+#include "thesauros/types/type-name.hpp"
 
 namespace thes::test {
 //==================================================================================================
@@ -31,12 +34,17 @@ struct CheckResult {
   std::source_location location{};
 };
 
-/** A single named test case registered via `THES_TEST_CASE`. */
+/**
+ * A single named test case registered via `THES_TEST_CASE` or one of its templated/parameterized
+ * variants.
+ */
 struct TestCase {
-  using Fn = void (*)();
+  // Type-erased rather than a bare function pointer so that templated and value-parameterized
+  // tests can bind extra state (a type tag or a specific input value) into the callable.
+  using Fn = std::function<void()>;
 
-  std::string_view name{};
-  std::string_view tags{};
+  std::string name{};
+  std::string tags{};
   Fn function{};
 };
 
@@ -64,7 +72,7 @@ struct Registry {
   }
 
   void add(TestCase tc) {
-    cases.push_back(tc);
+    cases.push_back(std::move(tc));
   }
 
   void record(CheckResult res) {
@@ -124,15 +132,59 @@ struct Registry {
 };
 
 //==================================================================================================
-// Registration helper
+// Registration helpers
 //==================================================================================================
 
 /** Registers a `TestCase` with the `Registry` during static initialization. */
 struct AutoRegister {
-  AutoRegister(std::string_view name, std::string_view tags, TestCase::Fn function) noexcept {
-    Registry::instance().add({.name = name, .tags = tags, .function = function});
+  template<typename Fn>
+  AutoRegister(std::string_view name, std::string_view tags, Fn&& function) noexcept {
+    Registry::instance().add({
+      .name = std::string{name},
+      .tags = std::string{tags},
+      .function = TestCase::Fn{std::forward<Fn>(function)},
+    });
   }
 };
+
+/**
+ * Registers one `TestCase` per type in `Ts...`, each named e.g. `"name<int>"`. `get_fn` must be a
+ * generic lambda of the form `[]<typename T> { return &some_template_function<T>; }`, i.e. it
+ * returns a plain `void(*)()` obtained by instantiating a function template on `T`.
+ */
+template<typename... Ts>
+void register_templated(std::string_view name, std::string_view tags, auto&& get_fn) noexcept {
+  (Registry::instance().add(TestCase{
+     .name = fmt::format("{}<{}>", name, type_name<Ts>()),
+     .tags = std::string{tags},
+     .function = get_fn.template operator()<Ts>(),
+   }),
+   ...);
+}
+
+/**
+ * Registers one `TestCase` per element of `values`, each invoking `fn` with that value bound.
+ * Cases are named `"name[value]"` when `T` is formattable, otherwise `"name[index]"`.
+ */
+template<typename T>
+void register_param_tests(std::string_view name, std::string_view tags, void (*fn)(const T&),
+                          std::initializer_list<T> values) noexcept {
+  std::size_t index{};
+  for (const T& value : values) {
+    std::string case_name;
+    if constexpr (fmt::formattable<T>) {
+      case_name = fmt::format("{}[{}]", name, value);
+    } else {
+      case_name = fmt::format("{}[{}]", name, index);
+    }
+    Registry::instance().add(TestCase{
+      .name = std::move(case_name),
+      .tags = std::string{tags},
+      .function = [fn, value] { fn(value); },
+    });
+    ++index;
+  }
+}
 
 //==================================================================================================
 // Expression decomposition
@@ -320,6 +372,54 @@ bool does_not_throw(Fn&& fn) {
     }(), \
     &THES_CONCAT(thes_test_case_, __LINE__)}; \
   static void THES_CONCAT(thes_test_case_, __LINE__)()
+
+/**
+ * Registers a templated test case, instantiated once per type in `...`. The body is a function
+ * template on `TestType`; each instantiation becomes its own independently-run `TestCase`, named
+ * e.g. `"addition works<int>"`.
+ *
+ *   THES_TEMPLATE_TEST_CASE("addition works", "[math]", int, float, double) {
+ *     THES_CHECK(TestType{1} + TestType{1} == TestType{2});
+ *   }
+ */
+#define THES_TEMPLATE_TEST_CASE(name, tags, ...) \
+  namespace THES_CONCAT(thes_template_test_ns_, __LINE__) { \
+  template<typename TestType> \
+  void body(); \
+  } \
+  namespace { \
+  const bool THES_CONCAT(thes_template_test_reg_, __LINE__) = [] noexcept { \
+    using namespace std::literals::string_view_literals; \
+    ::thes::test::register_templated<__VA_ARGS__>(name##sv, tags##sv, []<typename TestType> { \
+      return &THES_CONCAT(thes_template_test_ns_, __LINE__)::body<TestType>; \
+    }); \
+    return true; \
+  }(); \
+  } \
+  template<typename TestType> \
+  void THES_CONCAT(thes_template_test_ns_, __LINE__)::body()
+
+/**
+ * Registers one test case per value in `...`, each running the body with `param_name` bound to
+ * that value. Cases are named `"name[value]"` (or `"name[index]"` if `ParamType` isn't
+ * formattable).
+ *
+ *   THES_TEST_CASE_PARAM("is even", "[math]", int, n, 2, 4, 6, 8) {
+ *     THES_CHECK(n % 2 == 0);
+ *   }
+ */
+#define THES_TEST_CASE_PARAM(name, tags, ParamType, param_name, ...) \
+  namespace THES_CONCAT(thes_param_test_ns_, __LINE__) { \
+  void body(const ParamType& param_name); \
+  } \
+  namespace { \
+  const bool THES_CONCAT(thes_param_test_reg_, __LINE__) = [] noexcept { \
+    ::thes::test::register_param_tests<ParamType>( \
+      name##sv, tags##sv, &THES_CONCAT(thes_param_test_ns_, __LINE__)::body, {__VA_ARGS__}); \
+    return true; \
+  }(); \
+  } \
+  void THES_CONCAT(thes_param_test_ns_, __LINE__)::body(const ParamType& param_name)
 
 #define THES_CHECK(expr) \
   ::thes::test::record( \

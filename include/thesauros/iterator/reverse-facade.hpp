@@ -14,11 +14,11 @@
 namespace thes {
 /**
  * A CRTP mixin that reverses a `Base` iterator. `Derived` exposes the wrapped `Base` instance via
- * `base()`/`base() const`, and `ReverseFacade` derives the reversed primitives from `Base`'s own
+ * `base()`/`base() const`, and `ReverseFacade` derives the reversed primitives from `Base`’s own
  * primitives by swapping `incr`/`decr`, negating `iadd`/`isub` and flipping the comparisons.
  *
  * `Base` may provide `rev_deref()` as a cheaper alternative to decrementing a copy before
- * dereferencing, mirroring `std::reverse_iterator`'s behavior.
+ * dereferencing, mirroring `std::reverse_iterator`’s behavior.
  */
 template<typename IterTypes>
 struct ReverseIteratorFacade : IteratorFacade<IterTypes> {

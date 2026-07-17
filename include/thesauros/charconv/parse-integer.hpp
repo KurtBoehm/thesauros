@@ -8,7 +8,6 @@
 #define INCLUDE_THESAUROS_CHARCONV_PARSE_INTEGER_HPP
 
 #include <cstddef>
-#include <limits>
 #include <optional>
 #include <string_view>
 
@@ -17,48 +16,58 @@
 #include "thesauros/types/value-tag.hpp"
 
 namespace thes {
-enum struct IntegerParseMode : thes::u8 { literal, extended };
+/** Governs how `parse_integer` interprets a leading zero and digit separators. */
+enum struct IntegerParseMode : thes::u8 {
+  /** A leading `0` denotes an octal literal, as in a C++ integer literal; only `'` is skipped. */
+  literal,
+  /** A leading `0o`/`0O` denotes an octal literal; both `_` and `'` are skipped as separators. */
+  extended,
+};
 
-template<typename T, thes::TypedValueTag<IntegerParseMode> TParseMode =
+/**
+ * Parses `src` as a `T`, returning `std::nullopt` if it is empty or not a valid integer literal.
+ * Supports `0x`/`0X` (hexadecimal) and `0b`/`0B` (binary) prefixes and, for signed `T`, a leading
+ * `-`. See `IntegerParseMode` for how a leading `0` and digit separators are handled.
+ */
+template<typename T, thes::TypedValueTag<IntegerParseMode> ParseMode =
                        thes::AutoTag<IntegerParseMode::extended>>
-constexpr std::optional<T> parse_integer(std::string_view src, TParseMode parse_mode = {}) {
+[[nodiscard]] constexpr std::optional<T> parse_integer(std::string_view src,
+                                                       ParseMode parse_mode = {}) {
   auto parse_impl = [&](std::string_view number, auto op) -> std::optional<T> {
-    auto parse_base = [&]<std::size_t tBase>(std::string_view sv, IndexTag<tBase>) {
-      auto parse_char = [&](char c) -> std::optional<T> {
-        // This slightly convoluted implementation optimizes better
-        auto char_map = [c]() -> T {
+    auto parse_base = [&]<std::size_t Base>(std::string_view sv, IndexTag<Base>) {
+      auto parse_char = [](char c) -> std::optional<T> {
+        // This slightly convoluted implementation optimizes better.
+        const auto digit = [c]() -> std::optional<T> {
           switch (c) {
-            case '0': return 0;
-            case '1': return 1;
-            case '2': return 2;
-            case '3': return 3;
-            case '4': return 4;
-            case '5': return 5;
-            case '6': return 6;
-            case '7': return 7;
-            case '8': return 8;
-            case '9': return 9;
+            case '0': return T{0};
+            case '1': return T{1};
+            case '2': return T{2};
+            case '3': return T{3};
+            case '4': return T{4};
+            case '5': return T{5};
+            case '6': return T{6};
+            case '7': return T{7};
+            case '8': return T{8};
+            case '9': return T{9};
             case 'A': [[fallthrough]];
-            case 'a': return 0xa;
+            case 'a': return T{0xA};
             case 'B': [[fallthrough]];
-            case 'b': return 0xb;
+            case 'b': return T{0xB};
             case 'C': [[fallthrough]];
-            case 'c': return 0xc;
+            case 'c': return T{0xC};
             case 'D': [[fallthrough]];
-            case 'd': return 0xd;
+            case 'd': return T{0xD};
             case 'E': [[fallthrough]];
-            case 'e': return 0xe;
+            case 'e': return T{0xE};
             case 'F': [[fallthrough]];
-            case 'f': return 0xf;
-            default: return std::numeric_limits<T>::max();
+            case 'f': return T{0xF};
+            default: return std::nullopt;
           }
-        };
-
-        const auto v = char_map();
-        if (v < T{tBase}) {
-          return v;
+        }();
+        if (!digit.has_value() || *digit >= T{Base}) {
+          return std::nullopt;
         }
-        return std::nullopt;
+        return digit;
       };
 
       T v = 0;
@@ -71,7 +80,7 @@ constexpr std::optional<T> parse_integer(std::string_view src, TParseMode parse_
         if (c == '\'') {
           continue;
         }
-        v = op(overflow_multiply(v, T{tBase}).valid_value(), parse_char(c).value()).valid_value();
+        v = op(overflow_multiply(v, T{Base}).valid_value(), parse_char(c).value()).valid_value();
       }
       return v;
     };

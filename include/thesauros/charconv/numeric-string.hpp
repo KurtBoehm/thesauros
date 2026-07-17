@@ -15,54 +15,46 @@
 #include <limits>
 #include <system_error>
 
+#include "thesauros/concepts/type-traits.hpp"
 #include "thesauros/math/arithmetic.hpp"
 #include "thesauros/math/integer-cast.hpp"
 #include "thesauros/string/static-capacity-string.hpp"
 
 namespace thes {
-template<typename T>
-struct MaxCharNumTrait;
-template<std::floating_point T>
-struct MaxCharNumTrait<T> {
-  using Type = T;
-  using Limits = std::numeric_limits<Type>;
+/** The maximum number of characters `numeric_string` may need to represent a `Numeric` value. */
+template<Numeric T>
+inline constexpr unsigned max_char_num = [] {
+  using Limits = std::numeric_limits<T>;
+  if constexpr (std::floating_point<T>) {
+    // 4: sign, decimal point, and “e+” or “e-”.
+    // max_digits10: the significand.
+    // max(2, max_exponent10): the exponent, which has at least two digits.
+    return 4U + unsigned{Limits::max_digits10} +
+           std::max(2U, abs_log_ceil(10U, unsigned{Limits::max_exponent10}));
+  } else if constexpr (std::unsigned_integral<T>) {
+    // Unsigned values need no sign character.
+    return abs_log_ceil(T{10}, Limits::max());
+  } else {
+    // 1: sign.
+    return 1 + abs_log_ceil(T{10}, Limits::lowest());
+  }
+}();
 
-  // 4: sign, decimal point, and “e+” or “e-”
-  // max_digits10: significand
-  // max(2, max_exponent10): Exponent, which has at least two digits
-  static constexpr auto char_num =
-    4U + unsigned{Limits::max_digits10} +
-    std::max(2U, abs_log_ceil(10U, unsigned{Limits::max_exponent10}));
-};
-template<std::unsigned_integral T>
-struct MaxCharNumTrait<T> {
-  using Type = T;
-  using Limits = std::numeric_limits<Type>;
-
-  // 1: sign
-  static constexpr auto char_num = abs_log_ceil(Type{10}, Limits::max());
-};
-template<std::signed_integral T>
-struct MaxCharNumTrait<T> {
-  using Type = T;
-  using Limits = std::numeric_limits<Type>;
-
-  // 1: sign
-  static constexpr auto char_num = 1 + abs_log_ceil(Type{10}, Limits::lowest());
-};
-template<typename T>
-inline constexpr unsigned max_char_num = MaxCharNumTrait<T>::char_num;
-
-template<typename T>
-constexpr std::expected<StaticCapacityString<max_char_num<T>>, std::errc>
+/**
+ * Converts `value` to its shortest round-trippable textual representation.
+ * Only usable in a constant expression for integral `T`: `std::to_chars` for floating-point types
+ * is not `constexpr` as of C++23.
+ */
+template<Numeric T>
+[[nodiscard]] constexpr std::expected<StaticCapacityString<max_char_num<T>>, std::errc>
 numeric_string(const T& value) {
   StaticCapacityString<max_char_num<T>> out{};
   auto res = std::to_chars(out.data(), out.data() + max_char_num<T>, value);
   if (res.ec == std::errc{}) {
-    out.size() = safe_cast<std::size_t>(res.ptr - out.data()).valid_value();
+    out.set_size(safe_cast<std::size_t>(res.ptr - out.data()).valid_value());
     return out;
   }
-  return std::unexpected(res.ec);
+  return std::unexpected{res.ec};
 }
 } // namespace thes
 

@@ -10,6 +10,7 @@ args = options_sub.get_variable('all_args')
 
 foreach name, deps : {
   'arrays': [],
+  'charconv': [],
   'chunked-dynamic-array': [],
   'concepts': [],
   'divisor': [],

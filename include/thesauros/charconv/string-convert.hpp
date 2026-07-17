@@ -14,6 +14,9 @@
 #include <system_error>
 
 namespace thes {
+/**
+ * Parses all of `sv` in the given `base` as a `T`; `std::nullopt` on any invalid or leftover text.
+ */
 template<std::integral T>
 [[nodiscard]] constexpr std::optional<T> string_to_integral(std::string_view sv,
                                                             int base = 10) noexcept {

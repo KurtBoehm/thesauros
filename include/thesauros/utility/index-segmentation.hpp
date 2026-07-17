@@ -285,7 +285,7 @@ struct PaddedIndexSegmenter {
       // First segment: prepend n0 indices.
       return Size(0);
     }
-    // Other segments start at the base's start + n0 shift.
+    // Other segments start at the base’s start + n0 shift.
     return Size(base_.segment_start(s) + n0_);
   }
 
@@ -297,7 +297,7 @@ struct PaddedIndexSegmenter {
       // Last segment: append n1 indices.
       return Size(base_.segment_end(s) + n0_ + n1_);
     }
-    // Other segments end at the base's end + n0 shift.
+    // Other segments end at the base’s end + n0 shift.
     return Size(base_.segment_end(s) + n0_);
   }
 
