@@ -107,12 +107,12 @@ template<typename TStr>
 struct UnicodeStringView {
   using CodePoint = u32;
 
-  constexpr explicit UnicodeStringView(TStr&& str) : str_(std::forward<TStr>(str)) {}
+  explicit constexpr UnicodeStringView(TStr&& str) : str_(std::forward<TStr>(str)) {}
 
   /** An iterator over the codepoints decoded from the referenced string. */
   struct Iterator {
-    constexpr explicit Iterator(const char* end) : view_{end, end} {}
-    constexpr explicit Iterator(std::string_view view) : decoder_{}, view_{view} {
+    explicit constexpr Iterator(const char* end) : view_{end, end} {}
+    explicit constexpr Iterator(std::string_view view) : decoder_{}, view_{view} {
       if (!view_.empty()) {
         std::tie(codep_, next_view_) = decoder_.decode(view_);
       }

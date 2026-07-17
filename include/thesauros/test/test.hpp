@@ -18,6 +18,7 @@
 #include <utility>
 #include <vector>
 
+#include "thesauros/concepts/fundamental.hpp"
 #include "thesauros/format.hpp"
 #include "thesauros/types/type-name.hpp"
 
@@ -196,6 +197,10 @@ struct DecomposedExpression {
   std::string message{};
 };
 
+template<typename Lhs, typename Rhs>
+concept CmpCompatible =
+  (UnsignedInteger<Lhs> || SignedInteger<Lhs>) && (UnsignedInteger<Rhs> || SignedInteger<Rhs>);
+
 /**
  * Captures the left-hand side of an expression passed to `THES_CHECK`/`THES_REQUIRE`, so that a
  * subsequent comparison operator, if any, can be intercepted and both operands recorded for a
@@ -210,7 +215,7 @@ struct ExpressionCapture {
   requires(std::equality_comparable_with<Lhs, Rhs>)
   DecomposedExpression operator==(const Rhs& rhs) const {
     const bool cmp = [&] {
-      if constexpr (std::integral<Lhs> && std::integral<Rhs>) {
+      if constexpr (CmpCompatible<Lhs, Rhs>) {
         return std::cmp_equal(lhs, rhs);
       } else {
         return lhs == rhs;
@@ -223,7 +228,7 @@ struct ExpressionCapture {
   requires(std::equality_comparable_with<Lhs, Rhs>)
   DecomposedExpression operator!=(const Rhs& rhs) const {
     const bool cmp = [&] {
-      if constexpr (std::integral<Lhs> && std::integral<Rhs>) {
+      if constexpr (CmpCompatible<Lhs, Rhs>) {
         return std::cmp_not_equal(lhs, rhs);
       } else {
         return lhs != rhs;
@@ -254,7 +259,7 @@ struct ExpressionCapture {
   requires(std::totally_ordered_with<Lhs, Rhs>)
   DecomposedExpression operator>=(const Rhs& rhs) const {
     const bool cmp = [&] {
-      if constexpr (std::integral<Lhs> && std::integral<Rhs>) {
+      if constexpr (CmpCompatible<Lhs, Rhs>) {
         return std::cmp_greater_equal(lhs, rhs);
       } else {
         return lhs >= rhs;
