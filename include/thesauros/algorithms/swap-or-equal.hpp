@@ -20,7 +20,7 @@ constexpr void swap_or_equal(std::remove_reference_t<T>& v1, std::remove_referen
     using std::swap;
     swap(v1, v2);
   }
-};
+}
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_ALGORITHMS_SWAP_OR_EQUAL_HPP

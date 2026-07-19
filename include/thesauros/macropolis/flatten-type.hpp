@@ -43,7 +43,7 @@ constexpr auto member_info_of() {
     }
   };
   return impl(impl, std::make_index_sequence<std::tuple_size_v<decltype(members)>>{});
-};
+}
 template<typename TTypeInfo, auto tPtr>
 using MemberInfoTypeOf = decltype(member_info_of<TTypeInfo, tPtr>());
 

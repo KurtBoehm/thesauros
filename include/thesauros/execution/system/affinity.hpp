@@ -127,7 +127,8 @@ struct CpuSet {
 #if THES_LINUX
     CPU_SET(i, &cpu_set_);
 #elif THES_APPLE
-    if (cpu_set_ != integer_t(-1)) {
+    constexpr integer_t reference = -1;
+    if (cpu_set_ != reference) {
       fmt::print(stderr, "On macOS, multi-CPU sets are not supported! Overwriting existing entry.");
     }
     cpu_set_ = *safe_cast<Base>(i);

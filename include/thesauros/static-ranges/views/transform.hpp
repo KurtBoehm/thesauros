@@ -25,104 +25,103 @@
 
 namespace thes::star {
 namespace transform_impl {
-template<typename TFun, typename TRet, typename... TArgRanges>
+template<typename Fun, typename Ret, typename... ArgRanges>
 struct ValueBase {};
 
-template<typename TFun, typename TRet, typename... TArgRanges>
-requires(!std::is_void_v<TRet>)
-struct ValueBase<TFun, TRet, TArgRanges...> {
-  using Value = TRet;
+template<typename Fun, typename Ret, typename... ArgRanges>
+requires(!std::is_void_v<Ret>)
+struct ValueBase<Fun, Ret, ArgRanges...> {
+  using Value = Ret;
 };
 
-template<typename TFun, typename TRet, typename... TArgRanges>
-requires(std::is_void_v<TRet> && (... && HasValue<std::decay_t<TArgRanges>>))
-struct ValueBase<TFun, TRet, TArgRanges...> {
-  using Value = decltype(std::declval<const TFun&>()(
-    std::declval<star::RawValue<std::decay_t<TArgRanges>>>()...));
+template<typename Fun, typename Ret, typename... ArgRanges>
+requires(std::is_void_v<Ret> && (... && HasValue<std::decay_t<ArgRanges>>))
+struct ValueBase<Fun, Ret, ArgRanges...> {
+  using Value = decltype(std::declval<const Fun&>()(
+    std::declval<star::RawValue<std::decay_t<ArgRanges>>>()...));
 };
 } // namespace transform_impl
 
-template<typename TFun, typename TRet, typename... TArgRanges>
-requires(sizeof...(TArgRanges) > 0 && star::has_unique_value(std::array{size<TArgRanges>...}))
-struct TransformView : public transform_impl::ValueBase<TFun, TRet, TArgRanges...> {
+template<typename Fun, typename Ret, typename... ArgRanges>
+requires(sizeof...(ArgRanges) > 0 && star::has_unique_value(std::array{size<ArgRanges>...}))
+struct TransformView : public transform_impl::ValueBase<Fun, Ret, ArgRanges...> {
   static constexpr std::size_t size =
-    star::unique_value(std::array{star::size<TArgRanges>...}).value();
+    star::unique_value(std::array{star::size<ArgRanges>...}).value();
   static constexpr TupleDefsMarker tuple_defs_marker{};
 
-  TFun fun;
-  Tuple<TArgRanges...> range_tup;
+  Fun fun;
+  Tuple<ArgRanges...> range_tup;
 
-  explicit constexpr TransformView(TFun&& f, TArgRanges&&... ranges)
-      : fun(std::forward<TFun>(f)), range_tup(std::forward<TArgRanges>(ranges)...) {}
+  explicit constexpr TransformView(Fun&& f, ArgRanges&&... ranges)
+      : fun(std::forward<Fun>(f)), range_tup(std::forward<ArgRanges>(ranges)...) {}
 
-  template<std::size_t tIndex>
+  template<std::size_t I>
   THES_ALWAYS_INLINE friend constexpr decltype(auto) get(const TransformView& self) {
     return apply([&self](const auto&... ranges) THES_ALWAYS_INLINE -> decltype(auto) {
-      return self.fun(get_at<tIndex>(ranges)...);
+      return self.fun(get_at<I>(ranges)...);
     })(self.range_tup);
   }
 };
 
-template<typename TFun, typename TRet = void>
+template<typename Fun, typename Ret = void>
 struct TransformGenerator : public RangeGeneratorBase {
-  TFun fun;
+  Fun fun;
 
-  explicit constexpr TransformGenerator(TFun&& f) : fun(std::forward<TFun>(f)) {}
+  explicit constexpr TransformGenerator(Fun&& f) : fun(std::forward<Fun>(f)) {}
 
-  template<typename... TArgRanges>
-  THES_ALWAYS_INLINE constexpr auto operator()(TArgRanges&&... ranges) const& {
-    return TransformView<const TFun&, TRet, TArgRanges...>{fun,
-                                                           std::forward<TArgRanges>(ranges)...};
+  template<typename... ArgRanges>
+  THES_ALWAYS_INLINE constexpr auto operator()(ArgRanges&&... ranges) const& {
+    return TransformView<const Fun&, Ret, ArgRanges...>{fun, std::forward<ArgRanges>(ranges)...};
   }
-  template<typename... TArgRanges>
-  THES_ALWAYS_INLINE constexpr auto operator()(TArgRanges&&... ranges) && {
-    return TransformView<TFun, TRet, TArgRanges...>{std::forward<TFun>(fun),
-                                                    std::forward<TArgRanges>(ranges)...};
+  template<typename... ArgRanges>
+  THES_ALWAYS_INLINE constexpr auto operator()(ArgRanges&&... ranges) && {
+    return TransformView<Fun, Ret, ArgRanges...>{std::forward<Fun>(fun),
+                                                 std::forward<ArgRanges>(ranges)...};
   }
 };
 
-template<typename TFun>
-THES_ALWAYS_INLINE inline constexpr auto transform(TFun&& f) {
-  return TransformGenerator<TFun>{std::forward<TFun>(f)};
-};
-template<typename TRet, typename TFun>
-THES_ALWAYS_INLINE inline constexpr auto transform(TFun&& f) {
-  return TransformGenerator<TFun, TRet>{std::forward<TFun>(f)};
-};
-
-template<typename TFun, typename... TArgRanges>
-requires(sizeof...(TArgRanges) > 0)
-THES_ALWAYS_INLINE inline constexpr auto transform(TFun&& f, TArgRanges&&... ranges) {
-  return TransformView<TFun, void, TArgRanges...>{std::forward<TFun>(f),
-                                                  std::forward<TArgRanges>(ranges)...};
+template<typename Fun>
+THES_ALWAYS_INLINE inline constexpr auto transform(Fun&& f) {
+  return TransformGenerator<Fun>{std::forward<Fun>(f)};
 }
-template<typename TRet, typename TFun, typename... TArgRanges>
-requires(sizeof...(TArgRanges) > 0)
-THES_ALWAYS_INLINE inline constexpr auto transform(TFun&& f, TArgRanges&&... ranges) {
-  return TransformView<TFun, TRet, TArgRanges...>{std::forward<TFun>(f),
-                                                  std::forward<TArgRanges>(ranges)...};
+template<typename Ret, typename Fun>
+THES_ALWAYS_INLINE inline constexpr auto transform(Fun&& f) {
+  return TransformGenerator<Fun, Ret>{std::forward<Fun>(f)};
 }
 
-template<std::size_t tSize, typename TFun>
-THES_ALWAYS_INLINE inline constexpr auto index_transform(TFun&& f) {
-  using View = TransformView<TFun, void, IotaView<std::size_t, 0, tSize, 1>>;
-  return View{std::forward<TFun>(f), {}};
-};
-template<std::size_t tBegin, std::size_t tEnd, typename TFun>
-THES_ALWAYS_INLINE inline constexpr auto index_transform(TFun&& f) {
-  using View = TransformView<TFun, void, IotaView<std::size_t, tBegin, tEnd, 1>>;
-  return View{std::forward<TFun>(f), {}};
-};
-template<typename TSize, TSize tSize, typename TFun>
-THES_ALWAYS_INLINE inline constexpr auto index_transform(TFun&& f) {
-  using View = TransformView<TFun, void, IotaView<TSize, 0, tSize, 1>>;
-  return View{std::forward<TFun>(f), {}};
-};
-template<typename TSize, TSize tBegin, TSize tEnd, typename TFun>
-THES_ALWAYS_INLINE inline constexpr auto index_transform(TFun&& f) {
-  using View = TransformView<TFun, void, IotaView<TSize, tBegin, tEnd, 1>>;
-  return View{std::forward<TFun>(f), {}};
-};
+template<typename Fun, typename... ArgRanges>
+requires(sizeof...(ArgRanges) > 0)
+THES_ALWAYS_INLINE inline constexpr auto transform(Fun&& f, ArgRanges&&... ranges) {
+  return TransformView<Fun, void, ArgRanges...>{std::forward<Fun>(f),
+                                                std::forward<ArgRanges>(ranges)...};
+}
+template<typename Ret, typename Fun, typename... ArgRanges>
+requires(sizeof...(ArgRanges) > 0)
+THES_ALWAYS_INLINE inline constexpr auto transform(Fun&& f, ArgRanges&&... ranges) {
+  return TransformView<Fun, Ret, ArgRanges...>{std::forward<Fun>(f),
+                                               std::forward<ArgRanges>(ranges)...};
+}
+
+template<std::size_t End, typename Fun>
+THES_ALWAYS_INLINE inline constexpr auto index_transform(Fun&& f) {
+  using View = TransformView<Fun, void, IotaView<std::size_t, 0, End, 1>>;
+  return View{std::forward<Fun>(f), {}};
+}
+template<std::size_t Begin, std::size_t End, typename Fun>
+THES_ALWAYS_INLINE inline constexpr auto index_transform(Fun&& f) {
+  using View = TransformView<Fun, void, IotaView<std::size_t, Begin, End, 1>>;
+  return View{std::forward<Fun>(f), {}};
+}
+template<typename Size, Size End, typename Fun>
+THES_ALWAYS_INLINE inline constexpr auto index_transform(Fun&& f) {
+  using View = TransformView<Fun, void, IotaView<Size, 0, End, 1>>;
+  return View{std::forward<Fun>(f), {}};
+}
+template<typename Size, Size Begin, Size End, typename Fun>
+THES_ALWAYS_INLINE inline constexpr auto index_transform(Fun&& f) {
+  using View = TransformView<Fun, void, IotaView<Size, Begin, End, 1>>;
+  return View{std::forward<Fun>(f), {}};
+}
 } // namespace thes::star
 
 #endif // INCLUDE_THESAUROS_STATIC_RANGES_VIEWS_TRANSFORM_HPP

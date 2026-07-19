@@ -13,7 +13,7 @@ struct MoveDetector {
   MoveDetector(const MoveDetector&) = delete;
   MoveDetector(MoveDetector&& other) noexcept : unmoved_{other.unmoved_} {
     other.unmoved_ = false;
-  };
+  }
   MoveDetector& operator=(const MoveDetector&) = delete;
   MoveDetector& operator=(MoveDetector&&) noexcept = delete;
   ~MoveDetector() = default;

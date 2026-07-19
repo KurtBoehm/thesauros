@@ -105,7 +105,7 @@ concept HasSerialName = CompleteType<SerialNameTrait<T>>;
   struct SerialNameTrait<::thes::TYPENAME> { \
     static constexpr auto name() { \
       return ::thes::StaticString{#TYPENAME}; \
-    }; \
+    } \
   };
 
 THES_POLIS_PRIMITIVE_NAME(u8)

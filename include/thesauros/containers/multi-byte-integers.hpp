@@ -49,7 +49,7 @@ struct ArrayStorage {
   using Data = DynamicArray<std::byte, DefaultInit, DoublingGrowth, ByteAlloc>;
 
   /** Creates an empty storage, allocating only the padding. */
-  ArrayStorage() : data_(2 * padding_bytes) {};
+  ArrayStorage() : data_(2 * padding_bytes) {}
   /** Creates a storage for `size` elements, allocating padding on both sides. */
   explicit ArrayStorage(std::size_t size) : data_(effective_allocation(size)), size_(size) {}
 
@@ -332,7 +332,7 @@ struct MultiByteIntegersBase {
   using const_reverse_iterator = BaseReverseIterator<true>;
 
   /** Wraps `storage` without copying its contents. */
-  explicit MultiByteIntegersBase(Storage&& storage) : storage_(std::forward<Storage>(storage)) {};
+  explicit MultiByteIntegersBase(Storage&& storage) : storage_(std::forward<Storage>(storage)) {}
 
   //------------------------------------------------------------------------------------------------
   // Iteration
@@ -597,13 +597,13 @@ struct MultiByteIntegerArray
   //------------------------------------------------------------------------------------------------
 
   /** Creates an empty array. */
-  MultiByteIntegerArray() : Base(Storage{}) {};
+  MultiByteIntegerArray() : Base(Storage{}) {}
   /** Creates an array of `size` default-initialized elements. */
   explicit MultiByteIntegerArray(std::size_t size) : Base(Storage{size}) {}
   /** Creates an array containing the elements of `init`, in order. */
   MultiByteIntegerArray(std::initializer_list<Value> init) : Base(Storage{init.size()}) {
     std::copy(init.begin(), init.end(), this->begin());
-  };
+  }
 
   //------------------------------------------------------------------------------------------------
   // Modification

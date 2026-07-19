@@ -55,7 +55,7 @@ static_assert(Test1b::pointer == &Test1::test);
 ////////////////////////////////////////////////////////////////
 
 namespace inner {
-THES_DEFINE_ENUM(SNAKE_CASE(Test2), int, LOWERCASE(A), LOWERCASE(B));
+THES_DEFINE_ENUM(SNAKE_CASE(Test2), int, LOWERCASE(A), LOWERCASE(B))
 }
 
 using Test2Info = thes::EnumInfo<inner::Test2>;

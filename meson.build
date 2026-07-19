@@ -10,13 +10,6 @@ project(
   default_options: ['cpp_std=c++23', 'warning_level=3'],
 )
 
-# On macOS, _Static_assert is used in system headers, which GCC does not support
-# in C++ mode
-cpp = meson.get_compiler('cpp')
-if cpp.get_id() == 'gcc' and host_machine.system() == 'darwin'
-  add_global_arguments('-D_Static_assert=static_assert', language: 'cpp')
-endif
-
 use_iokit = get_option('use_iokit')
 
 fmt_sub = subproject('fmt', default_options: ['default_library=static'])
@@ -69,6 +62,13 @@ if not meson.is_subproject()
     version: meson.project_version(),
     description: 'thesauros',
   )
+
+  # On macOS, _Static_assert is used in system headers, which GCC does not support
+  # in C++ mode
+  cpp = meson.get_compiler('cpp')
+  if cpp.get_id() == 'gcc' and host_machine.system() == 'darwin'
+    add_global_arguments('-D_Static_assert=static_assert', language: 'cpp')
+  endif
 endif
 
 if get_option('build_tests')
