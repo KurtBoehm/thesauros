@@ -19,35 +19,35 @@
 
 namespace thes::test {
 namespace detail {
-template<typename TRange>
-concept IsIterRange = requires(TRange&& r) {
+template<typename Range>
+concept IsIterRange = requires(Range&& r) {
   std::begin(r);
   std::end(r);
 };
-template<typename TRange>
-concept IsAccessRange = requires(TRange&& r) { r[r.size()]; };
+template<typename Range>
+concept IsAccessRange = requires(Range&& r) { r[r.size()]; };
 
-template<typename TRange1, typename TRange2>
-concept AreIterRanges = IsIterRange<TRange1> && IsIterRange<TRange2>;
-template<typename TRange1, typename TRange2>
-concept AreAccessRanges = IsAccessRange<TRange1> && IsAccessRange<TRange2>;
+template<typename Range1, typename Range2>
+concept AreIterRanges = IsIterRange<Range1> && IsIterRange<Range2>;
+template<typename Range1, typename Range2>
+concept AreAccessRanges = IsAccessRange<Range1> && IsAccessRange<Range2>;
 
-template<typename TRange1, typename TRange2>
-concept AreRanges = AreIterRanges<TRange1, TRange2> || AreAccessRanges<TRange1, TRange2>;
+template<typename Range1, typename Range2>
+concept AreRanges = AreIterRanges<Range1, Range2> || AreAccessRanges<Range1, Range2>;
 } // namespace detail
 
-template<typename TRange1, typename TRange2, typename TEqual = std::equal_to<>,
-         typename TPrint = NoOp<>>
-constexpr bool range_eq(TRange1&& r1, TRange2&& r2, TEqual equal = {}, TPrint printer = {}) {
-  static_assert(detail::AreRanges<TRange1, TRange2>);
+template<typename Range1, typename Range2, typename Equal = std::equal_to<>,
+         typename Print = NoOp<>>
+constexpr bool range_eq(Range1&& r1, Range2&& r2, Equal equal = {}, Print printer = {}) {
+  static_assert(detail::AreRanges<Range1, Range2>);
 
-  if constexpr (detail::AreIterRanges<TRange1, TRange2>) {
+  if constexpr (detail::AreIterRanges<Range1, Range2>) {
     auto it1 = std::begin(r1);
     auto end1 = std::end(r1);
     auto it2 = std::begin(r2);
     auto end2 = std::end(r2);
 
-    constexpr bool print = !AnyNoOp<TPrint>;
+    constexpr bool print = !AnyNoOp<Print>;
     if constexpr (print) {
       printer("range_eq: ");
     }
@@ -69,19 +69,19 @@ constexpr bool range_eq(TRange1&& r1, TRange2&& r2, TEqual equal = {}, TPrint pr
     }
     return (it1 == end1) == (it2 == end2);
   }
-  if constexpr (detail::AreAccessRanges<TRange1, TRange2>) {
+  if constexpr (detail::AreAccessRanges<Range1, Range2>) {
     const auto size1 = r1.size();
     const auto size2 = r2.size();
-    if (size1 != size2) {
+    if (std::cmp_not_equal(size1, size2)) {
       return false;
     }
 
     auto i1 = [] {
-      using Range1 = std::decay_t<TRange1>;
-      if constexpr (requires { typename Range1::size_type; }) {
-        return typename Range1::size_type{};
-      } else if constexpr (std::ranges::range<Range1>) {
-        return std::ranges::range_difference_t<Range1>{};
+      using DecayedRange1 = std::decay_t<Range1>;
+      if constexpr (requires { typename DecayedRange1::size_type; }) {
+        return typename DecayedRange1::size_type{};
+      } else if constexpr (std::ranges::range<DecayedRange1>) {
+        return std::ranges::range_difference_t<DecayedRange1>{};
       } else {
         return std::decay_t<decltype(size1)>{};
       }
@@ -96,11 +96,11 @@ constexpr bool range_eq(TRange1&& r1, TRange2&& r2, TEqual equal = {}, TPrint pr
     return true;
   }
 }
-template<typename TPrint>
-inline bool string_eq(const std::string_view s1, const std::string_view s2, TPrint printer) {
+template<typename Printer>
+inline bool string_eq(const std::string_view s1, const std::string_view s2, Printer printer) {
   const bool eq = s1 == s2;
 
-  if constexpr (!AnyNoOp<TPrint>) {
+  if constexpr (!AnyNoOp<Printer>) {
     if (eq) {
       printer(fg_green, "{}\n", s1);
     } else {
@@ -121,18 +121,18 @@ inline bool string_eq(const std::string_view s1, const std::string_view s2, TPri
 }
 
 struct StringEqPrinter {
-  template<typename... TArgs>
-  void operator()(fmt::format_string<TArgs...> fmt, TArgs&&... args) {
-    fmt::print(fmt, std::forward<TArgs>(args)...);
+  template<typename... Args>
+  void operator()(fmt::format_string<Args...> fmt, Args&&... args) {
+    fmt::print(fmt, std::forward<Args>(args)...);
   }
-  template<typename... TArgs>
-  void operator()(const fmt::text_style& ts, fmt::format_string<TArgs...> fmt, TArgs&&... args) {
-    fmt::print(ts, fmt, std::forward<TArgs>(args)...);
+  template<typename... Args>
+  void operator()(const fmt::text_style& ts, fmt::format_string<Args...> fmt, Args&&... args) {
+    fmt::print(ts, fmt, std::forward<Args>(args)...);
   }
 };
 
-template<bool tVerbose = true>
-inline bool string_eq(const std::string_view s1, const auto& v, BoolTag<tVerbose> verbose = {}) {
+template<bool Verbose = true>
+inline bool string_eq(const std::string_view s1, const auto& v, BoolTag<Verbose> verbose = {}) {
   const auto s2 = fmt::format("{}", v);
   if constexpr (verbose) {
     return string_eq(s1, std::string_view{s2}, StringEqPrinter{});
