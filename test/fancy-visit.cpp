@@ -20,7 +20,7 @@ using V1 = std::variant<int, float>;
 using V2 = std::variant<long, double>;
 static_assert(std::same_as<thes::FlatTypeSeq<thes::TypeSeq<V1, V2>>,
                            thes::TypeSeq<std::variant<int, float>, std::variant<long, double>>>);
-using V4 = thes::ConvertedTypeSeq<thes::TypeSeq<V1, V2>>;
+using V4 = thes::VariantTypeSeq<thes::TypeSeq<V1, V2>>;
 static_assert(
   std::same_as<V4, thes::TypeSeq<thes::TypeSeq<thes::TypeSeq<int>, thes::TypeSeq<float>>,
                                  thes::TypeSeq<thes::TypeSeq<long>, thes::TypeSeq<double>>>>);

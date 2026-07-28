@@ -21,8 +21,8 @@ namespace thes::test {
 namespace detail {
 template<typename Range>
 concept IsIterRange = requires(Range&& r) {
-  std::begin(r);
-  std::end(r);
+  std::ranges::begin(r);
+  std::ranges::end(r);
 };
 template<typename Range>
 concept IsAccessRange = requires(Range&& r) { r[r.size()]; };
@@ -42,10 +42,10 @@ constexpr bool range_eq(Range1&& r1, Range2&& r2, Equal equal = {}, Print printe
   static_assert(detail::AreRanges<Range1, Range2>);
 
   if constexpr (detail::AreIterRanges<Range1, Range2>) {
-    auto it1 = std::begin(r1);
-    auto end1 = std::end(r1);
-    auto it2 = std::begin(r2);
-    auto end2 = std::end(r2);
+    auto it1 = std::ranges::begin(r1);
+    auto end1 = std::ranges::end(r1);
+    auto it2 = std::ranges::begin(r2);
+    auto end2 = std::ranges::end(r2);
 
     constexpr bool print = !AnyNoOp<Print>;
     if constexpr (print) {

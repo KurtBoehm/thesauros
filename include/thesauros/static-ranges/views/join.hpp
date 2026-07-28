@@ -26,7 +26,7 @@ namespace thes::star {
 template<typename TRanges>
 struct JoinView {
   static constexpr std::size_t size = []<std::size_t... tIdxs>(std::index_sequence<tIdxs...>) {
-    return (... + thes::star::size<std::decay_t<Element<tIdxs, TRanges>>>);
+    return (0UZ + ... + thes::star::size<std::decay_t<Element<tIdxs, TRanges>>>);
   }(std::make_index_sequence<star::size<TRanges>>{});
   static constexpr TupleDefsMarker tuple_defs_marker{};
 
@@ -59,7 +59,7 @@ JoinView(TRanges&&...) -> JoinView<TRanges...>;
 template<typename... TRanges>
 requires(sizeof...(TRanges) > 0)
 THES_ALWAYS_INLINE inline constexpr auto joined(TRanges&&... ranges) {
-  return JoinView{Tuple{std::forward<TRanges>(ranges)...}};
+  return JoinView{make_tuple(std::forward<TRanges>(ranges)...)};
 }
 
 template<typename TRangeRange>

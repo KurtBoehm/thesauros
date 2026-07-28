@@ -128,11 +128,11 @@ struct FancyVisitor {
   using RawReturnSeq = TransformedTypeSeq<Params, FunReturnType>;
 
   using BaseReturnSeq =
-    std::conditional_t<tFlatten, FlatTypeSeq<ConvertedTypeSeq<RawReturnSeq>>, RawReturnSeq>;
+    std::conditional_t<tFlatten, FlatTypeSeq<VariantTypeSeq<RawReturnSeq>>, RawReturnSeq>;
 
-  template<typename T>
-  struct ReturnFilter : std::bool_constant<!std::is_same_v<T, FancyVisitorIgnore>> {};
-  using ReturnSeq = UniqueTypeSeq<FilteredTypeSeq<BaseReturnSeq, ReturnFilter>>;
+  using ReturnSeq = UniqueTypeSeq<FilteredTypeSeqBy<BaseReturnSeq, []<typename T>(TypeTag<T>) {
+    return !std::same_as<T, FancyVisitorIgnore>;
+  }>>;
 
   using Return = MakeReturn<ReturnSeq>::Type;
 

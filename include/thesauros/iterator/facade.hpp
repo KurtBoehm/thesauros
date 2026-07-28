@@ -175,8 +175,8 @@ struct IteratorFacade {
   }
 
   /** Returns an iterator advanced by `n` elements. */
-  template<typename Derived>
-  constexpr Derived operator+(this const Derived& self, difference_type n)
+  template<std::derived_from<IteratorFacade> Derived>
+  friend constexpr Derived operator+(const Derived& self, difference_type n)
   requires(requires(Derived tmp) { tmp.iadd(n); })
   {
     Derived tmp{self};
@@ -185,7 +185,7 @@ struct IteratorFacade {
   }
 
   /** Returns an iterator advanced by `n` elements. */
-  template<typename Derived>
+  template<std::derived_from<IteratorFacade> Derived>
   friend constexpr Derived operator+(difference_type n, const Derived& self)
   requires(requires(Derived tmp) { tmp.iadd(n); })
   {
@@ -228,7 +228,9 @@ struct IteratorFacade {
     if constexpr (requires { self.get_item(n); }) {
       return self.get_item(n);
     } else {
-      return *(self + n);
+      Derived tmp{self};
+      tmp.iadd(n);
+      return *tmp;
     }
   }
 
