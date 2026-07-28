@@ -11,7 +11,8 @@
 #include <variant>
 
 #include "thesauros/format.hpp"
-#include "thesauros/macropolis.hpp"
+#include "thesauros/literals.hpp"
+#include "thesauros/reflection.hpp"
 #include "thesauros/static-ranges.hpp"
 #include "thesauros/string.hpp"
 #include "thesauros/types.hpp"

@@ -7,6 +7,7 @@
 #include <concepts>
 #include <cstdint>
 
+#include "thesauros/literals.hpp"
 #include "thesauros/types.hpp"
 
 int main() {

@@ -21,7 +21,7 @@
 #include <psapi.h>
 #include <winnt.h>
 
-#include "thesauros/format/fmtlib.hpp"
+#include "thesauros/charconv/concat.hpp"
 #include "thesauros/types/primitives.hpp"
 #endif
 
@@ -103,7 +103,7 @@ private:
       const WINBOOL ret =
         GetProcessTimes(GetCurrentProcess(), &creation_time, &exit_time, &kernel_time, &user_time);
       if (ret == 0) {
-        throw std::runtime_error{fmt::format("GetProcessTimes failed: {}", GetLastError())};
+        throw std::runtime_error{cat("GetProcessTimes failed: ", GetLastError())};
       }
     }
 
@@ -112,7 +112,7 @@ private:
       const WINBOOL ret =
         GetProcessMemoryInfo(GetCurrentProcess(), &mem_counters, sizeof(mem_counters));
       if (ret == 0) {
-        throw std::runtime_error{fmt::format("GetProcessMemoryInfo failed: {}", GetLastError())};
+        throw std::runtime_error{cat("GetProcessMemoryInfo failed: ", GetLastError())};
       }
     }
 

@@ -10,8 +10,9 @@
 #include <tuple>
 #include <type_traits>
 
+#include "thesauros/static-ranges/type-seq.hpp"
+#include "thesauros/types/tuple.hpp"
 #include "thesauros/types/type-sequence.hpp"
-#include "thesauros/utility/tuple.hpp"
 
 template<typename T>
 struct Filter : public std::is_integral<T> {};
@@ -22,9 +23,7 @@ int main() {
   {
     using Seq = thes::TypeSeq<int, float, double, long>;
     static_assert(
-      std::same_as<
-        thes::IndexFilteredTypeSeq<Seq, thes::Tuple{thes::index_tag<0>, thes::index_tag<3>}>,
-        thes::TypeSeq<int, long>>);
+      std::same_as<thes::IndexFilteredTypeSeq<Seq, std::array{0, 3}>, thes::TypeSeq<int, long>>);
   }
   {
     using Seq = thes::TypeSeq<int, float, double, long>;

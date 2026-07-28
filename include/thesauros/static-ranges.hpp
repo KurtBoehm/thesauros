@@ -6,6 +6,7 @@
 #include "static-ranges/generators.hpp"
 #include "static-ranges/piping.hpp"
 #include "static-ranges/sinks.hpp"
+#include "static-ranges/type-seq.hpp"
 #include "static-ranges/views.hpp"
 // IWYU pragma: end_exports
 

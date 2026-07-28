@@ -2,6 +2,7 @@
 #define INCLUDE_THESAUROS_CHARCONV_HPP
 
 // IWYU pragma: begin_exports
+#include "charconv/concat.hpp"
 #include "charconv/numeric-string.hpp"
 #include "charconv/parse-integer.hpp"
 #include "charconv/string-convert.hpp"

@@ -15,8 +15,8 @@
 #include <span>
 #include <type_traits>
 
+#include "thesauros/charconv/concat.hpp"
 #include "thesauros/containers/dynamic-buffer.hpp"
-#include "thesauros/format/fmtlib.hpp"
 #include "thesauros/io/file.hpp"
 #include "thesauros/macropolis/inlining.hpp"
 #include "thesauros/math/integer-cast.hpp"
@@ -27,7 +27,7 @@ struct FileReader {
   explicit FileReader(const std::filesystem::path& path)
       : handle_(std::fopen(path_string(path).c_str(), "rb")) {
     if (handle_ == nullptr) {
-      throw FileException{fmt::format("fopen failed: {}", errno)};
+      throw FileException{cat("fopen failed: ", errno)};
     }
   }
   FileReader(const FileReader&) = delete;
@@ -46,7 +46,7 @@ struct FileReader {
     const auto ret = std::fread(span.data(), sizeof(T), span.size(), handle_);
     const auto err = std::ferror(handle_);
     if (err) {
-      throw FileException{fmt::format("fread failed ({}), ret={}, size={}", err, ret, span.size())};
+      throw FileException{cat("fread failed (", err, "), ret=", ret, ", size=", span.size())};
     }
     return ret;
   }
@@ -56,7 +56,7 @@ struct FileReader {
   THES_ALWAYS_INLINE void read(std::span<T> span) {
     const auto ret = std::fread(span.data(), sizeof(T), span.size(), handle_);
     if (ret != span.size()) {
-      throw FileException{fmt::format("fread failed: {} != {}", ret, span.size())};
+      throw FileException{cat("fread failed: ", ret, " != ", span.size())};
     }
   }
   THES_ALWAYS_INLINE void read(DynamicBuffer& buf, std::size_t size) {
@@ -78,7 +78,7 @@ struct FileReader {
 
   void read_full(BufferLike auto& buf) {
     if (const auto off = tell(); off != 0) {
-      throw FileException{fmt::format("read_full has to start at the beginning, not at {}!", off)};
+      throw FileException{cat("read_full has to start at the beginning, not at ", off, "!")};
     }
     buf.resize(size());
     buf.resize(try_read(std::span{buf.data(), buf.size()}));
@@ -93,14 +93,14 @@ struct FileReader {
   THES_ALWAYS_INLINE void seek(long offset, Seek whence) {
     const auto ret = std::fseek(handle_, offset, int(whence));
     if (ret != 0) {
-      throw FileException{fmt::format("fseek failed: {}", ret)};
+      throw FileException{cat("fseek failed: ", ret)};
     }
   }
 
   [[nodiscard]] THES_ALWAYS_INLINE long tell() {
     const auto ret = std::ftell(handle_);
     if (ret == -1) {
-      throw FileException{fmt::format("ftell failed: {}", errno)};
+      throw FileException{cat("ftell failed: ", errno)};
     }
     return ret;
   }
@@ -126,7 +126,7 @@ struct FileReader {
   void pread(std::span<T> span, long offset) {
     const auto ret = try_pread(span, offset);
     if (ret != span.size()) {
-      throw FileException{fmt::format("pread failed: {} != {}", ret, span.size())};
+      throw FileException{cat("pread failed: ", ret, " != ", span.size())};
     }
   }
   template<typename T>

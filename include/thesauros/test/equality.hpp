@@ -14,7 +14,7 @@
 
 #include "thesauros/format.hpp"
 #include "thesauros/functional/no-op.hpp"
-#include "thesauros/io.hpp"
+#include "thesauros/io/delimiter.hpp"
 #include "thesauros/types/value-tag.hpp"
 
 namespace thes::test {

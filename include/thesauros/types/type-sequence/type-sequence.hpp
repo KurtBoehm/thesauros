@@ -12,7 +12,7 @@
 #include <type_traits>
 #include <variant>
 
-#include "thesauros/utility/tuple.hpp"
+#include "thesauros/types/tuple.hpp"
 
 namespace thes {
 //==================================================================================================

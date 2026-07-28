@@ -14,39 +14,39 @@
 #include <utility>
 #include <variant>
 
-#include "thesauros/types/type-sequence.hpp"
+#include "thesauros/types/type-sequence/operations.hpp"
+#include "thesauros/types/type-sequence/type-sequence.hpp"
 #include "thesauros/utility/unwrap.hpp"
 
 namespace thes {
 struct FancyVisitorIgnore {};
 inline constexpr FancyVisitorIgnore fancy_visitor_ignore{};
 
-template<bool tRemoveIgnored, bool tFlatten, bool tWithMaker, typename TVisitor,
-         typename... TVariants>
+template<bool RemoveIgnored, bool Flatten, bool WithMaker, typename Visitor, typename... Variants>
 struct FancyVisitor {
-  template<typename TRaw, typename TDecayed>
+  template<typename Raw, typename TDecayed>
   struct VariantHandlerImpl {
-    using Tuple = TypeSeq<TRaw>;
-    using Base = std::remove_reference_t<TRaw>;
+    using Tuple = TypeSeq<Raw>;
+    using Base = std::remove_reference_t<Raw>;
 
-    static constexpr auto pack(TRaw& value)
-    requires(std::is_lvalue_reference_v<TRaw>)
+    static constexpr auto pack(Raw& value)
+    requires(std::is_lvalue_reference_v<Raw>)
     {
       using RefWrap = std::reference_wrapper<Base>;
       return std::variant<RefWrap>{RefWrap(value)};
     }
 
-    static constexpr auto pack(TRaw&& value)
-    requires(!std::is_lvalue_reference_v<TRaw>)
+    static constexpr auto pack(Raw&& value)
+    requires(!std::is_lvalue_reference_v<Raw>)
     {
-      return std::variant<TRaw>{std::move(value)};
+      return std::variant<Raw>{std::move(value)};
     }
   };
-  template<typename TRaw, typename... Ts>
-  struct VariantHandlerImpl<TRaw, std::variant<Ts...>> {
+  template<typename Raw, typename... Ts>
+  struct VariantHandlerImpl<Raw, std::variant<Ts...>> {
     using Type = std::variant<Ts...>;
-    static constexpr bool is_lvalue_ref = std::is_lvalue_reference_v<TRaw>;
-    static constexpr bool is_const = std::is_const_v<std::remove_reference_t<TRaw>>;
+    static constexpr bool is_lvalue_ref = std::is_lvalue_reference_v<Raw>;
+    static constexpr bool is_const = std::is_const_v<std::remove_reference_t<Raw>>;
 
     template<typename T>
     using Constant = std::conditional_t<is_const, const T, T>;
@@ -61,32 +61,32 @@ struct FancyVisitor {
       return std::forward<TVar>(value);
     }
   };
-  template<typename TRaw>
-  using VariantHandler = VariantHandlerImpl<TRaw, std::decay_t<TRaw>>;
+  template<typename Raw>
+  using VariantHandler = VariantHandlerImpl<Raw, std::decay_t<Raw>>;
 
-  template<typename TSeq>
+  template<typename Seq>
   struct BareFunReturnType;
-  template<typename... TArgs>
-  struct BareFunReturnType<TypeSeq<TArgs...>> {
-    using Type = decltype(std::declval<TVisitor>()(unwrap(std::declval<TArgs>())...));
+  template<typename... Args>
+  struct BareFunReturnType<TypeSeq<Args...>> {
+    using Type = decltype(std::declval<Visitor>()(unwrap(std::declval<Args>())...));
   };
 
-  template<typename TSeq>
+  template<typename Seq>
   struct TaggedFunReturnType;
-  template<typename... TArgs>
-  struct TaggedFunReturnType<TypeSeq<TArgs...>> {
-    using Type = decltype(std::declval<TVisitor>()(
+  template<typename... Args>
+  struct TaggedFunReturnType<TypeSeq<Args...>> {
+    using Type = decltype(std::declval<Visitor>()(
       []<typename T, typename... TInnerArgs>(std::in_place_type_t<T>, TInnerArgs&&... args) {
         return T{std::forward<TInnerArgs>(args)...};
       },
-      unwrap(std::declval<TArgs>())...));
+      unwrap(std::declval<Args>())...));
   };
 
-  template<typename TSeq>
+  template<typename Seq>
   using FunReturnType =
-    std::conditional_t<tWithMaker, TaggedFunReturnType<TSeq>, BareFunReturnType<TSeq>>::Type;
+    std::conditional_t<WithMaker, TaggedFunReturnType<Seq>, BareFunReturnType<Seq>>::Type;
 
-  template<typename TSeq>
+  template<typename Seq>
   struct MakeReturn;
   template<typename T>
   struct MakeReturn<TypeSeq<T>> {
@@ -100,16 +100,16 @@ struct FancyVisitor {
     using Type = std::variant<Transformed<Ts>...>;
   };
 
-  template<typename TSeq>
+  template<typename Seq>
   struct Maker;
 
   template<typename... Ts>
   struct Maker<TypeSeq<Ts...>> {
     using Return = std::variant<Ts...>;
 
-    template<typename T, typename... TArgs>
-    constexpr Return operator()(std::in_place_type_t<T> tag, TArgs&&... args) const {
-      return Return{tag, std::forward<TArgs>(args)...};
+    template<typename T, typename... Args>
+    constexpr Return operator()(std::in_place_type_t<T> tag, Args&&... args) const {
+      return Return{tag, std::forward<Args>(args)...};
     }
   };
 
@@ -117,18 +117,18 @@ struct FancyVisitor {
   struct Maker<TypeSeq<T>> {
     using Return = T;
 
-    template<typename... TArgs>
-    constexpr Return operator()(std::in_place_type_t<T> /*tag*/, TArgs&&... args) const {
-      return Return{std::forward<TArgs>(args)...};
+    template<typename... Args>
+    constexpr Return operator()(std::in_place_type_t<T> /*tag*/, Args&&... args) const {
+      return Return{std::forward<Args>(args)...};
     }
   };
 
-  using Params = CartesianTypeSeq<typename VariantHandler<TVariants>::Tuple...>;
+  using Params = CartesianTypeSeq<typename VariantHandler<Variants>::Tuple...>;
 
   using RawReturnSeq = TransformedTypeSeq<Params, FunReturnType>;
 
   using BaseReturnSeq =
-    std::conditional_t<tFlatten, FlatTypeSeq<VariantTypeSeq<RawReturnSeq>>, RawReturnSeq>;
+    std::conditional_t<Flatten, FlatTypeSeq<VariantTypeSeq<RawReturnSeq>>, RawReturnSeq>;
 
   using ReturnSeq = UniqueTypeSeq<FilteredTypeSeqBy<BaseReturnSeq, []<typename T>(TypeTag<T>) {
     return !std::same_as<T, FancyVisitorIgnore>;
@@ -138,83 +138,81 @@ struct FancyVisitor {
 
   static constexpr Maker<ReturnSeq> construct_in_place{};
 
-  template<typename... TArgs>
-  static constexpr decltype(auto) call(auto maker, TVisitor&& visitor, TArgs&&... args) {
-    if constexpr (tWithMaker) {
-      return visitor(maker, unwrap(std::forward<TArgs>(args))...);
+  template<typename... Args>
+  static constexpr decltype(auto) call(auto maker, Visitor&& visitor, Args&&... args) {
+    if constexpr (WithMaker) {
+      return visitor(maker, unwrap(std::forward<Args>(args))...);
     } else {
-      return visitor(unwrap(std::forward<TArgs>(args))...);
+      return visitor(unwrap(std::forward<Args>(args))...);
     }
   }
 
-  template<typename TMaker, typename... TArgs>
-  static constexpr bool ignore = requires(TMaker maker, TVisitor&& visitor, TArgs&&... args) {
+  template<typename Maker, typename... Args>
+  static constexpr bool ignore = requires(Maker maker, Visitor&& visitor, Args&&... args) {
     {
-      call(maker, std::forward<TVisitor>(visitor), std::forward<TArgs>(args)...)
+      call(maker, std::forward<Visitor>(visitor), std::forward<Args>(args)...)
     } -> std::convertible_to<FancyVisitorIgnore>;
   };
 
-  template<typename TReturn, typename TMaker>
-  static constexpr decltype(auto) visit_impl(TMaker maker, TVisitor&& visitor,
-                                             TVariants&&... vars) {
+  template<typename Return, typename Maker>
+  static constexpr decltype(auto) visit_impl(Maker maker, Visitor&& visitor, Variants&&... vars) {
     return std::visit(
-      [&]<typename... TArgs>(TArgs&&... args) -> TReturn {
-        if constexpr (tRemoveIgnored && ignore<TMaker, TArgs...>) {
-          call(maker, std::forward<TVisitor>(visitor), std::forward<TArgs>(args)...);
+      [&]<typename... Args>(Args&&... args) -> Return {
+        if constexpr (RemoveIgnored && ignore<Maker, Args...>) {
+          call(maker, std::forward<Visitor>(visitor), std::forward<Args>(args)...);
           throw std::invalid_argument("The visitor failed!");
         } else {
-          return call(maker, std::forward<TVisitor>(visitor), std::forward<TArgs>(args)...);
+          return call(maker, std::forward<Visitor>(visitor), std::forward<Args>(args)...);
         }
       },
-      VariantHandler<TVariants>::pack(std::forward<TVariants>(vars))...);
+      VariantHandler<Variants>::pack(std::forward<Variants>(vars))...);
   }
 
-  static constexpr decltype(auto) visit(TVisitor&& visitor, TVariants&&... vars) {
-    return visit_impl<Return>(construct_in_place, std::forward<TVisitor>(visitor),
-                              std::forward<TVariants>(vars)...);
+  static constexpr decltype(auto) visit(Visitor&& visitor, Variants&&... vars) {
+    return visit_impl<Return>(construct_in_place, std::forward<Visitor>(visitor),
+                              std::forward<Variants>(vars)...);
   }
 
-  template<typename TMaker>
-  static constexpr decltype(auto) visit_with_maker(TMaker maker, TVisitor&& visitor,
-                                                   TVariants&&... vars) {
-    if constexpr (requires { typename TMaker::Return; }) {
-      return visit_impl<typename TMaker::Return>(maker, std::forward<TVisitor>(visitor),
-                                                 std::forward<TVariants>(vars)...);
+  template<typename Maker>
+  static constexpr decltype(auto) visit_with_maker(Maker maker, Visitor&& visitor,
+                                                   Variants&&... vars) {
+    if constexpr (requires { typename Maker::Return; }) {
+      return visit_impl<typename Maker::Return>(maker, std::forward<Visitor>(visitor),
+                                                std::forward<Variants>(vars)...);
     } else {
-      return visit(std::forward<TVisitor>(visitor), std::forward<TVariants>(vars)...);
+      return visit(std::forward<Visitor>(visitor), std::forward<Variants>(vars)...);
     }
   }
 };
 
-template<typename TVisitor, typename... TVars>
-inline constexpr decltype(auto) fancy_visit(TVisitor&& visitor, TVars&&... vars) {
-  return FancyVisitor<false, false, false, TVisitor, TVars...>::visit(
-    std::forward<TVisitor>(visitor), std::forward<TVars>(vars)...);
+template<typename Visitor, typename... Vars>
+constexpr decltype(auto) fancy_visit(Visitor&& visitor, Vars&&... vars) {
+  return FancyVisitor<false, false, false, Visitor, Vars...>::visit(std::forward<Visitor>(visitor),
+                                                                    std::forward<Vars>(vars)...);
 }
 
-template<typename TVisitor, typename... TVars>
-inline constexpr decltype(auto) fancy_filter_visit(TVisitor&& visitor, TVars&&... vars) {
-  return FancyVisitor<true, false, false, TVisitor, TVars...>::visit(
-    std::forward<TVisitor>(visitor), std::forward<TVars>(vars)...);
+template<typename Visitor, typename... Vars>
+constexpr decltype(auto) fancy_filter_visit(Visitor&& visitor, Vars&&... vars) {
+  return FancyVisitor<true, false, false, Visitor, Vars...>::visit(std::forward<Visitor>(visitor),
+                                                                   std::forward<Vars>(vars)...);
 }
 
-template<typename TVisitor, typename... TVars>
-inline constexpr decltype(auto) fancy_maker_visit(TVisitor&& visitor, TVars&&... vars) {
-  return FancyVisitor<true, false, true, TVisitor, TVars...>::visit(std::forward<TVisitor>(visitor),
-                                                                    std::forward<TVars>(vars)...);
+template<typename Visitor, typename... Vars>
+constexpr decltype(auto) fancy_maker_visit(Visitor&& visitor, Vars&&... vars) {
+  return FancyVisitor<true, false, true, Visitor, Vars...>::visit(std::forward<Visitor>(visitor),
+                                                                  std::forward<Vars>(vars)...);
 }
 
-template<typename TVisitor, typename... TVars>
-inline constexpr decltype(auto) fancy_flat_visit(TVisitor&& visitor, TVars&&... vars) {
-  return FancyVisitor<true, true, true, TVisitor, TVars...>::visit(std::forward<TVisitor>(visitor),
-                                                                   std::forward<TVars>(vars)...);
+template<typename Visitor, typename... Vars>
+constexpr decltype(auto) fancy_flat_visit(Visitor&& visitor, Vars&&... vars) {
+  return FancyVisitor<true, true, true, Visitor, Vars...>::visit(std::forward<Visitor>(visitor),
+                                                                 std::forward<Vars>(vars)...);
 }
 
-template<typename TMaker, typename TVisitor, typename... TVars>
-inline constexpr decltype(auto) fancy_visit_with_maker(TMaker maker, TVisitor&& visitor,
-                                                       TVars&&... vars) {
-  return FancyVisitor<true, true, true, TVisitor, TVars...>::visit_with_maker(
-    maker, std::forward<TVisitor>(visitor), std::forward<TVars>(vars)...);
+template<typename Maker, typename Visitor, typename... Vars>
+constexpr decltype(auto) fancy_visit_with_maker(Maker maker, Visitor&& visitor, Vars&&... vars) {
+  return FancyVisitor<true, true, true, Visitor, Vars...>::visit_with_maker(
+    maker, std::forward<Visitor>(visitor), std::forward<Vars>(vars)...);
 }
 } // namespace thes
 

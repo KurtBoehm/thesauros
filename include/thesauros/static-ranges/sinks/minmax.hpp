@@ -9,7 +9,8 @@
 
 #include <cstddef>
 
-#include "thesauros/static-ranges/definitions.hpp"
+#include "thesauros/static-ranges/definitions/size.hpp"
+#include "thesauros/static-ranges/definitions/type-traits.hpp"
 #include "thesauros/static-ranges/sinks/for-each.hpp"
 #include "thesauros/static-ranges/views/iota.hpp"
 #include "thesauros/types/value-tag.hpp"

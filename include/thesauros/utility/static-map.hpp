@@ -11,10 +11,15 @@
 #include <type_traits>
 #include <utility>
 
-#include "thesauros/static-ranges.hpp"
+#include "thesauros/static-ranges/definitions/get-at.hpp"
+#include "thesauros/static-ranges/piping.hpp" // IWYU pragma: keep
+#include "thesauros/static-ranges/sinks/all-different.hpp"
+#include "thesauros/static-ranges/sinks/contains.hpp"
+#include "thesauros/static-ranges/sinks/reduce.hpp"
+#include "thesauros/static-ranges/views/transform.hpp"
 #include "thesauros/string/static-string.hpp"
+#include "thesauros/types/tuple.hpp"
 #include "thesauros/types/value-tag.hpp"
-#include "thesauros/utility/tuple.hpp"
 
 namespace thes {
 template<auto tKey, typename TValue>

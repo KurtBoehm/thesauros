@@ -4,14 +4,15 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#ifndef INCLUDE_THESAUROS_FORMAT_MACROPOLIS_HPP
-#define INCLUDE_THESAUROS_FORMAT_MACROPOLIS_HPP
+#ifndef INCLUDE_THESAUROS_FORMAT_REFLECTION_HPP
+#define INCLUDE_THESAUROS_FORMAT_REFLECTION_HPP
 
 #include "thesauros/format/debug.hpp"
 #include "thesauros/format/fmtlib.hpp"
 #include "thesauros/format/formatter.hpp"
 #include "thesauros/io/delimiter.hpp"
-#include "thesauros/macropolis/type.hpp"
+#include "thesauros/reflection/type.hpp"
+#include "thesauros/static-ranges/sinks/for-each.hpp"
 
 template<thes::HasTypeInfo T>
 struct fmt::formatter<T> : public thes::SimpleFormatter<> {
@@ -30,4 +31,4 @@ struct fmt::formatter<T> : public thes::SimpleFormatter<> {
   }
 };
 
-#endif // INCLUDE_THESAUROS_FORMAT_MACROPOLIS_HPP
+#endif // INCLUDE_THESAUROS_FORMAT_REFLECTION_HPP

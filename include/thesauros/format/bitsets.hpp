@@ -10,8 +10,9 @@
 #include <concepts>
 #include <cstddef>
 
-#include "thesauros/containers/bitset.hpp"
 #include "thesauros/containers/bitset/dynamic.hpp"
+#include "thesauros/containers/bitset/fixed.hpp"
+#include "thesauros/containers/bitset/static.hpp"
 #include "thesauros/format/fmtlib.hpp"
 #include "thesauros/format/formatter.hpp"
 
@@ -24,35 +25,35 @@ constexpr auto write_bitset(const auto& bs, auto it) {
 }
 } // namespace thes::detail
 
-template<std::unsigned_integral TChunk>
-struct fmt::formatter<thes::DynamicBitset<TChunk>> : public thes::SimpleFormatter<> {
-  auto format(const thes::DynamicBitset<TChunk>& bs, format_context& ctx) const {
+template<std::unsigned_integral Chunk>
+struct fmt::formatter<thes::DynamicBitset<Chunk>> : public thes::SimpleFormatter<> {
+  auto format(const thes::DynamicBitset<Chunk>& bs, format_context& ctx) const {
     return this->write_padded(ctx, [&](auto it) { return thes::detail::write_bitset(bs, it); });
   }
 };
-template<std::size_t tChunkByteNum>
-struct fmt::formatter<thes::FixedBitset<tChunkByteNum>> : public thes::SimpleFormatter<> {
-  auto format(const thes::FixedBitset<tChunkByteNum>& bs, format_context& ctx) const {
+template<std::size_t ChunkByteNum>
+struct fmt::formatter<thes::FixedBitset<ChunkByteNum>> : public thes::SimpleFormatter<> {
+  auto format(const thes::FixedBitset<ChunkByteNum>& bs, format_context& ctx) const {
     return this->write_padded(ctx, [&](auto it) { return thes::detail::write_bitset(bs, it); });
   }
 };
-template<std::size_t tSize, std::size_t tChunkByteNum>
-struct fmt::formatter<thes::StaticBitset<tSize, tChunkByteNum>> : public thes::SimpleFormatter<> {
-  auto format(const thes::StaticBitset<tSize, tChunkByteNum>& bs, format_context& ctx) const {
+template<std::size_t Size, std::size_t ChunkByteNum>
+struct fmt::formatter<thes::StaticBitset<Size, ChunkByteNum>> : public thes::SimpleFormatter<> {
+  auto format(const thes::StaticBitset<Size, ChunkByteNum>& bs, format_context& ctx) const {
     return this->write_padded(ctx, [&](auto it) { return thes::detail::write_bitset(bs, it); });
   }
 };
 
-template<std::unsigned_integral TChunk>
-struct fmt::range_format_kind<thes::DynamicBitset<TChunk>, char> {
+template<std::unsigned_integral Chunk>
+struct fmt::range_format_kind<thes::DynamicBitset<Chunk>, char> {
   static constexpr auto value = fmt::range_format::disabled;
 };
-template<std::size_t tChunkByteNum>
-struct fmt::range_format_kind<thes::FixedBitset<tChunkByteNum>, char> {
+template<std::size_t ChunkByteNum>
+struct fmt::range_format_kind<thes::FixedBitset<ChunkByteNum>, char> {
   static constexpr auto value = fmt::range_format::disabled;
 };
-template<std::size_t tSize, std::size_t tChunkByteNum>
-struct fmt::range_format_kind<thes::StaticBitset<tSize, tChunkByteNum>, char> {
+template<std::size_t Size, std::size_t ChunkByteNum>
+struct fmt::range_format_kind<thes::StaticBitset<Size, ChunkByteNum>, char> {
   static constexpr auto value = fmt::range_format::disabled;
 };
 

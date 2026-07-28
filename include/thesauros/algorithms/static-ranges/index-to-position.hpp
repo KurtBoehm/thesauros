@@ -12,15 +12,16 @@
 #include <utility>
 
 #include "thesauros/math/divmod.hpp"
+#include "thesauros/static-ranges/definitions/get-at.hpp"
 #include "thesauros/types/value-tag.hpp"
 
 namespace thes::star {
-template<typename TIdx, typename TSize, std::size_t tSize>
-constexpr auto index_to_position(TIdx index, const std::array<TSize, tSize>& sizes) {
-  auto impl = [&sizes]<typename... TArgs>(auto& self, TIdx idx, auto end, TArgs&&... args) {
-    static_assert(tSize > 0);
+template<typename Idx, typename S, std::size_t Dims>
+constexpr auto index_to_position(Idx index, const std::array<S, Dims>& sizes) {
+  auto impl = [&sizes]<typename... TArgs>(auto& self, Idx idx, auto end, TArgs&&... args) {
+    static_assert(Dims > 0);
 
-    if constexpr (tSize == 1) {
+    if constexpr (Dims == 1) {
       static_assert(end == 1);
       static_assert(sizeof...(TArgs) == 0);
       return std::array{idx};
@@ -35,7 +36,7 @@ constexpr auto index_to_position(TIdx index, const std::array<TSize, tSize>& siz
     }
   };
 
-  return impl(impl, index, index_tag<tSize>);
+  return impl(impl, index, index_tag<Dims>);
 }
 } // namespace thes::star
 

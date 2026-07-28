@@ -12,28 +12,30 @@
 #include <cstddef>
 #include <limits>
 
-#include "thesauros/static-ranges.hpp"
+#include "thesauros/static-ranges/piping.hpp" // IWYU pragma: keep
+#include "thesauros/static-ranges/sinks/minmax.hpp"
+#include "thesauros/static-ranges/views/transform.hpp"
 #include "thesauros/types/value-tag.hpp"
 
 namespace thes {
-template<std::size_t tDimNum, std::unsigned_integral TInt>
-inline std::array<TInt, tDimNum> box_tesselate(TInt tile_num, std::array<TInt, tDimNum> box_dims) {
+template<std::size_t Dims, std::unsigned_integral Int>
+inline std::array<Int, Dims> box_tesselate(Int tile_num, std::array<Int, Dims> box_dims) {
   using Cost = double;
   struct Sol {
-    std::array<TInt, tDimNum> sol{};
+    std::array<Int, Dims> sol{};
     Cost cost = std::numeric_limits<Cost>::infinity();
   };
 
-  if constexpr (tDimNum == 1) {
+  if constexpr (Dims == 1) {
     return {tile_num};
   }
 
   Sol best{};
-  auto op = [&](auto rec, Sol& sol, TInt remaining, thes::AnyIndexTag auto dim) {
-    if constexpr (dim + 1 == tDimNum) {
+  auto op = [&](auto rec, Sol& sol, Int remaining, thes::AnyIndexTag auto dim) {
+    if constexpr (dim + 1 == Dims) {
       std::get<dim>(sol.sol) = remaining;
       const auto [min, max] =
-        thes::star::transform([](TInt box_dim, TInt cnum) { return Cost(box_dim) / Cost(cnum); },
+        thes::star::transform([](Int box_dim, Int cnum) { return Cost(box_dim) / Cost(cnum); },
                               box_dims, sol.sol) |
         thes::star::minmax;
       sol.cost = max / min;
@@ -41,7 +43,7 @@ inline std::array<TInt, tDimNum> box_tesselate(TInt tile_num, std::array<TInt, t
         best = sol;
       }
     } else {
-      for (TInt dcnum = remaining; dcnum > 0; --dcnum) {
+      for (Int dcnum = remaining; dcnum > 0; --dcnum) {
         if (remaining % dcnum == 0) {
           std::get<dim>(sol.sol) = dcnum;
           rec(rec, sol, remaining / dcnum, thes::index_tag<dim + 1>);

@@ -6,7 +6,7 @@
 
 #include <tuple>
 
-#include "thesauros/utility/empty.hpp"
+#include "thesauros/types/empty.hpp"
 
 int main() {
   static constexpr thes::Empty empty{};

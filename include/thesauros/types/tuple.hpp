@@ -4,8 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#ifndef INCLUDE_THESAUROS_UTILITY_TUPLE_HPP
-#define INCLUDE_THESAUROS_UTILITY_TUPLE_HPP
+#ifndef INCLUDE_THESAUROS_TYPES_TUPLE_HPP
+#define INCLUDE_THESAUROS_TYPES_TUPLE_HPP
 
 #include <array>
 #include <compare>
@@ -136,4 +136,4 @@ struct tuple_element<I, ::thes::Tuple<Ts...>> {
 };
 } // namespace std
 
-#endif // INCLUDE_THESAUROS_UTILITY_TUPLE_HPP
+#endif // INCLUDE_THESAUROS_TYPES_TUPLE_HPP

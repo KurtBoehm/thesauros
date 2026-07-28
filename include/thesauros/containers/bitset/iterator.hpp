@@ -12,7 +12,8 @@
 #include <memory>
 #include <type_traits>
 
-#include "thesauros/iterator.hpp"
+#include "thesauros/iterator/facade.hpp"
+#include "thesauros/iterator/state-facade.hpp"
 
 namespace thes::detail {
 /**

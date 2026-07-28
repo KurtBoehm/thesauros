@@ -14,6 +14,7 @@
 
 #include "thesauros/algorithms.hpp"
 #include "thesauros/format.hpp"
+#include "thesauros/literals.hpp"
 #include "thesauros/ranges.hpp"
 #include "thesauros/static-ranges.hpp"
 #include "thesauros/test.hpp"

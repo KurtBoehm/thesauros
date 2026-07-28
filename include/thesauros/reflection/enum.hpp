@@ -4,8 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#ifndef INCLUDE_THESAUROS_MACROPOLIS_ENUM_HPP
-#define INCLUDE_THESAUROS_MACROPOLIS_ENUM_HPP
+#ifndef INCLUDE_THESAUROS_REFLECTION_ENUM_HPP
+#define INCLUDE_THESAUROS_REFLECTION_ENUM_HPP
 
 #include <cstddef>
 #include <optional>
@@ -14,33 +14,34 @@
 #include <boost/preprocessor.hpp>
 
 #include "thesauros/concepts/type-traits.hpp"
-#include "thesauros/macropolis/helpers.hpp"
-#include "thesauros/static-ranges.hpp"
+#include "thesauros/reflection/helpers.hpp"
+#include "thesauros/static-ranges/definitions/get-at.hpp"
+#include "thesauros/static-ranges/definitions/size.hpp"
 #include "thesauros/string/static-string.hpp" // IWYU pragma: keep
+#include "thesauros/types/tuple.hpp" // IWYU pragma: keep
 #include "thesauros/types/value-tag.hpp"
-#include "thesauros/utility/tuple.hpp" // IWYU pragma: keep
 
 namespace thes {
-template<auto tValue, auto tName, auto tSerialName>
+template<auto Value, auto Name, auto SerialName>
 struct EnumValueInfo {
-  static constexpr auto value = tValue;
-  static constexpr auto name = tName;
-  static constexpr auto serial_name = tSerialName;
+  static constexpr auto value = Value;
+  static constexpr auto name = Name;
+  static constexpr auto serial_name = SerialName;
 };
 
-template<auto tName, auto tSerialName, auto tValues>
+template<auto Name, auto SerialName, auto Values>
 struct EnumInfoTemplate {
-  static constexpr auto name = tName;
-  static constexpr auto serial_name = tSerialName;
-  static constexpr auto values = tValues;
+  static constexpr auto name = Name;
+  static constexpr auto serial_name = SerialName;
+  static constexpr auto values = Values;
 };
 
-template<typename TEnum>
+template<typename Enum>
 struct EnumInfo;
 
-template<typename TEnum>
-requires(requires(TEnum value) { enum_info_adl(value); })
-struct EnumInfo<TEnum> : public decltype(enum_info_adl(std::declval<TEnum>())){};
+template<typename Enum>
+requires(requires(Enum value) { enum_info_adl(value); })
+struct EnumInfo<Enum> : public decltype(enum_info_adl(std::declval<Enum>())){};
 
 template<typename T>
 concept HasEnumInfo = CompleteType<EnumInfo<T>>;
@@ -78,15 +79,15 @@ concept HasEnumInfo = CompleteType<EnumInfo<T>>;
 #define THES_DEFINE_ENUM(NAME, UNDERLYING, ...) \
   THES_DEFINE_ENUM_IMPL(NAME, UNDERLYING, BOOST_PP_VARIADIC_TO_LIST(__VA_ARGS__))
 
-template<auto tValue>
-requires HasEnumInfo<decltype(tValue)>
+template<auto Value>
+requires HasEnumInfo<decltype(Value)>
 inline constexpr auto enum_value_info = [] {
-  using Info = EnumInfo<decltype(tValue)>;
+  using Info = EnumInfo<decltype(Value)>;
   constexpr auto values = Info::values;
 
   auto impl = [&](auto self, auto idx) {
     auto info = star::get_at<idx>(values);
-    if constexpr (info.value == tValue) {
+    if constexpr (info.value == Value) {
       return info;
     } else {
       return self(self, index_tag<idx + 1>);
@@ -99,10 +100,10 @@ template<HasEnumInfo T>
 constexpr auto serial_name_of() {
   return EnumInfo<T>::serial_name;
 }
-template<auto tValue>
-requires HasEnumInfo<decltype(tValue)>
+template<auto Value>
+requires HasEnumInfo<decltype(Value)>
 constexpr auto serial_name_of() {
-  return enum_value_info<tValue>.serial_name;
+  return enum_value_info<Value>.serial_name;
 }
 
 // In contrast to magic_enum, this uses the serial names, which seems more appropriate
@@ -125,4 +126,4 @@ constexpr std::optional<T> enum_cast(std::string_view serial_name) {
 }
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_MACROPOLIS_ENUM_HPP
+#endif // INCLUDE_THESAUROS_REFLECTION_ENUM_HPP

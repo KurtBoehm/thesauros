@@ -21,10 +21,10 @@
 #include "thesauros/static-ranges/sinks/apply.hpp"
 #include "thesauros/static-ranges/sinks/unique-value.hpp"
 #include "thesauros/static-ranges/views/iota.hpp"
-#include "thesauros/utility/tuple.hpp"
+#include "thesauros/types/tuple.hpp"
 
 namespace thes::star {
-namespace transform_impl {
+namespace detail::transform {
 template<typename Fun, typename Ret, typename... ArgRanges>
 struct ValueBase {};
 
@@ -40,11 +40,11 @@ struct ValueBase<Fun, Ret, ArgRanges...> {
   using Value = decltype(std::declval<const Fun&>()(
     std::declval<star::RawValue<std::decay_t<ArgRanges>>>()...));
 };
-} // namespace transform_impl
+} // namespace detail::transform
 
 template<typename Fun, typename Ret, typename... ArgRanges>
 requires(sizeof...(ArgRanges) > 0 && star::has_unique_value(std::array{size<ArgRanges>...}))
-struct TransformView : public transform_impl::ValueBase<Fun, Ret, ArgRanges...> {
+struct TransformView : public detail::transform::ValueBase<Fun, Ret, ArgRanges...> {
   static constexpr std::size_t size =
     star::unique_value(std::array{star::size<ArgRanges>...}).value();
   static constexpr TupleDefsMarker tuple_defs_marker{};

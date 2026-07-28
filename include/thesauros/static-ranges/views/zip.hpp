@@ -17,28 +17,28 @@
 #include "thesauros/static-ranges/definitions/tuple-defs.hpp"
 #include "thesauros/static-ranges/sinks/apply.hpp"
 #include "thesauros/static-ranges/sinks/unique-value.hpp"
-#include "thesauros/utility/tuple.hpp"
+#include "thesauros/types/tuple.hpp"
 
 namespace thes::star {
-template<typename... TRanges>
+template<typename... Ranges>
 struct ZipView {
-  static constexpr std::size_t size = *unique_value(std::array{thes::star::size<TRanges>...});
+  static constexpr std::size_t size = *unique_value(std::array{thes::star::size<Ranges>...});
   static constexpr TupleDefsMarker tuple_defs_marker{};
 
-  Tuple<TRanges...> ranges;
+  Tuple<Ranges...> ranges;
 
-  template<std::size_t tIndex>
+  template<std::size_t I>
   THES_ALWAYS_INLINE friend constexpr auto get(const ZipView& self) {
     return apply([](auto&... inner) THES_ALWAYS_INLINE {
-      return Tuple{thes::star::get_at<tIndex>(inner)...};
+      return Tuple{thes::star::get_at<I>(inner)...};
     })(self.ranges);
   }
 };
 
-template<typename... TRanges>
-requires(sizeof...(TRanges) > 0)
-THES_ALWAYS_INLINE inline constexpr auto zip(TRanges&&... ranges) {
-  return ZipView<TRanges...>{Tuple{std::forward<TRanges>(ranges)...}};
+template<typename... Ranges>
+requires(sizeof...(Ranges) > 0)
+THES_ALWAYS_INLINE inline constexpr auto zip(Ranges&&... ranges) {
+  return ZipView<Ranges...>{Tuple{std::forward<Ranges>(ranges)...}};
 }
 } // namespace thes::star
 

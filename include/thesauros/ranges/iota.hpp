@@ -19,7 +19,7 @@
 #include "thesauros/types/value-tag.hpp"
 
 namespace thes {
-namespace iota_impl {
+namespace detail::iota {
 template<typename T>
 struct ConstIterator : public StateIteratorFacade<iter::ValueTypes<T, std::ptrdiff_t>> {
   friend StateIteratorFacade<iter::ValueTypes<T, std::ptrdiff_t>>;
@@ -48,14 +48,14 @@ struct ConstReverseIterator : public std::reverse_iterator<ConstIterator<T>> {
   explicit constexpr ConstReverseIterator(T&& v) : Base{ForwardIter{std::forward<T>(v)}} {}
   explicit constexpr ConstReverseIterator(const T& v) : Base{ForwardIter{v}} {}
 };
-} // namespace iota_impl
+} // namespace detail::iota
 
 template<typename T>
 struct IotaRange {
   using Value = T;
   using value_type = Value;
-  using const_iterator = iota_impl::ConstIterator<T>;
-  using const_reverse_iterator = iota_impl::ConstReverseIterator<T>;
+  using const_iterator = detail::iota::ConstIterator<T>;
+  using const_reverse_iterator = detail::iota::ConstReverseIterator<T>;
 
   constexpr IotaRange() : begin_{}, end_{} {}
   constexpr IotaRange(T begin, T end) : begin_{begin}, end_{end} {}
@@ -205,8 +205,8 @@ template<typename T, T Size>
 struct StaticSizeIotaRange {
   using Value = T;
   using value_type = Value;
-  using const_iterator = iota_impl::ConstIterator<T>;
-  using const_reverse_iterator = iota_impl::ConstReverseIterator<T>;
+  using const_iterator = detail::iota::ConstIterator<T>;
+  using const_reverse_iterator = detail::iota::ConstReverseIterator<T>;
 
   explicit constexpr StaticSizeIotaRange(T begin) : begin_{begin} {}
   explicit constexpr StaticSizeIotaRange(T begin, ValueTag<T, Size> /*tag*/) : begin_{begin} {}

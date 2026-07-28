@@ -4,8 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#ifndef INCLUDE_THESAUROS_MACROPOLIS_FLATTEN_TYPE_HPP
-#define INCLUDE_THESAUROS_MACROPOLIS_FLATTEN_TYPE_HPP
+#ifndef INCLUDE_THESAUROS_REFLECTION_FLATTEN_TYPE_HPP
+#define INCLUDE_THESAUROS_REFLECTION_FLATTEN_TYPE_HPP
 
 #include <cstddef>
 #include <optional>
@@ -13,13 +13,13 @@
 #include <utility>
 #include <variant>
 
-#include "boost/preprocessor.hpp"
+#include "boost/preprocessor.hpp" // IWYU pragma: keep
 
-#include "thesauros/static-ranges/definitions.hpp"
+#include "thesauros/static-ranges/definitions/get-at.hpp"
 #include "thesauros/utility/fancy-visit.hpp"
 
 namespace thes {
-namespace impl {
+namespace detail::flatten {
 template<typename T1, typename T2>
 constexpr bool member_ptrs_eq(const T1& /*value1*/, const T2& /*value2*/) {
   return false;
@@ -55,7 +55,7 @@ template<typename... Ts>
 struct OptionalVariantTrait<std::variant<Ts...>> {
   using Type = std::variant<std::nullopt_t, Ts...>;
 };
-} // namespace impl
+} // namespace detail::flatten
 
 template<typename T>
 struct FlattenType {
@@ -66,8 +66,8 @@ struct FlattenType {
 
 template<typename T>
 struct FlattenType<std::optional<T>> {
-  using Type =
-    impl::OptionalVariantTrait<decltype(FlattenType<T>::flatten(std::declval<T&&>()))>::Type;
+  using Type = detail::flatten::OptionalVariantTrait<decltype(FlattenType<T>::flatten(
+    std::declval<T&&>()))>::Type;
 
   static constexpr Type flatten(std::optional<T>&& value) {
     if (value.has_value()) {
@@ -152,7 +152,8 @@ constexpr decltype(auto) flatten_type(T&& value) {
 
 #define THES_POLIS_FLATTEN_TYPE_VARIANT_IMPL(TYPE, NAME) \
   ::thes::flatten_type( \
-    std::forward<typename ::thes::impl::MemberInfoTypeOf<TypeInfo, &Self::NAME>::Type>(NAME))
+    std::forward<typename ::thes::detail::flatten::MemberInfoTypeOf<TypeInfo, &Self::NAME>::Type>( \
+      NAME))
 #define THES_POLIS_FLATTEN_TYPE_VARIANT(REC, TYPENAME, IDX, ELEM) \
   BOOST_PP_COMMA_IF(IDX) \
   THES_POLIS_CALL_TYPED(THES_POLIS_FLATTEN_TYPE_VARIANT_IMPL, ELEM)
@@ -174,7 +175,8 @@ constexpr decltype(auto) flatten_type(T&& value) {
       constexpr auto ptr = ::thes::star::get_at<tIdx>(member_infos).pointer; \
       std::optional<std::size_t> index = std::nullopt; \
       [&]<std::size_t... tIdxs>(std::index_sequence<tIdxs...>) { \
-        return ((::thes::impl::member_ptrs_eq(::thes::star::get_at<tIdxs>(variant_members), ptr) \
+        return ((::thes::detail::flatten::member_ptrs_eq( \
+                   ::thes::star::get_at<tIdxs>(variant_members), ptr) \
                    ? (index = tIdxs, true) \
                    : false) || \
                 ...); \
@@ -217,4 +219,4 @@ constexpr decltype(auto) flatten_type(T&& value) {
                                 BOOST_PP_VARIADIC_TO_LIST TEMPLATE_PARAMS)
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_MACROPOLIS_FLATTEN_TYPE_HPP
+#endif // INCLUDE_THESAUROS_REFLECTION_FLATTEN_TYPE_HPP

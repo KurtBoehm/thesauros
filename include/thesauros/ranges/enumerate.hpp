@@ -22,6 +22,7 @@ struct EnumerateRange {
   struct const_iterator : public StateIteratorFacade<iter::ValueTypes<Value, std::ptrdiff_t>> {
     friend StateIteratorFacade<iter::ValueTypes<Value, std::ptrdiff_t>>;
 
+    constexpr const_iterator() = default;
     explicit constexpr const_iterator(TIter begin, TIter it) : begin_(begin), it_(std::move(it)) {}
 
   private:
@@ -33,8 +34,8 @@ struct EnumerateRange {
       return self.it_;
     }
 
-    TIter begin_;
-    TIter it_;
+    TIter begin_{};
+    TIter it_{};
   };
 
   constexpr EnumerateRange(TIter begin, TIter end)
@@ -53,12 +54,12 @@ private:
 };
 
 template<typename TSize, typename TRange>
-inline constexpr auto enumerate(TRange&& container) {
+constexpr auto enumerate(TRange&& container) {
   using Iter = decltype(container.begin());
   return EnumerateRange<TSize, Iter>{container.begin(), container.end()};
 }
 template<typename TSize, typename TIter>
-inline constexpr auto enumerate(TIter begin, TIter end) {
+constexpr auto enumerate(TIter begin, TIter end) {
   return EnumerateRange<TSize, TIter>{std::move(begin), std::move(end)};
 }
 } // namespace thes

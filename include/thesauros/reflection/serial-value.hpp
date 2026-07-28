@@ -4,17 +4,18 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#ifndef INCLUDE_THESAUROS_MACROPOLIS_SERIAL_VALUE_HPP
-#define INCLUDE_THESAUROS_MACROPOLIS_SERIAL_VALUE_HPP
+#ifndef INCLUDE_THESAUROS_REFLECTION_SERIAL_VALUE_HPP
+#define INCLUDE_THESAUROS_REFLECTION_SERIAL_VALUE_HPP
 
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
 
-#include "thesauros/macropolis/enum.hpp"
-#include "thesauros/macropolis/helpers.hpp"
-#include "thesauros/macropolis/type.hpp"
-#include "thesauros/static-ranges.hpp"
+#include "thesauros/reflection/enum.hpp"
+#include "thesauros/reflection/helpers.hpp"
+#include "thesauros/reflection/type.hpp"
+#include "thesauros/static-ranges/piping.hpp" // IWYU pragma: keep
+#include "thesauros/static-ranges/sinks/apply.hpp"
 #include "thesauros/types/primitives.hpp"
 #include "thesauros/types/type-tag.hpp"
 
@@ -33,7 +34,7 @@ struct SerialValueTrait {
 };
 
 template<typename T>
-inline constexpr decltype(auto) serial_value(T&& value) {
+constexpr decltype(auto) serial_value(T&& value) {
   return SerialValueTrait<std::decay_t<T>>::make(std::forward<T>(value));
 }
 
@@ -97,4 +98,4 @@ TYPE_TAG_VALUE(f64);
 #undef TYPE_TAG_VALUE
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_MACROPOLIS_SERIAL_VALUE_HPP
+#endif // INCLUDE_THESAUROS_REFLECTION_SERIAL_VALUE_HPP

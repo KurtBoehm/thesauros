@@ -4,7 +4,7 @@ Thesauros (from Ancient Greek _θησαυρός_, “treasury”) is a header-on
 Its layout loosely mirrors the C++ standard library: functionality is grouped into sub-libraries, each with its own umbrella header.
 
 - `algorithms`: Tiled iteration (ascending/descending), parallelizable inclusive prefix sum, arbitrary-dimensional iteration.
-- `charconv`: Character conversions: fixed-buffer number-to-string, string-to-integer parsing, `{fmt}`-friendly string escaping, Unicode decoding to code points.
+- `charconv`: Character conversions: fixed-buffer number-to-string, string-to-integer parsing, `{fmt}`-friendly string escaping, Unicode decoding to code points, and `cat`, which builds strings without depending on `{fmt}`.
 - `concepts`: C++20 concepts, e.g. completeness checks, immutability-only access.
 - `containers`:
   - Dynamic arrays with support for default initialization (unlike `std::vector`).
@@ -16,9 +16,10 @@ Its layout loosely mirrors the C++ standard library: functionality is grouped in
 - `execution`: Multithreading utilities: thread pools based on `std::thread` or OpenMP `parallel for`, plus thread affinity and scheduler helpers.
 - `format`: `{fmt}` helpers: formatters for Thesauros types and simplified colour output.
 - `functional`: Min/max function objects and a no-op function object.
-- `io`: I/O abstractions built on `std::fread`/`std::fwrite` (avoiding the madness of stream flags/locales), plus JSON printing.
+- `io`: I/O abstractions built on `std::fread`/`std::fwrite` (avoiding the madness of stream flags/locales), plus JSON printing and binary serialization of the containers.
 - `iterator`: Helpers for defining full-featured iterators with minimal boilerplate.
-- `macropolis` (_Μακρόπολις_, a portmanteau of _macro_ and _Acropolis_): Preprocessor utilities: macros for classes/enums with support for static reflection, warning suppression, and inlining control.
+- `literals`: User-defined literals for the fixed-size integer types, floating-point types, and index tags, grouped into inline sub-namespaces of `thes::literals`.
+- `macropolis` (_Μακρόπολις_, a portmanteau of _macro_ and _Acropolis_): Pure preprocessor utilities with no dependencies on the rest of the library: warning suppression, inlining control, platform detection, and `void`-handling macros.
 - `math`:
   - Basic helpers: division rounded upward, `pow` with compile-time exponent, bit manipulation, etc.
   - Bounded/saturated arithmetic, overflow-/underflow-aware operations, safe integer casts.
@@ -29,6 +30,7 @@ Its layout loosely mirrors the C++ standard library: functionality is grouped in
 - `resources`: Resource and CPU information, including logical CPU lists with one logical CPU per physical core.
 - `random`: Flexible Linear Congruential Generator and an on-the-fly range shuffler.
 - `ranges`: Python-style `enumerate`, `range`, `reversed`, and `zip` ranges (increasingly superseded by C++23).
+- `reflection`: Static reflection built on Macropolis: macros defining classes and enums along with the type information describing them, plus type flattening and serial names.
 - `static-ranges`: Static ranges generalizing `std::pair`/`std::tuple`, range-like operations, and piping support.
 - `string`: Compile-time strings, `std::array`-backed strings, and character utilities.
 - `test`: Assertion helpers and container/string equality checks with human-readable reports.

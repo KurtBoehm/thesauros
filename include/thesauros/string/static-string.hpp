@@ -16,22 +16,27 @@
 #include <tuple>
 #include <utility>
 
-#include "thesauros/static-ranges.hpp"
+#include "thesauros/static-ranges/definitions/static-apply.hpp"
+#include "thesauros/static-ranges/definitions/tuple-defs.hpp"
+#include "thesauros/static-ranges/piping.hpp" // IWYU pragma: keep
+#include "thesauros/static-ranges/sinks/reduce.hpp"
+#include "thesauros/static-ranges/sinks/to-array.hpp"
+#include "thesauros/static-ranges/views/transform.hpp"
 #include "thesauros/string/character-tools.hpp"
 
 namespace thes {
-template<std::size_t tSize>
+template<std::size_t Size>
 struct StaticString {
   using Value = char;
-  using Data = std::array<Value, tSize + 1>;
-  static constexpr std::size_t size = tSize;
+  using Data = std::array<Value, Size + 1>;
+  static constexpr std::size_t size = Size;
   static constexpr star::TupleDefsMarker tuple_defs_marker{};
 
   Data data;
 
   constexpr StaticString(const char* str)
       : data{star::static_apply<size + 1>(
-          [str]<std::size_t... tIdxs>() { return std::array{str[tIdxs]...}; })} {}
+          [str]<std::size_t... I>() { return std::array{str[I]...}; })} {}
   constexpr StaticString(Data&& d) : data{std::move(d)} {}
 
   static constexpr StaticString filled(char fill) {
@@ -70,13 +75,13 @@ struct StaticString {
 
     // number of characters before string i and an array of these
     constexpr auto prefix_size = [=](auto i) {
-      return star::static_apply<i>([]<std::size_t... tIdxs>() {
+      return star::static_apply<i>([]<std::size_t... I>() {
         return (std::size_t{0} + ... +
-                (std::tuple_element_t<tIdxs, Tuple>::size + ((tIdxs + 1 < str_num) ? size : 0)));
+                (std::tuple_element_t<I, Tuple>::size + ((I + 1 < str_num) ? size : 0)));
       });
     };
     constexpr std::array<std::size_t, str_num + 1> prefix_sizes = star::static_apply<str_num + 1>(
-      [=]<std::size_t... tIdxs>() { return std::array{prefix_size(index_tag<tIdxs>)...}; });
+      [=]<std::size_t... I>() { return std::array{prefix_size(index_tag<I>)...}; });
     // find the string (including the following copy of *this) which output index i falls into
     constexpr auto find_str = [=](auto i) {
       for (std::size_t j = 0; j < str_num; ++j) {
@@ -99,7 +104,7 @@ struct StaticString {
     };
 
     return StaticString<full_size>{star::static_apply<full_size>(
-      [=]<std::size_t... tIdxs>() { return std::array{get_char(index_tag<tIdxs>)..., '\0'}; })};
+      [=]<std::size_t... I>() { return std::array{get_char(index_tag<I>)..., '\0'}; })};
   }
 
   constexpr StaticString<0> join() {
@@ -111,62 +116,62 @@ private:
       : data{star::index_transform<size + 1>([&](auto idx) { return (idx < size) ? fill : '\0'; }) |
              star::to_array} {}
 };
-template<std::size_t tSize>
-StaticString(const char (&)[tSize]) -> StaticString<tSize - 1>;
+template<std::size_t Size>
+StaticString(const char (&)[Size]) -> StaticString<Size - 1>;
 
-template<std::size_t tSize1, std::size_t tSize2>
-constexpr bool operator==(const StaticString<tSize1>& s1, const StaticString<tSize2>& s2) {
-  if constexpr (tSize1 != tSize2) {
+template<std::size_t Size1, std::size_t Size2>
+constexpr bool operator==(const StaticString<Size1>& s1, const StaticString<Size2>& s2) {
+  if constexpr (Size1 != Size2) {
     return false;
   } else {
-    return star::index_transform<tSize1>([&](auto i) { return get<i>(s1) == get<i>(s2); }) |
+    return star::index_transform<Size1>([&](auto i) { return get<i>(s1) == get<i>(s2); }) |
            star::left_reduce(std::logical_and<>{}, true);
   }
 }
 
-template<std::size_t tSize1, std::size_t tSize2>
-constexpr StaticString<tSize1 + tSize2> operator+(const StaticString<tSize1>& s1,
-                                                  const StaticString<tSize2>& s2) {
-  return StaticString<tSize1 + tSize2>{star::index_transform<tSize1 + tSize2 + 1>([&](auto i) {
-                                         if constexpr (i < tSize1) {
-                                           return get<i>(s1);
-                                         } else if constexpr (i < tSize1 + tSize2) {
-                                           return get<i - tSize1>(s2);
-                                         } else {
-                                           return '\0';
-                                         }
-                                       }) |
-                                       star::to_array};
+template<std::size_t Size1, std::size_t Size2>
+constexpr StaticString<Size1 + Size2> operator+(const StaticString<Size1>& s1,
+                                                const StaticString<Size2>& s2) {
+  return StaticString<Size1 + Size2>{star::index_transform<Size1 + Size2 + 1>([&](auto i) {
+                                       if constexpr (i < Size1) {
+                                         return get<i>(s1);
+                                       } else if constexpr (i < Size1 + Size2) {
+                                         return get<i - Size1>(s2);
+                                       } else {
+                                         return '\0';
+                                       }
+                                     }) |
+                                     star::to_array};
 }
 
 namespace literals {
-template<StaticString tString>
+template<StaticString String>
 constexpr auto operator""_sstr() {
-  return tString;
+  return String;
 }
 } // namespace literals
 
-template<StaticString tString>
+template<StaticString String>
 constexpr auto to_snake_case() {
   constexpr std::size_t size = [] {
     std::size_t num = 0;
-    for (std::size_t i = 1; i < tString.size; ++i) {
-      if (is_uppercase(tString.data[i])) {
+    for (std::size_t i = 1; i < String.size; ++i) {
+      if (is_uppercase(String.data[i])) {
         ++num;
       }
     }
-    return tString.size + num;
+    return String.size + num;
   }();
 
   std::array<char, size + 1> str{};
 
   std::size_t j = 0;
-  str[j++] = to_lowercase(tString.data[0]);
-  for (std::size_t i = 1; i < tString.size; ++i) {
-    if (is_uppercase(tString.data[i])) {
+  str[j++] = to_lowercase(String.data[0]);
+  for (std::size_t i = 1; i < String.size; ++i) {
+    if (is_uppercase(String.data[i])) {
       str[j++] = '_';
     }
-    str[j++] = to_lowercase(tString.data[i]);
+    str[j++] = to_lowercase(String.data[i]);
   }
   str[j] = '\0';
 

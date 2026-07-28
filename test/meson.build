@@ -13,6 +13,7 @@ foreach name, deps : {
   'charconv': [],
   'chunked-dynamic-array': [],
   'concepts': [],
+  'concat': [],
   'divisor': [],
   'dynamic-bitset': [],
   'empty': [],
@@ -26,13 +27,14 @@ foreach name, deps : {
   'index-segmenter': [],
   'iterator-facades': [],
   'json': [],
-  'macropolis': [],
   'math': [],
   'multi-byte-integers': [],
   'primitives': [],
   'quantity': [],
   'ranges': [],
+  'reflection': [],
   'randomize-range': [],
+  'serialization': [],
   'static-bitset': [],
   'static-map': [],
   'static-ranges': [],
@@ -58,3 +60,8 @@ foreach name, deps : {
     ),
   )
 endforeach
+
+python = import('python').find_installation('python3', required: false)
+if python.found()
+  test('check includes', python, args: [files('check-includes.py')])
+endif

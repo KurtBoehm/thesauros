@@ -13,7 +13,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "thesauros/io.hpp"
 
 namespace thes::array {
 /**
@@ -38,12 +37,6 @@ struct TypedChunk {
   using const_pointer = const Value*;
   using iterator = pointer;
   using const_iterator = const_pointer;
-
-  static TypedChunk from_file(FileReader& reader) {
-    TypedChunk chunk(reader.read(type_tag<Size>));
-    reader.read(chunk.span());
-    return chunk;
-  }
 
   constexpr TypedChunk() = default;
   explicit constexpr TypedChunk(const Allocator& alloc) : alloc_(alloc) {}
@@ -211,12 +204,6 @@ struct TypedChunk {
       const_or_mut<decltype(self)>(self.begin_),
       const_or_mut<decltype(self)>(self.end_),
     };
-  }
-
-  void to_file(FileWriter& writer) const {
-    const Size stored_size = size();
-    writer.write(std::span{&stored_size, 1});
-    writer.write(span());
   }
 
 private:

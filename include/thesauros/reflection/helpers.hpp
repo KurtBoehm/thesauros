@@ -4,12 +4,12 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#ifndef INCLUDE_THESAUROS_MACROPOLIS_HELPERS_HPP
-#define INCLUDE_THESAUROS_MACROPOLIS_HELPERS_HPP
+#ifndef INCLUDE_THESAUROS_REFLECTION_HELPERS_HPP
+#define INCLUDE_THESAUROS_REFLECTION_HELPERS_HPP
 
-#include "boost/preprocessor.hpp"
+#include "boost/preprocessor.hpp" // IWYU pragma: keep
 
-#include "thesauros/string/static-string.hpp"
+#include "thesauros/string/static-string.hpp" // IWYU pragma: keep
 
 namespace thes {
 #define THES_POLIS_STR(STR) \
@@ -52,4 +52,4 @@ namespace thes {
   THES_POLIS_TEMPLATE_MAP_IMPL(BOOST_PP_VARIADIC_TO_LIST(BOOST_PP_REMOVE_PARENS(ARG)))
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_MACROPOLIS_HELPERS_HPP
+#endif // INCLUDE_THESAUROS_REFLECTION_HELPERS_HPP

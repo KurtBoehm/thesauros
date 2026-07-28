@@ -11,7 +11,8 @@
 
 #include "thesauros/format/fmtlib.hpp"
 #include "thesauros/format/formatter.hpp"
-#include "thesauros/quantity.hpp"
+#include "thesauros/quantity/io.hpp"
+#include "thesauros/quantity/quantity.hpp"
 
 template<typename TRep, typename TUnit>
 struct fmt::formatter<thes::Quantity<TRep, TUnit>> : fmt::nested_formatter<TRep> {

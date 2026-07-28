@@ -23,11 +23,11 @@
 #include "thesauros/ranges/iota.hpp"
 #include "thesauros/utility/as-expected.hpp"
 #elif THES_APPLE
+#include <cstdio>
 #include <ranges>
 
 #include <mach/mach.h>
 
-#include "thesauros/format/fmtlib.hpp"
 #include "thesauros/math/integer-cast.hpp"
 #include "thesauros/utility/as-expected.hpp"
 #elif THES_WINDOWS
@@ -40,7 +40,7 @@
 
 #include "ankerl/unordered_dense.h"
 
-#include "thesauros/format/fmtlib.hpp"
+#include "thesauros/charconv/concat.hpp"
 #include "thesauros/math/integer-cast.hpp"
 #endif
 
@@ -109,7 +109,7 @@ struct CpuSet {
     ULONG size{};
     const WINBOOL ret = GetThreadSelectedCpuSets(handle, cpus.get(), required_id_count, &size);
     if (ret != TRUE) {
-      throw std::runtime_error{fmt::format("GetThreadSelectedCpuSets failed: {}", GetLastError())};
+      throw std::runtime_error{cat("GetThreadSelectedCpuSets failed: ", GetLastError())};
     }
     return CpuSet{Base{cpus.get(), cpus.get() + size}};
   }
@@ -129,7 +129,8 @@ struct CpuSet {
 #elif THES_APPLE
     constexpr integer_t reference = -1;
     if (cpu_set_ != reference) {
-      fmt::print(stderr, "On macOS, multi-CPU sets are not supported! Overwriting existing entry.");
+      (void)std::fputs("On macOS, multi-CPU sets are not supported! Overwriting existing entry.",
+                       stderr);
     }
     cpu_set_ = *safe_cast<Base>(i);
 #elif THES_WINDOWS
@@ -177,8 +178,8 @@ inline std::expected<void, kern_return_t> set_affinity(std::thread::native_handl
   // and https://developer.apple.com/library/archive/releasenotes/Performance/RN-AffinityAPI/
   const auto mach_thread = pthread_mach_thread_np(handle);
   thread_affinity_policy_data_t policy{cpu_set.base()};
-  const kern_return_t ret = thread_policy_set(mach_thread, THREAD_AFFINITY_POLICY,
-                                              reinterpret_cast<thread_policy_t>(&policy), 1);
+  const kern_return_t ret = thread_policy_set(
+    mach_thread, THREAD_AFFINITY_POLICY, reinterpret_cast<thread_policy_t>(&policy) /*NOLINT*/, 1);
   return as_expected(ret);
 }
 #elif THES_WINDOWS

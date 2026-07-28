@@ -4,8 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#ifndef INCLUDE_THESAUROS_TYPES_LITERALS_HPP
-#define INCLUDE_THESAUROS_TYPES_LITERALS_HPP
+#ifndef INCLUDE_THESAUROS_LITERALS_INTEGER_HPP
+#define INCLUDE_THESAUROS_LITERALS_INTEGER_HPP
 
 #include <cstddef>
 #include <cstdint>
@@ -15,7 +15,8 @@
 #include "thesauros/types/primitives.hpp"
 #include "thesauros/types/value-tag.hpp"
 
-namespace thes::literals {
+namespace thes {
+inline namespace integer_literals {
 #define USER_DEFINED_LITERALS(OP_NAME, TYPE) \
   consteval TYPE operator""_##OP_NAME(const char* ptr) { \
     return parse_integer<TYPE>(ptr, thes::auto_tag<IntegerParseMode::literal>).value(); \
@@ -54,6 +55,11 @@ USER_DEFINED_LITERALS(32)
 USER_DEFINED_LITERALS(64)
 
 #undef USER_DEFINED_LITERALS
-} // namespace thes::literals
+} // namespace integer_literals
 
-#endif // INCLUDE_THESAUROS_TYPES_LITERALS_HPP
+namespace literals {
+using namespace integer_literals;
+}
+} // namespace thes
+
+#endif // INCLUDE_THESAUROS_LITERALS_INTEGER_HPP

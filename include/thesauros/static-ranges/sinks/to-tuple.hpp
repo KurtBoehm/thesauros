@@ -12,7 +12,7 @@
 
 #include "thesauros/static-ranges/definitions/concepts.hpp"
 #include "thesauros/static-ranges/definitions/size.hpp"
-#include "thesauros/utility/tuple.hpp"
+#include "thesauros/types/tuple.hpp"
 
 namespace thes::star {
 struct ToTupleGenerator : public ConsumerGeneratorBase {

@@ -10,7 +10,7 @@
 #include <concepts>
 #include <type_traits>
 
-#include "thesauros/utility/empty.hpp"
+#include "thesauros/types/empty.hpp"
 
 namespace thes {
 template<typename T, template<typename> typename... TTrans>
@@ -63,11 +63,11 @@ template<typename T>
 using UnVoidStorage = std::conditional_t<std::same_as<std::decay_t<T>, Empty>, void, T>;
 
 template<typename T>
-inline constexpr VoidStorageConstLvalRef<UnVoidStorage<T>> void_storage_cref(const T& value) {
+constexpr VoidStorageConstLvalRef<UnVoidStorage<T>> void_storage_cref(const T& value) {
   return value;
 }
 template<typename T>
-inline constexpr VoidStorageConstPtr<UnVoidStorage<T>> void_storage_cptr(const T& value) {
+constexpr VoidStorageConstPtr<UnVoidStorage<T>> void_storage_cptr(const T& value) {
   if constexpr (std::is_void_v<UnVoidStorage<T>>) {
     return value;
   } else {

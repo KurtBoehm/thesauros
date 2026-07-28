@@ -20,6 +20,7 @@
 #include "thesauros/containers/array/growth-policy.hpp"
 #include "thesauros/containers/array/initialization-policy.hpp"
 #include "thesauros/containers/array/typed-chunk.hpp"
+#include "thesauros/math/integer-cast.hpp"
 
 namespace thes {
 /**

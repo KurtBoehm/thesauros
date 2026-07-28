@@ -14,7 +14,11 @@
 #include "thesauros/algorithms/static-ranges/position-to-index.hpp"
 #include "thesauros/math/divmod.hpp"
 #include "thesauros/ranges/iota.hpp"
-#include "thesauros/static-ranges.hpp"
+#include "thesauros/static-ranges/definitions/static-apply.hpp"
+#include "thesauros/static-ranges/piping.hpp" // IWYU pragma: keep
+#include "thesauros/static-ranges/sinks/postfix-product-inclusive.hpp"
+#include "thesauros/static-ranges/sinks/to-array.hpp"
+#include "thesauros/static-ranges/views/transform.hpp"
 #include "thesauros/types/value-tag.hpp"
 
 namespace thes {

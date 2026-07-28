@@ -12,17 +12,15 @@
 #include <cassert>
 #include <concepts>
 #include <cstddef>
+#include <unordered_map>
+#include <vector>
 
-#include "ankerl/unordered_dense.h"
-
-#include "thesauros/containers/array/dynamic.hpp"
 #include "thesauros/math/integer-cast.hpp"
 
 namespace thes {
-namespace factorize_detail {
-template<std::unsigned_integral T>
+namespace detail::factorize {
+template<std::unsigned_integral T, typename Map>
 struct MapFactorization {
-  using Map = ankerl::unordered_dense::map<T, T>;
   Map factorization{};
 
   struct IterativeEmplacer {
@@ -50,9 +48,8 @@ struct MapFactorization {
     return {k, factorization};
   }
 };
-template<std::unsigned_integral T>
+template<std::unsigned_integral T, typename Arr>
 struct FlatFactorization {
-  using Arr = thes::DynamicArray<T>;
   Arr factorization{};
 
   struct IterativeEmplacer {
@@ -105,15 +102,19 @@ inline auto factorize(T n, auto&& factorization) {
   }
   return std::move(factorization.factorization);
 }
-} // namespace factorize_detail
+} // namespace detail::factorize
 
-template<std::unsigned_integral T>
-inline ankerl::unordered_dense::map<T, T> factorize_map(T n) {
-  return factorize_detail::factorize(n, factorize_detail::MapFactorization<T>{});
+template<std::unsigned_integral T, typename Map = std::unordered_map<T, T>>
+inline Map factorize_map(T n) {
+  return detail::factorize::factorize(n, detail::factorize::MapFactorization<T, Map>{});
 }
-template<std::unsigned_integral T>
-inline DynamicArray<T> factorize_flat(T n) {
-  return factorize_detail::factorize(n, factorize_detail::FlatFactorization<T>{});
+/**
+ * The prime factors of `n`, with multiplicity, in ascending order, collected into `Arr`, which
+ * only has to support `push_back`.
+ */
+template<std::unsigned_integral T, typename Arr = std::vector<T>>
+inline Arr factorize_flat(T n) {
+  return detail::factorize::factorize(n, detail::factorize::FlatFactorization<T, Arr>{});
 }
 } // namespace thes
 

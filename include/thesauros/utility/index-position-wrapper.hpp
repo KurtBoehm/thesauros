@@ -15,10 +15,18 @@
 #include <functional>
 #include <type_traits>
 
-#include "thesauros/algorithms/static-ranges.hpp"
-#include "thesauros/math.hpp"
+#include "thesauros/algorithms/static-ranges/index-to-position.hpp"
+#include "thesauros/algorithms/static-ranges/position-to-index.hpp"
+#include "thesauros/math/divmod.hpp"
 #include "thesauros/math/integer-cast.hpp"
-#include "thesauros/static-ranges.hpp"
+#include "thesauros/static-ranges/piping.hpp" // IWYU pragma: keep
+#include "thesauros/static-ranges/sinks/for-each.hpp"
+#include "thesauros/static-ranges/sinks/postfix-product-inclusive.hpp"
+#include "thesauros/static-ranges/sinks/reduce.hpp"
+#include "thesauros/static-ranges/sinks/to-array.hpp"
+#include "thesauros/static-ranges/views/iota.hpp"
+#include "thesauros/static-ranges/views/reversed.hpp"
+#include "thesauros/static-ranges/views/transform.hpp"
 
 namespace thes {
 namespace detail {

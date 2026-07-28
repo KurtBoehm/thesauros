@@ -17,7 +17,8 @@
 #include <memory>
 #include <type_traits>
 
-#include "thesauros/containers/array.hpp"
+#include "thesauros/containers/array/dynamic.hpp"
+#include "thesauros/containers/array/initialization-policy.hpp"
 #include "thesauros/containers/bitset/iterator.hpp"
 #include "thesauros/math/arithmetic.hpp"
 #include "thesauros/ranges/iota.hpp"

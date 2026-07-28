@@ -16,10 +16,10 @@
 #include <stdexcept>
 #include <utility>
 
+#include "thesauros/charconv/concat.hpp"
 #include "thesauros/containers/array/construction.hpp"
 #include "thesauros/containers/array/initialization-policy.hpp"
 #include "thesauros/containers/array/typed-chunk.hpp"
-#include "thesauros/format/fmtlib.hpp"
 
 namespace thes {
 template<typename TValue, typename TInitPolicy = DefaultInit,
@@ -159,7 +159,7 @@ struct FixedArray {
 
   [[nodiscard]] constexpr decltype(auto) at(this auto&& self, Size index) {
     if (index >= self.size()) {
-      throw std::out_of_range{fmt::format("Invalid index: {} >= {}", index, self.size())};
+      throw std::out_of_range{cat("Invalid index: ", index, " >= ", self.size())};
     }
     return self.allocation_[index];
   }

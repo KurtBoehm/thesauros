@@ -7,7 +7,7 @@
 #include <compare>
 #include <tuple>
 
-#include "thesauros/utility/tuple.hpp"
+#include "thesauros/types/tuple.hpp"
 
 int main() {
   constexpr std::tuple<int, float> ta1{1, 2};

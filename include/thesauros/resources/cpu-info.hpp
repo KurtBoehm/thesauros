@@ -11,7 +11,7 @@
 #include <cstddef>
 #include <ranges>
 
-#include "thesauros/format/fmtlib.hpp"
+#include "thesauros/charconv/concat.hpp"
 #include "thesauros/macropolis/platform.hpp"
 #include "thesauros/ranges/iota.hpp"
 #include "thesauros/utility/index-segmentation.hpp"
@@ -24,10 +24,16 @@
 #include <vector>
 
 #include "thesauros/charconv/string-convert.hpp"
-#include "thesauros/containers/array.hpp"
+#include "thesauros/containers/array/dynamic.hpp"
 #include "thesauros/io/file-reader.hpp"
 #elif THES_APPLE
+#include <array>
+#include <functional>
+#include <optional>
 #include <stdexcept>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include <sys/sysctl.h>
 #elif THES_WINDOWS
@@ -84,7 +90,7 @@ struct CpuInfo {
 
   /** The sysfs topology directory for this CPU. */
   [[nodiscard]] auto sys_folder() const {
-    return std::filesystem::path{cpu_path_cstr} / fmt::format("cpu{}", id) / "topology";
+    return std::filesystem::path{cpu_path_cstr} / cat("cpu", id) / "topology";
   }
 
   /** A view over logical CPUs that belong to the same core. */
@@ -194,7 +200,7 @@ inline T read_sysctl(const char* name) {
   std::size_t size = sizeof(T);
   const int ret = sysctlbyname(name, &value, &size, nullptr, 0);
   if (ret != 0) {
-    throw std::runtime_error{fmt::format("sysctlbyname({}) failed: {}", name, ret)};
+    throw std::runtime_error{cat("sysctlbyname(", name, ") failed: ", ret)};
   }
   return value;
 }
@@ -231,9 +237,9 @@ inline std::vector<PerfLevel> read_perflevels() {
 
   // As of 2026, none of Apple’s CPUs has more than two performance levels.
   for (int i = 0; i < 4; ++i) {
-    const auto base = fmt::format("hw.perflevel{}", i);
+    const auto base = cat("hw.perflevel", i);
 
-    const auto name_key = fmt::format("{}.name", base);
+    const auto name_key = cat(base, ".name");
     const auto name_arr = query_sysctl<std::array<char, 128>>(name_key.c_str());
     if (!name_arr.has_value()) {
       break;
@@ -504,7 +510,7 @@ struct CpuInfo {
       reinterpret_cast<SYSTEM_CPU_SET_INFORMATION*>(buffer.get()), // NOLINT
       buffer_size, &buffer_size, current_process, 0);
     if (ret != TRUE) {
-      throw std::runtime_error{fmt::format("GetSystemCpuSetInformation failed: {}", ret)};
+      throw std::runtime_error{cat("GetSystemCpuSetInformation failed: ", ret)};
     }
 
     u8* cpu_set_ptr = buffer.get();

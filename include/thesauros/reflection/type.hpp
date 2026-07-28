@@ -4,8 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#ifndef INCLUDE_THESAUROS_MACROPOLIS_TYPE_HPP
-#define INCLUDE_THESAUROS_MACROPOLIS_TYPE_HPP
+#ifndef INCLUDE_THESAUROS_REFLECTION_TYPE_HPP
+#define INCLUDE_THESAUROS_REFLECTION_TYPE_HPP
 
 #include <concepts>
 #include <cstddef>
@@ -15,26 +15,26 @@
 #include "thesauros/concepts/type-traits.hpp"
 #include "thesauros/string/static-string.hpp"
 #include "thesauros/types/primitives.hpp"
+#include "thesauros/types/tuple.hpp"
 #include "thesauros/types/type-transformations.hpp"
-#include "thesauros/utility/tuple.hpp"
 
 namespace thes {
-template<auto tName, auto tSerialName, auto tValue>
+template<auto Name, auto SerialName, auto Value>
 struct StaticMemberInfo {
-  using Type = std::decay_t<decltype(tValue)>;
-  static constexpr auto name = tName;
-  static constexpr auto serial_name = tSerialName;
-  static constexpr auto value = tValue;
+  using Type = std::decay_t<decltype(Value)>;
+  static constexpr auto name = Name;
+  static constexpr auto serial_name = SerialName;
+  static constexpr auto value = Value;
 };
 
-template<typename T, auto tName, auto tSerialName, auto tPointer>
+template<typename T, auto Name, auto SerialName, auto Pointer>
 struct MemberInfo {
   using Type = T;
-  static constexpr auto name = tName;
-  static constexpr auto serial_name = tSerialName;
-  static constexpr auto pointer = tPointer;
+  static constexpr auto name = Name;
+  static constexpr auto serial_name = SerialName;
+  static constexpr auto pointer = Pointer;
 
-  static_assert(std::same_as<std::remove_cvref_t<T>, MemberType<decltype(tPointer)>>);
+  static_assert(std::same_as<std::remove_cvref_t<T>, MemberType<decltype(Pointer)>>);
 
   template<typename TOther>
   constexpr decltype(auto) value(TOther&& val) {
@@ -42,12 +42,12 @@ struct MemberInfo {
   }
 };
 
-template<typename T, auto tName, auto tPointer, std::size_t tOffset>
+template<typename T, auto Name, auto Pointer, std::size_t Offset>
 struct MemberLayoutInfo {
   using Type = T;
-  static constexpr auto name = tName;
-  static constexpr auto pointer = tPointer;
-  static constexpr auto offset = tOffset;
+  static constexpr auto name = Name;
+  static constexpr auto pointer = Pointer;
+  static constexpr auto offset = Offset;
 };
 
 template<typename T>
@@ -56,14 +56,14 @@ concept HasMemoryLayoutInfo = requires() { memory_layout_info_adl(std::declval<T
 template<typename T>
 inline constexpr auto memory_layout_info = memory_layout_info_adl(static_cast<T*>(nullptr));
 
-template<typename T, auto tName, auto tSerialName, auto tMembers, auto tStaticMembers>
+template<typename T, auto Name, auto SerialName, auto tMembers, auto StaticMembers>
 struct TypeInfoTemplate {
   using Type = T;
-  static constexpr auto name = tName;
-  static constexpr auto serial_name = tSerialName;
+  static constexpr auto name = Name;
+  static constexpr auto serial_name = SerialName;
 
   static constexpr ::thes::Tuple members = tMembers;
-  static constexpr ::thes::Tuple static_members = tStaticMembers;
+  static constexpr ::thes::Tuple static_members = StaticMembers;
 
   using Members = decltype(members);
 };
@@ -401,4 +401,4 @@ constexpr auto serial_name_of() {
   THES_DEFINE_TYPE_INFO_IMPL(TYPE, BOOST_PP_VARIADIC_TO_LIST(__VA_ARGS__))
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_MACROPOLIS_TYPE_HPP
+#endif // INCLUDE_THESAUROS_REFLECTION_TYPE_HPP

@@ -14,7 +14,6 @@
 #include <utility>
 
 #include "thesauros/containers/array/typed-chunk.hpp"
-#include "thesauros/io.hpp"
 #include "thesauros/iterator/facade.hpp"
 #include "thesauros/iterator/state-facade.hpp"
 #include "thesauros/ranges/iota.hpp"
@@ -35,12 +34,6 @@ struct NestedDynamicArrayBase {
 
   using SizeStorage = array::TypedChunk<Size, Size, SizeAllocator>;
   using Storage = array::TypedChunk<TValue, Size, Allocator>;
-
-  static TDerived from_file(FileReader& reader) {
-    auto offsets = SizeStorage::from_file(reader);
-    auto values = Storage::from_file(reader);
-    return TDerived{std::move(offsets), std::move(values)};
-  }
 
   template<bool IsConst>
   struct Iterator
@@ -204,6 +197,15 @@ struct NestedDynamicArrayBase {
     assert(!offsets_.empty());
   }
 
+  /** The group offsets, of which there is one more than there are groups. */
+  [[nodiscard]] const SizeStorage& offsets() const noexcept {
+    return offsets_;
+  }
+  /** The elements of all groups, stored contiguously. */
+  [[nodiscard]] const Storage& values() const noexcept {
+    return values_;
+  }
+
   [[nodiscard]] Size group_num() const {
     assert(!offsets_.empty());
     return offsets_.size() - 1;
@@ -220,11 +222,6 @@ struct NestedDynamicArrayBase {
   }
   [[nodiscard]] Size flat_size() const noexcept {
     return element_num();
-  }
-
-  void to_file(FileWriter& writer) const {
-    offsets_.to_file(writer);
-    values_.to_file(writer);
   }
 
   IotaRange<Size> offsets_of(Size i) const {

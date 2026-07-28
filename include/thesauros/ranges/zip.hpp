@@ -11,8 +11,14 @@
 #include <cstddef>
 #include <type_traits>
 
-#include "thesauros/iterator.hpp"
-#include "thesauros/utility.hpp"
+#include "thesauros/iterator/facade.hpp"
+#include "thesauros/static-ranges/definitions/get-at.hpp"
+#include "thesauros/static-ranges/piping.hpp" // IWYU pragma: keep
+#include "thesauros/static-ranges/sinks/for-each.hpp"
+#include "thesauros/static-ranges/sinks/to-tuple.hpp"
+#include "thesauros/static-ranges/sinks/unique-value.hpp"
+#include "thesauros/static-ranges/views/transform.hpp"
+#include "thesauros/types/tuple.hpp"
 
 namespace thes {
 template<typename... TRanges>

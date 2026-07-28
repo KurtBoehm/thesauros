@@ -4,8 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#ifndef INCLUDE_THESAUROS_UTILITY_EMPTY_HPP
-#define INCLUDE_THESAUROS_UTILITY_EMPTY_HPP
+#ifndef INCLUDE_THESAUROS_TYPES_EMPTY_HPP
+#define INCLUDE_THESAUROS_TYPES_EMPTY_HPP
 
 #include <tuple>
 #include <utility>
@@ -20,7 +20,7 @@ struct Empty {
 };
 
 template<typename TFun, typename TArgTuple>
-inline constexpr auto apply_empty(TFun&& fun, TArgTuple&& args) {
+constexpr auto apply_empty(TFun&& fun, TArgTuple&& args) {
   auto impl = [&] { return std::apply(std::forward<TFun>(fun), std::forward<TArgTuple>(args)); };
   using Type = decltype(impl());
 
@@ -33,4 +33,4 @@ inline constexpr auto apply_empty(TFun&& fun, TArgTuple&& args) {
 }
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_UTILITY_EMPTY_HPP
+#endif // INCLUDE_THESAUROS_TYPES_EMPTY_HPP

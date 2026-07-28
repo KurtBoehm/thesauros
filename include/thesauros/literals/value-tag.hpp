@@ -4,8 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#ifndef INCLUDE_THESAUROS_TYPES_VALUE_TAG_LITERAL_HPP
-#define INCLUDE_THESAUROS_TYPES_VALUE_TAG_LITERAL_HPP
+#ifndef INCLUDE_THESAUROS_LITERALS_VALUE_TAG_HPP
+#define INCLUDE_THESAUROS_LITERALS_VALUE_TAG_HPP
 
 #include <cstddef>
 
@@ -13,6 +13,7 @@
 #include "thesauros/types/value-tag.hpp"
 
 namespace thes {
+/** Carries the digits of an `_it` literal as a non-type template parameter. */
 struct IndexTagLiteral {
   constexpr IndexTagLiteral(const char* charray)
       : value(parse_integer<std::size_t>(charray).value()) {}
@@ -20,12 +21,17 @@ struct IndexTagLiteral {
   std::size_t value;
 };
 
-namespace literals {
-template<IndexTagLiteral tString>
+inline namespace value_tag_literals {
+/** Creates the `index_tag` denoted by the preceding digits, e.g. `3_it`. */
+template<IndexTagLiteral String>
 constexpr auto operator""_it() {
-  return thes::index_tag<tString.value>;
+  return thes::index_tag<String.value>;
 }
+} // namespace value_tag_literals
+
+namespace literals {
+using namespace value_tag_literals;
 } // namespace literals
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_TYPES_VALUE_TAG_LITERAL_HPP
+#endif // INCLUDE_THESAUROS_LITERALS_VALUE_TAG_HPP

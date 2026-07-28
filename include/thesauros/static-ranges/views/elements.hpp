@@ -10,13 +10,13 @@
 #include <cstddef>
 #include <utility>
 
-#include "thesauros/static-ranges/definitions.hpp"
+#include "thesauros/static-ranges/definitions/get-at.hpp"
 #include "thesauros/static-ranges/views/transform.hpp"
 
 namespace thes::star {
-template<std::size_t tIndex>
+template<std::size_t I>
 inline constexpr auto elements =
-  transform([]<typename T>(T&& v) { return thes::star::get_at<tIndex>(std::forward<T>(v)); });
+  transform([]<typename T>(T&& v) { return thes::star::get_at<I>(std::forward<T>(v)); });
 } // namespace thes::star
 
 #endif // INCLUDE_THESAUROS_STATIC_RANGES_VIEWS_ELEMENTS_HPP

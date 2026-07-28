@@ -11,7 +11,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "thesauros/static-ranges.hpp"
 #include "thesauros/types/type-sequence/type-sequence.hpp"
 
 namespace thes {
@@ -369,9 +368,13 @@ struct IndexFilteredTypeSeqTrait<Idx, TypeSeq<>, IdxSeq> {
 };
 template<std::size_t Idx, typename Head, typename... Tail, auto IdxSeq>
 struct IndexFilteredTypeSeqTrait<Idx, TypeSeq<Head, Tail...>, IdxSeq> {
+  /** Whether `IdxSeq` contains `Idx`, comparing regardless of the indices’ signedness. */
+  static constexpr bool is_kept = []<std::size_t... Idxs>(std::index_sequence<Idxs...>) {
+    return (... || std::cmp_equal(IdxSeq[Idxs], Idx));
+  }(std::make_index_sequence<IdxSeq.size()>{});
+
   using Rec = IndexFilteredTypeSeqTrait<Idx + 1, TypeSeq<Tail...>, IdxSeq>::Type;
-  using Type = std::conditional_t<IdxSeq | star::contains(index_tag<Idx>),
-                                  typename Rec::template Prepended<Head>, Rec>;
+  using Type = std::conditional_t<is_kept, typename Rec::template Prepended<Head>, Rec>;
 };
 
 /** `Seq`, with only the types at the indices contained in `IdxSeq` kept. */
@@ -400,29 +403,6 @@ struct UniqueTypeSeqTrait<TypeSeq<T, Ts...>> {
 
 template<AnyTypeSeq Seq>
 using UniqueTypeSeq = UniqueTypeSeqTrait<Seq>::Type;
-
-//==================================================================================================
-// Static range conversion
-//==================================================================================================
-
-/** The element types of the static range `Range`, in order, at the indices given by `IdxSeq`. */
-template<star::AnyStaticRange Range, typename IdxSeq>
-struct StaticRangeTypeSeqTrait;
-template<star::AnyStaticRange Range, std::size_t... Idxs>
-struct StaticRangeTypeSeqTrait<Range, std::index_sequence<Idxs...>> {
-  using Type = TypeSeq<std::tuple_element_t<Idxs, std::remove_cvref_t<Range>>...>;
-};
-
-/** The element types of the static range `Range`, in order, as a `TypeSeq`. */
-template<star::AnyStaticRange Range>
-using StaticRangeTypeSeq =
-  StaticRangeTypeSeqTrait<Range, std::make_index_sequence<star::size<Range>>>::Type;
-
-/** Returns `StaticRangeTypeSeq<Range>{}`, the element types of `range` as a `TypeSeq`. */
-template<star::AnyStaticRange Range>
-constexpr StaticRangeTypeSeq<Range> static_range_type_seq(const Range& /*range*/) {
-  return {};
-}
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_TYPES_TYPE_SEQUENCE_OPERATIONS_HPP

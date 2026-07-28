@@ -19,10 +19,9 @@
 #include <omp.h>
 #include <pthread.h>
 
-#include "thesauros/execution/system.hpp"
+#include "thesauros/charconv/concat.hpp"
 #include "thesauros/execution/system/affinity.hpp"
-#include "thesauros/format/fmtlib.hpp"
-#include "thesauros/utility/empty.hpp"
+#include "thesauros/types/empty.hpp"
 
 namespace thes {
 struct FixedOpenMpThreadPool {
@@ -30,9 +29,8 @@ struct FixedOpenMpThreadPool {
   explicit FixedOpenMpThreadPool(std::size_t size, TCpuSets cpu_sets = {}) : thread_num_(size) {
     if constexpr (!std::same_as<TCpuSets, Empty>) {
       if (size > std::size(cpu_sets)) {
-        throw std::invalid_argument{fmt::format("{} threads have been requested, "
-                                                "but there are only {} entries in the CPU set!",
-                                                size, std::size(cpu_sets))};
+        throw std::invalid_argument{cat(size, " threads have been requested, but there are only ",
+                                        std::size(cpu_sets), " entries in the CPU set!")};
       }
 
       auto rng = std::views::common(std::move(cpu_sets));
@@ -69,8 +67,8 @@ struct FixedOpenMpThreadPool {
 
     const int max_threads = omp_get_max_threads();
     if (max_threads < 0 || std::size_t(max_threads) < thread_num_) {
-      throw std::runtime_error{fmt::format("The thread pool needs {} threads, but the max is {}",
-                                           thread_num_, max_threads)};
+      throw std::runtime_error{cat("The thread pool needs ", thread_num_,
+                                   " threads, but the max is ", max_threads)};
     }
 
 #pragma omp parallel for num_threads(thread_num_)

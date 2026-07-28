@@ -23,17 +23,15 @@
 #include "thesauros/containers/array/dynamic.hpp"
 #include "thesauros/containers/array/growth-policy.hpp"
 #include "thesauros/containers/array/initialization-policy.hpp"
-#include "thesauros/io.hpp"
 #include "thesauros/iterator/facade.hpp"
 #include "thesauros/iterator/reverse-facade.hpp"
 #include "thesauros/macropolis/inlining.hpp"
-#include "thesauros/types/type-tag.hpp"
 #include "thesauros/types/type-transformations.hpp"
 #include "thesauros/utility/integral-value.hpp"
 #include "thesauros/utility/value-optional.hpp"
 
 namespace thes {
-namespace impl {
+namespace detail::multi_byte {
 /**
  * Owns a byte buffer holding a packed array of `ByteInt::byte_num`-byte integers, with
  * `PaddingBytes` bytes of padding at each end so that a full `Unsigned`-width load or store never
@@ -106,7 +104,7 @@ private:
   CByte* data_{};
   Size size_{0};
 };
-} // namespace impl
+} // namespace detail::multi_byte
 
 /** A const or mutable, optionally value-optional, view of a range of packed `ByteInt` integers. */
 template<bool IsConst, typename ByteInt, std::size_t PaddingBytes, bool IsOptional>
@@ -458,13 +456,6 @@ struct MultiByteIntegersBase {
   // Serialization
   //------------------------------------------------------------------------------------------------
 
-  /** Writes the element count followed by the raw byte content to `writer`. */
-  void to_file(FileWriter& writer) const {
-    const Size stored_size = storage_.size();
-    writer.write(std::span{&stored_size, 1});
-    writer.write(byte_span());
-  }
-
 protected:
   /** Converts an element count to a byte count. */
   static Size byte_size(Size size) THES_ALWAYS_INLINE {
@@ -516,14 +507,14 @@ private:
 
 /**
  * A const or mutable, non-owning view of a contiguous range of packed `ByteInt` integers, backed
- * by `impl::ViewStorage`.
+ * by `detail::multi_byte::ViewStorage`.
  */
 template<bool IsConst, typename ByteInt, std::size_t PaddingBytes, bool IsOptional>
 struct MultiByteSubRange
     : public MultiByteIntegersBase<MultiByteSubRange<IsConst, ByteInt, PaddingBytes, IsOptional>,
                                    ByteInt, PaddingBytes, IsOptional,
-                                   impl::ViewStorage<IsConst, ByteInt>> {
-  using Storage = impl::ViewStorage<IsConst, ByteInt>;
+                                   detail::multi_byte::ViewStorage<IsConst, ByteInt>> {
+  using Storage = detail::multi_byte::ViewStorage<IsConst, ByteInt>;
   using Base = MultiByteIntegersBase<MultiByteSubRange, ByteInt, PaddingBytes, IsOptional, Storage>;
 
   using Size = Base::Size;
@@ -535,15 +526,15 @@ struct MultiByteSubRange
 
 /**
  * An owning, growable array of packed `ByteInt::byte_num`-byte integers, backed by
- * `impl::ArrayStorage`. If `IsOptional` is `true`, elements are `ValueOptional`s that can hold a
- * distinguished “empty” state in addition to any representable value.
+ * `detail::multi_byte::ArrayStorage`. If `IsOptional` is `true`, elements are `ValueOptional`s that
+ * can hold a distinguished “empty” state in addition to any representable value.
  */
 template<typename ByteInt, std::size_t PaddingBytes, bool IsOptional, typename ByteAlloc>
 struct MultiByteIntegerArray
     : public MultiByteIntegersBase<
         MultiByteIntegerArray<ByteInt, PaddingBytes, IsOptional, ByteAlloc>, ByteInt, PaddingBytes,
-        IsOptional, impl::ArrayStorage<ByteInt, PaddingBytes, ByteAlloc>> {
-  using Storage = impl::ArrayStorage<ByteInt, PaddingBytes, ByteAlloc>;
+        IsOptional, detail::multi_byte::ArrayStorage<ByteInt, PaddingBytes, ByteAlloc>> {
+  using Storage = detail::multi_byte::ArrayStorage<ByteInt, PaddingBytes, ByteAlloc>;
   using Base =
     MultiByteIntegersBase<MultiByteIntegerArray, ByteInt, PaddingBytes, IsOptional, Storage>;
   friend Base;
@@ -558,13 +549,6 @@ struct MultiByteIntegerArray
   //------------------------------------------------------------------------------------------------
   // Factory functions
   //------------------------------------------------------------------------------------------------
-
-  /** Reads an array previously written by `to_file` from `reader`. */
-  static MultiByteIntegerArray from_file(FileReader& reader) {
-    MultiByteIntegerArray out(reader.read(type_tag<Size>));
-    reader.read(out.byte_span());
-    return out;
-  }
 
   /** Creates an array of `size` elements, with every bit set. */
   static MultiByteIntegerArray create_all_set(std::size_t size)
