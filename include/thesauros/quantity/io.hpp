@@ -26,15 +26,15 @@ inline constexpr auto base_unit_name = BaseUnitNameTrait<T>::name;
     static constexpr StaticString name{NAME}; \
   }
 
-BASE_UNIT_NAME(base_unit::second, "s");
-BASE_UNIT_NAME(base_unit::metre, "m");
-BASE_UNIT_NAME(base_unit::kilogram, "kg");
-BASE_UNIT_NAME(base_unit::ampere, "A");
-BASE_UNIT_NAME(base_unit::kelvin, "K");
-BASE_UNIT_NAME(base_unit::mole, "mol");
-BASE_UNIT_NAME(base_unit::candela, "cd");
-BASE_UNIT_NAME(base_unit::byte, "B");
-BASE_UNIT_NAME(base_unit::bit, "bit");
+BASE_UNIT_NAME(unit::base::second, "s");
+BASE_UNIT_NAME(unit::base::metre, "m");
+BASE_UNIT_NAME(unit::base::kilogram, "kg");
+BASE_UNIT_NAME(unit::base::ampere, "A");
+BASE_UNIT_NAME(unit::base::kelvin, "K");
+BASE_UNIT_NAME(unit::base::mole, "mol");
+BASE_UNIT_NAME(unit::base::candela, "cd");
+BASE_UNIT_NAME(unit::base::byte, "B");
+BASE_UNIT_NAME(unit::base::bit, "bit");
 
 #undef BASE_UNIT_NAME
 

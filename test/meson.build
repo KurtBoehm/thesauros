@@ -8,60 +8,76 @@ options_sub = subproject('options')
 opts = []
 args = options_sub.get_variable('all_args')
 
-foreach name, deps : {
-  'arrays': [],
-  'charconv': [],
-  'chunked-dynamic-array': [],
-  'concepts': [],
-  'concat': [],
-  'divisor': [],
-  'dynamic-bitset': [],
-  'empty': [],
-  'execution': [],
-  'factorization': [],
-  'fancy-visit': [],
-  'fixed-bitset': [],
-  'flat': [],
-  'format': [],
-  'index-position-wrapper': [],
-  'index-segmenter': [],
-  'iterator-facades': [],
-  'json': [],
-  'math': [],
-  'multi-byte-integers': [],
-  'primitives': [],
-  'quantity': [],
-  'ranges': [],
-  'reflection': [],
-  'randomize-range': [],
-  'serialization': [],
-  'static-bitset': [],
-  'static-map': [],
-  'static-ranges': [],
-  'static-string': [],
-  'std-extensions': [],
-  'swap-or-equal': [],
-  'tempfile': [],
-  'tessellation': [],
-  'tiling': [],
-  'tuples': [],
-  'type-seq': [],
-  'value-tag': [],
+# One directory per sub-library, mirroring `include/thesauros`.
+foreach module, names : {
+  'algorithms': ['swap-or-equal', 'tiling'],
+  'charconv': ['charconv', 'concat'],
+  'concepts': ['concepts'],
+  'containers': [
+    'arrays',
+    'chunked-dynamic-array',
+    'dynamic-bitset',
+    'fixed-bitset',
+    'flat',
+    'multi-byte-integers',
+    'static-bitset',
+  ],
+  'execution': ['execution'],
+  'filesystem': ['tempfile'],
+  'format': ['format'],
+  'io': ['json', 'serialization'],
+  'iterator': ['iterator-facades'],
+  'math': ['divisor', 'factorization', 'math', 'tessellation'],
+  'quantity': ['quantity'],
+  'random': ['randomize-range'],
+  'ranges': ['ranges'],
+  'reflection': ['reflection'],
+  'static-ranges': ['static-ranges'],
+  'string': ['static-string'],
+  'types': ['empty', 'primitives', 'tuples', 'type-seq', 'value-tag'],
+  'utility': [
+    'fancy-visit',
+    'index-position-wrapper',
+    'index-segmenter',
+    'static-map',
+    'std-extensions',
+  ],
 }
-  space_name = name.replace('-', ' ')
-  test(
-    f'test @space_name@',
-    executable(
-      f'test-@name@',
-      [f'@name@.cpp'],
-      dependencies: [thesauros_dep] + deps,
-      override_options: opts,
-      cpp_args: args,
-    ),
-  )
+  foreach name : names
+    space_name = name.replace('-', ' ')
+    test(
+      space_name,
+      executable(
+        f'test-@module@-@name@',
+        [f'@module@/@name@.cpp'],
+        dependencies: [thesauros_dep],
+        override_options: opts,
+        cpp_args: args,
+      ),
+      suite: module,
+    )
+  endforeach
 endforeach
+
+#---------------------------------------------------------------------------------------------------
+# Structural checks, which belong to no single sub-library
+#---------------------------------------------------------------------------------------------------
+
+# Built against `thesauros_core_dep` alone, so it fails if a dependency-free sub-library
+# starts pulling in an external one.
+test(
+  'core dependency',
+  executable(
+    'test-core-dep',
+    ['core-dep.cpp'],
+    dependencies: [thesauros_core_dep],
+    override_options: opts,
+    cpp_args: args,
+  ),
+  suite: 'structure',
+)
 
 python = import('python').find_installation('python3', required: false)
 if python.found()
-  test('check includes', python, args: [files('check-includes.py')])
+  test('check includes', python, args: [files('check-includes.py')], suite: 'structure')
 endif

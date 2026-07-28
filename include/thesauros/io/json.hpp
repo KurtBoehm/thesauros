@@ -187,7 +187,7 @@ struct JsonWriter<Map> {
       *it++ = ':';
       *it++ = ' ';
 
-      it = write_json(it, serial_value(v), indent1);
+      it = write_json(it, reflect::serial_value(v), indent1);
     }
 
     *it++ = indent1.separator();
@@ -210,7 +210,7 @@ struct JsonWriter<Range> {
     for (Delimiter delim{","}; const auto& v : rng) {
       delim.output(it, indent1.separator());
       it = indent1.output(it);
-      it = write_json(it, serial_value(v), indent1);
+      it = write_json(it, reflect::serial_value(v), indent1);
     }
 
     indent.reduced_separator([&](auto c) { *it++ = c; });
@@ -221,10 +221,10 @@ struct JsonWriter<Range> {
   }
 };
 
-template<HasTypeInfo T>
+template<reflect::HasTypeInfo T>
 struct JsonWriter<T> {
   static auto write(auto it, const T& value, Indentation indent = {}) {
-    using Info = TypeInfo<T>;
+    using Info = reflect::TypeInfo<T>;
     const auto indent1 = indent + 1;
 
     *it++ = '{';
@@ -252,9 +252,9 @@ struct JsonWriter<T> {
       *it++ = ' ';
 
       if constexpr (is_static) {
-        it = write_json(it, serial_value(Member::value), indent1);
+        it = write_json(it, reflect::serial_value(Member::value), indent1);
       } else {
-        it = write_json(it, serial_value(value.*Member::pointer), indent1);
+        it = write_json(it, reflect::serial_value(value.*Member::pointer), indent1);
       }
       if constexpr (i + 1 < size) {
         *it++ = ',';
@@ -270,16 +270,16 @@ struct JsonWriter<T> {
   }
 };
 
-template<HasEnumInfo Enum>
+template<reflect::HasEnumInfo Enum>
 struct JsonWriter<Enum> {
   using Path = std::filesystem::path;
   template<typename TIt>
   static auto write(TIt it, Enum value, Indentation indent = {}) {
-    using EnumInfo = ::thes::EnumInfo<Enum>;
+    using Info = ::thes::reflect::EnumInfo<Enum>;
 
     auto impl = [&]<std::size_t Head, std::size_t... Tail>(
                   auto rec, std::index_sequence<Head, Tail...>) -> TIt {
-      constexpr auto value_info = star::get_at<Head>(EnumInfo::values);
+      constexpr auto value_info = star::get_at<Head>(Info::values);
       if (value_info.value == value) {
         return JsonWriter<std::string_view>::write(it, value_info.serial_name.view(), indent);
       }
@@ -290,7 +290,7 @@ struct JsonWriter<Enum> {
         return JsonWriter<Under>::write(it, static_cast<Under>(value), indent);
       }
     };
-    return impl(impl, std::make_index_sequence<std::tuple_size_v<decltype(EnumInfo::values)>>{});
+    return impl(impl, std::make_index_sequence<std::tuple_size_v<decltype(Info::values)>>{});
   }
 };
 } // namespace thes

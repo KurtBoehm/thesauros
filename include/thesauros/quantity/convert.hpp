@@ -14,11 +14,11 @@
 namespace thes {
 template<typename TRep, typename TPeriod>
 inline constexpr auto duration_quantity(const std::chrono::duration<TRep, TPeriod>& d) {
-  return Quantity<TRep, Unit<TPeriod, base_unit::second>>(d.count());
+  return Quantity<TRep, Unit<TPeriod, unit::base::second>>(d.count());
 }
 
 template<typename TRep, typename TPeriod>
-inline constexpr auto quantity_duration(const Quantity<TRep, Unit<TPeriod, base_unit::second>>& d) {
+inline constexpr auto quantity_duration(const Quantity<TRep, Unit<TPeriod, unit::base::second>>& d) {
   return std::chrono::duration<TRep, TPeriod>(d.count());
 }
 } // namespace thes

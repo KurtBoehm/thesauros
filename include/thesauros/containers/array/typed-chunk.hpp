@@ -13,7 +13,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace thes::array {
+namespace thes {
 /**
  * A helper class managing a typed chunk of memory.
  *
@@ -220,6 +220,6 @@ private:
   V* begin_{nullptr};
   V* end_{nullptr};
 };
-} // namespace thes::array
+} // namespace thes
 
 #endif // INCLUDE_THESAUROS_CONTAINERS_ARRAY_TYPED_CHUNK_HPP

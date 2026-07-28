@@ -38,12 +38,11 @@
 #include <sys/sysctl.h>
 #elif THES_WINDOWS
 #include <memory>
+#include <set>
 
 #include <minwindef.h>
 #include <processthreadsapi.h>
 #include <winnt.h>
-
-#include "ankerl/unordered_dense.h"
 
 #include "thesauros/types/primitives.hpp"
 #endif
@@ -553,26 +552,24 @@ struct CpuInfo {
       return infos;
     }
 
-    ankerl::unordered_dense::set<BYTE> efficiency_set{};
+    std::set<BYTE> efficiencies{};
     for (const CpuInfo& info : infos) {
-      efficiency_set.emplace(info.efficiency_class);
+      efficiencies.emplace(info.efficiency_class);
     }
-    if (efficiency_set.empty()) {
+    if (efficiencies.empty()) {
       throw std::runtime_error{"There are no efficiency classes (somehow)!"};
     }
-    if (efficiency_set.size() > 2) {
+    if (efficiencies.size() > 2) {
       throw std::runtime_error{"There are too many efficiency classes!"};
     }
-    std::vector<BYTE> efficiencies = std::move(efficiency_set).extract();
-    std::ranges::sort(efficiencies);
 
     const BYTE selected_class = [&] {
       switch (efficiency_class) {
         case EfficiencyClass::efficiency: {
-          return efficiencies.front();
+          return *efficiencies.begin();
         }
         case EfficiencyClass::performance: {
-          return efficiencies.back();
+          return *efficiencies.rbegin();
         }
         default: {
           throw std::runtime_error{"Unsupported efficiency class!"};

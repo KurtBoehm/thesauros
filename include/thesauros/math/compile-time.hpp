@@ -15,7 +15,7 @@
 // This is somewhat inspired by https://github.com/kthohr/gcem, but the implementation
 // differs significantly
 
-namespace thes::ctm {
+namespace thes::cmath {
 // This function is not guaranteed to transform -1 to 1
 template<typename T>
 constexpr T abs(T value) {
@@ -40,22 +40,22 @@ constexpr T sqrt(const T x) noexcept {
   if (is_nan(x) || x < T{0}) {
     return std::numeric_limits<T>::quiet_NaN();
   }
-  if (is_posinf(x) || ctm::abs(T{1} - x) < std::numeric_limits<T>::min()) {
+  if (is_posinf(x) || cmath::abs(T{1} - x) < std::numeric_limits<T>::min()) {
     return x;
   }
-  if (ctm::abs(x) < std::numeric_limits<T>::min()) {
+  if (cmath::abs(x) < std::numeric_limits<T>::min()) {
     return T{0};
   }
   // Implement Heron’s method with a fancy stopping criterion courtesy of GCEM
   T xn = x;
   for (std::size_t i = 0; i < 128; ++i) {
-    if (ctm::abs(xn - x / xn) / (T{1} + xn) < std::numeric_limits<T>::min()) {
+    if (cmath::abs(xn - x / xn) / (T{1} + xn) < std::numeric_limits<T>::min()) {
       break;
     }
     xn = T{0.5} * (xn + x / xn);
   }
   return xn;
 }
-} // namespace thes::ctm
+} // namespace thes::cmath
 
 #endif // INCLUDE_THESAUROS_MATH_COMPILE_TIME_HPP

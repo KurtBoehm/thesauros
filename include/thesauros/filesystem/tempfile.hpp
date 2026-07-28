@@ -14,22 +14,29 @@
 #include <stdexcept>
 #include <string_view>
 
-#include <pcg_extras.hpp>
-#include <pcg_random.hpp>
-
-#include "thesauros/types/primitives.hpp"
-
 namespace thes::fs {
-// Create and return a temporary directory
-inline std::filesystem::path mkdtemp() {
+/** The generator `mkdtemp` and `TemporaryDirectory` use when none is supplied. */
+using DefaultTempRng = std::mt19937;
+
+/**
+ * Creates a temporary directory whose name ends in eight characters drawn from `rng`, and returns
+ * its path.
+ *
+ * Uniqueness does not rest on the quality of `rng`: `std::filesystem::create_directories` reports
+ * whether it created the directory, so a collision merely costs another attempt, of which up to
+ * 10 000 are made before giving up.
+ *
+ * @throws std::runtime_error if no unused name was found.
+ */
+template<std::uniform_random_bit_generator Rng>
+inline std::filesystem::path mkdtemp(Rng& rng) {
   static constexpr std::size_t tmp_max = 10'000;
   static constexpr std::size_t prefix_len = 3;
   static constexpr std::size_t random_len = 8;
   static constexpr std::size_t name_len = prefix_len + random_len;
   static constexpr std::string_view tmp_chars = "abcdefghijklmnopqrstuvwxyz0123456789_";
 
-  pcg32 rng{pcg_extras::seed_seq_from<std::random_device>{}};
-  std::uniform_int_distribution<u8> dist{0, u8(tmp_chars.size() - 1)};
+  std::uniform_int_distribution<std::size_t> dist{0, tmp_chars.size() - 1};
 
   const auto tmp_dir = std::filesystem::temp_directory_path();
   std::array<char, name_len> name{'t', 'm', 'p'};
@@ -48,9 +55,21 @@ inline std::filesystem::path mkdtemp() {
   throw std::runtime_error{"Creating a temporary directory failed!"};
 }
 
-// A RAII wrapper to create a temporary directory
+/** `mkdtemp`, using a `DefaultTempRng` seeded from `std::random_device`. */
+inline std::filesystem::path mkdtemp() {
+  DefaultTempRng rng{std::random_device{}()};
+  return mkdtemp(rng);
+}
+
+/**
+ *An RAII wrapper creating a temporary directory and removing it, with its contents, on destruction.
+ */
 struct TemporaryDirectory {
+  /** Creates a temporary directory, naming it with a `DefaultTempRng`. */
   TemporaryDirectory() : path_{mkdtemp()} {}
+  /** Creates a temporary directory, drawing its name from `rng`. */
+  template<std::uniform_random_bit_generator Rng>
+  explicit TemporaryDirectory(Rng& rng) : path_{mkdtemp(rng)} {}
 
   TemporaryDirectory(const TemporaryDirectory&) = delete;
   TemporaryDirectory(TemporaryDirectory&&) = delete;

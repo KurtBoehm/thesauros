@@ -35,7 +35,7 @@ THES_CREATE_TYPE(SNAKE_CASE(Test1), CONSTEXPR_CONSTRUCTOR,
 
 inline constexpr Test1 test1{2};
 
-using Test1Info = thes::TypeInfo<Test1>;
+using Test1Info = thes::reflect::TypeInfo<Test1>;
 static_assert(Test1Info::name == "Test1"_sstr);
 static_assert(Test1Info::serial_name == "test1"_sstr);
 
@@ -59,7 +59,7 @@ namespace inner {
 THES_DEFINE_ENUM(SNAKE_CASE(Test2), int, LOWERCASE(A), LOWERCASE(B))
 }
 
-using Test2Info = thes::EnumInfo<inner::Test2>;
+using Test2Info = thes::reflect::EnumInfo<inner::Test2>;
 
 static_assert(Test2Info::name == "Te"_sstr + "st2"_sstr);
 static_assert(Test2Info::serial_name == "test2"_sstr);
@@ -69,11 +69,11 @@ using Test2A = decltype(test_2_a);
 static_assert(Test2A::name == "A"_sstr);
 static_assert(Test2A::serial_name == "a"_sstr);
 
-static_assert(thes::enum_value_info<inner::Test2::A>.name == "A"_sstr);
-static_assert(thes::enum_value_info<inner::Test2::B>.name == "B"_sstr);
-static_assert(thes::enum_cast<inner::Test2>("a") == inner::Test2::A);
-static_assert(thes::enum_cast<inner::Test2>("b") == inner::Test2::B);
-static_assert(thes::enum_cast<inner::Test2>("ab") == std::nullopt);
+static_assert(thes::reflect::enum_value_info<inner::Test2::A>.name == "A"_sstr);
+static_assert(thes::reflect::enum_value_info<inner::Test2::B>.name == "B"_sstr);
+static_assert(thes::reflect::enum_cast<inner::Test2>("a") == inner::Test2::A);
+static_assert(thes::reflect::enum_cast<inner::Test2>("b") == inner::Test2::B);
+static_assert(thes::reflect::enum_cast<inner::Test2>("ab") == std::nullopt);
 
 ////////////////////////////////////////////////////////////////
 
@@ -82,7 +82,7 @@ struct Test3 {
   THES_DEFINE_TYPE(SNAKE_CASE(Test3, tValue), CONSTEXPR_CONSTRUCTOR)
 };
 using Type3 = Test3<inner::Test2::A>;
-using Test3Info = thes::TypeInfo<Type3>;
+using Test3Info = thes::reflect::TypeInfo<Type3>;
 static_assert(Test3Info::name == "Test3"_sstr);
 static_assert(Test3Info::serial_name == "test3_a"_sstr);
 
@@ -93,7 +93,7 @@ struct Test4 {
   THES_DEFINE_TYPE(SNAKE_CASE(Test4, (T, tValue2)), CONSTEXPR_CONSTRUCTOR)
 };
 using Type4 = Test4<inner::Test2, inner::Test2::B>;
-using Test4Info = thes::TypeInfo<Type4>;
+using Test4Info = thes::reflect::TypeInfo<Type4>;
 static_assert(Test4Info::name == "Test4"_sstr);
 static_assert(Test4Info::serial_name == "test4_test2_b"_sstr);
 
@@ -102,7 +102,7 @@ static_assert(Test4Info::serial_name == "test4_test2_b"_sstr);
 struct Test5 {
   THES_DEFINE_TYPE(NAMED(Test5, "test5"), CONSTEXPR_CONSTRUCTOR)
 };
-using Test5Info = thes::TypeInfo<Test5>;
+using Test5Info = thes::reflect::TypeInfo<Test5>;
 static_assert(Test5Info::name == "Test5"_sstr);
 static_assert(Test5Info::serial_name == "test5"_sstr);
 
@@ -111,7 +111,7 @@ static_assert(Test5Info::serial_name == "test5"_sstr);
 struct Test6 {
   THES_DEFINE_TYPE(NAMED(Test6, "ttt"), CONSTEXPR_CONSTRUCTOR)
 };
-using Test6Info = thes::TypeInfo<Test6>;
+using Test6Info = thes::reflect::TypeInfo<Test6>;
 static_assert(Test6Info::name == "Test6"_sstr);
 static_assert(Test6Info::serial_name == thes::StaticString<3>::filled('t'));
 
@@ -142,7 +142,7 @@ THES_CREATE_TYPE(SNAKE_CASE(Test9), CONSTEXPR_CONSTRUCTOR,
 }
 
 using Type7a = Test7<inner::Test2::A, int>;
-using Type7aInfo = thes::TypeInfo<Type7a>;
+using Type7aInfo = thes::reflect::TypeInfo<Type7a>;
 inline constexpr auto mems = Type7aInfo::members;
 inline constexpr auto stat_mems = Type7aInfo::static_members;
 inline constexpr auto mem0 = thes::star::get_at<0>(stat_mems);
@@ -155,18 +155,18 @@ static_assert(Mem0::serial_name == "value"_sstr);
 static_assert(Mem0::value == inner::Test2::A);
 static_assert(Mem1::serial_name == "type"_sstr);
 
-static_assert(thes::serial_value(Mem0::value) == "a"_sstr.view());
-static_assert(thes::serial_value(Mem1::value) == "i32");
+static_assert(thes::reflect::serial_value(Mem0::value) == "a"_sstr.view());
+static_assert(thes::reflect::serial_value(Mem1::value) == "i32");
 
 using Type7b = Test7<inner::Test2::A, std::variant<int, double>>;
 using Type7c = Test7<inner::Test2::B, std::optional<std::variant<int, Type7b>>>;
 
-constexpr auto test7fv = thes::flatten_type(Type7b{4, 4});
+constexpr auto test7fv = thes::reflect::flatten_type(Type7b{4, 4});
 static_assert(
   std::same_as<std::decay_t<decltype(test7fv)>,
                std::variant<Test7<inner::Test2::A, int>, Test7<inner::Test2::A, double>>>);
 
-constexpr auto test7fv2 = thes::flatten_type(std::variant<Type7b, Type7c>{Type7b{4, 4}});
+constexpr auto test7fv2 = thes::reflect::flatten_type(std::variant<Type7b, Type7c>{Type7b{4, 4}});
 static_assert(
   std::same_as<std::decay_t<decltype(test7fv2)>,
                std::variant<Test7<inner::Test2::A, int>, Test7<inner::Test2::A, double>,
@@ -186,22 +186,22 @@ THES_DEFINE_TYPE_INFO(SNAKE_CASE(Type10), MEMBERS((KEEP(a), int), (KEEP(b), floa
 
 ////////////////////////////////////////////////////////////////
 
-static_assert(thes::serial_name_of<Test1>() == "test1"_sstr);
-static_assert(thes::serial_name_of<inner::Test2>() == "test2"_sstr);
-static_assert(thes::serial_name_of<inner::Test2::A>() == "a"_sstr);
+static_assert(thes::reflect::serial_name_of<Test1>() == "test1"_sstr);
+static_assert(thes::reflect::serial_name_of<inner::Test2>() == "test2"_sstr);
+static_assert(thes::reflect::serial_name_of<inner::Test2::A>() == "a"_sstr);
 
 ////////////////////////////////////////////////////////////////
 
 using Type9 = n1::n2::Test9<11, double>;
-static_assert((thes::memory_layout_info<Type9> |
+static_assert((thes::reflect::memory_layout_info<Type9> |
                thes::star::transform([](auto info) { return info.offset; }) |
                thes::star::to_array) == std::array{0_uz, 8_uz, 12_uz});
 
 int main() {
-  thes::memory_layout_info<Type9> |
+  thes::reflect::memory_layout_info<Type9> |
     thes::star::for_each([](auto info) { fmt::print("{}: {}\n", info.name, info.offset); });
-  thes::TypeInfo<Type9>::members |
+  thes::reflect::TypeInfo<Type9>::members |
     thes::star::for_each([](auto info) { fmt::print("{}: {}\n", info.name, info.serial_name); });
-  thes::TypeInfo<inner::Type10>::members |
+  thes::reflect::TypeInfo<inner::Type10>::members |
     thes::star::for_each([](auto info) { fmt::print("{}: {}\n", info.name, info.serial_name); });
 }

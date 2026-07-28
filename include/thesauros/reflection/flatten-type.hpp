@@ -18,34 +18,34 @@
 #include "thesauros/static-ranges/definitions/get-at.hpp"
 #include "thesauros/utility/fancy-visit.hpp"
 
-namespace thes {
+namespace thes::reflect {
 namespace detail::flatten {
 template<typename T1, typename T2>
 constexpr bool member_ptrs_eq(const T1& /*value1*/, const T2& /*value2*/) {
   return false;
 }
-template<typename TClass, typename TMember>
-constexpr bool member_ptrs_eq(TMember TClass::* ptr1, TMember TClass::* ptr2) {
+template<typename Class, typename Member>
+constexpr bool member_ptrs_eq(Member Class::* ptr1, Member Class::* ptr2) {
   return ptr1 == ptr2;
 }
 
-template<typename TTypeInfo, auto tPtr>
+template<typename TypeInfo, auto Ptr>
 constexpr auto member_info_of() {
-  constexpr auto members = TTypeInfo::members;
+  constexpr auto members = TypeInfo::members;
 
-  auto impl = [&]<std::size_t tHead, std::size_t... tTail>(auto rec,
-                                                           std::index_sequence<tHead, tTail...>) {
-    constexpr auto member = star::get_at<tHead>(members);
-    if constexpr (member_ptrs_eq(member.pointer, tPtr)) {
+  auto impl = [&]<std::size_t Head, std::size_t... Tail>(auto rec,
+                                                         std::index_sequence<Head, Tail...>) {
+    constexpr auto member = star::get_at<Head>(members);
+    if constexpr (member_ptrs_eq(member.pointer, Ptr)) {
       return member;
     } else {
-      return rec(rec, std::index_sequence<tTail...>{});
+      return rec(rec, std::index_sequence<Tail...>{});
     }
   };
   return impl(impl, std::make_index_sequence<std::tuple_size_v<decltype(members)>>{});
 }
-template<typename TTypeInfo, auto tPtr>
-using MemberInfoTypeOf = decltype(member_info_of<TTypeInfo, tPtr>());
+template<typename TypeInfo, auto Ptr>
+using MemberInfoTypeOf = decltype(member_info_of<TypeInfo, Ptr>());
 
 template<typename T>
 struct OptionalVariantTrait {
@@ -151,8 +151,9 @@ constexpr decltype(auto) flatten_type(T&& value) {
 // flatten variants forward variant
 
 #define THES_POLIS_FLATTEN_TYPE_VARIANT_IMPL(TYPE, NAME) \
-  ::thes::flatten_type( \
-    std::forward<typename ::thes::detail::flatten::MemberInfoTypeOf<TypeInfo, &Self::NAME>::Type>( \
+  ::thes::reflect::flatten_type( \
+    std::forward< \
+      typename ::thes::reflect::detail::flatten::MemberInfoTypeOf<TypeInfo, &Self::NAME>::Type>( \
       NAME))
 #define THES_POLIS_FLATTEN_TYPE_VARIANT(REC, TYPENAME, IDX, ELEM) \
   BOOST_PP_COMMA_IF(IDX) \
@@ -175,7 +176,7 @@ constexpr decltype(auto) flatten_type(T&& value) {
       constexpr auto ptr = ::thes::star::get_at<tIdx>(member_infos).pointer; \
       std::optional<std::size_t> index = std::nullopt; \
       [&]<std::size_t... tIdxs>(std::index_sequence<tIdxs...>) { \
-        return ((::thes::detail::flatten::member_ptrs_eq( \
+        return ((::thes::reflect::detail::flatten::member_ptrs_eq( \
                    ::thes::star::get_at<tIdxs>(variant_members), ptr) \
                    ? (index = tIdxs, true) \
                    : false) || \
@@ -217,6 +218,6 @@ constexpr decltype(auto) flatten_type(T&& value) {
 #define THES_DEFINE_FLATTEN_TYPE(TEMPLATE_PARAMS, ...) \
   THES_DEFINE_FLATTEN_TYPE_IMPL(BOOST_PP_VARIADIC_TO_LIST(__VA_ARGS__), \
                                 BOOST_PP_VARIADIC_TO_LIST TEMPLATE_PARAMS)
-} // namespace thes
+} // namespace thes::reflect
 
 #endif // INCLUDE_THESAUROS_REFLECTION_FLATTEN_TYPE_HPP

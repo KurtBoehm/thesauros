@@ -10,6 +10,15 @@ project(
   default_options: ['cpp_std=c++23', 'warning_level=3'],
 )
 
+if not meson.is_subproject()
+  # On macOS, _Static_assert is used in system headers, which GCC does not support
+  # in C++ mode
+  cpp = meson.get_compiler('cpp')
+  if cpp.get_id() == 'gcc' and host_machine.system() == 'darwin'
+    add_global_arguments('-D_Static_assert=static_assert', language: 'cpp')
+  endif
+endif
+
 use_iokit = get_option('use_iokit')
 
 fmt_sub = subproject('fmt', default_options: ['default_library=static'])
@@ -20,13 +29,32 @@ if host_machine.system() == 'windows'
   cpp_args += ['-DWINVER=0x0A00', '-D_WIN32_WINNT=0x0A00']
 endif
 
-dependencies = [
-  fmt_dep,
-  dependency('boost-preprocessor'),
-  dependency('openmp'),
-  dependency('pcg-cpp'),
-  dependency('unordered_dense'),
-]
+boost_pp_dep = dependency('boost-preprocessor')
+openmp_dep = dependency('openmp')
+
+inc_dir = include_directories('include')
+
+#-------------------------------------------------------------------------------
+# Dependencies per group of sub-libraries
+#-------------------------------------------------------------------------------
+
+# Everything that needs nothing beyond the standard library: `algorithms`, `charconv`, `concepts`,
+# `containers`, `filesystem`, `functional`, `iterator`, `literals`, `math`, `memory`, `quantity`,
+# `random`, `ranges`, `string` and `types`.
+thesauros_core_dep = declare_dependency(
+  include_directories: inc_dir,
+  compile_args: cpp_args,
+)
+
+# `macropolis`, `reflection` and everything using their macros: `io`, `static-ranges`, `utility`.
+thesauros_macros_dep = declare_dependency(
+  dependencies: [thesauros_core_dep, boost_pp_dep],
+)
+
+# `execution` uses OpenMP for its OpenMP-based thread pool.
+thesauros_execution_dep = declare_dependency(
+  dependencies: [thesauros_core_dep, openmp_dep],
+)
 
 if host_machine.system() == 'darwin' and use_iokit
   applefw_dep = dependency(
@@ -34,24 +62,41 @@ if host_machine.system() == 'darwin' and use_iokit
     modules: ['CoreFoundation', 'IOKit'],
     required: host_machine.system() == 'darwin',
   )
-  dependencies += [applefw_dep]
 
   thesauros_lib = library(
     'thesauros',
     ['src/resources/cpu-info-macos.cpp'],
-    include_directories: include_directories('include'),
-    dependencies: dependencies,
+    include_directories: inc_dir,
+    dependencies: [thesauros_core_dep, applefw_dep],
     cpp_args: cpp_args,
   )
+  resources_deps = [thesauros_core_dep, applefw_dep]
 else
   thesauros_lib = []
+  resources_deps = [thesauros_core_dep]
 endif
 
-thesauros_dep = declare_dependency(
-  include_directories: include_directories('include'),
-  dependencies: dependencies,
+# `resources` needs IOKit, and the small library built from it, only on macOS.
+thesauros_resources_dep = declare_dependency(
+  dependencies: resources_deps,
   link_with: thesauros_lib,
-  compile_args: cpp_args,
+)
+
+# `format` and `test` are the only sub-libraries reaching {fmt}; `format` also
+# formats the reflection and resource types, so it inherits both of those.
+thesauros_format_dep = declare_dependency(
+  dependencies: [thesauros_macros_dep, thesauros_resources_dep, fmt_dep],
+)
+
+# Everything, for consumers that would rather not track which sub-libraries they use.
+thesauros_dep = declare_dependency(
+  dependencies: [
+    thesauros_core_dep,
+    thesauros_macros_dep,
+    thesauros_execution_dep,
+    thesauros_resources_dep,
+    thesauros_format_dep,
+  ],
 )
 
 if not meson.is_subproject()
@@ -62,13 +107,6 @@ if not meson.is_subproject()
     version: meson.project_version(),
     description: 'thesauros',
   )
-
-  # On macOS, _Static_assert is used in system headers, which GCC does not support
-  # in C++ mode
-  cpp = meson.get_compiler('cpp')
-  if cpp.get_id() == 'gcc' and host_machine.system() == 'darwin'
-    add_global_arguments('-D_Static_assert=static_assert', language: 'cpp')
-  endif
 endif
 
 if get_option('build_tests')

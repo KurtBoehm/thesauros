@@ -26,10 +26,10 @@ namespace thes {
 namespace ranges {
 template<std::ranges::input_range TFirst, std::ranges::forward_range... TVs>
 using CartesianProductView = std::ranges::cartesian_product_view<TFirst, TVs...>;
-}
+} // namespace ranges
 namespace views {
 inline constexpr auto cartesian_product = std::views::cartesian_product;
-}
+} // namespace views
 #else
 namespace ranges {
 // C++23 26.7.32.2

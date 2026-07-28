@@ -11,7 +11,7 @@
 
 #include "thesauros/string/static-string.hpp" // IWYU pragma: keep
 
-namespace thes {
+namespace thes::reflect {
 #define THES_POLIS_STR(STR) \
   ::thes::StaticString { \
     STR \
@@ -45,11 +45,11 @@ namespace thes {
 #define THES_POLIS_SERIAL_NAME_STR(ARG) THES_POLIS_SERIAL_NAME_STR_##ARG
 
 #define THES_POLIS_TEMPLATE_MAP_INNER(REC, _, IDX, ARG) \
-  BOOST_PP_COMMA_IF(IDX)::thes::serial_name_of<ARG>()
+  BOOST_PP_COMMA_IF(IDX)::thes::reflect::serial_name_of<ARG>()
 #define THES_POLIS_TEMPLATE_MAP_IMPL(LIST) \
   BOOST_PP_LIST_FOR_EACH_I(THES_POLIS_TEMPLATE_MAP_INNER, BOOST_PP_EMPTY(), LIST)
 #define THES_POLIS_TEMPLATE_MAP(ARG) \
   THES_POLIS_TEMPLATE_MAP_IMPL(BOOST_PP_VARIADIC_TO_LIST(BOOST_PP_REMOVE_PARENS(ARG)))
-} // namespace thes
+} // namespace thes::reflect
 
 #endif // INCLUDE_THESAUROS_REFLECTION_HELPERS_HPP

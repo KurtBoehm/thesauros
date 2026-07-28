@@ -19,7 +19,7 @@
 #include "thesauros/types/primitives.hpp"
 #include "thesauros/types/type-tag.hpp"
 
-namespace thes {
+namespace thes::reflect {
 template<typename T>
 struct SerialValueTrait {
   static constexpr T make(T&& value) {
@@ -96,6 +96,6 @@ TYPE_TAG_VALUE(f32);
 TYPE_TAG_VALUE(f64);
 
 #undef TYPE_TAG_VALUE
-} // namespace thes
+} // namespace thes::reflect
 
 #endif // INCLUDE_THESAUROS_REFLECTION_SERIAL_VALUE_HPP

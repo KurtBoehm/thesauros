@@ -14,9 +14,9 @@
 #include "thesauros/reflection/type.hpp"
 #include "thesauros/static-ranges/sinks/for-each.hpp"
 
-template<thes::HasTypeInfo T>
+template<thes::reflect::HasTypeInfo T>
 struct fmt::formatter<T> : public thes::SimpleFormatter<> {
-  using Info = thes::TypeInfo<T>;
+  using Info = thes::reflect::TypeInfo<T>;
 
   auto format(const T& obj, format_context& ctx) const {
     return this->write_padded(ctx, [&](auto it) {

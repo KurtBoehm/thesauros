@@ -45,7 +45,7 @@ namespace thes {
 template<typename TValue, typename TInitPolicy = DefaultInit,
          typename TGrowthPolicy = DoublingGrowth, typename TAllocator = std::allocator<TValue>>
 struct DynamicArray {
-  using Data = array::TypedChunk<TValue, std::size_t, TAllocator>;
+  using Data = TypedChunk<TValue, std::size_t, TAllocator>;
 
   using Value = Data::Value;
   using Size = Data::Size;

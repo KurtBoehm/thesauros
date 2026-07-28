@@ -22,7 +22,7 @@
 #include "thesauros/types/type-tag.hpp"
 
 namespace {
-using Chunk = thes::array::TypedChunk<int, std::size_t, std::allocator<int>>;
+using Chunk = thes::TypedChunk<int, std::size_t, std::allocator<int>>;
 using Nested = thes::NestedDynamicArray<int, std::size_t>;
 
 /** Writes `value` to a fresh file under `dir` and reads it back as a `T`. */

@@ -93,39 +93,21 @@ endif()
 FetchContent_Declare(
   boost_preprocessor
   URL
-    https://github.com/boostorg/preprocessor/archive/refs/tags/boost-1.89.0.tar.gz
+    https://github.com/boostorg/preprocessor/archive/refs/tags/boost-1.90.0.tar.gz
   URL_HASH
-    SHA256=53de1b2e64706b73903d9f3957525fa8fa620445ec0d596aa6fb8335af6f45c0
+    SHA256=4a951411d94423e74a4f1df5b1aa5d51996dbfbf01bec35bc51c53af4707bda3
   DOWNLOAD_EXTRACT_TIMESTAMP ON
 )
 FetchContent_MakeAvailable(boost_preprocessor)
 
 FetchContent_Declare(
   fmt
-  URL https://github.com/fmtlib/fmt/archive/12.0.0.tar.gz
+  URL https://github.com/fmtlib/fmt/archive/12.1.0.tar.gz
   URL_HASH
-    SHA256=aa3e8fbb6a0066c03454434add1f1fc23299e85758ceec0d7d2d974431481e40
+    SHA256=ea7de4299689e12b6dddd392f9896f08fb0777ac7168897a244a6d6085043fea
   DOWNLOAD_EXTRACT_TIMESTAMP ON
 )
 FetchContent_MakeAvailable(fmt)
-
-# pcg-cpp does not provide CMake build files
-FetchContent_Declare(
-  pcg_cpp
-  GIT_REPOSITORY https://github.com/imneme/pcg-cpp.git
-  GIT_TAG 428802d1a5634f96bcd0705fab379ff0113bcf13
-)
-FetchContent_MakeAvailable(pcg_cpp)
-
-FetchContent_Declare(
-  unordered_dense
-  URL
-    https://github.com/martinus/unordered_dense/archive/refs/tags/v4.7.0.tar.gz
-  URL_HASH
-    SHA256=73ce8ec4784619be4d6e54f2c4cb95d4d8dbc1fbbf24b5cf1e93b157bfa1043d
-  DOWNLOAD_EXTRACT_TIMESTAMP ON
-)
-FetchContent_MakeAvailable(unordered_dense)
 
 # Main interface library
 add_library(${PROJECT_NAME} INTERFACE)
@@ -150,13 +132,54 @@ target_include_directories(
   ${PROJECT_NAME}
   INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include> ${pcg_cpp_SOURCE_DIR}/include
+    $<INSTALL_INTERFACE:include>
 )
+
+# Dependencies per group of sub-libraries, so that consumers only pay for what they include.
+# These mirror the `thesauros_*_dep` objects declared in meson.build.
+
+# Everything that needs nothing beyond the standard library: algorithms, charconv, concepts,
+# containers, filesystem, functional, iterator, literals, math, memory, quantity, random,
+# ranges, string and types.
+add_library(${PROJECT_NAME}_core INTERFACE)
+add_library(${PROJECT_NAME}::core ALIAS ${PROJECT_NAME}_core)
+target_link_libraries(${PROJECT_NAME}_core INTERFACE ${PROJECT_NAME})
+
+# macropolis, reflection and everything using their macros: io, static-ranges, utility.
+add_library(${PROJECT_NAME}_macros INTERFACE)
+add_library(${PROJECT_NAME}::macros ALIAS ${PROJECT_NAME}_macros)
+target_link_libraries(
+  ${PROJECT_NAME}_macros
+  INTERFACE ${PROJECT_NAME}_core Boost::preprocessor
+)
+
+# execution uses OpenMP for its OpenMP-based thread pool.
+add_library(${PROJECT_NAME}_execution INTERFACE)
+add_library(${PROJECT_NAME}::execution ALIAS ${PROJECT_NAME}_execution)
+target_link_libraries(
+  ${PROJECT_NAME}_execution
+  INTERFACE ${PROJECT_NAME}_core ${THESAUROS_OPENMP_TARGET}
+)
+
+# resources needs IOKit, and the library built from it, only on macOS; the link is added below.
+add_library(${PROJECT_NAME}_resources INTERFACE)
+add_library(${PROJECT_NAME}::resources ALIAS ${PROJECT_NAME}_resources)
+target_link_libraries(${PROJECT_NAME}_resources INTERFACE ${PROJECT_NAME}_core)
+
+# format and test are the only sub-libraries reaching {fmt}; format also formats the reflection
+# and resource types, so it inherits both of those.
+add_library(${PROJECT_NAME}_format INTERFACE)
+add_library(${PROJECT_NAME}::format ALIAS ${PROJECT_NAME}_format)
+target_link_libraries(
+  ${PROJECT_NAME}_format
+  INTERFACE ${PROJECT_NAME}_macros ${PROJECT_NAME}_resources fmt::fmt
+)
+
+# The umbrella target keeps its historical meaning: everything.
 target_link_libraries(
   ${PROJECT_NAME}
   INTERFACE
     Boost::preprocessor fmt::fmt ${THESAUROS_OPENMP_TARGET}
-    unordered_dense::unordered_dense
 )
 
 # Optional library on macOS when THESAUROS_USE_IOKIT is true
@@ -179,9 +202,10 @@ if(APPLE AND THESAUROS_USE_IOKIT)
     ${PROJECT_NAME}_macos
     PRIVATE
       ${COREFOUNDATION_FRAMEWORK} ${IOKIT_FRAMEWORK} Boost::preprocessor
-      fmt::fmt ${THESAUROS_OPENMP_TARGET} unordered_dense::unordered_dense
+      fmt::fmt ${THESAUROS_OPENMP_TARGET}
   )
 
+  target_link_libraries(${PROJECT_NAME}_resources INTERFACE ${PROJECT_NAME}_macos)
   target_link_libraries(${PROJECT_NAME} INTERFACE ${PROJECT_NAME}_macos)
 endif()
 
@@ -197,50 +221,79 @@ if(THESAUROS_BUILD_TESTS)
   include(CTest)
 
   foreach(
-    test_name
+    test_path
     IN
     ITEMS
-    "arrays"
-    "chunked-dynamic-array"
-    "concepts"
-    "divisor"
-    "dynamic-bitset"
-    "empty"
-    "execution"
-    "factorization"
-    "fancy-visit"
-    "fixed-bitset"
-    "flat"
-    "format"
-    "index-position-wrapper"
-    "index-segmenter"
-    "json"
-    "macropolis"
-    "math"
-    "multi-byte-integers"
-    "primitives"
-    "quantity"
-    "randomize-range"
-    "ranges"
-    "static-bitset"
-    "static-map"
-    "static-ranges"
-    "static-string"
-    "std-extensions"
-    "swap-or-equal"
-    "tempfile"
-    "tessellation"
-    "tiling"
-    "tuples"
-    "type-seq"
-    "value-tag"
+    "algorithms/swap-or-equal"
+    "algorithms/tiling"
+    "charconv/charconv"
+    "charconv/concat"
+    "concepts/concepts"
+    "containers/arrays"
+    "containers/chunked-dynamic-array"
+    "containers/dynamic-bitset"
+    "containers/fixed-bitset"
+    "containers/flat"
+    "containers/multi-byte-integers"
+    "containers/static-bitset"
+    "execution/execution"
+    "filesystem/tempfile"
+    "format/format"
+    "io/json"
+    "io/serialization"
+    "iterator/iterator-facades"
+    "math/divisor"
+    "math/factorization"
+    "math/math"
+    "math/tessellation"
+    "quantity/quantity"
+    "random/randomize-range"
+    "ranges/ranges"
+    "reflection/reflection"
+    "static-ranges/static-ranges"
+    "string/static-string"
+    "types/empty"
+    "types/primitives"
+    "types/tuples"
+    "types/type-seq"
+    "types/value-tag"
+    "utility/fancy-visit"
+    "utility/index-position-wrapper"
+    "utility/index-segmenter"
+    "utility/static-map"
+    "utility/std-extensions"
   )
-    set(test_target ${PROJECT_NAME}_${test_name})
-    add_executable(${test_target} test/${test_name}.cpp)
+    string(REPLACE "/" "_" test_target_name ${test_path})
+    set(test_target ${PROJECT_NAME}_${test_target_name})
+    add_executable(${test_target} test/${test_path}.cpp)
     target_compile_features(${test_target} PRIVATE cxx_std_23)
     target_link_libraries(${test_target} PRIVATE ${PROJECT_NAME})
     cmop_add_warnings(${test_target})
     cmop_add_info(${test_target})
-    add_test(NAME ${PROJECT_NAME}.${test_name} COMMAND ${test_target})
+    add_test(NAME ${PROJECT_NAME}.${test_target_name} COMMAND ${test_target})
   endforeach()
+
+  # Compiled against the include directory alone, mirroring the `core dependency` Meson test.
+  add_executable(${PROJECT_NAME}_core_dep test/core-dep.cpp)
+  target_compile_features(${PROJECT_NAME}_core_dep PRIVATE cxx_std_23)
+  target_include_directories(
+    ${PROJECT_NAME}_core_dep
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
+  )
+  target_compile_definitions(
+    ${PROJECT_NAME}_core_dep
+    PRIVATE "THES_USE_IOKIT=$<BOOL:${THESAUROS_USE_IOKIT}>"
+  )
+  cmop_add_warnings(${PROJECT_NAME}_core_dep)
+  add_test(NAME ${PROJECT_NAME}.core_dep COMMAND ${PROJECT_NAME}_core_dep)
+
+  # The structural checks over the headers themselves, mirroring the Meson `check includes` test.
+  find_package(Python3 COMPONENTS Interpreter)
+  if(Python3_Interpreter_FOUND)
+    add_test(
+      NAME ${PROJECT_NAME}.check_includes
+      COMMAND
+        ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/check-includes.py
+    )
+  endif()
 endif()

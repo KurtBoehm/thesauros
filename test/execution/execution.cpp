@@ -20,9 +20,8 @@
 
 #if THES_LINUX || THES_WINDOWS
 #include <chrono>
+#include <set>
 #include <thread>
-
-#include "ankerl/unordered_dense.h"
 #endif
 
 int main() try {
@@ -108,7 +107,7 @@ int main() try {
 
 #if THES_LINUX || THES_WINDOWS
   {
-    using Ids = ankerl::unordered_dense::set<thes::CpuSet::Id>;
+    using Ids = std::set<thes::CpuSet::Id>;
 
     const auto infos = physical | std::views::take(2);
     const auto info_ids =

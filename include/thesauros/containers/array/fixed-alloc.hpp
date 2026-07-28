@@ -22,7 +22,7 @@
 namespace thes {
 template<typename V, typename Alloc = std::allocator<V>>
 struct FixedAllocArray {
-  using Data = array::TypedChunk<V, std::size_t, Alloc>;
+  using Data = TypedChunk<V, std::size_t, Alloc>;
 
   using Value = Data::Value;
   using Size = Data::Size;

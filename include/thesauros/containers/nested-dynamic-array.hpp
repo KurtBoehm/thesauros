@@ -32,8 +32,8 @@ struct NestedDynamicArrayBase {
   using value_type = Value;
   using size_type = Size;
 
-  using SizeStorage = array::TypedChunk<Size, Size, SizeAllocator>;
-  using Storage = array::TypedChunk<TValue, Size, Allocator>;
+  using SizeStorage = TypedChunk<Size, Size, SizeAllocator>;
+  using Storage = TypedChunk<TValue, Size, Allocator>;
 
   template<bool IsConst>
   struct Iterator

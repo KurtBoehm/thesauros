@@ -31,14 +31,15 @@
 #include "thesauros/math/integer-cast.hpp"
 #include "thesauros/utility/as-expected.hpp"
 #elif THES_WINDOWS
+#include <algorithm>
 #include <memory>
-#include <utility>
+#include <span>
+#include <stdexcept>
+#include <vector>
 
 #include <errhandlingapi.h>
 #include <minwindef.h>
 #include <processthreadsapi.h>
-
-#include "ankerl/unordered_dense.h"
 
 #include "thesauros/charconv/concat.hpp"
 #include "thesauros/math/integer-cast.hpp"
@@ -58,11 +59,11 @@ struct CpuSet {
   using Id = integer_t;
   using Base = Id;
 #elif THES_WINDOWS
-  // With CPU Sets, the affinity is simply provided as an array of CPU IDs.
-  // To avoid duplicates, we use an unordered set which stores its values in an std::vector,
-  // allowing for efficient access.
+  // With CPU Sets, the affinity is simply provided as an array of CPU IDs, so the IDs are held in a
+  // vector whose contiguous storage can be handed to the Win32 API directly. Duplicates are
+  // rejected on insertion.
   using Id = ULONG;
-  using Base = ankerl::unordered_dense::set<Id>;
+  using Base = std::vector<Id>;
 #endif
 
   CpuSet() {
@@ -111,7 +112,11 @@ struct CpuSet {
     if (ret != TRUE) {
       throw std::runtime_error{cat("GetThreadSelectedCpuSets failed: ", GetLastError())};
     }
-    return CpuSet{Base{cpus.get(), cpus.get() + size}};
+    CpuSet out{};
+    for (const Id id : std::span{cpus.get(), size}) {
+      out.set(id);
+    }
+    return out;
   }
 #endif
 
@@ -134,7 +139,10 @@ struct CpuSet {
     }
     cpu_set_ = *safe_cast<Base>(i);
 #elif THES_WINDOWS
-    cpu_set_.insert(*safe_cast<ULONG>(i));
+    const auto id = *safe_cast<Id>(i);
+    if (std::ranges::find(cpu_set_, id) == cpu_set_.end()) {
+      cpu_set_.push_back(id);
+    }
 #endif
   }
 
@@ -160,8 +168,6 @@ private:
   Base cpu_set_ = -1;
 #elif THES_WINDOWS
   Base cpu_set_{};
-
-  explicit CpuSet(Base&& cpu_set) : cpu_set_{std::move(cpu_set)} {}
 #endif
 };
 
@@ -200,9 +206,8 @@ inline std::expected<void, WINBOOL> set_affinity(std::thread::native_handle_type
   //   However, this allows specifying affinity across groups, which is more flexible and does not
   //   require weird compromises, and the cases in which this ignores the provided affinities seem
   //   limited and reasonable.
-  const WINBOOL ret =
-    SetThreadSelectedCpuSets(pthread_gethandle(handle), cpu_set.base().values().data(),
-                             *thes::safe_cast<ULONG>(cpu_set.base().size()));
+  const WINBOOL ret = SetThreadSelectedCpuSets(pthread_gethandle(handle), cpu_set.base().data(),
+                                               *thes::safe_cast<ULONG>(cpu_set.base().size()));
   if (ret == 0) {
     return std::unexpected(ret);
   }

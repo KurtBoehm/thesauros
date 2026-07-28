@@ -18,7 +18,7 @@
 #include "thesauros/types/tuple.hpp"
 #include "thesauros/types/type-transformations.hpp"
 
-namespace thes {
+namespace thes::reflect {
 template<auto Name, auto SerialName, auto Value>
 struct StaticMemberInfo {
   using Type = std::decay_t<decltype(Value)>;
@@ -56,14 +56,14 @@ concept HasMemoryLayoutInfo = requires() { memory_layout_info_adl(std::declval<T
 template<typename T>
 inline constexpr auto memory_layout_info = memory_layout_info_adl(static_cast<T*>(nullptr));
 
-template<typename T, auto Name, auto SerialName, auto tMembers, auto StaticMembers>
+template<typename T, auto Name, auto SerialName, auto Mems, auto StaticMems>
 struct TypeInfoTemplate {
   using Type = T;
   static constexpr auto name = Name;
   static constexpr auto serial_name = SerialName;
 
-  static constexpr ::thes::Tuple members = tMembers;
-  static constexpr ::thes::Tuple static_members = StaticMembers;
+  static constexpr ::thes::Tuple members = Mems;
+  static constexpr ::thes::Tuple static_members = StaticMems;
 
   using Members = decltype(members);
 };
@@ -159,7 +159,8 @@ constexpr auto serial_name_of() {
 // Generate the StaticMemberInfos
 
 #define THES_POLIS_STATIC_MEMBER_IMPL(NAME, VALUE) \
-  ::thes::StaticMemberInfo<THES_POLIS_NAME_STR(NAME), THES_POLIS_SERIAL_NAME_STR(NAME), VALUE> {}
+  ::thes::reflect::StaticMemberInfo<THES_POLIS_NAME_STR(NAME), THES_POLIS_SERIAL_NAME_STR(NAME), \
+                                    VALUE> {}
 #define THES_POLIS_STATIC_MEMBER(REC, _, IDX, PAIR) \
   BOOST_PP_COMMA_IF(IDX) THES_POLIS_STATIC_MEMBER_IMPL PAIR
 
@@ -176,9 +177,9 @@ constexpr auto serial_name_of() {
 
 #define THES_POLIS_MEMBER_INFO(REC, TYPENAME, IDX, ELEM) \
   BOOST_PP_COMMA_IF(IDX) \
-  ::thes::MemberInfo<THES_POLIS_MEMBER_TYPE(ELEM), THES_POLIS_MEMBER_NAME_STR(ELEM), \
-                     THES_POLIS_MEMBER_SERIAL_NAME_STR(ELEM), \
-                     &TYPENAME::THES_POLIS_MEMBER_NAME(ELEM)> {}
+  ::thes::reflect::MemberInfo<THES_POLIS_MEMBER_TYPE(ELEM), THES_POLIS_MEMBER_NAME_STR(ELEM), \
+                              THES_POLIS_MEMBER_SERIAL_NAME_STR(ELEM), \
+                              &TYPENAME::THES_POLIS_MEMBER_NAME(ELEM)> {}
 
 // Generate the template params
 
@@ -213,10 +214,10 @@ constexpr auto serial_name_of() {
 
 #define THES_POLIS_MEMBER_OFFSET(REC, TYPENAME, IDX, ELEM) \
   BOOST_PP_COMMA_IF(IDX) \
-  ::thes::MemberLayoutInfo<THES_POLIS_MEMBER_TYPE(ELEM), THES_POLIS_MEMBER_NAME_STR(ELEM), \
-                           &BOOST_PP_REMOVE_PARENS(TYPENAME)::THES_POLIS_MEMBER_NAME(ELEM), \
-                           offsetof(BOOST_PP_REMOVE_PARENS(TYPENAME), \
-                                    THES_POLIS_MEMBER_NAME(ELEM))> {}
+  ::thes::reflect::MemberLayoutInfo< \
+    THES_POLIS_MEMBER_TYPE(ELEM), THES_POLIS_MEMBER_NAME_STR(ELEM), \
+    &BOOST_PP_REMOVE_PARENS(TYPENAME)::THES_POLIS_MEMBER_NAME(ELEM), \
+    offsetof(BOOST_PP_REMOVE_PARENS(TYPENAME), THES_POLIS_MEMBER_NAME(ELEM))> {}
 
 // The constructor implementation
 
@@ -384,7 +385,7 @@ constexpr auto serial_name_of() {
   BOOST_PP_REMOVE_PARENS(BOOST_PP_IIF( \
     BOOST_PP_LIST_IS_NIL(TEMPLATE_PARAMS), \
     (inline consteval auto type_info_adl(TYPENAME* /*dummy*/) { \
-      return ::thes::TypeInfoTemplate< \
+      return ::thes::reflect::TypeInfoTemplate< \
         TYPENAME, THES_POLIS_NAME_STR(TYPE), THES_POLIS_SERIAL_NAME_STR(TYPE), \
         ::thes::Tuple{BOOST_PP_LIST_FOR_EACH_I(THES_POLIS_MEMBER_INFO, TYPENAME, MEMBERS)}, \
         ::thes::Tuple{BOOST_PP_LIST_FOR_EACH_I(THES_POLIS_STATIC_MEMBER, BOOST_PP_EMPTY(), \
@@ -399,6 +400,6 @@ constexpr auto serial_name_of() {
                                    THES_POLIS_ANY_MEMBERS_FILTER(MEMBERS, LIST))
 #define THES_DEFINE_TYPE_INFO(TYPE, ...) \
   THES_DEFINE_TYPE_INFO_IMPL(TYPE, BOOST_PP_VARIADIC_TO_LIST(__VA_ARGS__))
-} // namespace thes
+} // namespace thes::reflect
 
 #endif // INCLUDE_THESAUROS_REFLECTION_TYPE_HPP

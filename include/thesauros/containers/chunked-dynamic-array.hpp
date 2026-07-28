@@ -108,8 +108,8 @@ struct ChunkedDynamicArrayBase {
   using value_type = Value;
   using size_type = Size;
 
-  using Storage = array::TypedChunk<Value, Size, Allocator>;
-  using SizeStorage = array::TypedChunk<Size, Size, SizeAllocator>;
+  using Storage = TypedChunk<Value, Size, Allocator>;
+  using SizeStorage = TypedChunk<Size, Size, SizeAllocator>;
 
   using Block = MutableBlock<Value, Size>;
   using ConstBlock = std::span<const Value>;

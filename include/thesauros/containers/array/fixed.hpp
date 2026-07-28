@@ -25,7 +25,7 @@ namespace thes {
 template<typename TValue, typename TInitPolicy = DefaultInit,
          typename TAllocator = std::allocator<TValue>>
 struct FixedArray {
-  using Data = array::TypedChunk<TValue, std::size_t, TAllocator>;
+  using Data = TypedChunk<TValue, std::size_t, TAllocator>;
 
   using Value = Data::Value;
   using Size = Data::Size;

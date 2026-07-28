@@ -38,7 +38,7 @@ using tebi = std::ratio_multiply<std::ratio<1024>, gibi>;
 using pebi = std::ratio_multiply<std::ratio<1024>, tebi>;
 using exbi = std::ratio_multiply<std::ratio<1024>, pebi>;
 
-namespace base_unit {
+namespace unit::base {
 struct second;
 struct metre;
 struct kilogram;
@@ -48,7 +48,7 @@ struct mole;
 struct candela;
 struct byte;
 struct bit;
-} // namespace base_unit
+} // namespace unit::base
 
 template<typename TMultiple, typename TBaseUnit>
 struct Unit {
@@ -63,62 +63,62 @@ using ScaledUnit =
 
 namespace unit {
 // SI multiples of second
-using attosecond = Unit<atto, base_unit::second>;
-using femtosecond = Unit<femto, base_unit::second>;
-using picosecond = Unit<pico, base_unit::second>;
-using nanosecond = Unit<nano, base_unit::second>;
-using microsecond = Unit<micro, base_unit::second>;
-using millisecond = Unit<milli, base_unit::second>;
-using centisecond = Unit<centi, base_unit::second>;
-using second = Unit<std::ratio<1>, base_unit::second>;
-using decisecond = Unit<deci, base_unit::second>;
-using decasecond = Unit<deca, base_unit::second>;
-using hectosecond = Unit<hecto, base_unit::second>;
-using kilosecond = Unit<kilo, base_unit::second>;
-using megasecond = Unit<mega, base_unit::second>;
-using gigasecond = Unit<giga, base_unit::second>;
-using terasecond = Unit<tera, base_unit::second>;
-using petasecond = Unit<peta, base_unit::second>;
-using exasecond = Unit<exa, base_unit::second>;
+using attosecond = Unit<atto, unit::base::second>;
+using femtosecond = Unit<femto, unit::base::second>;
+using picosecond = Unit<pico, unit::base::second>;
+using nanosecond = Unit<nano, unit::base::second>;
+using microsecond = Unit<micro, unit::base::second>;
+using millisecond = Unit<milli, unit::base::second>;
+using centisecond = Unit<centi, unit::base::second>;
+using second = Unit<std::ratio<1>, unit::base::second>;
+using decisecond = Unit<deci, unit::base::second>;
+using decasecond = Unit<deca, unit::base::second>;
+using hectosecond = Unit<hecto, unit::base::second>;
+using kilosecond = Unit<kilo, unit::base::second>;
+using megasecond = Unit<mega, unit::base::second>;
+using gigasecond = Unit<giga, unit::base::second>;
+using terasecond = Unit<tera, unit::base::second>;
+using petasecond = Unit<peta, unit::base::second>;
+using exasecond = Unit<exa, unit::base::second>;
 // Non-SI time units accepted for use with SI
 using minute = ScaledUnit<std::ratio<60>, second>;
 using hour = ScaledUnit<std::ratio<60>, minute>;
 using day = ScaledUnit<std::ratio<24>, hour>;
 
 // SI multiples of metre
-using attometre = Unit<atto, base_unit::metre>;
-using femtometre = Unit<femto, base_unit::metre>;
-using picometre = Unit<pico, base_unit::metre>;
-using nanometre = Unit<nano, base_unit::metre>;
-using micrometre = Unit<micro, base_unit::metre>;
-using millimetre = Unit<milli, base_unit::metre>;
-using centimetre = Unit<centi, base_unit::metre>;
-using metre = Unit<std::ratio<1>, base_unit::metre>;
-using decimetre = Unit<deci, base_unit::metre>;
-using decametre = Unit<deca, base_unit::metre>;
-using hectometre = Unit<hecto, base_unit::metre>;
-using kilometre = Unit<kilo, base_unit::metre>;
-using megametre = Unit<mega, base_unit::metre>;
-using gigametre = Unit<giga, base_unit::metre>;
-using terametre = Unit<tera, base_unit::metre>;
-using petametre = Unit<peta, base_unit::metre>;
-using exametre = Unit<exa, base_unit::metre>;
+using attometre = Unit<atto, unit::base::metre>;
+using femtometre = Unit<femto, unit::base::metre>;
+using picometre = Unit<pico, unit::base::metre>;
+using nanometre = Unit<nano, unit::base::metre>;
+using micrometre = Unit<micro, unit::base::metre>;
+using millimetre = Unit<milli, unit::base::metre>;
+using centimetre = Unit<centi, unit::base::metre>;
+using metre = Unit<std::ratio<1>, unit::base::metre>;
+using decimetre = Unit<deci, unit::base::metre>;
+using decametre = Unit<deca, unit::base::metre>;
+using hectometre = Unit<hecto, unit::base::metre>;
+using kilometre = Unit<kilo, unit::base::metre>;
+using megametre = Unit<mega, unit::base::metre>;
+using gigametre = Unit<giga, unit::base::metre>;
+using terametre = Unit<tera, unit::base::metre>;
+using petametre = Unit<peta, unit::base::metre>;
+using exametre = Unit<exa, unit::base::metre>;
 
 // SI multiples of byte
-using byte = Unit<std::ratio<1>, base_unit::byte>;
-using kilobyte = Unit<kilo, base_unit::byte>;
-using megabyte = Unit<mega, base_unit::byte>;
-using gigabyte = Unit<giga, base_unit::byte>;
-using terabyte = Unit<tera, base_unit::byte>;
-using petabyte = Unit<peta, base_unit::byte>;
-using exabyte = Unit<exa, base_unit::byte>;
+using byte = Unit<std::ratio<1>, unit::base::byte>;
+using kilobyte = Unit<kilo, unit::base::byte>;
+using megabyte = Unit<mega, unit::base::byte>;
+using gigabyte = Unit<giga, unit::base::byte>;
+using terabyte = Unit<tera, unit::base::byte>;
+using petabyte = Unit<peta, unit::base::byte>;
+using exabyte = Unit<exa, unit::base::byte>;
 // Binary multiples of byte
-using kibibyte = Unit<kibi, base_unit::byte>;
-using mebibyte = Unit<mebi, base_unit::byte>;
-using gibibyte = Unit<gibi, base_unit::byte>;
-using tebibyte = Unit<tebi, base_unit::byte>;
-using pebibyte = Unit<pebi, base_unit::byte>;
-using exbibyte = Unit<exbi, base_unit::byte>;
+using kibibyte = Unit<kibi, unit::base::byte>;
+using mebibyte = Unit<mebi, unit::base::byte>;
+using gibibyte = Unit<gibi, unit::base::byte>;
+using tebibyte = Unit<tebi, unit::base::byte>;
+using pebibyte = Unit<pebi, unit::base::byte>;
+using exbibyte = Unit<exbi, unit::base::byte>;
 } // namespace unit
 
 template<typename TRep, typename TUnit>

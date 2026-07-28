@@ -21,7 +21,7 @@
 #include "thesauros/types/tuple.hpp" // IWYU pragma: keep
 #include "thesauros/types/value-tag.hpp"
 
-namespace thes {
+namespace thes::reflect {
 template<auto Value, auto Name, auto SerialName>
 struct EnumValueInfo {
   static constexpr auto value = Value;
@@ -51,7 +51,7 @@ concept HasEnumInfo = CompleteType<EnumInfo<T>>;
   BOOST_PP_COMMA_IF(IDX) THES_POLIS_ENUM_DEF_IMPL(VALUE)
 
 #define THES_POLIS_ENUM_VALUE_DEF_IMPL(TYPE_NAME, VALUE) \
-  ::thes::EnumValueInfo<TYPE_NAME::THES_POLIS_NAME_##VALUE, THES_POLIS_NAME_STR_##VALUE, \
+  ::thes::reflect::EnumValueInfo<TYPE_NAME::THES_POLIS_NAME_##VALUE, THES_POLIS_NAME_STR_##VALUE, \
                         THES_POLIS_SERIAL_NAME_STR_##VALUE> {}
 #define THES_POLIS_ENUM_VALUE_DEF(REC, TYPE_NAME, IDX, VALUE) \
   BOOST_PP_COMMA_IF(IDX) THES_POLIS_ENUM_VALUE_DEF_IMPL(TYPE_NAME, VALUE)
@@ -64,7 +64,7 @@ concept HasEnumInfo = CompleteType<EnumInfo<T>>;
 #define THES_DEFINE_ENUM_IMPL_INFO(TYPE, TYPENAME, LIST) \
   /* gcc: global qualification of class name is invalid before ‘{’ token */ \
   inline consteval auto enum_info_adl(TYPENAME /*dummy*/) { \
-    return ::thes::EnumInfoTemplate<THES_POLIS_NAME_STR_##TYPE, THES_POLIS_SERIAL_NAME_STR_##TYPE, \
+    return ::thes::reflect::EnumInfoTemplate<THES_POLIS_NAME_STR_##TYPE, THES_POLIS_SERIAL_NAME_STR_##TYPE, \
                                     ::thes::Tuple{BOOST_PP_LIST_FOR_EACH_I( \
                                       THES_POLIS_ENUM_VALUE_DEF, TYPENAME, LIST)}>{}; \
   }
@@ -124,6 +124,6 @@ constexpr std::optional<T> enum_cast(std::string_view serial_name) {
   };
   return op(op, index_tag<0>);
 }
-} // namespace thes
+} // namespace thes::reflect
 
 #endif // INCLUDE_THESAUROS_REFLECTION_ENUM_HPP
