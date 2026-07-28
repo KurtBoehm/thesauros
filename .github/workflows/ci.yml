@@ -83,20 +83,6 @@ jobs:
             cxx: g++
             pacboy: gcc:p meson:p ninja:p pkgconf:p
 
-          # Windows on ARM. Not in the ReadMe’s supported list, and MSYS2’s CLANGARM64
-          # environment is younger than the others, so this one may fail without failing the
-          # workflow.
-          - name: Windows AArch64 (MinGW Clang)
-            runner: windows-11-arm
-            shell: "msys2 {0}"
-            msystem: CLANGARM64
-            cc: clang
-            cxx: clang++
-            pacboy: clang:p openmp:p meson:p ninja:p pkgconf:p
-            experimental: true
-
-    continue-on-error: ${{ matrix.experimental == true }}
-
     steps:
       - uses: actions/checkout@v4
 

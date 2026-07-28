@@ -67,7 +67,7 @@ def check_fmt(headers: list[tuple[Path, str, str]]) -> list[str]:
 
 def main() -> int:
     headers = [
-        (p, p.relative_to(ROOT).as_posix(), p.read_text())
+        (p, p.relative_to(ROOT).as_posix(), p.read_text(encoding="utf-8"))
         for p in sorted(ROOT.rglob("*.hpp"))
     ]
     problems = check_umbrellas(headers) + check_fmt(headers)

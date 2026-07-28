@@ -140,18 +140,16 @@ On Windows the build goes through MSYS2’s MinGW-w64 toolchain, since the threa
 
 CI builds each push and pull request in both a debug and an optimized configuration. Meson covers:
 
-|         | x86-64                   | AArch64                   |
-| ------- | ------------------------ | ------------------------- |
-| Linux   | GCC 14, GCC 15, Clang 21 | GCC 14, Clang 21          |
-| macOS   | —                        | Apple Clang               |
-| Windows | MinGW GCC                | MinGW Clang (best-effort) |
+|         | x86-64                   | AArch64          |
+| ------- | ------------------------ | ---------------- |
+| Linux   | GCC 14, GCC 15, Clang 21 | GCC 14, Clang 21 |
+| macOS   | —                        | Apple Clang      |
+| Windows | MinGW GCC                | —                |
 
 CMake is built and tested on one entry per platform, so that it cannot drift from Meson unnoticed.
 Both minimum compiler versions are exercised deliberately, to keep constructs newer than the documented floor from creeping in.
 
-macOS is supported on Apple Silicon only.
-The best-effort cell is outside the supported list above and does not fail the workflow.
-RISC-V has no hosted runner and is not covered.
+macOS is supported on Apple Silicon only, and RISC-V has no hosted runner and is not covered.
 
 ## Licences
 
