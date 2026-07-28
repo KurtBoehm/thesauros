@@ -23,7 +23,7 @@
 #include "thesauros/iterator/facade.hpp"
 #include "thesauros/iterator/state-facade.hpp"
 #include "thesauros/math/integer-cast.hpp"
-#include "thesauros/ranges/iota.hpp"
+#include "thesauros/ranges/indices.hpp"
 #include "thesauros/types/type-transformations.hpp"
 
 namespace thes {
@@ -228,7 +228,7 @@ struct ChunkedDynamicArrayBase {
 
       elements_.expand(new_allocation_size * block_size_,
                        [&](Value* old_begin, Value* /*old_end*/, Value* new_begin) {
-                         for (const auto i : range(old_block_num)) {
+                         for (const auto i : views::indices(old_block_num)) {
                            const auto offset = i * block_size_;
 
                            auto b = old_begin + offset;

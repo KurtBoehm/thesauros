@@ -13,7 +13,7 @@
 #include "thesauros/algorithms/static-ranges/index-to-position.hpp"
 #include "thesauros/algorithms/static-ranges/position-to-index.hpp"
 #include "thesauros/math/divmod.hpp"
-#include "thesauros/ranges/iota.hpp"
+#include "thesauros/ranges/indices.hpp"
 #include "thesauros/static-ranges/definitions/static-apply.hpp"
 #include "thesauros/static-ranges/piping.hpp" // IWYU pragma: keep
 #include "thesauros/static-ranges/sinks/postfix-product-inclusive.hpp"
@@ -179,16 +179,16 @@ struct SubMultiSize {
     return ms_.axis_size(dim);
   }
 
-  [[nodiscard]] std::array<IotaRange<Size>, dimension_num> axis_ranges() const {
+  [[nodiscard]] std::array<ranges::IotaRange<Size>, dimension_num> axis_ranges() const {
     return star::static_apply<dimension_num>(
       [&]<std::size_t... tIdxs>() { return std::array{axis_range<tIdxs>()...}; });
   }
   template<std::size_t tDim>
-  [[nodiscard]] IotaRange<Size> axis_range(IndexTag<tDim> dim = {}) const {
-    return range(axis_begin(dim), axis_end(dim));
+  [[nodiscard]] ranges::IotaRange<Size> axis_range(IndexTag<tDim> dim = {}) const {
+    return views::indices(axis_begin(dim), axis_end(dim));
   }
-  [[nodiscard]] IotaRange<Size> axis_range(std::size_t dim) const {
-    return range(axis_begin(dim), axis_end(dim));
+  [[nodiscard]] ranges::IotaRange<Size> axis_range(std::size_t dim) const {
+    return views::indices(axis_begin(dim), axis_end(dim));
   }
 
   [[nodiscard]] AxisSize local_to_global_pos(AxisSize pos) const {

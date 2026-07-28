@@ -18,7 +18,7 @@ Its layout loosely mirrors the C++ standard library: functionality is grouped in
 - `functional`: Min/max function objects and a no-op function object.
 - `io`: I/O abstractions built on `std::fread`/`std::fwrite` (avoiding the madness of stream flags/locales), plus JSON printing and binary serialization of the containers.
 - `iterator`: Helpers for defining full-featured iterators with minimal boilerplate.
-- `literals`: User-defined literals for the fixed-size integer types, floating-point types, and index tags, grouped into inline sub-namespaces of `thes::literals`.
+- `literals`: User-defined literals for the fixed-size integer types, floating-point types, and index tags. As in the standard library, `thes::literals` is an inline namespace holding one inline sub-namespace per group, so `using namespace thes::literals;` brings in all of them and `using namespace thes::literals::integer_literals;` just one.
 - `macropolis` (_Μακρόπολις_, a portmanteau of _macro_ and _Acropolis_): Pure preprocessor utilities with no dependencies on the rest of the library: warning suppression, inlining control, platform detection, and `void`-handling macros.
 - `math`:
   - Basic helpers: division rounded upward, `pow` with compile-time exponent, bit manipulation, etc.
@@ -29,7 +29,7 @@ Its layout loosely mirrors the C++ standard library: functionality is grouped in
 - `quantity`: A `std::chrono::duration`-like quantity type with arbitrary units and related operations.
 - `resources`: Resource and CPU information, including logical CPU lists with one logical CPU per physical core.
 - `random`: Flexible Linear Congruential Generator and an on-the-fly range shuffler.
-- `ranges`: Python-style `enumerate`, `range`, `reversed`, and `zip` ranges (increasingly superseded by C++23).
+- `ranges`: Range types in `thes::ranges` and the factories producing them in `thes::views`, mirroring `std::ranges`/`std::views`: `views::indices` (a sized index range), `views::indices_n`, `views::enumerate`, and `views::cartesian_product`.
 - `reflection`: Static reflection built on Macropolis: macros defining classes and enums along with the type information describing them, plus type flattening and serial names.
 - `static-ranges`: Static ranges generalizing `std::pair`/`std::tuple`, range-like operations, and piping support.
 - `string`: Compile-time strings, `std::array`-backed strings, and character utilities.

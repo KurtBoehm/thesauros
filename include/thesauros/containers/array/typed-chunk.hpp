@@ -13,7 +13,6 @@
 #include <type_traits>
 #include <utility>
 
-
 namespace thes::array {
 /**
  * A helper class managing a typed chunk of memory.

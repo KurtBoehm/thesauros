@@ -169,7 +169,7 @@ struct JsonWriter<std::filesystem::path> {
   }
 };
 
-template<MapRange Map>
+template<ranges::MapRange Map>
 struct JsonWriter<Map> {
   static auto write(auto it, const Map& map, Indentation indent = {}) {
     const auto indent1 = indent + 1;
@@ -199,7 +199,7 @@ struct JsonWriter<Map> {
 };
 
 template<typename Range>
-requires(AnyRange<Range> && !MapRange<Range>)
+requires(ranges::AnyRange<Range> && !ranges::MapRange<Range>)
 struct JsonWriter<Range> {
   static auto write(auto it, const Range& rng, Indentation indent = {}) {
     const auto indent1 = indent + 1;

@@ -41,8 +41,8 @@ inline void to_file(const array::TypedChunk<V, S, Alloc>& chunk, FileWriter& wri
 
 /** Reads a `TypedChunk` previously written by `to_file`. */
 template<typename V, typename S, typename Alloc>
-inline array::TypedChunk<V, S, Alloc>
-from_file(FileReader& reader, TypeTag<array::TypedChunk<V, S, Alloc>> /*tag*/) {
+inline array::TypedChunk<V, S, Alloc> from_file(FileReader& reader,
+                                                TypeTag<array::TypedChunk<V, S, Alloc>> /*tag*/) {
   array::TypedChunk<V, S, Alloc> chunk(reader.read(type_tag<S>));
   reader.read(chunk.span());
   return chunk;

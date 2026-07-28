@@ -13,7 +13,7 @@
 
 #include "thesauros/charconv/concat.hpp"
 #include "thesauros/macropolis/platform.hpp"
-#include "thesauros/ranges/iota.hpp"
+#include "thesauros/ranges/indices.hpp"
 #include "thesauros/utility/index-segmentation.hpp"
 
 #if THES_LINUX
@@ -68,11 +68,11 @@ auto cpu_range(TChars&& full) {
            const std::size_t hyphen = subsv.find('-');
            const auto first = string_to_integral<std::size_t>(subsv.substr(0, hyphen)).value();
            if (hyphen == std::string_view::npos) {
-             return range(first, first + 1);
+             return views::indices(first, first + 1);
            }
            assert(subsv.find('-', hyphen + 1) == std::string_view::npos);
            const auto second = string_to_integral<std::size_t>(subsv.substr(hyphen + 1)).value();
-           return range(first, second + 1);
+           return views::indices(first, second + 1);
          }) |
          std::views::join;
 }

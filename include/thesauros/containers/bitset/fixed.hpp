@@ -20,7 +20,7 @@
 #include "thesauros/containers/bitset/iterator.hpp"
 #include "thesauros/math/arithmetic.hpp"
 #include "thesauros/math/bit.hpp"
-#include "thesauros/ranges/iota.hpp"
+#include "thesauros/ranges/indices.hpp"
 #include "thesauros/static-ranges/sinks/for-each.hpp"
 #include "thesauros/static-ranges/sinks/reduce.hpp"
 #include "thesauros/static-ranges/views/transform.hpp"
@@ -162,7 +162,7 @@ private:
     assert(div_ceil(size_, chunk_bit_num) == chunks_.size());
     const std::size_t max{chunks_.size() - 1};
 
-    for (const std::size_t i : range(max)) {
+    for (const std::size_t i : views::indices(max)) {
       const std::size_t count{counter(chunks_[i])};
       if (count != chunk_bit_num) {
         return count + i * chunk_bit_num;

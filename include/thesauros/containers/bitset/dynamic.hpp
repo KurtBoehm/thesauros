@@ -21,7 +21,7 @@
 #include "thesauros/containers/array/initialization-policy.hpp"
 #include "thesauros/containers/bitset/iterator.hpp"
 #include "thesauros/math/arithmetic.hpp"
-#include "thesauros/ranges/iota.hpp"
+#include "thesauros/ranges/indices.hpp"
 #include "thesauros/utility/multi-bit-reference.hpp"
 
 namespace thes {
@@ -156,7 +156,7 @@ private:
     assert(div_ceil(size_, chunk_bit_num) == chunks_.size());
     const std::size_t max{chunks_.size() - 1};
 
-    for (const std::size_t i : range(max)) {
+    for (const std::size_t i : views::indices(max)) {
       const std::size_t count{counter(chunks_[i])};
       if (count != chunk_bit_num) {
         return count + i * chunk_bit_num;

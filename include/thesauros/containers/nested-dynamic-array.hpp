@@ -16,7 +16,7 @@
 #include "thesauros/containers/array/typed-chunk.hpp"
 #include "thesauros/iterator/facade.hpp"
 #include "thesauros/iterator/state-facade.hpp"
-#include "thesauros/ranges/iota.hpp"
+#include "thesauros/ranges/indices.hpp"
 #include "thesauros/types/type-transformations.hpp"
 
 namespace thes {
@@ -224,8 +224,8 @@ struct NestedDynamicArrayBase {
     return element_num();
   }
 
-  IotaRange<Size> offsets_of(Size i) const {
-    return range(offsets_[i], offsets_[i + 1]);
+  ranges::IotaRange<Size> offsets_of(Size i) const {
+    return views::indices(offsets_[i], offsets_[i + 1]);
   }
 
 private:

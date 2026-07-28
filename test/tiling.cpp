@@ -32,7 +32,8 @@ struct Idx {
 inline constexpr auto forward = thes::auto_tag<thes::IterDirection::FORWARD>;
 inline constexpr auto backward = thes::auto_tag<thes::IterDirection::BACKWARD>;
 
-inline constexpr auto def_rng = thes::star::transform([](auto s) { return thes::range(s); });
+inline constexpr auto def_rng =
+  thes::star::transform([](auto s) { return thes::views::indices(s); });
 
 constexpr auto tiled_base(auto tag, auto sizes, auto ranges, auto tile_sizes, auto map) {
   std::vector<std::size_t> idxs{};
@@ -67,7 +68,7 @@ void test_scalar() {
   }() == 24);
   static constexpr auto tiles = [] {
     std::size_t num = 0;
-    std::array<thes::IotaRange<std::size_t>, 24_uz * 3_uz> arr{};
+    std::array<thes::ranges::IotaRange<std::size_t>, 24_uz * 3_uz> arr{};
     thes::for_each_tile<thes::IterDirection::FORWARD>(
       sizes | def_rng, tile_sizes, thes::StaticMap{}, [&arr, &num](auto t1, auto t2, auto t3) {
         arr[(3 * num) + 0] = t1;
@@ -77,9 +78,9 @@ void test_scalar() {
       });
     return arr;
   }();
-  static_assert(tiles[27] == thes::range(4_uz, 8_uz));
-  static_assert(tiles[28] == thes::range(4_uz, 8_uz));
-  static_assert(tiles[29] == thes::range(0_uz, 4_uz));
+  static_assert(tiles[27] == thes::views::indices(4_uz, 8_uz));
+  static_assert(tiles[28] == thes::views::indices(4_uz, 8_uz));
+  static_assert(tiles[29] == thes::views::indices(0_uz, 4_uz));
 
   // Returns the index-position of the ref_idx-th position in the iteration order specified by dir
   static constexpr auto make_index_pos = [](std::size_t ref_idx, auto dir) {
@@ -154,7 +155,7 @@ void test_vectorized() {
   }
   {
     static constexpr auto ranges = thes::auto_tag<thes::star::index_transform<3>(
-      [](auto idx) { return thes::range(std::get<idx>(sizes)); })>;
+      [](auto idx) { return thes::views::indices(std::get<idx>(sizes)); })>;
 
     tiled(forward, ranges, thes::static_map_tag<>);
     tiled(backward, ranges, thes::static_map_tag<>);
@@ -168,16 +169,17 @@ constexpr void test_small() {
 #if false
   tiled_base(
     forward, std::array{4_u32, 9_u32, 7_u32},
-    std::array{thes::range(2_u32, 4_u32), thes::range(0_u32, 9_u32), thes::range(0_u32, 7_u32)},
+    std::array{thes::views::indices(2_u32, 4_u32), thes::views::indices(0_u32, 9_u32), thes::views::indices(0_u32, 7_u32)},
     std::array{8_u32, 8_u32, 8_u32}, thes::StaticMap{});
 #endif
 
   std::vector<thes::u32> idxs{};
-  thes::tiled_for_each<backward>(
-    thes::MultiSize{std::array{4_u32, 9_u32, 7_u32}},
-    std::array{thes::range(2_u32, 4_u32), thes::range(0_u32, 9_u32), thes::range(0_u32, 7_u32)},
-    std::array{8_u32, 8_u32, 8_u32}, thes::StaticMap{},
-    [&](auto pos) { idxs.push_back(pos.index); });
+  thes::tiled_for_each<backward>(thes::MultiSize{std::array{4_u32, 9_u32, 7_u32}},
+                                 std::array{thes::views::indices(2_u32, 4_u32),
+                                            thes::views::indices(0_u32, 9_u32),
+                                            thes::views::indices(0_u32, 7_u32)},
+                                 std::array{8_u32, 8_u32, 8_u32}, thes::StaticMap{},
+                                 [&](auto pos) { idxs.push_back(pos.index); });
 
   const auto min = *std::ranges::min_element(idxs);
   const auto max = *std::ranges::max_element(idxs);

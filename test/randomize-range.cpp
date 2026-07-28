@@ -28,7 +28,7 @@ void run(const Size size) {
 } // namespace
 
 int main() {
-  for (Size size : thes::range<Size>(100)) {
+  for (Size size : thes::views::indices<Size>(100)) {
     run(size);
   }
   run(1U << 10U);

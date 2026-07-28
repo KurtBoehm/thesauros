@@ -67,8 +67,8 @@ struct FixedOpenMpThreadPool {
 
     const int max_threads = omp_get_max_threads();
     if (max_threads < 0 || std::size_t(max_threads) < thread_num_) {
-      throw std::runtime_error{cat("The thread pool needs ", thread_num_,
-                                   " threads, but the max is ", max_threads)};
+      throw std::runtime_error{
+        cat("The thread pool needs ", thread_num_, " threads, but the max is ", max_threads)};
     }
 
 #pragma omp parallel for num_threads(thread_num_)

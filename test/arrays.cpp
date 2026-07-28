@@ -102,7 +102,7 @@ THES_TEST_CASE("DynamicArray: value-init construction and resize", "[containers]
   THES_CHECK(test::range_eq(darray1, std::array{0, 0, 0}));
 
   darray1.resize(9);
-  for (const auto i : thes::range<std::size_t>(8)) {
+  for (const auto i : thes::views::indices<std::size_t>(8)) {
     darray1[i] = static_cast<int>(2 * i + 1);
   }
   THES_REQUIRE(darray1.size() == 9);
@@ -137,14 +137,14 @@ THES_TEST_CASE("DynamicArray: default-init, resize, push_back, pop_back",
   THES_CHECK(darray2.back() == 3);
 
   darray2.resize(7);
-  for (const auto i : thes::range<std::size_t>(3, 7)) {
+  for (const auto i : thes::views::indices<std::size_t>(3, 7)) {
     darray2[i] = static_cast<int>(3 * i + 2);
   }
   THES_REQUIRE(darray2.size() == 7);
   THES_CHECK(darray2.allocation_size() == 8);
   THES_CHECK(test::range_eq(darray2, std::array{darray2[0], darray2[1], 3, 11, 14, 17, 20}));
 
-  for (const int i : thes::range<int>(4)) {
+  for (const int i : thes::views::indices<int>(4)) {
     darray2.push_back(i);
   }
   THES_REQUIRE(darray2.size() == 11);
@@ -152,7 +152,7 @@ THES_TEST_CASE("DynamicArray: default-init, resize, push_back, pop_back",
   THES_CHECK(
     test::range_eq(darray2, std::array{darray2[0], darray2[1], 3, 11, 14, 17, 20, 0, 1, 2, 3}));
 
-  for ([[maybe_unused]] const int i : thes::range(4)) {
+  for ([[maybe_unused]] const int i : thes::views::indices(4)) {
     darray2.pop_back();
   }
   THES_REQUIRE(darray2.size() == 7);
@@ -277,7 +277,7 @@ THES_TEST_CASE("DynamicArray: no-init manual construction and emplace_back",
   THES_REQUIRE(darray4.size() == 3);
   THES_CHECK(darray4.allocation_size() == 3);
 
-  for (const auto i : thes::range<std::size_t>(3)) {
+  for (const auto i : thes::views::indices<std::size_t>(3)) {
     darray4.initial_emplace(i);
   }
   THES_REQUIRE(darray4.size() == 3);
@@ -285,7 +285,7 @@ THES_TEST_CASE("DynamicArray: no-init manual construction and emplace_back",
   THES_CHECK(test::range_eq(darray4, std::array{S{}, S{}, S{}}));
 
   S::counter() = 0;
-  for (const int i : thes::range<int>(6)) {
+  for (const int i : thes::views::indices<int>(6)) {
     darray4.emplace_back(i);
   }
   // 3 are destructed when adding “0” (at capacity 3)
@@ -308,7 +308,7 @@ THES_TEST_CASE("DynamicArray: insert_any grows and initializes gap and padding",
                "[containers][array][dynamic]") {
   thes::DynamicArray<S, thes::ValueInit> darray5(5);
   darray5.reserve(16);
-  for (const auto i : thes::range(5ZU)) {
+  for (const auto i : thes::views::indices(5ZU)) {
     darray5[i] = S{int(i)};
   }
   fmt::print("{}\n", darray5);

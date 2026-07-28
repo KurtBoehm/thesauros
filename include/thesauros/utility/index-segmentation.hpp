@@ -15,7 +15,7 @@
 #include "thesauros/math/arithmetic.hpp"
 #include "thesauros/math/divmod.hpp"
 #include "thesauros/math/integer-cast.hpp"
-#include "thesauros/ranges/iota.hpp"
+#include "thesauros/ranges/indices.hpp"
 #include "thesauros/types/type-transformations.hpp"
 
 namespace thes {
@@ -32,7 +32,7 @@ concept IndexSegmenter = requires(const T& seg, typename T::Size size, typename 
   // segment boundaries
   { seg.segment_start(s) } -> std::same_as<typename T::Size>;
   { seg.segment_end(s) } -> std::same_as<typename T::Size>;
-  { seg.segment_range(s) } -> std::same_as<thes::IotaRange<typename T::Size>>;
+  { seg.segment_range(s) } -> std::same_as<thes::ranges::IotaRange<typename T::Size>>;
   { seg.segment_of(size) } -> std::same_as<typename T::Segment>;
 };
 
@@ -65,8 +65,9 @@ struct UniformIndexSegmenter {
   }
 
   /** [segment_start, segment_end) as an iota range. */
-  [[nodiscard]] constexpr IotaRange<Size> segment_range(const Segment segment) const noexcept {
-    return range(segment_start(segment), segment_end(segment));
+  [[nodiscard]] constexpr ranges::IotaRange<Size>
+  segment_range(const Segment segment) const noexcept {
+    return views::indices(segment_start(segment), segment_end(segment));
   }
 
   /** Segment containing index. */
@@ -125,8 +126,9 @@ struct OffsetUniformIndexSegmenter : public UniformIndexSegmenter<TSize, TSegmen
   }
 
   /** [segment_start, segment_end) as an iota range. */
-  [[nodiscard]] constexpr IotaRange<Size> segment_range(const Segment segment) const noexcept {
-    return range(segment_start(segment), segment_end(segment));
+  [[nodiscard]] constexpr ranges::IotaRange<Size>
+  segment_range(const Segment segment) const noexcept {
+    return views::indices(segment_start(segment), segment_end(segment));
   }
 
   /** Segment containing index, accounting for offset. */
@@ -162,8 +164,9 @@ struct AffineUniformIndexSegmenter : public UniformIndexSegmenter<TSize, TSegmen
   }
 
   /** [segment_start, segment_end) as an iota range. */
-  [[nodiscard]] constexpr IotaRange<Size> segment_range(const Segment segment) const noexcept {
-    return range(segment_start(segment), segment_end(segment));
+  [[nodiscard]] constexpr ranges::IotaRange<Size>
+  segment_range(const Segment segment) const noexcept {
+    return views::indices(segment_start(segment), segment_end(segment));
   }
 
   /** Segment containing index after inverse affine transform. */
@@ -215,7 +218,7 @@ struct BlockedIndexSegmenter {
 
   /** [segment_start, segment_end) as an iota range. */
   [[nodiscard]] constexpr auto segment_range(const Segment segment) const noexcept {
-    return range(segment_start(segment), segment_end(segment));
+    return views::indices(segment_start(segment), segment_end(segment));
   }
 
   /** Segment containing index. */
@@ -302,8 +305,8 @@ struct PaddedIndexSegmenter {
   }
 
   /** [segment_start, segment_end) as an iota range. */
-  [[nodiscard]] constexpr IotaRange<Size> segment_range(const Segment s) const noexcept {
-    return range(segment_start(s), segment_end(s));
+  [[nodiscard]] constexpr ranges::IotaRange<Size> segment_range(const Segment s) const noexcept {
+    return views::indices(segment_start(s), segment_end(s));
   }
 
   /** Segment containing a given global index with padding. */

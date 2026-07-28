@@ -44,11 +44,13 @@ inline constexpr StaticKey<tKey> static_key{};
 template<auto tKey, auto tValue>
 inline constexpr StaticKeyValuePair<tKey, decltype(tValue)> static_kv{tValue};
 
-namespace literals {
+inline namespace literals {
+inline namespace static_map_literals {
 template<StaticString tString>
-inline constexpr StaticKey<tString> operator""_key() {
+constexpr StaticKey<tString> operator""_key() {
   return {};
 }
+} // namespace static_map_literals
 } // namespace literals
 
 template<typename... TPairs>

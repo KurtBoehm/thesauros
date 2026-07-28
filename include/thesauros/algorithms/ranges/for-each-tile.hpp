@@ -10,12 +10,12 @@
 #include <array>
 #include <cassert>
 #include <cstddef>
+#include <ranges>
 #include <type_traits>
 
 #include "thesauros/functional/no-op.hpp"
 #include "thesauros/macropolis/inlining.hpp"
-#include "thesauros/ranges/iota.hpp"
-#include "thesauros/ranges/reversed.hpp"
+#include "thesauros/ranges/indices.hpp"
 #include "thesauros/static-ranges/definitions/get-at.hpp"
 #include "thesauros/static-ranges/definitions/size.hpp"
 #include "thesauros/static-ranges/definitions/static-apply.hpp"
@@ -92,8 +92,8 @@ namespace detail {
  *
  * For the half-open interval `[begin, end)`, repeatedly calls:
  *
- * - `full_fun(range_size(i, tile_size))` for each full tile
- * - `part_fun(range(i, end))` for the trailing partial tile (if any)
+ * - `full_fun(views::indices_n(i, tile_size))` for each full tile
+ * - `part_fun(views::indices(i, end))` for the trailing partial tile (if any)
  *
  * Direction is controlled by `Dir`.
  *
@@ -111,18 +111,18 @@ THES_ALWAYS_INLINE inline constexpr void for_each_tile_unroll(S begin, S end, au
   if constexpr (Dir == IterDirection::FORWARD) {
     S i = begin;
     for (; i + tile_size <= end; i += tile_size) {
-      full_fun(range_size(i, tile_size));
+      full_fun(views::indices_n(i, tile_size));
     }
     if (i != end) {
-      part_fun(range(i, end));
+      part_fun(views::indices(i, end));
     }
   } else {
     const S full_tile_end = end - ((end - begin) % tile_size);
     if (full_tile_end != end) {
-      part_fun(range(full_tile_end, end));
+      part_fun(views::indices(full_tile_end, end));
     }
     for (S i = full_tile_end; i > begin; i -= tile_size) {
-      full_fun(range_size(i - tile_size, tile_size));
+      full_fun(views::indices_n(i - tile_size, tile_size));
     }
   }
 }
@@ -173,7 +173,7 @@ THES_ALWAYS_INLINE inline constexpr void for_each_tile(const Ranges& ranges, con
           [&](auto r) { part_fun(args..., r); });
       } else if constexpr (FixedAxes::contains(dim)) {
         const auto idx = fixed_axes.get(dim);
-        rec(index_tag<dim + 1>, rec, args..., range_size(idx, value_tag<Size, 1>));
+        rec(index_tag<dim + 1>, rec, args..., views::indices_n(idx, value_tag<Size, 1>));
       } else {
         auto op = [&](auto r) { rec(index_tag<dim + 1>, rec, args..., r); };
         for_each_tile_unroll<Dir>(begin, end, tile_size, op, op);
@@ -227,9 +227,9 @@ template<IterDirection Dir, typename Ranges, typename FixedAxes>
 THES_ALWAYS_INLINE inline constexpr void
 for_each_tile(const Ranges& ranges, const auto& tile_sizes, const FixedAxes& fixed_axes,
               auto&& full_fun, auto&& part_fun, [[maybe_unused]] AnyIndexTag auto vec_size) {
-  assert(star::static_apply<star::size<Ranges>>([&]<std::size_t... tIdxs>() {
-    return (... && (FixedAxes::contains(index_tag<tIdxs>) ||
-                    star::get_at<tIdxs>(tile_sizes) % vec_size == 0));
+  assert(star::static_apply<star::size<Ranges>>([&]<std::size_t... I>() {
+    return (... &&
+            (FixedAxes::contains(index_tag<I>) || star::get_at<I>(tile_sizes) % vec_size == 0));
   }));
 
   detail::for_each_tile<Dir>(ranges, tile_sizes, fixed_axes, full_fun, part_fun);
@@ -341,7 +341,7 @@ tile_for_each(const auto& multi_size, const Ranges& ranges, auto&& full_fun, aut
       }
     } else {
       if constexpr (dim + 1 < dim_num) {
-        for (const Size i : reversed(range)) {
+        for (const Size i : std::views::reverse(range)) {
           const auto factor = multi_size.after_size(dim);
           rec(index_tag<dim + 1>, rec, index + i * factor, coords..., i);
         }

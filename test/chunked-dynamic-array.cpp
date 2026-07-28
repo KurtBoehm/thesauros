@@ -129,7 +129,7 @@ THES_TEST_CASE("growth and reallocation", "[chunked]") {
     THES_REQUIRE(vec.value_num() == 1);
     THES_REQUIRE(test::range_eq(block1, std::array{S{3}}));
 
-    for (const auto i : thes::range<int>(1, 8)) {
+    for (const auto i : thes::views::indices<int>(1, 8)) {
       block1.emplace_back(i);
     }
     THES_REQUIRE(vec.block_num() == 1);
@@ -165,7 +165,7 @@ THES_TEST_CASE("growth and reallocation", "[chunked]") {
   THES_REQUIRE(test::range_eq(block2, std::array{S{2}, S{3}, S{5}, S{11}, S{17}}));
 
   S::counter() = 0;
-  for ([[maybe_unused]] const auto i : thes::range<std::size_t>(30)) {
+  for ([[maybe_unused]] const auto i : thes::views::indices<std::size_t>(30)) {
     vec.push_block();
     vec.push_block();
   }
@@ -299,7 +299,7 @@ THES_TEST_CASE("random access iterator", "[chunked][iterator]") {
 
   thes::ChunkedDynamicArray<int> arr{4};
   arr.add_blocks(5);
-  for (const auto i : thes::range<std::size_t>(5)) {
+  for (const auto i : thes::views::indices<std::size_t>(5)) {
     arr[i].emplace_back(static_cast<int>(i));
   }
 
@@ -357,7 +357,7 @@ THES_TEST_CASE("nested builder integration", "[chunked][nested]") {
   Chunked vec{8};
   vec.push_block();
   auto block1 = *(vec.end() - 1);
-  for (const auto i : thes::range<int>(0, 8)) {
+  for (const auto i : thes::views::indices<int>(0, 8)) {
     block1.emplace_back(i);
   }
   vec.push_block();
@@ -382,7 +382,7 @@ THES_TEST_CASE("nested builder integration", "[chunked][nested]") {
   }
   {
     auto part = builder.part_builder(1, vec[0].size());
-    for (const std::size_t i : thes::range<std::size_t>(1, vec.block_num())) {
+    for (const std::size_t i : thes::views::indices<std::size_t>(1, vec.block_num())) {
       for (auto&& val : vec[i]) {
         part.emplace(val);
       }
@@ -427,7 +427,7 @@ THES_TEST_CASE("custom allocator", "[chunked][allocator]") {
     THES_REQUIRE(arr.value_num() == 2);
     THES_REQUIRE(test::range_eq(arr[1], std::array{1, 2}));
 
-    for ([[maybe_unused]] const auto i : thes::range<std::size_t>(20)) {
+    for ([[maybe_unused]] const auto i : thes::views::indices<std::size_t>(20)) {
       arr.push_block();
     }
     THES_CHECK(arr.block_num() == 23);

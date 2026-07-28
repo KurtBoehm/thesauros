@@ -15,7 +15,7 @@
 #include "thesauros/types/primitives.hpp"
 #include "thesauros/types/value-tag.hpp"
 
-namespace thes {
+namespace thes::inline literals {
 inline namespace integer_literals {
 #define USER_DEFINED_LITERALS(OP_NAME, TYPE) \
   consteval TYPE operator""_##OP_NAME(const char* ptr) { \
@@ -56,10 +56,6 @@ USER_DEFINED_LITERALS(64)
 
 #undef USER_DEFINED_LITERALS
 } // namespace integer_literals
-
-namespace literals {
-using namespace integer_literals;
-}
-} // namespace thes
+} // namespace thes::inline literals
 
 #endif // INCLUDE_THESAUROS_LITERALS_INTEGER_HPP

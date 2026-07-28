@@ -65,7 +65,7 @@ void test_construction() {
 void test_push_back_and_string() {
   thes::DynamicBitset<std::uint32_t> bitset{};
   THES_ALWAYS_ASSERT(bitset.chunk_num() == 0 && bitset.size() == 0);
-  for (const auto i : thes::range<std::size_t>(32)) {
+  for (const auto i : thes::views::indices<std::size_t>(32)) {
     bitset.push_back((i % 2) != 0);
   }
   THES_ALWAYS_ASSERT(bitset.chunk_num() == 1 && bitset.countr_one() == 0 &&
@@ -78,7 +78,7 @@ void test_push_back_and_string() {
                      bitset.countr_zero() == 0);
   THES_ALWAYS_ASSERT(test::string_eq("110101010101010101010101010101011", bitset));
 
-  for (const auto i : thes::range<std::size_t>(31)) {
+  for (const auto i : thes::views::indices<std::size_t>(31)) {
     bitset.push_back((i % 2) != 0);
   }
   THES_ALWAYS_ASSERT(bitset.chunk_num() == 2 && bitset.countr_one() == 2 &&
@@ -276,7 +276,7 @@ void test_random_access_iterator() {
   THES_ALWAYS_ASSERT(static_cast<std::size_t>(end - begin) == cb.size());
 
   // operator[] random access, without moving the base iterator.
-  for (const auto i : thes::range<std::size_t>(values.size())) {
+  for (const auto i : thes::views::indices<std::size_t>(values.size())) {
     THES_ALWAYS_ASSERT(begin[*thes::safe_cast<std::ptrdiff_t>(i)] == values[i]);
   }
 

@@ -144,11 +144,13 @@ constexpr StaticString<Size1 + Size2> operator+(const StaticString<Size1>& s1,
                                      star::to_array};
 }
 
-namespace literals {
+inline namespace literals {
+inline namespace static_string_literals {
 template<StaticString String>
 constexpr auto operator""_sstr() {
   return String;
 }
+} // namespace static_string_literals
 } // namespace literals
 
 template<StaticString String>

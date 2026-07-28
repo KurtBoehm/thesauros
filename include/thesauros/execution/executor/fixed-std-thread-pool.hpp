@@ -22,7 +22,7 @@
 #include "thesauros/charconv/concat.hpp"
 #include "thesauros/containers/array/fixed-alloc.hpp"
 #include "thesauros/execution/system/affinity.hpp"
-#include "thesauros/ranges/iota.hpp"
+#include "thesauros/ranges/indices.hpp"
 #include "thesauros/types/empty.hpp"
 
 namespace thes {
@@ -47,7 +47,7 @@ struct FixedStdThreadPool {
       }
     }
 
-    for (const std::size_t i : range(size)) {
+    for (const std::size_t i : views::indices(size)) {
       threads_.emplace_back([this, i] {
         TaskID last_id = 0;
 

@@ -18,7 +18,7 @@
 
 #include "thesauros/containers/bitset/iterator.hpp"
 #include "thesauros/math/arithmetic.hpp"
-#include "thesauros/ranges/iota.hpp"
+#include "thesauros/ranges/indices.hpp"
 #include "thesauros/static-ranges/sinks/for-each.hpp"
 #include "thesauros/static-ranges/sinks/to-array.hpp"
 #include "thesauros/static-ranges/views/constant.hpp"
@@ -180,7 +180,7 @@ private:
     }
 
     constexpr std::size_t full_chunk_num = static_size / chunk_bit_num;
-    for (const std::size_t i : range(full_chunk_num)) {
+    for (const std::size_t i : views::indices(full_chunk_num)) {
       const auto count = static_cast<std::size_t>(counter(chunks_[i]));
       if (count != chunk_bit_num) {
         return count + i * chunk_bit_num;

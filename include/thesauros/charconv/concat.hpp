@@ -37,7 +37,7 @@ inline void concat_append(std::string& out, T value) {
 }
 /** Appends the shortest round-trippable representation of the number `value` to `out`. */
 template<Numeric T>
-requires (!std::same_as<T, bool>)
+requires(!std::same_as<T, bool>)
 inline void concat_append(std::string& out, T value) {
   const auto str = numeric_string(value);
   assert(str.has_value());

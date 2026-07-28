@@ -14,7 +14,7 @@
 #include "thesauros/iterator/state-facade.hpp"
 #include "thesauros/math/integer-cast.hpp"
 
-namespace thes {
+namespace thes::ranges {
 template<typename TSize, typename TIter>
 struct EnumerateRange {
   using Value = std::pair<TSize, decltype(*std::declval<TIter>())>;
@@ -52,16 +52,20 @@ private:
   TIter begin_;
   TIter end_;
 };
+} // namespace thes::ranges
 
+namespace thes::views {
+/** Pairs every element of `container` with its zero-based index, of type `TSize`. */
 template<typename TSize, typename TRange>
 constexpr auto enumerate(TRange&& container) {
   using Iter = decltype(container.begin());
-  return EnumerateRange<TSize, Iter>{container.begin(), container.end()};
+  return ranges::EnumerateRange<TSize, Iter>{container.begin(), container.end()};
 }
+/** Pairs every element of `[begin, end)` with its zero-based index, of type `TSize`. */
 template<typename TSize, typename TIter>
 constexpr auto enumerate(TIter begin, TIter end) {
-  return EnumerateRange<TSize, TIter>{std::move(begin), std::move(end)};
+  return ranges::EnumerateRange<TSize, TIter>{std::move(begin), std::move(end)};
 }
-} // namespace thes
+} // namespace thes::views
 
 #endif // INCLUDE_THESAUROS_RANGES_ENUMERATE_HPP

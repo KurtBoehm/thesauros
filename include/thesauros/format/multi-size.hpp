@@ -11,7 +11,6 @@
 
 #include "thesauros/format/fmtlib.hpp"
 #include "thesauros/format/formatter.hpp"
-#include "thesauros/ranges/iota.hpp" // IWYU pragma: keep
 #include "thesauros/utility/multi-size.hpp"
 
 template<typename TIndex, std::size_t tDims>

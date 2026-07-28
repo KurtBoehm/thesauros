@@ -20,7 +20,7 @@
 #include <ranges>
 #include <stdexcept>
 
-#include "thesauros/ranges/iota.hpp"
+#include "thesauros/ranges/indices.hpp"
 #include "thesauros/utility/as-expected.hpp"
 #elif THES_APPLE
 #include <cstdio>
@@ -140,7 +140,7 @@ struct CpuSet {
 
   [[nodiscard]] decltype(auto) cpu_ids() const {
 #if THES_LINUX
-    return range<std::size_t>(CPU_SETSIZE) |
+    return views::indices<std::size_t>(CPU_SETSIZE) |
            std::views::filter([this](std::size_t i) { return CPU_ISSET(i, &cpu_set_); });
 #elif THES_APPLE
     return std::views::single(cpu_set_);

@@ -11,7 +11,7 @@
 #include <utility>
 
 #include "thesauros/macropolis/inlining.hpp"
-#include "thesauros/ranges/iota.hpp"
+#include "thesauros/ranges/indices.hpp"
 #include "thesauros/static-ranges/definitions/get-at.hpp"
 #include "thesauros/static-ranges/definitions/size.hpp"
 #include "thesauros/static-ranges/views/transform.hpp"
@@ -47,8 +47,8 @@ THES_ALWAYS_INLINE inline constexpr void multidim_for_each(const TRanges& ranges
 template<typename TSizes, typename TFixedAxes, typename TOp>
 THES_ALWAYS_INLINE inline constexpr void
 multidim_for_each_size(const TSizes& sizes, const TFixedAxes& fixed_axes, TOp&& op) {
-  multidim_for_each(star::transform([](auto size) { return range(size); })(sizes), fixed_axes,
-                    std::forward<TOp>(op));
+  multidim_for_each(star::transform([](auto size) { return views::indices(size); })(sizes),
+                    fixed_axes, std::forward<TOp>(op));
 }
 template<typename TSizes, typename TOp>
 THES_ALWAYS_INLINE inline constexpr void multidim_for_each_size(const TSizes& sizes, TOp&& op) {

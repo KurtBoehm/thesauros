@@ -4,8 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#ifndef INCLUDE_THESAUROS_RANGES_IOTA_HPP
-#define INCLUDE_THESAUROS_RANGES_IOTA_HPP
+#ifndef INCLUDE_THESAUROS_RANGES_INDICES_HPP
+#define INCLUDE_THESAUROS_RANGES_INDICES_HPP
 
 #include <algorithm>
 #include <cassert>
@@ -18,7 +18,7 @@
 #include "thesauros/iterator/state-facade.hpp"
 #include "thesauros/types/value-tag.hpp"
 
-namespace thes {
+namespace thes::ranges {
 namespace detail::iota {
 template<typename T>
 struct ConstIterator : public StateIteratorFacade<iter::ValueTypes<T, std::ptrdiff_t>> {
@@ -180,27 +180,6 @@ private:
   const Value begin_, end_, step_;
 };
 
-template<typename T>
-constexpr ExtendedIotaRange<T> range(T begin, T end, T step) {
-  return {begin, end, step};
-}
-template<typename T>
-constexpr IotaRange<T> range(T begin, T end) {
-  return {begin, std::max(begin, end)};
-}
-template<typename T>
-constexpr IotaRange<T> range(T end) {
-  return range(T(), end);
-}
-
-constexpr auto iter_range(auto&& container) {
-  return IotaRange{container.begin(), container.end()};
-}
-template<typename Iter>
-constexpr auto iter_range(Iter begin, Iter end) {
-  return IotaRange{std::move(begin), std::move(end)};
-}
-
 template<typename T, T Size>
 struct StaticSizeIotaRange {
   using Value = T;
@@ -240,15 +219,6 @@ private:
 };
 template<typename T, T Size>
 StaticSizeIotaRange(T, ValueTag<T, Size>) -> StaticSizeIotaRange<T, Size>;
-
-template<std::integral T>
-constexpr IotaRange<T> range_size(T begin, T size) {
-  return {begin, begin + size};
-}
-template<std::integral T, T Size>
-constexpr StaticSizeIotaRange<T, Size> range_size(T begin, ValueTag<T, Size> /*tag*/) {
-  return StaticSizeIotaRange<T, Size>{begin};
-}
 
 template<typename T>
 struct IotaTrait;
@@ -290,6 +260,37 @@ constexpr IotaInfo<typename IotaTrait<Range>::Value> iota_info(const Range& rang
   using Value = Trait::Value;
   return IotaInfo<Value>{Trait::front(range), Trait::bound(range)};
 }
-} // namespace thes
+} // namespace thes::ranges
 
-#endif // INCLUDE_THESAUROS_RANGES_IOTA_HPP
+namespace thes::views {
+/** The half-open range of indices `[begin, end)`, advancing by `step`. */
+template<typename T>
+constexpr ranges::ExtendedIotaRange<T> indices(T begin, T end, T step) {
+  return {begin, end, step};
+}
+/** The half-open range of indices `[begin, end)`, empty if `end` precedes `begin`. */
+template<typename T>
+constexpr ranges::IotaRange<T> indices(T begin, T end) {
+  return {begin, std::max(begin, end)};
+}
+/** The half-open range of indices `[T{}, end)`. */
+template<typename T>
+constexpr ranges::IotaRange<T> indices(T end) {
+  return indices(T(), end);
+}
+
+/** The range of `size` consecutive indices starting at `begin`. */
+template<std::integral T>
+constexpr ranges::IotaRange<T> indices_n(T begin, T size) {
+  return {begin, begin + size};
+}
+/**
+ * The range of `Size` consecutive indices starting at `begin`, with `Size` a compile-time value.
+ */
+template<std::integral T, T Size>
+constexpr ranges::StaticSizeIotaRange<T, Size> indices_n(T begin, ValueTag<T, Size> /*tag*/) {
+  return ranges::StaticSizeIotaRange<T, Size>{begin};
+}
+} // namespace thes::views
+
+#endif // INCLUDE_THESAUROS_RANGES_INDICES_HPP
