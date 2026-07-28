@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <climits>
 #include <cstddef>
-#include <cstdint>
+#include <initializer_list>
 #include <vector>
 
 #include "thesauros/containers.hpp"
@@ -23,11 +23,11 @@ namespace {
 
 /** `2^(8 · byte_num)` computed in a wide type, avoiding overflow for narrow `Unsigned` types. */
 template<typename ByteInt>
-inline constexpr std::uint64_t modulus_of = std::uint64_t{1} << (CHAR_BIT * ByteInt::byte_num);
+inline constexpr thes::u64 modulus_of = thes::u64{1} << (CHAR_BIT * ByteInt::byte_num);
 
 /** Reduces `value` modulo `modulus_of<ByteInt>` and casts it down to `ByteInt::Unsigned`. */
 template<typename ByteInt>
-[[nodiscard]] typename ByteInt::Unsigned wrap(std::uint64_t value) {
+[[nodiscard]] typename ByteInt::Unsigned wrap(thes::u64 value) {
   return static_cast<typename ByteInt::Unsigned>(value % modulus_of<ByteInt>);
 }
 
@@ -43,7 +43,7 @@ template<typename ByteInt, std::size_t PaddingBytes = 13>
 void test_round_trip(auto... values) {
   using UInt = ByteInt::Unsigned;
   using Mbi = thes::MultiByteIntegers<ByteInt, PaddingBytes>;
-  static constexpr std::uint64_t modulus = modulus_of<ByteInt>;
+  static constexpr thes::u64 modulus = modulus_of<ByteInt>;
 
   static_assert(std::ranges::random_access_range<Mbi>);
 
@@ -74,7 +74,7 @@ void test_round_trip(auto... values) {
 
   elem_assert();
 
-  for (std::uint64_t raw : {1ULL, 2ULL, 3ULL, modulus / 5, modulus / 3}) {
+  for (auto raw : std::initializer_list<thes::u64>{1, 2, 3, modulus / 5, modulus / 3}) {
     push_back(wrap<ByteInt>(raw));
     elem_assert();
   }
@@ -187,7 +187,7 @@ template<typename ByteInt, std::size_t PaddingBytes = 13>
 void test_factory_functions() {
   using UInt = ByteInt::Unsigned;
   using Mbi = thes::MultiByteIntegers<ByteInt, PaddingBytes>;
-  static constexpr std::uint64_t modulus = modulus_of<ByteInt>;
+  static constexpr thes::u64 modulus = modulus_of<ByteInt>;
   static constexpr std::size_t size = 6;
 
   static_assert(std::ranges::random_access_range<Mbi>);
@@ -207,7 +207,7 @@ template<typename ByteInt, std::size_t PaddingBytes = 13>
 void test_set_all() {
   using UInt = ByteInt::Unsigned;
   using Mbi = thes::MultiByteIntegers<ByteInt, PaddingBytes>;
-  static constexpr std::uint64_t modulus = modulus_of<ByteInt>;
+  static constexpr thes::u64 modulus = modulus_of<ByteInt>;
   const UInt max_value = static_cast<UInt>(modulus - 1);
 
   static_assert(std::ranges::random_access_range<Mbi>);
@@ -574,7 +574,7 @@ void test_insert_any_direct() {
     for (std::size_t i = 0; i < 4; ++i) {
       mbi.push_back(wrap<ByteInt>(i));
     }
-    std::vector<UInt> big;
+    std::vector<UInt> big{};
     for (std::size_t i = 0; i < 100; ++i) {
       big.push_back(wrap<ByteInt>(1000 + i));
     }
@@ -604,7 +604,7 @@ void test_insert_all_positions() {
 
   Mbi mbi{};
   std::vector<UInt> vec{};
-  std::uint64_t counter = 0;
+  thes::u64 counter = 0;
 
   for (int round = 0; round < 6; ++round) {
     const std::size_t initial_size = vec.size();
