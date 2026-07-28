@@ -8,6 +8,11 @@ options_sub = subproject('options')
 opts = []
 args = options_sub.get_variable('all_args')
 
+# Per-test timeout overrides (in seconds), for tests whose workload exceeds Meson’s default.
+test_timeouts = {
+  'randomize-range': 600,
+}
+
 # One directory per sub-library, mirroring `include/thesauros`.
 foreach module, names : {
   'algorithms': ['swap-or-equal', 'tiling'],
@@ -55,6 +60,7 @@ foreach module, names : {
         cpp_args: args,
       ),
       suite: module,
+      timeout: test_timeouts.get(name, 30),
     )
   endforeach
 endforeach

@@ -37,7 +37,7 @@ constexpr void check_range_concepts() {
 
 template<std::size_t ChunkByteNum>
 void test_set_unset_get(std::size_t size) {
-  thes::FixedBitset<ChunkByteNum> bitset{size};
+  thes::FixedBitset<ChunkByteNum> bitset{size, false};
   std::vector<bool> ref(size, false);
 
   auto assert_eq = [&] {
