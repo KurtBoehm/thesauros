@@ -5,6 +5,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <cstdlib>
+#include <map>
 #include <ranges>
 
 #include "thesauros/format.hpp"
@@ -17,7 +18,7 @@ int main() {
     const auto map = thes::factorize_map(i);
     const auto flat = thes::factorize_flat(i);
     auto flat_map =
-      thes::factorize_map(i) |
+      thes::factorize_map<Int, std::map<Int, Int>>(i) |
       std::views::transform([](auto p) { return std::views::repeat(p.first, p.second); }) |
       std::views::join;
     fmt::print("{}: {} / {}\n", i, map, flat);
