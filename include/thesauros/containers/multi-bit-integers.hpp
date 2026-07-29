@@ -38,7 +38,7 @@ struct MultiBitIntegers {
 
     constexpr SetProxy& operator=(Chunk value) {
       assert(value == (value & mask));
-      chunk = (chunk & ~(mask << offset)) | (value << offset);
+      chunk = update_chunk(chunk, offset, value);
       return *this;
     }
 
@@ -99,7 +99,11 @@ struct MultiBitIntegers {
     return {data_[index / per_chunk], static_cast<Chunk>(tBitNum * (index % per_chunk))};
   }
 
-  [[nodiscard]] constexpr Chunk load(std::size_t index, std::memory_order order) const {
+  /**
+   * Atomically reads the value at `index`. This is non-`const` because `std::atomic_ref` can only
+   * be formed over a non-`const` object, mirroring `SetProxy::store` on the writing side.
+   */
+  [[nodiscard]] Chunk load(std::size_t index, std::memory_order order) {
     assert(index < size_);
     Chunk out = std::atomic_ref{data_[index / per_chunk]}.load(order);
     const auto offset = tBitNum * (index % per_chunk);

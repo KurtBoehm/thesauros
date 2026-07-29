@@ -2,16 +2,16 @@
 """Enforces the library's structural invariants.
 
 Umbrella includes
-  An "umbrella" is a header `P.hpp` next to a directory `P/`: it exists only to re-export
-  the headers below it. Including one from ordinary library code drags in a whole
-  sub-library, inflates compile times, and hides the real dependency edges that the
-  module layering is meant to keep visible. An umbrella `P.hpp` may only include headers
-  at or below `P/`; any other header may not include an umbrella at all.
+  An "umbrella" is a header `P.hpp` next to a directory `P/`: it exists only to
+  re-export the headers below it. Including one from ordinary library code drags in a
+  whole sub-library, inflates compile times, and hides the real dependency edges that
+  the module layering is meant to keep visible. An umbrella `P.hpp` may only include
+  headers at or below `P/`; any other header may not include an umbrella at all.
 
 {fmt} confinement
-  `{fmt}` is reachable only from the `format` and `test` modules, so that everything below
-  them stays free of it and can be built without the dependency. Code outside those modules
-  builds messages with `thes::cat` from `charconv/concat.hpp` instead.
+  `{fmt}` is reachable only from the `format` and `test` modules, so that everything
+  below them stays free of it and can be built without the dependency. Code outside
+  those modules builds messages with `thes::cat` from `charconv/concat.hpp` instead.
 """
 
 import sys
@@ -78,7 +78,8 @@ def main() -> int:
         print(f"\n{len(problems)} structural violation(s).", file=sys.stderr)
         return 1
     print(
-        f"{len(headers)} headers: no umbrella includes, {{fmt}} confined to format/ and test/."
+        f"{len(headers)} headers: no umbrella includes, "
+        + "{fmt} confined to format/ and test/."
     )
     return 0
 

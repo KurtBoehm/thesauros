@@ -7,6 +7,7 @@
 #ifndef INCLUDE_THESAUROS_CONTAINERS_FLAT_MAP_HPP
 #define INCLUDE_THESAUROS_CONTAINERS_FLAT_MAP_HPP
 
+#include <algorithm>
 #include <cstddef>
 #include <functional>
 #include <utility>
@@ -109,15 +110,15 @@ struct FlatMap {
   Mapped& get_or_insert(const Key& key, Mapped&& value) {
     const auto iter = lower_bound(key);
     if (iter != end() && PairEqual{equal_}(*iter, key)) {
-      return *iter;
+      return iter->second;
     }
-    return *data_.insert(iter, Value{key, value});
+    return data_.insert(iter, Value{key, std::forward<Mapped>(value)})->second;
   }
   template<typename TTrans, typename TCreate>
   void transform_or_create(const Key& key, TTrans&& transform, TCreate&& create) {
     const auto iter = lower_bound(key);
     if (iter != end() && PairEqual{equal_}(*iter, key)) {
-      std::forward<TTrans>(transform)(iter->value());
+      std::forward<TTrans>(transform)(iter->second);
       return;
     }
     data_.insert(iter, Value{key, std::forward<TCreate>(create)()});
@@ -133,10 +134,10 @@ struct FlatMap {
   }
 
   Mapped& at(const auto& key) {
-    return find(key)->value();
+    return find(key)->second;
   }
   const Mapped& at(const auto& key) const {
-    return find(key)->value();
+    return find(key)->second;
   }
 
   template<typename TOther>
@@ -146,7 +147,7 @@ struct FlatMap {
 
   template<typename TPred>
   void erase_if(TPred pred) {
-    thes::erase_if(data_.begin(), data_.end(), pred);
+    thes::erase_if(data_, pred);
   }
 
   template<typename TOther>

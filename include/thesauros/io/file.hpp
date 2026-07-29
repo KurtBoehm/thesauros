@@ -24,10 +24,12 @@
 
 namespace thes {
 template<typename T>
-concept ByteLike =
-  std::same_as<T, std::byte> || std::same_as<T, unsigned char> || std::same_as<T, signed char>;
+concept ByteLike = std::same_as<T, std::byte> || std::same_as<T, char> ||
+                   std::same_as<T, unsigned char> || std::same_as<T, signed char>;
+/** A pointer to raw bytes, as returned by `BufferLike::data()`. */
 template<typename T>
-concept ByteLikePtr = std::is_pointer_v<T> || ByteLike<std::decay_t<T>>;
+concept ByteLikePtr =
+  std::is_pointer_v<T> && ByteLike<std::remove_cvref_t<std::remove_pointer_t<T>>>;
 
 template<typename T>
 concept BufferLike = requires(T& mbuf, const T& cbuf, std::size_t size) {

@@ -7,14 +7,18 @@
 #ifndef INCLUDE_THESAUROS_TEST_EQUALITY_HPP
 #define INCLUDE_THESAUROS_TEST_EQUALITY_HPP
 
+#include <concepts>
 #include <cstdlib>
 #include <functional>
+#include <ranges>
 #include <string_view>
 #include <type_traits>
+#include <utility>
 
 #include "thesauros/format.hpp"
 #include "thesauros/functional/no-op.hpp"
-#include "thesauros/io/delimiter.hpp"
+#include "thesauros/io.hpp"
+#include "thesauros/math/integer-cast.hpp"
 #include "thesauros/types/value-tag.hpp"
 
 namespace thes::test {
@@ -34,6 +38,55 @@ concept AreAccessRanges = IsAccessRange<Range1> && IsAccessRange<Range2>;
 
 template<typename Range1, typename Range2>
 concept AreRanges = AreIterRanges<Range1, Range2> || AreAccessRanges<Range1, Range2>;
+
+//--------------------------------------------------------------------------------------------------
+// Deduction of the index type of a subscriptable range
+//--------------------------------------------------------------------------------------------------
+
+/**
+ * A probe that converts to signed integers only, which makes it possible to detect whether
+ * `operator[]` takes a signed index: Deduction for conversion function templates does not consider
+ * integral conversions, so `T` is deduced to be the parameter type exactly.
+ */
+struct SignedIndexProbe {
+  template<typename T>
+  requires(std::signed_integral<T>)
+  constexpr operator T() const;
+};
+/** The unsigned counterpart of `SignedIndexProbe`. */
+struct UnsignedIndexProbe {
+  template<typename T>
+  requires(std::unsigned_integral<T>)
+  constexpr operator T() const;
+};
+
+template<typename Range>
+concept IsSignedIndexed = requires(Range& r) { r[SignedIndexProbe{}]; };
+template<typename Range>
+concept IsUnsignedIndexed = requires(Range& r) { r[UnsignedIndexProbe{}]; };
+
+/**
+ * The type to index `Range` with: The signed difference type if `operator[]` only accepts signed
+ * indices, as is the case for C++20 views, and the unsigned size type otherwise, which covers
+ * containers as well as ranges whose `operator[]` accepts either signedness.
+ */
+template<typename Range>
+using RangeIndex = decltype([] {
+  using Bare = std::remove_reference_t<Range>;
+  using Size = std::decay_t<decltype(std::declval<Bare&>().size())>;
+
+  if constexpr (IsSignedIndexed<Bare> && !IsUnsignedIndexed<Bare>) {
+    if constexpr (std::ranges::range<Bare>) {
+      return std::ranges::range_difference_t<Bare>{};
+    } else {
+      return std::make_signed_t<Size>{};
+    }
+  } else if constexpr (requires { typename Bare::size_type; }) {
+    return typename Bare::size_type{};
+  } else {
+    return Size{};
+  }
+}());
 } // namespace detail
 
 template<typename Range1, typename Range2, typename Equal = std::equal_to<>,
@@ -76,20 +129,11 @@ constexpr bool range_eq(Range1&& r1, Range2&& r2, Equal equal = {}, Print printe
       return false;
     }
 
-    auto i1 = [] {
-      using DecayedRange1 = std::decay_t<Range1>;
-      if constexpr (requires { typename DecayedRange1::size_type; }) {
-        return typename DecayedRange1::size_type{};
-      } else if constexpr (std::ranges::range<DecayedRange1>) {
-        return std::ranges::range_difference_t<DecayedRange1>{};
-      } else {
-        return std::decay_t<decltype(size1)>{};
-      }
-    }();
-    std::decay_t<decltype(size2)> i2 = 0;
+    using Index1 = detail::RangeIndex<Range1>;
+    using Index2 = detail::RangeIndex<Range2>;
 
-    for (; i1 < size1 && i2 < size2; ++i1, ++i2) {
-      if (r1[i1] != r2[i2]) {
+    for (std::decay_t<decltype(size1)> i = 0; i < size1; ++i) {
+      if (!equal(r1[*safe_cast<Index1>(i)], r2[*safe_cast<Index2>(i)])) {
         return false;
       }
     }

@@ -62,7 +62,7 @@ struct StaticCapacityString {
   // Element access
   //------------------------------------------------------------------------------------------------
 
-  /** Implicitly converts to a view of the string's current contents. */
+  /** Implicitly converts to a view of the string’s current contents. */
   [[nodiscard]] constexpr operator std::string_view() const noexcept { // NOLINT
     return {data_.data(), size_};
   }
@@ -74,7 +74,7 @@ struct StaticCapacityString {
     return self.data_.data();
   }
 
-  /** A null-terminated view of the string's contents, suitable for C APIs. */
+  /** A null-terminated view of the string’s contents, suitable for C APIs. */
   [[nodiscard]] constexpr const char* c_str() const noexcept {
     return data_.data();
   }
@@ -152,8 +152,8 @@ struct StaticCapacityString {
   }
 
   /**
-   * Sets the length to `new_size` without touching the buffer's contents beyond the new
-   * terminator; intended for callers that have already written directly into `data()`, e.g. via
+   * Sets the length to `new_size` without touching the buffer’s contents beyond the new terminator;
+   * intended for callers that have already written directly into `data()`, e.g. via
    * `std::to_chars`.
    */
   constexpr void set_size(size_type new_size) noexcept {

@@ -271,18 +271,28 @@ struct DynamicArray {
   constexpr iterator erase(iterator pos) {
     assert(pos != data_end_);
     std::move(pos + 1, data_end_, pos);
-    std::destroy_at(data_end_);
-    --data_end_;
+    std::destroy_at(--data_end_);
     return pos;
   }
+  /**
+   * Erases `[first, last)` and returns an iterator to the element that followed the erased range,
+   * which is `first` once the trailing elements have moved down. An empty range is a no-op, and
+   * `first == last == end()` is allowed.
+   */
   constexpr iterator erase(iterator first, iterator last) {
-    assert(first != data_end_);
+    assert(first <= last);
+    assert(last <= data_end_);
     iterator new_end = std::move(last, data_end_, first);
     std::destroy(new_end, data_end_);
     data_end_ = new_end;
-    return last;
+    return first;
   }
 
+  /**
+   * Inserts `ins_size` elements before `pos` and appends `pad_end` elements at the end, all of
+   * which are created by the initialization policy, and returns an iterator to the first inserted
+   * element.
+   */
   constexpr iterator insert_any(const_iterator pos, Size ins_size, Size pad_end = 0) {
     const auto offset = pos - allocation_.begin();
     iterator mut_pos = allocation_.begin() + offset;
@@ -292,24 +302,33 @@ struct DynamicArray {
     const Size new_size = old_size + add_size;
 
     if (new_size <= allocation_.size()) {
-      std::move_backward(mut_pos, data_end_, data_end_ + ins_size);
+      // The number of trailing elements the shift moves past the old end, which is also the number
+      // of gap slots that are left holding a moved-from element.
+      const Size moved_size = std::min(old_size - *safe_cast<Size>(offset), ins_size);
+      iterator moved_begin = data_end_ - moved_size;
+
+      // Elements that end up beyond the old end move into raw storage and thus have to be
+      // constructed there, while the remaining ones can be move-assigned.
+      std::uninitialized_move(moved_begin, data_end_, moved_begin + ins_size);
+      std::move_backward(mut_pos, moved_begin, moved_begin + ins_size);
       data_end_ += add_size;
-      const Size soff = *safe_cast<Size>(offset);
-      const Size post_move = soff + ins_size;
-      const Size moved_end = std::min(post_move, old_size);
-      initialize(allocation_.begin() + moved_end, allocation_.begin() + post_move);
+
+      // The moved-from elements left behind in the gap are destroyed, so that the whole gap is
+      // created by the initialization policy, just like in the reallocating branch below.
+      std::destroy(mut_pos, mut_pos + moved_size);
+      initialize(mut_pos, mut_pos + ins_size);
       initialize(data_end_ - pad_end, data_end_);
       return mut_pos;
     }
 
     allocation_.expand(grown_size(new_size),
-                       [&](iterator old_begin, iterator old_end, iterator new_begin) {
+                       [&](iterator old_begin, iterator /*old_alloc_end*/, iterator new_begin) {
                          iterator moved_start = new_begin + offset;
                          iterator moved_end = moved_start + ins_size;
 
                          std::uninitialized_move(old_begin, mut_pos, new_begin);
                          initialize(moved_start, moved_end);
-                         std::uninitialized_move(mut_pos, old_end, moved_end);
+                         std::uninitialized_move(mut_pos, data_end_, moved_end);
                          initialize(new_begin + (old_size + ins_size), new_begin + new_size);
 
                          std::destroy(old_begin, data_end_);
@@ -326,7 +345,15 @@ struct DynamicArray {
     const Size new_size = old_size + 1;
 
     if (new_size <= allocation_.size()) {
-      std::move_backward(mut_pos, data_end_, data_end_ + 1);
+      if (mut_pos == data_end_) {
+        std::construct_at(data_end_, std::move(value));
+        ++data_end_;
+        return mut_pos;
+      }
+      // The last element moves into raw storage and thus has to be constructed there, while the
+      // remaining ones can be move-assigned.
+      std::construct_at(data_end_, std::move(*(data_end_ - 1)));
+      std::move_backward(mut_pos, data_end_ - 1, data_end_);
       ++data_end_;
       *mut_pos = std::move(value);
       return mut_pos;

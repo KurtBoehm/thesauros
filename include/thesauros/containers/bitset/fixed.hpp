@@ -80,7 +80,7 @@ struct FixedBitset {
 
   void unset(std::size_t index) {
     assert(index < size_);
-    chunks_[index / chunk_bit_num] &= ~mask(index % chunk_bit_num);
+    chunks_[index / chunk_bit_num] &= static_cast<Chunk>(~mask(index % chunk_bit_num));
   }
 
   [[nodiscard]] bool get(std::size_t index) const {

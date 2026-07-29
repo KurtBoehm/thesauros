@@ -657,7 +657,7 @@ void test_optional_insert() {
 
 /**
  * With `PaddingBytes` set to exactly `int_bytes` (the minimum allowed), repeatedly prepends and
- * appends so the data region's boundary crosses back and forth over the padding, catching
+ * appends so the data region’s boundary crosses back and forth over the padding, catching
  * off-by-one errors in how `insert_any` computes absolute offsets into the padded byte array.
  */
 template<typename ByteInt>

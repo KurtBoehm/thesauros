@@ -56,7 +56,7 @@ struct BasicMultiSize {
     return std::get<tDim>(postfix_prod_incl_);
   }
   [[nodiscard]] constexpr Size from_size(std::size_t dim) const {
-    postfix_prod_incl_[dim];
+    return postfix_prod_incl_[dim];
   }
 
   template<std::size_t tDim>
@@ -68,7 +68,7 @@ struct BasicMultiSize {
     }
   }
   [[nodiscard]] constexpr Size after_size(std::size_t dim) const {
-    from_size(dim + 1);
+    return from_size(dim + 1);
   }
 
   [[nodiscard]] constexpr Size pos_to_index(AxisSize pos) const {

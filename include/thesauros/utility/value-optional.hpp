@@ -38,34 +38,34 @@ struct ValueOptional {
   constexpr ValueOptional(Value&& value) : value_{std::forward<Value>(value)} {}
 
   /** Set the optional to the empty state. */
-  void clear() {
+  constexpr void clear() {
     value_ = empty_value;
   }
 
   /** Store a new value, which must not be equal to `empty_value`. */
-  void set(const Value& value) {
+  constexpr void set(const Value& value) {
     assert(value != empty_value);
     value_ = value;
   }
 
   /** Access the stored value; asserts that a value is present. */
-  [[nodiscard]] const Value& value() const {
+  [[nodiscard]] constexpr const Value& value() const {
     assert(value_ != empty_value);
     return value_;
   }
 
   /** Dereference to the stored value; does not check for emptiness. */
-  [[nodiscard]] const Value& operator*() const {
+  [[nodiscard]] constexpr const Value& operator*() const {
     return value_;
   }
 
   /** Return whether a value is present (`value_ != empty_value`). */
-  [[nodiscard]] bool has_value() const {
+  [[nodiscard]] constexpr bool has_value() const {
     return value_ != empty_value;
   }
 
   /** Return whether the optional is empty (`value_ == empty_value`). */
-  [[nodiscard]] bool is_empty() const {
+  [[nodiscard]] constexpr bool is_empty() const {
     return value_ == empty_value;
   }
 

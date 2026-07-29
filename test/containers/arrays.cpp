@@ -9,6 +9,7 @@
 #include <concepts>
 #include <cstddef>
 #include <stdexcept>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -257,6 +258,66 @@ THES_TEST_CASE("DynamicArray: insert triggers reallocation", "[containers][array
   THES_REQUIRE(darray.size() == 4);
   THES_CHECK(darray.allocation_size() >= 4);
   THES_CHECK(test::range_eq(darray, std::array{1, 42, 2, 3}));
+}
+
+/**
+ * Checks `insert` and `erase` for a type whose assignment operator reads the destination, which
+ * requires that elements shifted past the old end are constructed rather than assigned, and that
+ * the moved-from element left behind by `erase` is the one that gets destroyed.
+ */
+THES_TEST_CASE("DynamicArray: insert and erase of non-trivial elements",
+               "[containers][array][dynamic]") {
+  using Strings = thes::DynamicArray<std::string, thes::ValueInit>;
+
+  Strings array{};
+  array.reserve(8);
+  array.insert(array.begin(), "b");
+  array.insert(array.end(), "d");
+  array.insert(array.begin() + 1, "c");
+  array.insert(array.begin(), "a");
+  THES_REQUIRE(array.size() == 4);
+  THES_REQUIRE(array.allocation_size() >= 8);
+  THES_CHECK(test::range_eq(array, std::array<std::string, 4>{"a", "b", "c", "d"}));
+
+  // Enforce the reallocating path.
+  Strings tight{"a", "b", "c"};
+  THES_REQUIRE(tight.allocation_size() == 3);
+  tight.insert(tight.begin() + 1, "x");
+  THES_REQUIRE(tight.size() == 4);
+  THES_CHECK(test::range_eq(tight, std::array<std::string, 4>{"a", "x", "b", "c"}));
+
+  array.erase(array.begin() + 1);
+  THES_REQUIRE(array.size() == 3);
+  THES_CHECK(test::range_eq(array, std::array<std::string, 3>{"a", "c", "d"}));
+
+  array.erase(array.end() - 1);
+  THES_REQUIRE(array.size() == 2);
+  THES_CHECK(test::range_eq(array, std::array<std::string, 2>{"a", "c"}));
+}
+
+/**
+ * Checks that `insert_any` keeps the surrounding non-trivial elements intact and creates the gap
+ * and the padding through the initialization policy, whether or not it reallocates.
+ */
+THES_TEST_CASE("DynamicArray: insert_any of non-trivial elements", "[containers][array][dynamic]") {
+  using Strings = thes::DynamicArray<std::string, thes::ValueInit>;
+  const std::string empty{};
+
+  // The gap is smaller than the number of trailing elements, so both the constructing and the
+  // assigning part of the shift are exercised.
+  Strings array{"a", "b", "c", "d"};
+  array.reserve(8);
+  array.insert_any(array.begin() + 1, 2, 1);
+  THES_REQUIRE(array.size() == 7);
+  THES_CHECK(
+    test::range_eq(array, std::array<std::string, 7>{"a", empty, empty, "b", "c", "d", empty}));
+
+  // The gap extends past the old end, and the insertion reallocates.
+  Strings tight{"a", "b"};
+  THES_REQUIRE(tight.allocation_size() == 2);
+  tight.insert_any(tight.begin() + 1, 3);
+  THES_REQUIRE(tight.size() == 5);
+  THES_CHECK(test::range_eq(tight, std::array<std::string, 5>{"a", empty, empty, empty, "b"}));
 }
 
 THES_TEST_CASE("DynamicArray: value-init destroys class-typed elements",
@@ -525,6 +586,79 @@ THES_TEST_CASE("LimitedArray: ADL swap exchanges contents", "[containers][array]
 
   THES_CHECK(test::range_eq(a, std::array{9, 8}));
   THES_CHECK(test::range_eq(b, std::array{1, 2, 3}));
+}
+
+//==================================================================================================
+// DynamicArray: erasing ranges
+//==================================================================================================
+
+/** Builds a `DynamicArray<int>` holding `1, …, size`. */
+[[nodiscard]] thes::DynamicArray<int> iota_array(int size) {
+  thes::DynamicArray<int> array{};
+  for (int i = 1; i <= size; ++i) {
+    array.push_back(i);
+  }
+  return array;
+}
+
+/** Checks that erasing a range returns an iterator to the element that followed it. */
+THES_TEST_CASE("DynamicArray: erase returns the following element",
+               "[containers][array][dynamic]") {
+  {
+    auto array = iota_array(5);
+    const auto it = array.erase(array.begin() + 1, array.begin() + 3);
+    THES_CHECK(test::range_eq(array, std::array{1, 4, 5}));
+    THES_REQUIRE(it != array.end());
+    THES_CHECK(*it == 4);
+    THES_CHECK(it == array.begin() + 1);
+  }
+  {
+    // Erasing a prefix leaves the iterator at the new first element.
+    auto array = iota_array(4);
+    const auto it = array.erase(array.begin(), array.begin() + 2);
+    THES_CHECK(test::range_eq(array, std::array{3, 4}));
+    THES_CHECK(it == array.begin());
+    THES_CHECK(*it == 3);
+  }
+  {
+    // Erasing a suffix leaves the iterator at the new end.
+    auto array = iota_array(4);
+    const auto it = array.erase(array.begin() + 2, array.end());
+    THES_CHECK(test::range_eq(array, std::array{1, 2}));
+    THES_CHECK(it == array.end());
+  }
+}
+
+/** Checks that erasing an empty range is a no-op, including at the very end. */
+THES_TEST_CASE("DynamicArray: erasing an empty range is a no-op", "[containers][array][dynamic]") {
+  auto array = iota_array(3);
+
+  THES_CHECK(array.erase(array.begin(), array.begin()) == array.begin());
+  THES_CHECK(test::range_eq(array, std::array{1, 2, 3}));
+
+  THES_CHECK(array.erase(array.begin() + 1, array.begin() + 1) == array.begin() + 1);
+  THES_CHECK(test::range_eq(array, std::array{1, 2, 3}));
+
+  // `[end, end)` is a legal empty range, which is what `erase_if` passes when nothing matches.
+  THES_CHECK(array.erase(array.end(), array.end()) == array.end());
+  THES_CHECK(test::range_eq(array, std::array{1, 2, 3}));
+
+  thes::DynamicArray<int> empty{};
+  THES_CHECK(empty.erase(empty.begin(), empty.end()) == empty.end());
+  THES_CHECK(empty.empty());
+}
+
+/** Checks that erasing the whole range empties the array. */
+THES_TEST_CASE("DynamicArray: erasing everything empties the array",
+               "[containers][array][dynamic]") {
+  auto array = iota_array(4);
+
+  THES_CHECK(array.erase(array.begin(), array.end()) == array.end());
+  THES_CHECK(array.empty());
+  THES_CHECK(array.size() == 0);
+
+  array.push_back(7);
+  THES_CHECK(test::range_eq(array, std::array{7}));
 }
 } // namespace
 

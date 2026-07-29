@@ -178,7 +178,7 @@ struct JsonWriter<Map> {
     *it++ = indent.separator();
 
     for (Delimiter delim{","}; const auto& [k, v] : map) {
-      delim.output(it, indent1.separator());
+      it = delim.output(it, indent1.separator());
       it = indent1.output(it);
 
       *it++ = '"';
@@ -208,7 +208,7 @@ struct JsonWriter<Range> {
     indent.reduced_separator([&](auto c) { *it++ = c; });
 
     for (Delimiter delim{","}; const auto& v : rng) {
-      delim.output(it, indent1.separator());
+      it = delim.output(it, indent1.separator());
       it = indent1.output(it);
       it = write_json(it, reflect::serial_value(v), indent1);
     }

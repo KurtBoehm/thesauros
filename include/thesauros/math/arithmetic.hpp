@@ -35,7 +35,7 @@ constexpr T div_ceil(const T dividend, const T divisor) {
 
 template<typename TBase, std::unsigned_integral TUInt>
 constexpr TBase pow(TBase x, const TUInt exponent) {
-  const unsigned iter = std::bit_width(exponent);
+  const auto iter = static_cast<unsigned>(std::bit_width(exponent));
   TBase y = 1;
   for (unsigned i = 0; i < iter; ++i, x *= x) {
     y *= (exponent & (1U << i)) ? x : 1;
@@ -137,7 +137,7 @@ constexpr T isqrt_ceil(T x) {
 
 template<typename T>
 constexpr T greatest_divisor(T value) {
-  for (T counter = isqrt(value); counter > 1; --counter) {
+  for (T counter = isqrt_floor(value); counter > 1; --counter) {
     if (value % counter == 0) {
       return counter;
     }

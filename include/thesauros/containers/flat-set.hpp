@@ -95,7 +95,7 @@ struct FlatSet {
 
   template<typename TPred>
   void erase_if(TPred pred) {
-    thes::erase_if(data_.begin(), data_.end(), pred);
+    thes::erase_if(data_, pred);
   }
 
   template<typename TOther>

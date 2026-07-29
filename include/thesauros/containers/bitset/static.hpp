@@ -60,10 +60,12 @@ struct StaticBitset {
   explicit constexpr StaticBitset(bool value)
       : chunks_(star::to_array(star::constant<static_chunk_num>(value ? one_chunk : zero_chunk))) {}
 
-  template<typename... TArgs>
-  requires(sizeof...(TArgs) == static_size && (... && std::same_as<TArgs, bool>))
-  explicit constexpr StaticBitset(TArgs&&... args)
-      : chunks_(generate(std::forward<TArgs>(args)...)) {}
+  // `Args` is deduced from a forwarding reference, so it carries the argument’s value category:
+  // the constraint has to look through it, or only `bool` prvalues would be accepted.
+  template<typename... Args>
+  requires(sizeof...(Args) == static_size && (... && std::same_as<std::remove_cvref_t<Args>, bool>))
+  explicit constexpr StaticBitset(Args&&... args)
+      : chunks_(generate(std::forward<Args>(args)...)) {}
 
   constexpr void set(std::size_t index) {
     assert(index < static_size);
@@ -77,9 +79,9 @@ struct StaticBitset {
   constexpr void unset(std::size_t index) {
     assert(index < static_size);
     if constexpr (static_chunk_num == 1) {
-      std::get<0>(chunks_) &= ~mask(index);
+      std::get<0>(chunks_) &= static_cast<Chunk>(~mask(index));
     } else {
-      chunks_[index / chunk_bit_num] &= ~mask(index % chunk_bit_num);
+      chunks_[index / chunk_bit_num] &= static_cast<Chunk>(~mask(index % chunk_bit_num));
     }
   }
 
@@ -143,9 +145,9 @@ struct StaticBitset {
   }
 
 private:
-  template<typename... TArgs>
-  static constexpr auto generate(TArgs&&... args) {
-    const auto data = std::make_tuple(std::forward<TArgs>(args)...);
+  template<typename... Args>
+  static constexpr auto generate(Args&&... args) {
+    const auto data = std::make_tuple(std::forward<Args>(args)...);
     return star::to_array(star::index_transform<static_chunk_num>([&](auto chunk_index) {
       Chunk chunk{0};
 
@@ -201,8 +203,8 @@ private:
   std::array<Chunk, static_chunk_num> chunks_;
 };
 
-template<typename... TArgs>
-explicit StaticBitset(TArgs&&... args) -> StaticBitset<sizeof...(TArgs)>;
+template<typename... Args>
+explicit StaticBitset(Args&&... args) -> StaticBitset<sizeof...(Args)>;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_CONTAINERS_BITSET_STATIC_HPP

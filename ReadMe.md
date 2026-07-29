@@ -77,6 +77,8 @@ A single sub-library’s tests can be run on their own:
 meson test -C <builddir> --suite containers
 ```
 
+CI additionally runs the whole test suite under the address and undefined behavior sanitizers, which is reproduced by adding `-Db_sanitize=address,undefined` to `meson setup`.
+
 The provided `Makefile` offers convenience targets invoking `meson setup` with different optimization/debug options.
 
 ### CMake

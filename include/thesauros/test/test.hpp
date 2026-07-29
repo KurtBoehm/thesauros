@@ -240,19 +240,40 @@ struct ExpressionCapture {
   template<typename Rhs>
   requires(std::totally_ordered_with<Lhs, Rhs>)
   DecomposedExpression operator<(const Rhs& rhs) const {
-    return compare(lhs < rhs, "<", rhs);
+    const bool cmp = [&] {
+      if constexpr (CmpCompatible<Lhs, Rhs>) {
+        return std::cmp_less(lhs, rhs);
+      } else {
+        return lhs < rhs;
+      }
+    }();
+    return compare(cmp, "<", rhs);
   }
 
   template<typename Rhs>
   requires(std::totally_ordered_with<Lhs, Rhs>)
   DecomposedExpression operator<=(const Rhs& rhs) const {
-    return compare(lhs <= rhs, "<=", rhs);
+    const bool cmp = [&] {
+      if constexpr (CmpCompatible<Lhs, Rhs>) {
+        return std::cmp_less_equal(lhs, rhs);
+      } else {
+        return lhs <= rhs;
+      }
+    }();
+    return compare(cmp, "<=", rhs);
   }
 
   template<typename Rhs>
   requires(std::totally_ordered_with<Lhs, Rhs>)
   DecomposedExpression operator>(const Rhs& rhs) const {
-    return compare(lhs > rhs, ">", rhs);
+    const bool cmp = [&] {
+      if constexpr (CmpCompatible<Lhs, Rhs>) {
+        return std::cmp_greater(lhs, rhs);
+      } else {
+        return lhs > rhs;
+      }
+    }();
+    return compare(cmp, ">", rhs);
   }
 
   template<typename Rhs>
@@ -406,7 +427,7 @@ bool does_not_throw(Fn&& fn) {
 
 /**
  * Registers one test case per value in `...`, each running the body with `param_name` bound to
- * that value. Cases are named `"name[value]"` (or `"name[index]"` if `ParamType` isn't
+ * that value. Cases are named `"name[value]"` (or `"name[index]"` if `ParamType` isn’t
  * formattable).
  *
  *   THES_TEST_CASE_PARAM("is even", "[math]", int, n, 2, 4, 6, 8) {

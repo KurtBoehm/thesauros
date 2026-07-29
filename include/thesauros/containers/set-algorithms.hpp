@@ -36,7 +36,6 @@ inline void set_union_unsorted(TMutRange& r1, const TOtherRange& r2, TCompare cm
 
     if (!eq(r1[i1], *cur2)) {
       r1.push_back(*cur2);
-      auto f1{r1.begin()};
     }
   }
   for (; cur2 != last2; ++cur2) {

@@ -45,6 +45,9 @@ struct NestedDynamicArrayBase {
 
     friend StateIteratorFacade<iter::ValueTypes<DValue, std::ptrdiff_t>>;
 
+    // Required for `std::sentinel_for`, and hence for the container to model `std::ranges::range`.
+    Iterator() = default;
+
     Iterator(const Size* offset_begin, CValue* value_begin, Size index)
         : index_(index), offset_begin_(offset_begin), value_begin_(value_begin) {}
 
@@ -61,9 +64,9 @@ struct NestedDynamicArrayBase {
       assert(value_begin_ == other.value_begin_);
     }
 
-    Size index_;
-    const Size* offset_begin_;
-    CValue* value_begin_;
+    Size index_{};
+    const Size* offset_begin_{};
+    CValue* value_begin_{};
   };
 
   using iterator = Iterator<false>;
@@ -116,7 +119,9 @@ struct NestedDynamicArrayBase {
     void initialize(Size group_num, Size element_num) {
       offsets_.allocate_to_empty(group_num + 1);
       offsets_.front() = 0;
-      offsets_current_ = offsets_.begin() + 1;
+      // `advance_group` increments before writing, so the cursor starts on the offset that
+      // `initialize` has just written, exactly as in `NestedBuilder::part_builder`.
+      offsets_current_ = offsets_.begin();
 
       values_.allocate_to_empty(element_num);
       values_current_ = values_.begin();
@@ -130,11 +135,11 @@ struct NestedDynamicArrayBase {
 
     void advance_group() {
       ++offsets_current_;
-      new (offsets_current_) Size(values_current_ - values_.begin());
+      new (offsets_current_) Size(static_cast<Size>(values_current_ - values_.begin()));
     }
 
     Derived build() {
-      assert(offsets_current_ == offsets_.end());
+      assert(offsets_current_ + 1 == offsets_.end());
       assert(values_current_ == values_.end());
       return Derived(std::move(offsets_), std::move(values_));
     }

@@ -12,11 +12,11 @@
 #include <cstddef>
 #include <limits>
 
-// This is somewhat inspired by https://github.com/kthohr/gcem, but the implementation
-// differs significantly
+// This is somewhat inspired by https://github.com/kthohr/gcem, but the implementation differs
+// significantly
 
 namespace thes::cmath {
-// This function is not guaranteed to transform -1 to 1
+// This function is not guaranteed to transform -0 to 0
 template<typename T>
 constexpr T abs(T value) {
   if consteval {
@@ -46,7 +46,7 @@ constexpr T sqrt(const T x) noexcept {
   if (cmath::abs(x) < std::numeric_limits<T>::min()) {
     return T{0};
   }
-  // Implement Heron’s method with a fancy stopping criterion courtesy of GCEM
+  // Implement Heron’s method with a fancy stopping criterion courtesy of GCEM.
   T xn = x;
   for (std::size_t i = 0; i < 128; ++i) {
     if (cmath::abs(xn - x / xn) / (T{1} + xn) < std::numeric_limits<T>::min()) {

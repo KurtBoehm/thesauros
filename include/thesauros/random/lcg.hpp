@@ -23,6 +23,9 @@ struct LCG {
 
     friend IteratorFacade<iter::ValueTypes<T, Diff>>;
 
+    // Required for `std::sentinel_for`, and hence for `LCG` to model `std::ranges::range`.
+    constexpr ConstIterator() = default;
+
     constexpr ConstIterator(const LCG& lcg, T index, T value)
         : lcg_(&lcg), index_(index), value_(value) {}
 
@@ -31,52 +34,55 @@ struct LCG {
     }
 
   private:
-    static constexpr T deref(const auto& self) {
-      return self.value_;
+    constexpr T deref() const {
+      return value_;
     }
-    static constexpr void incr(auto& self) {
-      ++self.index_;
-      self.value_ = added(self, self.value_, self.lcg_->increment_);
+    constexpr void incr() {
+      ++index_;
+      value_ = added(value_, lcg_->increment_);
     }
-    static constexpr void decr(auto& self) {
-      --self.index_;
-      self.value_ = added(self, self.value_, self.lcg_->size_ - self.lcg_->increment_);
+    constexpr void decr() {
+      --index_;
+      value_ = added(value_, static_cast<T>(lcg_->size_ - lcg_->increment_));
     }
-    static constexpr void iadd(auto& self, Diff diff) {
-      self.index_ += static_cast<T>(diff);
-      self.value_ = added(self, self.value_, skip_step(self, diff));
+    constexpr void iadd(Diff diff) {
+      index_ += static_cast<T>(diff);
+      value_ = added(value_, skip_step(diff));
     }
-    static constexpr bool eq(const auto& i1, const auto& i2) {
-      return i1.index_ == i2.index_;
+    constexpr bool eq(const ConstIterator& other) const {
+      return index_ == other.index_;
     }
-    static constexpr std::strong_ordering three_way(const auto& i1, const auto& i2) {
-      return i1.index_ <=> i2.index_;
+    constexpr std::strong_ordering three_way(const ConstIterator& other) const {
+      return index_ <=> other.index_;
     }
-    static constexpr Diff sub(const auto& i1, const auto& i2) {
-      return static_cast<Diff>(i1.index_) - static_cast<Diff>(i2.index_);
+    constexpr Diff sub(const ConstIterator& other) const {
+      return static_cast<Diff>(index_) - static_cast<Diff>(other.index_);
     }
 
-    static constexpr T added(const auto& self, T value, T step) {
-      const auto ref = self.lcg_->size_ - step;
-      return (value < ref) ? (value + step) : (value - ref);
+    /** Adds `step < size` to `value < size` modulo `size`, without ever overflowing `T`. */
+    constexpr T added(T value, T step) const {
+      const auto ref = static_cast<T>(lcg_->size_ - step);
+      return (value < ref) ? static_cast<T>(value + step) : static_cast<T>(value - ref);
     }
-    static constexpr T skip_step(const auto& self, Diff diff) {
-      T step = (diff >= 0) ? self.lcg_->increment_ : (self.lcg_->size_ - self.lcg_->increment_);
-      T num = (diff >= 0) ? static_cast<T>(diff) : -static_cast<T>(diff);
+    /** The total step for a jump of `diff` elements, by doubling the per-element step. */
+    constexpr T skip_step(Diff diff) const {
+      const bool forward = diff >= 0;
+      T step = forward ? lcg_->increment_ : static_cast<T>(lcg_->size_ - lcg_->increment_);
+      T num = forward ? static_cast<T>(diff) : static_cast<T>(-static_cast<T>(diff));
       T prod = 0;
 
-      for (; num > 0; num >>= 1) {
-        prod = (num & T{1}) ? added(self, prod, step) : prod;
-        const T ref = self.lcg_->size_ - step;
-        step = (step < ref) ? (2 * step) : (step - ref);
+      for (; num > 0; num = static_cast<T>(num >> 1U)) {
+        prod = (num & T{1}) ? added(prod, step) : prod;
+        const auto ref = static_cast<T>(lcg_->size_ - step);
+        step = (step < ref) ? static_cast<T>(2 * step) : static_cast<T>(step - ref);
       }
 
       return prod;
     }
 
-    LCG const* lcg_;
-    T index_;
-    T value_;
+    LCG const* lcg_{};
+    T index_{};
+    T value_{};
   };
 
   using const_iterator = ConstIterator;

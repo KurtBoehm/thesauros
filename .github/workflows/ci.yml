@@ -166,6 +166,82 @@ jobs:
           if-no-files-found: ignore
 
   #-------------------------------------------------------------------------------------------------
+  # Sanitizers: a Meson debug build with ASan and UBSan, which the plain builds cannot catch
+  #-------------------------------------------------------------------------------------------------
+  sanitizers:
+    name: Sanitizers · ${{ matrix.name }}
+    runs-on: ubuntu-26.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: GCC 15
+            cc: gcc-15
+            cxx: g++-15
+            apt: g++-15
+          # The sanitizer runtimes are in `libclang-rt-21-dev`, which `clang-21` only recommends and
+          # which is therefore not covered by `--no-install-recommends`.
+          - name: Clang 21
+            cc: clang-21
+            cxx: clang++-21
+            apt: clang-21 libclang-rt-21-dev libomp-21-dev
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y ninja-build python3-pip ${{ matrix.apt }}
+          pip install --break-system-packages --upgrade meson
+
+      - name: Cache Meson subprojects
+        uses: actions/cache@v4
+        with:
+          path: subprojects/packagecache
+          key: packagecache-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('subprojects/*.wrap') }}
+
+      - name: Report versions
+        run: |
+          meson --version
+          ninja --version
+          ${{ matrix.cxx }} --version
+
+      # The sanitizers rely on the assertions and the unoptimized code of the debug build to report
+      # precise locations, so this mirrors the debug configuration above.
+      - name: Configure
+        env:
+          CC: ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
+        run: >-
+          meson setup build-san
+          -Dbuild_tests=true
+          --wrap-mode=forcefallback
+          --warnlevel 3
+          --buildtype=debug
+          -Db_sanitize=address,undefined
+          -Db_lundef=false
+
+      # Meson fills in `ASAN_OPTIONS` and `UBSAN_OPTIONS` only if they are unset, so the options it
+      # would set by default have to be repeated here. Sanitized tests are several times slower than
+      # plain ones, hence the timeout multiplier.
+      - name: Build and test
+        env:
+          ASAN_OPTIONS: halt_on_error=1:abort_on_error=1:print_summary=1:detect_leaks=1:detect_stack_use_after_return=1:strict_string_checks=1
+          UBSAN_OPTIONS: halt_on_error=1:abort_on_error=1:print_summary=1:print_stacktrace=1
+        run: |
+          meson compile -C build-san
+          meson test -C build-san --print-errorlogs --timeout-multiplier 4
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: meson-logs-sanitizers-${{ matrix.name }}
+          path: build-san/meson-logs/
+          if-no-files-found: ignore
+
+  #-------------------------------------------------------------------------------------------------
   # CMake, the alternative build system: one entry per platform, to catch it drifting from Meson
   #-------------------------------------------------------------------------------------------------
   cmake:

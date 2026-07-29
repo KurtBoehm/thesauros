@@ -34,7 +34,7 @@ struct MutableBitReference {
     if (value) {
       *chunk_ |= mask();
     } else {
-      *chunk_ &= ~mask();
+      *chunk_ &= static_cast<Chunk>(~mask());
     }
     return *this;
   }
@@ -55,7 +55,7 @@ struct MutableBitReference {
   }
   constexpr const MutableBitReference& operator&=(const bool value) const {
     if (!value) {
-      *chunk_ &= ~mask();
+      *chunk_ &= static_cast<Chunk>(~mask());
     }
     return *this;
   }
