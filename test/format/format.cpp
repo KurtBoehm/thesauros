@@ -23,7 +23,7 @@ struct fmt::formatter<S> : thes::SimpleFormatter<> {
   }
 };
 
-THES_CREATE_TYPE(SNAKE_CASE(Test), NORMAL_CONSTRUCTOR,
+THES_CREATE_TYPE(SNAKE_CASE(Test), NORMAL_CONSTRUCTOR, LAYOUT_INFO(false),
                  MEMBERS((KEEP(a), std::filesystem::path), (KEEP(c), std::string),
                          (KEEP(d), double)))
 
