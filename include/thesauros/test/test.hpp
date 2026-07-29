@@ -15,6 +15,7 @@
 #include <source_location>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -211,8 +212,7 @@ template<typename Lhs>
 struct ExpressionCapture {
   const Lhs& lhs;
 
-  template<typename Rhs>
-  requires(std::equality_comparable_with<Lhs, Rhs>)
+  template<std::equality_comparable_with<Lhs> Rhs>
   DecomposedExpression operator==(const Rhs& rhs) const {
     const bool cmp = [&] {
       if constexpr (CmpCompatible<Lhs, Rhs>) {
@@ -224,8 +224,7 @@ struct ExpressionCapture {
     return compare(cmp, "==", rhs);
   }
 
-  template<typename Rhs>
-  requires(std::equality_comparable_with<Lhs, Rhs>)
+  template<std::equality_comparable_with<Lhs> Rhs>
   DecomposedExpression operator!=(const Rhs& rhs) const {
     const bool cmp = [&] {
       if constexpr (CmpCompatible<Lhs, Rhs>) {
@@ -237,8 +236,7 @@ struct ExpressionCapture {
     return compare(cmp, "!=", rhs);
   }
 
-  template<typename Rhs>
-  requires(std::totally_ordered_with<Lhs, Rhs>)
+  template<std::totally_ordered_with<Lhs> Rhs>
   DecomposedExpression operator<(const Rhs& rhs) const {
     const bool cmp = [&] {
       if constexpr (CmpCompatible<Lhs, Rhs>) {
@@ -250,8 +248,7 @@ struct ExpressionCapture {
     return compare(cmp, "<", rhs);
   }
 
-  template<typename Rhs>
-  requires(std::totally_ordered_with<Lhs, Rhs>)
+  template<std::totally_ordered_with<Lhs> Rhs>
   DecomposedExpression operator<=(const Rhs& rhs) const {
     const bool cmp = [&] {
       if constexpr (CmpCompatible<Lhs, Rhs>) {
@@ -263,8 +260,7 @@ struct ExpressionCapture {
     return compare(cmp, "<=", rhs);
   }
 
-  template<typename Rhs>
-  requires(std::totally_ordered_with<Lhs, Rhs>)
+  template<std::totally_ordered_with<Lhs> Rhs>
   DecomposedExpression operator>(const Rhs& rhs) const {
     const bool cmp = [&] {
       if constexpr (CmpCompatible<Lhs, Rhs>) {
@@ -276,8 +272,7 @@ struct ExpressionCapture {
     return compare(cmp, ">", rhs);
   }
 
-  template<typename Rhs>
-  requires(std::totally_ordered_with<Lhs, Rhs>)
+  template<std::totally_ordered_with<Lhs> Rhs>
   DecomposedExpression operator>=(const Rhs& rhs) const {
     const bool cmp = [&] {
       if constexpr (CmpCompatible<Lhs, Rhs>) {
@@ -351,12 +346,21 @@ inline void record(DecomposedExpression expression, std::string_view expression_
   });
 }
 
+/** Invokes `fn` and discards its result, which may be of type `void`. */
+template<std::invocable Fn>
+void invoke_discarded(Fn&& fn) {
+  if constexpr (std::same_as<std::invoke_result_t<Fn>, void>) {
+    std::forward<Fn>(fn)();
+  } else {
+    [[maybe_unused]] auto&& result = std::forward<Fn>(fn)();
+  }
+}
+
 /** Returns whether invoking `fn` throws an exception convertible to `Exception`. */
-template<typename Exception, typename Fn>
-requires(std::invocable<Fn>)
+template<typename Exception, std::invocable Fn>
 bool throws_as(Fn&& fn) {
   try {
-    std::forward<Fn>(fn)();
+    invoke_discarded(std::forward<Fn>(fn));
   } catch (const Exception&) {
     return true;
   } catch (...) {
@@ -366,11 +370,10 @@ bool throws_as(Fn&& fn) {
 }
 
 /** Returns whether invoking `fn` completes without throwing. */
-template<typename Fn>
-requires(std::invocable<Fn>)
+template<std::invocable Fn>
 bool does_not_throw(Fn&& fn) {
   try {
-    std::forward<Fn>(fn)();
+    invoke_discarded(std::forward<Fn>(fn));
   } catch (...) {
     return false;
   }
@@ -460,14 +463,15 @@ bool does_not_throw(Fn&& fn) {
 #define THES_CHECK_THROWS_AS(expr, exception_type) \
   ::thes::test::record( \
     ::thes::test::DecomposedExpression{ \
-      .passed = ::thes::test::throws_as<exception_type>([&] { (void)(expr); }), \
+      .passed = \
+        ::thes::test::throws_as<exception_type>([&]() -> decltype(auto) { return (expr); }), \
     }, \
     #expr " throws " #exception_type)
 
 #define THES_CHECK_NOTHROW(expr) \
   ::thes::test::record( \
     ::thes::test::DecomposedExpression{ \
-      .passed = ::thes::test::does_not_throw([&] { (void)(expr); }), \
+      .passed = ::thes::test::does_not_throw([&]() -> decltype(auto) { return (expr); }), \
     }, \
     #expr " does not throw")
 
