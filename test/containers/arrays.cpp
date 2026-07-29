@@ -644,7 +644,8 @@ THES_TEST_CASE("DynamicArray: erasing an empty range is a no-op", "[containers][
   THES_CHECK(test::range_eq(array, std::array{1, 2, 3}));
 
   thes::DynamicArray<int> empty{};
-  THES_CHECK(empty.erase(empty.begin(), empty.end()) == empty.end());
+  const auto empty_it = empty.erase(empty.begin(), empty.end());
+  THES_CHECK(empty_it == empty.end());
   THES_CHECK(empty.empty());
 }
 
@@ -653,7 +654,8 @@ THES_TEST_CASE("DynamicArray: erasing everything empties the array",
                "[containers][array][dynamic]") {
   auto array = iota_array(4);
 
-  THES_CHECK(array.erase(array.begin(), array.end()) == array.end());
+  const auto it = array.erase(array.begin(), array.end());
+  THES_CHECK(it == array.end());
   THES_CHECK(array.empty());
   THES_CHECK(array.size() == 0);
 
