@@ -13,12 +13,14 @@
 
 #include "thesauros/charconv/concat.hpp"
 #include "thesauros/macropolis/platform.hpp"
+#include "thesauros/math/integer-cast.hpp"
 #include "thesauros/ranges/indices.hpp"
 #include "thesauros/utility/index-segmentation.hpp"
 
 #if THES_LINUX
 #include <algorithm>
 #include <filesystem>
+#include <stdexcept>
 #include <string_view>
 #include <utility>
 #include <vector>
@@ -144,22 +146,22 @@ struct CpuInfo {
 
   /** The number of logical CPUs. */
   static std::size_t num_logical() {
-    return std::ranges::distance(logical());
+    return *safe_cast<std::size_t>(std::ranges::distance(logical()));
   }
 
   /** The number of logical CPUs of a given efficiency class. */
   static std::size_t num_logical(EfficiencyClass efficiency_class) {
-    return std::ranges::distance(logical(efficiency_class));
+    return *safe_cast<std::size_t>(std::ranges::distance(logical(efficiency_class)));
   }
 
   /** The number of physical CPUs. */
   static std::size_t num_physical() {
-    return std::ranges::distance(physical());
+    return *safe_cast<std::size_t>(std::ranges::distance(physical()));
   }
 
   /** The number of physical CPUs of a given efficiency class. */
   static std::size_t num_physical(EfficiencyClass efficiency_class) {
-    return std::ranges::distance(physical(efficiency_class));
+    return *safe_cast<std::size_t>(std::ranges::distance(physical(efficiency_class)));
   }
 
   /** A contiguous subset of CPU infos distributed uniformly across physical CPUs. */
@@ -624,12 +626,12 @@ struct CpuInfo {
 
   /** The number of physical CPUs. */
   static std::size_t num_physical() {
-    return std::ranges::distance(physical());
+    return *safe_cast<std::size_t>(std::ranges::distance(physical()));
   }
 
   /** The number of physical CPUs of a given efficiency class. */
   static std::size_t num_physical(EfficiencyClass efficiency_class) {
-    return std::ranges::distance(physical(efficiency_class));
+    return *safe_cast<std::size_t>(std::ranges::distance(physical(efficiency_class)));
   }
 };
 #endif
