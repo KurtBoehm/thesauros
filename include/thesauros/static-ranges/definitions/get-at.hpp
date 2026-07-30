@@ -7,26 +7,25 @@
 #ifndef INCLUDE_THESAUROS_STATIC_RANGES_DEFINITIONS_GET_AT_HPP
 #define INCLUDE_THESAUROS_STATIC_RANGES_DEFINITIONS_GET_AT_HPP
 
-#include <array>
+#include <array> // IWYU pragma: keep
 #include <cstddef>
 #include <tuple>
 #include <type_traits>
 #include <utility>
-#include <variant>
+#include <variant> // IWYU pragma: keep
 
 #include "thesauros/macropolis/inlining.hpp"
 #include "thesauros/types/value-tag.hpp"
 
 namespace thes::star {
-template<std::size_t tIndex, typename TRange>
-concept HasGet = requires(TRange&& rng) { get<tIndex>(std::forward<TRange>(rng)); };
+template<std::size_t I, typename Range>
+concept HasGet = requires(Range&& rng) { get<I>(std::forward<Range>(rng)); };
 
-template<std::size_t tIndex, typename TRange>
-requires(tIndex < std::tuple_size_v<std::decay_t<TRange>>)
-THES_ALWAYS_INLINE inline constexpr decltype(auto) get_at(TRange&& r,
-                                                          IndexTag<tIndex> /*tag*/ = {}) {
+template<std::size_t I, typename Range>
+requires(I < std::tuple_size_v<std::decay_t<Range>>)
+THES_ALWAYS_INLINE inline constexpr decltype(auto) get_at(Range&& r, IndexTag<I> /*tag*/ = {}) {
   using std::get;
-  return get<tIndex>(std::forward<TRange>(r));
+  return get<I>(std::forward<Range>(r));
 }
 } // namespace thes::star
 

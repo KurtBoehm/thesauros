@@ -13,9 +13,9 @@
 #include "thesauros/format/formatter.hpp"
 #include "thesauros/utility/multi-size.hpp"
 
-template<typename TIndex, std::size_t tDims>
-struct fmt::formatter<thes::SubMultiSize<TIndex, tDims>> : thes::SimpleFormatter<> {
-  auto format(const thes::SubMultiSize<TIndex, tDims>& sms, format_context& ctx) const {
+template<typename S, std::size_t N>
+struct fmt::formatter<thes::SubMultiSize<S, N>> : thes::SimpleFormatter<> {
+  auto format(const thes::SubMultiSize<S, N>& sms, format_context& ctx) const {
     return this->write_padded(
       ctx, [&](auto out) { return fmt::format_to(out, "{}", fmt::join(sms.axis_ranges(), "×")); });
   }

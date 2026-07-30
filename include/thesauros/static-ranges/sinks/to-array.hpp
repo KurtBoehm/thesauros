@@ -20,17 +20,16 @@
 
 namespace thes::star {
 struct ToArrayGenerator : public ConsumerGeneratorBase {
-  template<typename TRange>
-  THES_ALWAYS_INLINE constexpr auto operator()(TRange&& range) const {
-    using Range = std::decay_t<TRange>;
+  template<typename R>
+  THES_ALWAYS_INLINE constexpr auto operator()(R&& range) const {
+    using Range = std::decay_t<R>;
     constexpr std::size_t size = thes::star::size<Range>;
 
     if constexpr (size > 0) {
-      return star::static_apply<size>(
-        [range = std::forward<TRange>(range)]<std::size_t... tIdxs>() {
-          using std::get;
-          return std::array{get<tIdxs>(range)...};
-        });
+      return star::static_apply<size>([range = std::forward<R>(range)]<std::size_t... I>() {
+        using std::get;
+        return std::array{get<I>(range)...};
+      });
     } else {
       return std::array<star::Value<Range>, size>{};
     }

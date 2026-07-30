@@ -15,12 +15,12 @@
 #include "thesauros/static-ranges/definitions/static-apply.hpp"
 
 namespace thes::star {
-template<AnyStaticRange auto tRange>
-inline constexpr auto as_index_sequence = static_apply<size<decltype(tRange)>>(
-  []<std::size_t... tI>() { return std::index_sequence<get<tI>(tRange)...>{}; });
+template<AnyStaticRange auto Range>
+inline constexpr auto as_index_sequence = static_apply<size<decltype(Range)>>(
+  []<std::size_t... I>() { return std::index_sequence<get<I>(Range)...>{}; });
 
-template<AnyStaticRange auto tRange>
-using AsIndexSequence = std::decay_t<decltype(as_index_sequence<tRange>)>;
+template<AnyStaticRange auto Range>
+using AsIndexSequence = std::decay_t<decltype(as_index_sequence<Range>)>;
 } // namespace thes::star
 
 #endif // INCLUDE_THESAUROS_STATIC_RANGES_SINKS_AS_INDEX_SEQUENCE_HPP

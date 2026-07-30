@@ -21,8 +21,8 @@ requires(std::same_as<star::Value<TPos>, star::Value<TProds>> &&
          star::size<TPos> + 1 == star::size<TProds>)
 constexpr auto position_to_index(const TPos& pos, const TProds& incl_postfix_products) {
   constexpr auto size = star::size<TPos>;
-  return [&]<std::size_t... tIdxs>(std::index_sequence<tIdxs...> /*idxs*/) {
-    return (... + (star::get_at<tIdxs>(pos) * star::get_at<tIdxs + 1>(incl_postfix_products)));
+  return [&]<std::size_t... I>(std::index_sequence<I...> /*idxs*/) {
+    return (... + (star::get_at<I>(pos) * star::get_at<I + 1>(incl_postfix_products)));
   }(std::make_index_sequence<size>{});
 }
 } // namespace thes::star

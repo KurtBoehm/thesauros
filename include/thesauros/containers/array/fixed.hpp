@@ -22,10 +22,9 @@
 #include "thesauros/containers/array/typed-chunk.hpp"
 
 namespace thes {
-template<typename TValue, typename TInitPolicy = DefaultInit,
-         typename TAllocator = std::allocator<TValue>>
+template<typename V, typename InitPolicy = DefaultInit, typename TAllocator = std::allocator<V>>
 struct FixedArray {
-  using Data = TypedChunk<TValue, std::size_t, TAllocator>;
+  using Data = TypedChunk<V, std::size_t, TAllocator>;
 
   using Value = Data::Value;
   using Size = Data::Size;
@@ -34,7 +33,7 @@ struct FixedArray {
   using value_type = Value;
   using allocator_type = Allocator;
   using size_type = Size;
-  using difference_type = std::iter_difference_t<TValue*>;
+  using difference_type = std::iter_difference_t<V*>;
   using reference = Value&;
   using const_reference = const Value&;
   using pointer = Value*;
@@ -43,7 +42,7 @@ struct FixedArray {
   using iterator = Data::iterator;
   using const_iterator = Data::const_iterator;
 
-  using InitPolicy = TInitPolicy;
+  using InitializationPolicy = InitPolicy;
 
   constexpr FixedArray() = default;
   explicit constexpr FixedArray(Size size) : allocation_(size) {
@@ -79,7 +78,7 @@ struct FixedArray {
   // Per-element placement-new construction.
   explicit constexpr FixedArray(UninitializedConstruct /*tag*/, Size size, auto op)
       : allocation_(size) {
-    TValue* ptr = allocation_.data();
+    V* ptr = allocation_.data();
     for (Size i = 0; i < size; ++i) {
       op(i, ptr + i);
     }
@@ -110,17 +109,17 @@ struct FixedArray {
 
   template<typename... TArgs>
   void initial_emplace(Size index, TArgs&&... args)
-  requires(std::same_as<TInitPolicy, NoInit>)
+  requires(std::same_as<InitPolicy, NoInit>)
   {
     new (this->begin() + index) Value(std::forward<TArgs>(args)...);
   }
   void initialize(Size index, Value&& value)
-  requires(std::same_as<TInitPolicy, NoInit>)
+  requires(std::same_as<InitPolicy, NoInit>)
   {
     initial_emplace(index, std::forward<Value>(value));
   }
   void initialize(Size index, const Value& value)
-  requires(std::same_as<TInitPolicy, NoInit>)
+  requires(std::same_as<InitPolicy, NoInit>)
   {
     initial_emplace(index, value);
   }
@@ -184,7 +183,7 @@ private:
     initialize(allocation_.begin(), allocation_.end());
   }
   static constexpr void initialize(iterator begin, iterator end) {
-    InitPolicy::initialize(begin, end);
+    InitializationPolicy::initialize(begin, end);
   }
 
   template<typename TOther>

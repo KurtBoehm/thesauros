@@ -36,14 +36,14 @@ struct AddConstTrait<T&> {
 template<typename T>
 using AddConst = AddConstTrait<T>::Type;
 
-template<bool tConst, typename T>
-using ConditionalConst = std::conditional_t<tConst, const T, T>;
+template<bool Const, typename T>
+using ConditionalConst = std::conditional_t<Const, const T, T>;
 
-template<typename TFrom, typename TTo>
-using TransferConst = std::conditional_t<std::is_const_v<TFrom>, const TTo, TTo>;
+template<typename From, typename To>
+using TransferConst = std::conditional_t<std::is_const_v<From>, const To, To>;
 
-template<typename TFrom, typename TTo>
-using TransferConstAccess = std::conditional_t<thes::ConstAccess<TFrom>, const TTo, TTo>;
+template<typename From, typename To>
+using TransferConstAccess = std::conditional_t<thes::ConstAccess<From>, const To, To>;
 
 template<typename T, typename TDummy>
 using First = T;

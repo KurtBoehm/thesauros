@@ -15,18 +15,18 @@
 #include "thesauros/static-ranges/definitions/size.hpp"
 
 namespace thes::star {
-template<typename TFun>
+template<typename F>
 struct ApplyGenerator : public ConsumerGeneratorBase {
-  TFun fun;
+  F fun;
 
-  explicit constexpr ApplyGenerator(TFun&& f) : fun(std::forward<TFun>(f)) {}
+  explicit constexpr ApplyGenerator(F&& f) : fun(std::forward<F>(f)) {}
 
-  template<typename TRange>
-  THES_ALWAYS_INLINE constexpr decltype(auto) operator()(TRange&& range) const {
-    constexpr std::size_t size = thes::star::size<TRange>;
-    return [&]<std::size_t... tIdxs>(std::index_sequence<tIdxs...> /*idxs*/)
+  template<typename Range>
+  THES_ALWAYS_INLINE constexpr decltype(auto) operator()(Range&& range) const {
+    constexpr std::size_t size = thes::star::size<Range>;
+    return [&]<std::size_t... I>(std::index_sequence<I...> /*idxs*/)
              THES_ALWAYS_INLINE -> decltype(auto) {
-               return fun(get_at<tIdxs>(range)...);
+               return fun(get_at<I>(range)...);
              }(std::make_index_sequence<size>{});
   }
 };

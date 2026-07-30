@@ -16,11 +16,11 @@
 
 namespace thes::star {
 struct ToTupleGenerator : public ConsumerGeneratorBase {
-  template<typename TRange>
-  constexpr auto operator()(TRange&& range) const {
-    return [&]<std::size_t... tIdxs>(std::index_sequence<tIdxs...> /*idxd*/) {
-      return Tuple{get_at<tIdxs>(range)...};
-    }(std::make_index_sequence<size<TRange>>{});
+  template<typename R>
+  constexpr auto operator()(R&& range) const {
+    return [&]<std::size_t... I>(std::index_sequence<I...> /*idxd*/) {
+      return Tuple{get_at<I>(range)...};
+    }(std::make_index_sequence<size<R>>{});
   }
 };
 

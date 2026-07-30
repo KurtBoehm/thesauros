@@ -99,9 +99,9 @@ UNIT_NAME(unit::day, "d");
 #undef UNIT_NAME
 
 namespace detail {
-template<std::intmax_t tNum>
-inline constexpr std::intmax_t ratio_as_integer(std::ratio<tNum> /*r*/) {
-  return tNum;
+template<std::intmax_t N>
+constexpr std::intmax_t ratio_as_integer(std::ratio<N> /*r*/) {
+  return N;
 }
 } // namespace detail
 
@@ -122,7 +122,7 @@ struct SplitTimePrinter {
 };
 
 template<typename TQuantity>
-inline constexpr auto split_time(TQuantity&& q) {
+constexpr auto split_time(TQuantity&& q) {
   return SplitTimePrinter<TQuantity>(std::forward<TQuantity>(q));
 }
 } // namespace thes

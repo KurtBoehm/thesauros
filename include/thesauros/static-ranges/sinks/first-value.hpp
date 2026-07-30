@@ -18,21 +18,21 @@
 
 namespace thes::star {
 struct FirstValueGenerator : public ConsumerGeneratorBase {
-  template<typename TRange>
-  THES_ALWAYS_INLINE constexpr auto operator()(TRange&& range) const {
-    constexpr std::size_t size = thes::star::size<TRange>;
-    using Ret = Value<TRange>;
+  template<typename Range>
+  THES_ALWAYS_INLINE constexpr auto operator()(Range&& range) const {
+    constexpr std::size_t size = thes::star::size<Range>;
+    using Ret = Value<Range>;
     return work<Ret>(range, std::make_index_sequence<size>{});
   }
 
-  template<typename TRet, std::size_t tHead, std::size_t... tTail>
+  template<typename Ret, std::size_t Head, std::size_t... Tail>
   THES_ALWAYS_INLINE constexpr decltype(auto)
-  work(auto& range, std::index_sequence<tHead, tTail...> /*idxs*/) const {
-    THES_APPLY_VALUED_RETURN(TRet, get_at<tHead>(range));
-    if constexpr (sizeof...(tTail) > 0) {
-      return work<TRet>(range, std::index_sequence<tTail...>{});
+  work(auto& range, std::index_sequence<Head, Tail...> /*idxs*/) const {
+    THES_APPLY_VALUED_RETURN(Ret, get_at<Head>(range));
+    if constexpr (sizeof...(Tail) > 0) {
+      return work<Ret>(range, std::index_sequence<Tail...>{});
     } else {
-      THES_RETURN_EMPTY_OPTIONAL(TRet);
+      THES_RETURN_EMPTY_OPTIONAL(Ret);
     }
   }
 };

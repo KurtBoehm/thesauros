@@ -43,17 +43,17 @@ constexpr TBase pow(TBase x, const TUInt exponent) {
   return y;
 }
 
-template<std::size_t tExponent, typename T>
+template<std::size_t Exponent, typename T>
 constexpr T pow(const T& value) {
-  if constexpr (tExponent == 0) {
+  if constexpr (Exponent == 0) {
     return T{1};
   }
-  if constexpr (tExponent == 1) {
+  if constexpr (Exponent == 1) {
     return value;
   }
 
-  const T half_exp{pow<tExponent / 2>(value)};
-  if constexpr (tExponent % 2 == 0) {
+  const T half_exp{pow<Exponent / 2>(value)};
+  if constexpr (Exponent % 2 == 0) {
     return half_exp * half_exp;
   } else {
     return half_exp * half_exp * value;
@@ -100,9 +100,9 @@ constexpr bool get_bit(T value, auto bit_index) {
 template<std::unsigned_integral T, typename... TArgs>
 requires(... && std::same_as<TArgs, bool>)
 constexpr T combine_bits(TArgs... bits) {
-  return [bits...]<std::size_t... tIdxs>(std::index_sequence<tIdxs...> /*idxs*/) {
+  return [bits...]<std::size_t... I>(std::index_sequence<I...> /*idxs*/) {
     T out{};
-    (out += ... += T(T{bits} << tIdxs));
+    (out += ... += T(T{bits} << I));
     return out;
   }(std::index_sequence_for<TArgs...>{});
 }

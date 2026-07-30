@@ -23,29 +23,29 @@
 #include "thesauros/types/type-tag.hpp"
 
 namespace thes::star {
-template<typename TInner, auto tIdxRange>
+template<typename Inner, auto IdxRange>
 struct FilterView {
-  using IdxRange = std::decay_t<decltype(tIdxRange)>;
-  static constexpr std::size_t size = star::size<IdxRange>;
+  using IndexRange = std::decay_t<decltype(IdxRange)>;
+  static constexpr std::size_t size = star::size<IndexRange>;
   static constexpr TupleDefsMarker tuple_defs_marker{};
 
-  TInner inner;
+  Inner inner;
 
-  template<std::size_t tIndex>
+  template<std::size_t I>
   THES_ALWAYS_INLINE friend constexpr decltype(auto) get(const FilterView& self) {
-    return get_at<get_at<tIndex>(tIdxRange)>(self.inner);
+    return get_at<get_at<I>(IdxRange)>(self.inner);
   }
 };
 
-template<auto tIdxRange>
+template<auto IdxRange>
 struct OnlyIndicesGenerator : public RangeGeneratorBase {
   template<typename TRange>
-  THES_ALWAYS_INLINE constexpr FilterView<TRange, tIdxRange> operator()(TRange&& range) const {
+  THES_ALWAYS_INLINE constexpr FilterView<TRange, IdxRange> operator()(TRange&& range) const {
     return {std::forward<TRange>(range)};
   }
 };
 
-template<auto tIdxRange>
+template<auto IdxRange>
 struct AllExceptIndicesGenerator : public RangeGeneratorBase {
   template<typename TRange>
   THES_ALWAYS_INLINE constexpr auto operator()(TRange&& range) const {
@@ -57,12 +57,12 @@ struct AllExceptIndicesGenerator : public RangeGeneratorBase {
 
       star::for_each([&](auto i) THES_ALWAYS_INLINE {
         bool contains = false;
-        star::for_each([&](auto j) { contains = contains || (i == j); })(tIdxRange);
+        star::for_each([&](auto j) { contains = contains || (i == j); })(IdxRange);
         if (!contains) {
           buffer[count] = i;
           ++count;
         }
-      })(star::iota<0, range_size>);
+      })(star::tagged_iota<0, range_size>);
 
       return std::make_pair(buffer, count);
     }();
@@ -73,15 +73,15 @@ struct AllExceptIndicesGenerator : public RangeGeneratorBase {
   }
 };
 
-template<auto tFun>
+template<auto F>
 struct FilterGenerator : public RangeGeneratorBase {
   template<typename TRange>
   THES_ALWAYS_INLINE constexpr auto operator()(TRange&& range) const {
     auto idx_num = []() THES_ALWAYS_INLINE {
       constexpr std::size_t size = star::size<TRange>;
       std::size_t ctr = 0;
-      iota<0, size> | for_each([&](auto idx) THES_ALWAYS_INLINE {
-        if (tFun(idx, type_tag<decltype(get_at(std::declval<TRange>(), idx))>)) {
+      tagged_iota<0, size> | for_each([&](auto idx) THES_ALWAYS_INLINE {
+        if (F(idx, type_tag<decltype(get_at(std::declval<TRange>(), idx))>)) {
           ++ctr;
         }
       });
@@ -91,8 +91,8 @@ struct FilterGenerator : public RangeGeneratorBase {
       constexpr std::size_t size = star::size<TRange>;
       std::array<std::size_t, idx_num()> idxs{};
       std::size_t ctr = 0;
-      iota<0, size> | for_each([&](auto idx) THES_ALWAYS_INLINE {
-        if (tFun(idx, type_tag<decltype(get_at(std::declval<TRange>(), idx))>)) {
+      tagged_iota<0, size> | for_each([&](auto idx) THES_ALWAYS_INLINE {
+        if (F(idx, type_tag<decltype(get_at(std::declval<TRange>(), idx))>)) {
           idxs[ctr++] = idx;
         }
       });
@@ -102,23 +102,22 @@ struct FilterGenerator : public RangeGeneratorBase {
   }
 };
 
-template<std::size_t... tIdxs>
-inline constexpr OnlyIndicesGenerator<std::array<std::size_t, sizeof...(tIdxs)>{tIdxs...}>
-  only_idxs{};
-template<auto tIdxRange>
-inline constexpr OnlyIndicesGenerator<tIdxRange> only_range{};
+template<std::size_t... I>
+inline constexpr OnlyIndicesGenerator<std::array<std::size_t, sizeof...(I)>{I...}> only_idxs{};
+template<auto IdxRange>
+inline constexpr OnlyIndicesGenerator<IdxRange> only_range{};
 
-template<std::size_t... tIdxs>
-inline constexpr AllExceptIndicesGenerator<std::array<std::size_t, sizeof...(tIdxs)>{tIdxs...}>
+template<std::size_t... I>
+inline constexpr AllExceptIndicesGenerator<std::array<std::size_t, sizeof...(I)>{I...}>
   all_except_idxs{};
-template<auto tIdxRange>
-inline constexpr AllExceptIndicesGenerator<tIdxRange> all_except_range{};
+template<auto IdxRange>
+inline constexpr AllExceptIndicesGenerator<IdxRange> all_except_range{};
 
-template<std::size_t tBegin, std::size_t tEnd>
-inline constexpr OnlyIndicesGenerator<star::iota<tBegin, tEnd>> sub_range{};
+template<std::size_t Begin, std::size_t End>
+inline constexpr OnlyIndicesGenerator<star::iota<Begin, End>> sub_range{};
 
-template<auto tFun>
-inline constexpr FilterGenerator<tFun> filter{};
+template<auto F>
+inline constexpr FilterGenerator<F> filter{};
 } // namespace thes::star
 
 #endif // INCLUDE_THESAUROS_STATIC_RANGES_VIEWS_FILTER_HPP

@@ -108,6 +108,15 @@ int main() {
     static constexpr auto con = star::iota<0, 5>;
     using Range = decltype(con);
 
+    static_assert(star::AnyStaticRange<Range> && star::AnyTypedStaticRange<Range>);
+    static_assert(star::size<Range> == 5);
+    static_assert(star::get_at<4>(con) == 4);
+  }
+
+  {
+    static constexpr auto con = star::tagged_iota<0, 5>;
+    using Range = decltype(con);
+
     static_assert(star::AnyStaticRange<Range> && !star::AnyTypedStaticRange<Range>);
     static_assert(star::size<Range> == 5);
     static_assert(star::get_at<4>(con) == 4);
@@ -295,7 +304,7 @@ int main() {
   }
   {
     static constexpr auto rng =
-      star::iota<3, 10> |
+      star::tagged_iota<3, 10> |
       star::filter<[](auto /*idx*/, auto type) { return type.construct() % 2 == 0; }>;
     using Range = decltype(rng);
     static_assert(!star::AnyTypedStaticRange<Range>);
@@ -404,9 +413,9 @@ int main() {
     static_assert(!(tup | star::contains(1.0F)));
   }
   {
-    static_assert(star::get_at<0>(thes::star::iota<0, 1>) == 0);
-    static_assert(star::size<decltype(thes::star::iota<0, 1>)> == 1);
-    static_assert(thes::star::iota<0, 1> | star::contains(thes::index_tag<0>));
+    static_assert(star::get_at<0>(thes::star::tagged_iota<0, 1>) == 0);
+    static_assert(star::size<decltype(thes::star::tagged_iota<0, 1>)> == 1);
+    static_assert(thes::star::tagged_iota<0, 1> | star::contains(thes::index_tag<0>));
   }
 
   // to_array

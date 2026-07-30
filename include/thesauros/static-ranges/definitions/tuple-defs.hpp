@@ -20,20 +20,20 @@ concept HasTupleDefsMarker = requires {
 };
 } // namespace thes::star
 
-template<thes::star::HasTupleDefsMarker TRange>
-struct std::tuple_size<TRange> {
-  static constexpr std::size_t value = TRange::size;
+template<thes::star::HasTupleDefsMarker Range>
+struct std::tuple_size<Range> {
+  static constexpr std::size_t value = Range::size;
 };
 
-template<std::size_t tIdx, thes::star::HasTupleDefsMarker TRange>
-requires(requires { typename TRange::Value; })
-struct std::tuple_element<tIdx, TRange> {
-  using type = TRange::Value;
+template<std::size_t I, thes::star::HasTupleDefsMarker Range>
+requires(requires { typename Range::Value; })
+struct std::tuple_element<I, Range> {
+  using type = Range::Value;
 };
-template<std::size_t tIdx, thes::star::HasTupleDefsMarker TRange>
-requires(!requires { typename TRange::Value; })
-struct std::tuple_element<tIdx, TRange> {
-  using type = decltype(get<tIdx>(std::declval<const TRange&>()));
+template<std::size_t I, thes::star::HasTupleDefsMarker Range>
+requires(!requires { typename Range::Value; })
+struct std::tuple_element<I, Range> {
+  using type = decltype(get<I>(std::declval<const Range&>()));
 };
 
 #endif // INCLUDE_THESAUROS_STATIC_RANGES_DEFINITIONS_TUPLE_DEFS_HPP

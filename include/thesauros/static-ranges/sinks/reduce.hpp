@@ -18,18 +18,18 @@
 #include "thesauros/types/value-tag.hpp"
 
 namespace thes::star {
-template<typename TBinOp, typename TInit, bool tRight>
+template<typename BinOp, typename Init, bool Right>
 struct InitReduceGenerator : public ConsumerGeneratorBase {
-  TBinOp binary_op;
-  TInit initial;
+  BinOp binary_op;
+  Init initial;
 
-  constexpr InitReduceGenerator(TBinOp&& op, TInit&& init)
-      : binary_op(std::forward<TBinOp>(op)), initial(std::forward<TInit>(init)) {}
+  constexpr InitReduceGenerator(BinOp&& op, Init&& init)
+      : binary_op(std::forward<BinOp>(op)), initial(std::forward<Init>(init)) {}
 
-  template<typename TRange>
-  THES_ALWAYS_INLINE constexpr auto operator()(TRange&& range) const {
-    constexpr std::size_t size = thes::star::size<TRange>;
-    if constexpr (!tRight) {
+  template<typename Range>
+  THES_ALWAYS_INLINE constexpr auto operator()(Range&& range) const {
+    constexpr std::size_t size = thes::star::size<Range>;
+    if constexpr (!Right) {
       auto impl = [&](auto& self, auto idx, auto value) THES_ALWAYS_INLINE {
         if constexpr (idx < size) {
           return self(self, index_tag<idx + 1>, binary_op(value, get_at<idx>(range)));
@@ -51,16 +51,16 @@ struct InitReduceGenerator : public ConsumerGeneratorBase {
   }
 };
 
-template<typename TBinOp, bool tRight>
+template<typename BinOp, bool Right>
 struct ReduceGenerator : public ConsumerGeneratorBase {
-  TBinOp binary_op;
+  BinOp binary_op;
 
-  explicit constexpr ReduceGenerator(TBinOp&& op) : binary_op(std::forward<TBinOp>(op)) {}
+  explicit constexpr ReduceGenerator(BinOp&& op) : binary_op(std::forward<BinOp>(op)) {}
 
-  template<typename TRange>
-  THES_ALWAYS_INLINE constexpr auto operator()(TRange&& range) const {
-    constexpr std::size_t size = thes::star::size<TRange>;
-    if constexpr (!tRight) {
+  template<typename Range>
+  THES_ALWAYS_INLINE constexpr auto operator()(Range&& range) const {
+    constexpr std::size_t size = thes::star::size<Range>;
+    if constexpr (!Right) {
       auto impl = [&](auto& self, auto idx, auto value) THES_ALWAYS_INLINE {
         if constexpr (idx < size) {
           return self(self, index_tag<idx + 1>, binary_op(value, get_at<idx>(range)));
@@ -82,26 +82,26 @@ struct ReduceGenerator : public ConsumerGeneratorBase {
   }
 };
 
-template<typename TBinOp, typename TInit>
-constexpr InitReduceGenerator<TBinOp, TInit, false> left_reduce(TBinOp&& op, TInit&& init) {
-  return {std::forward<TBinOp>(op), std::forward<TInit>(init)};
+template<typename BinOp, typename Init>
+constexpr InitReduceGenerator<BinOp, Init, false> left_reduce(BinOp&& op, Init&& init) {
+  return {std::forward<BinOp>(op), std::forward<Init>(init)};
 }
-template<typename TBinOp>
-constexpr auto left_reduce(TBinOp&& op) {
-  return ReduceGenerator<TBinOp, false>{std::forward<TBinOp>(op)};
+template<typename BinOp>
+constexpr auto left_reduce(BinOp&& op) {
+  return ReduceGenerator<BinOp, false>{std::forward<BinOp>(op)};
 }
 inline constexpr auto minimum =
   left_reduce([]<typename T>(const T& v1, const T& v2) { return std::min(v1, v2); });
 inline constexpr auto maximum =
   left_reduce([]<typename T>(const T& v1, const T& v2) { return std::max(v1, v2); });
 
-template<typename TBinOp, typename TInit>
-constexpr InitReduceGenerator<TBinOp, TInit, true> right_reduce(TBinOp&& op, TInit&& init) {
-  return {std::forward<TBinOp>(op), std::forward<TInit>(init)};
+template<typename BinOp, typename Init>
+constexpr InitReduceGenerator<BinOp, Init, true> right_reduce(BinOp&& op, Init&& init) {
+  return {std::forward<BinOp>(op), std::forward<Init>(init)};
 }
-template<typename TBinOp>
-constexpr auto right_reduce(TBinOp&& op) {
-  return ReduceGenerator<TBinOp, true>{std::forward<TBinOp>(op)};
+template<typename BinOp>
+constexpr auto right_reduce(BinOp&& op) {
+  return ReduceGenerator<BinOp, true>{std::forward<BinOp>(op)};
 }
 } // namespace thes::star
 

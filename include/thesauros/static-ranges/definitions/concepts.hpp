@@ -17,23 +17,23 @@
 #include "type-traits.hpp"
 
 namespace thes::star {
-template<typename TRange, std::size_t tIdx>
-concept SupportsGetAt = requires(const TRange& range) { get_at<tIdx>(range); };
+template<typename Range, std::size_t I>
+concept SupportsGetAt = requires(const Range& range) { get_at<I>(range); };
 
-template<typename TRange>
+template<typename Range>
 concept AnyStaticRange =
-  requires { size<TRange>; } && []<std::size_t... tIdxs>(std::index_sequence<tIdxs...>) {
-    return (... && SupportsGetAt<TRange, tIdxs>);
-  }(std::make_index_sequence<size<TRange>>{});
+  requires { size<Range>; } && []<std::size_t... I>(std::index_sequence<I...>) {
+    return (... && SupportsGetAt<Range, I>);
+  }(std::make_index_sequence<size<Range>>{});
 
-template<typename TRange>
-concept AnyTypedStaticRange = AnyStaticRange<TRange> && HasValue<TRange>;
-template<typename TRange, typename T>
-concept TypedStaticRange = AnyTypedStaticRange<TRange> && std::same_as<Value<TRange>, T>;
-template<typename TRange, std::size_t tSize>
-concept SizedStaticRange = AnyStaticRange<TRange> && size<TRange> == tSize;
-template<typename TRange, typename T, std::size_t tSize>
-concept TypedSizedStaticRange = TypedStaticRange<TRange, T> && SizedStaticRange<TRange, tSize>;
+template<typename Range>
+concept AnyTypedStaticRange = AnyStaticRange<Range> && HasValue<Range>;
+template<typename Range, typename T>
+concept TypedStaticRange = AnyTypedStaticRange<Range> && std::same_as<Value<Range>, T>;
+template<typename Range, std::size_t Size>
+concept SizedStaticRange = AnyStaticRange<Range> && size<Range> == Size;
+template<typename Range, typename T, std::size_t Size>
+concept TypedSizedStaticRange = TypedStaticRange<Range, T> && SizedStaticRange<Range, Size>;
 
 struct RangeGeneratorBase {};
 template<typename TGen>

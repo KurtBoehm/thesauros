@@ -30,9 +30,9 @@
 
 namespace thes {
 namespace detail {
-template<std::unsigned_integral TSize>
+template<std::unsigned_integral S>
 struct SingleIndexManager {
-  using Size = TSize;
+  using Size = S;
   using IdxSize = Size;
   using PosSize = Size;
 
@@ -64,11 +64,11 @@ private:
   Size idx_;
 };
 
-template<std::unsigned_integral TIdxSize, std::unsigned_integral TPosSize>
+template<std::unsigned_integral IdxS, std::unsigned_integral PosS>
 struct DualIndexManager {
-  static_assert(sizeof(TIdxSize) <= sizeof(TPosSize));
-  using IdxSize = TIdxSize;
-  using PosSize = TPosSize;
+  static_assert(sizeof(IdxS) <= sizeof(PosS));
+  using IdxSize = IdxS;
+  using PosSize = PosS;
 
   constexpr DualIndexManager(IdxSize idx, PosSize pos_idx) : idx_(idx), pos_idx_(pos_idx) {}
 
@@ -106,15 +106,15 @@ private:
   PosSize pos_idx_;
 };
 
-template<std::unsigned_integral T, std::size_t tSize>
-inline constexpr auto dims_to_divs(std::array<T, tSize> dims) {
+template<std::unsigned_integral T, std::size_t N>
+constexpr auto dims_to_divs(std::array<T, N> dims) {
   return dims | star::transform([](auto dim) { return Divisor<T>{dim}; }) | star::to_array;
 }
 
-template<typename TDerived, typename TIdxMan, std::size_t tDimNum>
+template<typename Derived, typename IdxMan, std::size_t DimN>
 struct BasePosIndexWrapper {
-  static constexpr std::size_t dimension_num = tDimNum;
-  using IndexManager = TIdxMan;
+  static constexpr std::size_t dimension_num = DimN;
+  using IndexManager = IdxMan;
   using IdxSize = IndexManager::IdxSize;
   using PosSize = IndexManager::PosSize;
 
@@ -127,11 +127,11 @@ struct BasePosIndexWrapper {
   constexpr BasePosIndexWrapper(IndexManager idx_man, SizeArr pos, SizeArr dims, DivArr divs)
       : dims_(dims), divs_(divs), pos_(pos), idx_man_(idx_man) {}
 
-  constexpr TDerived& operator++() {
+  constexpr Derived& operator++() {
     idx_man_.incr();
 
     ++std::get<dimension_num - 1>(pos_);
-    star::iota<1, dimension_num> | star::reversed | star::for_each([&](auto idx) {
+    star::tagged_iota<1, dimension_num> | star::reversed | star::for_each([&](auto idx) {
       const auto pos_idx = std::get<idx>(pos_);
 
       const bool over = pos_idx == std::get<idx>(dims_);
@@ -143,11 +143,11 @@ struct BasePosIndexWrapper {
 
     return der();
   }
-  constexpr TDerived& operator--() {
+  constexpr Derived& operator--() {
     idx_man_.decr();
 
     --std::get<dimension_num - 1>(pos_);
-    star::iota<1, dimension_num> | star::reversed | star::for_each([&](auto idx) {
+    star::tagged_iota<1, dimension_num> | star::reversed | star::for_each([&](auto idx) {
       const auto pos_idx = std::get<idx>(pos_);
       const auto dim_idx = std::get<idx>(dims_);
 
@@ -161,30 +161,30 @@ struct BasePosIndexWrapper {
     return der();
   }
 
-  constexpr TDerived& operator+=(IdxSize off) {
+  constexpr Derived& operator+=(IdxSize off) {
     idx_man_.add(off);
     pos_ = star::index_to_position(idx_man_.pos_index(), divs_);
     return der();
   }
-  friend constexpr TDerived operator+(TDerived w, IdxSize off) {
+  friend constexpr Derived operator+(Derived w, IdxSize off) {
     return w += off;
   }
-  friend constexpr TDerived operator+(IdxSize off, TDerived w) {
+  friend constexpr Derived operator+(IdxSize off, Derived w) {
     return w += off;
   }
-  constexpr TDerived& operator-=(IdxSize off) {
+  constexpr Derived& operator-=(IdxSize off) {
     idx_man_.sub(off);
     pos_ = star::index_to_position(idx_man_.pos_index(), divs_);
     return der();
   }
-  friend constexpr TDerived operator-(TDerived w, IdxSize off) {
+  friend constexpr Derived operator-(Derived w, IdxSize off) {
     return w -= off;
   }
-  friend constexpr TDerived operator-(IdxSize off, TDerived w) {
+  friend constexpr Derived operator-(IdxSize off, Derived w) {
     return w -= off;
   }
 
-  friend constexpr Diff operator-(const TDerived& w1, const TDerived& w2) {
+  friend constexpr Diff operator-(const Derived& w1, const Derived& w2) {
     assert(w1.dims_ == w2.dims_);
     assert((w1.idx_man_ == w2.idx_man_) == (w1.pos_ == w2.pos_));
     return *safe_cast<Diff>(w1.index()) - *safe_cast<Diff>(w2.index());
@@ -197,74 +197,73 @@ struct BasePosIndexWrapper {
     return pos_;
   }
 
-  constexpr friend bool operator==(const TDerived& w1, const TDerived& w2) {
+  constexpr friend bool operator==(const Derived& w1, const Derived& w2) {
     assert(w1.dims_ == w2.dims_);
     assert((w1.idx_man_ == w2.idx_man_) == (w1.pos_ == w2.pos_));
     return w1.index() == w2.index();
   }
-  constexpr friend bool operator==(const TDerived& w, IdxSize s) {
+  constexpr friend bool operator==(const Derived& w, IdxSize s) {
     return w.index() == s;
   }
-  constexpr friend bool operator==(IdxSize s, const TDerived& w) {
+  constexpr friend bool operator==(IdxSize s, const Derived& w) {
     return w.index() == s;
   }
 
-  constexpr friend std::strong_ordering operator<=>(const TDerived& w1, const TDerived& w2) {
+  constexpr friend std::strong_ordering operator<=>(const Derived& w1, const Derived& w2) {
     assert(w1.dims_ == w2.dims_);
     assert((w1.idx_man_ == w2.idx_man_) == (w1.pos_ == w2.pos_));
     return w1.index() <=> w2.index();
   }
 
 private:
-  constexpr TDerived& der() {
-    return static_cast<TDerived&>(*this);
+  constexpr Derived& der() {
+    return static_cast<Derived&>(*this);
   }
 
   SizeArr dims_;
   DivArr divs_ = dims_to_divs(dims_);
   SizeArr pos_;
-  TIdxMan idx_man_;
+  IdxMan idx_man_;
 };
 } // namespace detail
 
-template<std::unsigned_integral TSize, std::size_t tDimNum>
-struct PosIndexWrapper
-    : public detail::BasePosIndexWrapper<PosIndexWrapper<TSize, tDimNum>,
-                                         detail::SingleIndexManager<TSize>, tDimNum> {
-  using IdxMan = detail::SingleIndexManager<TSize>;
-  using Base = detail::BasePosIndexWrapper<PosIndexWrapper, IdxMan, tDimNum>;
-  using SizeArr = std::array<TSize, tDimNum>;
+template<std::unsigned_integral S, std::size_t DimN>
+struct PosIndexWrapper : public detail::BasePosIndexWrapper<PosIndexWrapper<S, DimN>,
+                                                            detail::SingleIndexManager<S>, DimN> {
+  using IdxMan = detail::SingleIndexManager<S>;
+  using Base = detail::BasePosIndexWrapper<PosIndexWrapper, IdxMan, DimN>;
+  using SizeArr = std::array<S, DimN>;
 
-  constexpr PosIndexWrapper(TSize idx, SizeArr pos, SizeArr dims) : Base(IdxMan{idx}, pos, dims) {}
+  constexpr PosIndexWrapper(S idx, SizeArr pos, SizeArr dims) : Base(IdxMan{idx}, pos, dims) {}
   constexpr PosIndexWrapper(SizeArr pos, SizeArr dims)
       : Base(IdxMan{star::position_to_index(pos, star::postfix_product_inclusive(dims))}, pos,
              dims) {}
-  constexpr PosIndexWrapper(TSize idx, SizeArr dims)
+  constexpr PosIndexWrapper(S idx, SizeArr dims)
       : PosIndexWrapper(idx, dims, detail::dims_to_divs(dims)) {}
 
 private:
-  constexpr PosIndexWrapper(TSize idx, SizeArr dims, auto divs)
+  constexpr PosIndexWrapper(S idx, SizeArr dims, auto divs)
       : Base(IdxMan{idx}, star::index_to_position(idx, divs), dims, divs) {}
 };
 
-template<std::unsigned_integral TIdxSize, std::unsigned_integral TPosSize, std::size_t tDimNum>
+template<std::unsigned_integral IdxS, std::unsigned_integral PosS, std::size_t DimN>
 struct DualPosIndexWrapper
-    : public detail::BasePosIndexWrapper<DualPosIndexWrapper<TIdxSize, TPosSize, tDimNum>,
-                                         detail::DualIndexManager<TIdxSize, TPosSize>, tDimNum> {
-  using IdxMan = detail::DualIndexManager<TIdxSize, TPosSize>;
-  using Base = detail::BasePosIndexWrapper<DualPosIndexWrapper, IdxMan, tDimNum>;
-  using SizeArr = std::array<TPosSize, tDimNum>;
+    : public detail::BasePosIndexWrapper<DualPosIndexWrapper<IdxS, PosS, DimN>,
+                                         detail::DualIndexManager<IdxS, PosS>, DimN> {
+  using IdxMan = detail::DualIndexManager<IdxS, PosS>;
+  using Base = detail::BasePosIndexWrapper<DualPosIndexWrapper, IdxMan, DimN>;
+  using SizeArr = std::array<PosS, DimN>;
 
-  constexpr DualPosIndexWrapper(TIdxSize idx, TPosSize pos_idx, SizeArr pos, SizeArr dims)
+  constexpr DualPosIndexWrapper(IdxS idx, PosS pos_idx, SizeArr pos, SizeArr dims)
       : Base(IdxMan{idx, pos_idx}, pos, dims) {}
-  constexpr DualPosIndexWrapper(TIdxSize idx, SizeArr pos, SizeArr dims)
+  constexpr DualPosIndexWrapper(IdxS idx, SizeArr pos, SizeArr dims)
       : Base(IdxMan{idx, star::position_to_index(pos, star::postfix_product_inclusive(dims))}, pos,
              dims) {}
-  constexpr DualPosIndexWrapper(TIdxSize idx, TPosSize pos_idx, SizeArr dims)
+  constexpr DualPosIndexWrapper(IdxS idx, PosS pos_idx, SizeArr dims)
       : DualPosIndexWrapper(idx, pos_idx, dims, detail::dims_to_divs(dims)) {}
 
 private:
-  constexpr DualPosIndexWrapper(TIdxSize idx, TPosSize pos_idx, SizeArr dims, auto divs)
+  constexpr DualPosIndexWrapper(IdxS idx, PosS pos_idx, SizeArr dims, auto divs)
       : Base(IdxMan{idx, pos_idx}, star::index_to_position(pos_idx, divs), dims, divs) {}
 };
 } // namespace thes

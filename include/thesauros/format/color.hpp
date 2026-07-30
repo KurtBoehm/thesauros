@@ -82,14 +82,14 @@ inline constexpr fmt::text_style reverse{fmt::emphasis::reverse};
 inline constexpr fmt::text_style conceal{fmt::emphasis::conceal};
 inline constexpr fmt::text_style strikethrough{fmt::emphasis::strikethrough};
 
-template<bool tFormat>
-struct FormattingTag : public BoolTag<tFormat> {};
+template<bool Format>
+struct FormattingTag : public BoolTag<Format> {};
 inline constexpr FormattingTag<true> format_tag{};
 inline constexpr FormattingTag<false> unformat_tag{};
 template<typename T>
 struct IsFormatTagTrait : public std::false_type {};
-template<bool tIsFormat>
-struct IsFormatTagTrait<FormattingTag<tIsFormat>> : public std::true_type {};
+template<bool IsFormat>
+struct IsFormatTagTrait<FormattingTag<IsFormat>> : public std::true_type {};
 template<typename T>
 concept AnyFormatTag = IsFormatTagTrait<T>::value;
 

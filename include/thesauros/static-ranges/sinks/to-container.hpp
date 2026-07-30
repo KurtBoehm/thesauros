@@ -15,18 +15,18 @@
 #include "thesauros/static-ranges/definitions/size.hpp"
 
 namespace thes::star {
-template<typename TContainer>
+template<typename Container>
 struct ToContainerGenerator : public ConsumerGeneratorBase {
-  template<typename TRange>
-  THES_ALWAYS_INLINE constexpr auto operator()(TRange&& range) const {
-    return [&]<std::size_t... tIdxs>(std::index_sequence<tIdxs...> /*idxd*/) THES_ALWAYS_INLINE {
-      return TContainer{get_at<tIdxs>(range)...};
-    }(std::make_index_sequence<size<TRange>>{});
+  template<typename R>
+  THES_ALWAYS_INLINE constexpr auto operator()(R&& range) const {
+    return [&]<std::size_t... I>(std::index_sequence<I...> /*idxd*/) THES_ALWAYS_INLINE {
+      return Container{get_at<I>(range)...};
+    }(std::make_index_sequence<size<R>>{});
   }
 };
 
-template<typename TContainer>
-inline constexpr ToContainerGenerator<TContainer> to_container{};
+template<typename Container>
+inline constexpr ToContainerGenerator<Container> to_container{};
 } // namespace thes::star
 
 #endif // INCLUDE_THESAUROS_STATIC_RANGES_SINKS_TO_CONTAINER_HPP

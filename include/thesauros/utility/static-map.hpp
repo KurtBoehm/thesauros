@@ -22,32 +22,32 @@
 #include "thesauros/types/value-tag.hpp"
 
 namespace thes {
-template<auto tKey, typename TValue>
+template<auto K, typename V>
 struct StaticKeyValuePair {
-  using Key = decltype(tKey);
-  using Value = TValue;
-  static constexpr Key key = tKey;
+  using Key = decltype(K);
+  using Value = V;
+  static constexpr Key key = K;
 
   Value value;
 };
 
-template<auto tKey>
+template<auto K>
 struct StaticKey {
-  template<typename TValue>
-  constexpr StaticKeyValuePair<tKey, TValue> operator=(TValue&& value) const {
-    return {std::forward<TValue>(value)};
+  template<typename V>
+  constexpr StaticKeyValuePair<K, V> operator=(V&& value) const {
+    return {std::forward<V>(value)};
   }
 };
 
-template<auto tKey>
-inline constexpr StaticKey<tKey> static_key{};
-template<auto tKey, auto tValue>
-inline constexpr StaticKeyValuePair<tKey, decltype(tValue)> static_kv{tValue};
+template<auto K>
+inline constexpr StaticKey<K> static_key{};
+template<auto K, auto V>
+inline constexpr StaticKeyValuePair<K, decltype(V)> static_kv{V};
 
 inline namespace literals {
 inline namespace static_map_literals {
-template<StaticString tString>
-constexpr StaticKey<tString> operator""_key() {
+template<StaticString String>
+constexpr StaticKey<String> operator""_key() {
   return {};
 }
 } // namespace static_map_literals
@@ -76,10 +76,10 @@ struct StaticMap<TPairs...> {
     return impl(index_tag<0>, impl);
   }
 
-  template<auto... tKeys>
+  template<auto... K>
   static constexpr bool only_keys =
     thes::Tuple{TPairs::key...} |
-    star::transform([](auto key) { return thes::Tuple{tKeys...} | star::contains(key); }) |
+    star::transform([](auto key) { return thes::Tuple{K...} | star::contains(key); }) |
     star::left_reduce(std::logical_and{}, true);
 
   explicit constexpr StaticMap(TPairs&&... pairs) : _pairs{std::forward<TPairs>(pairs)...} {}
@@ -102,11 +102,11 @@ struct StaticMap<TPairs...> {
   Tuple _pairs;
 
 private:
-  template<auto tKey>
+  template<auto K>
   static constexpr auto& get_impl(auto& self) {
     auto impl = [&self](auto idx, auto rec) -> const auto& {
       static_assert(idx < sizeof...(TPairs), "The key is not known!");
-      if constexpr (TupleElement<idx, DecayedTuple>::key == tKey) {
+      if constexpr (TupleElement<idx, DecayedTuple>::key == K) {
         return star::get_at<idx>(self._pairs).value;
       } else {
         return rec(index_tag<idx + 1>, rec);
@@ -115,12 +115,12 @@ private:
     return impl(index_tag<0>, impl);
   }
 
-  template<auto tKey>
+  template<auto K>
   static constexpr auto& get_impl(auto& self, auto& def) {
     auto impl = [&](auto idx, auto rec) -> const auto& {
       if constexpr (idx == sizeof...(TPairs)) {
         return def;
-      } else if constexpr (TupleElement<idx, DecayedTuple>::key == tKey) {
+      } else if constexpr (TupleElement<idx, DecayedTuple>::key == K) {
         return star::get_at<idx>(self._pairs).value;
       } else {
         return rec(index_tag<idx + 1>, rec);
@@ -135,7 +135,7 @@ struct StaticMap<> {
   static constexpr bool contains(AnyValueTag auto /*key*/) {
     return false;
   }
-  template<auto... tKeys>
+  template<auto... K>
   static constexpr bool only_keys = true;
 
   constexpr auto get(AnyValueTag auto key) const;
@@ -151,9 +151,9 @@ struct StaticMap<> {
 template<typename... TPairs>
 StaticMap(TPairs&&... pairs) -> StaticMap<TPairs...>;
 
-template<auto... tPairs>
+template<auto... Pairs>
 inline constexpr auto static_map_tag =
-  auto_tag<StaticMap((std::decay_t<decltype(tPairs)>(tPairs))...)>;
+  auto_tag<StaticMap((std::decay_t<decltype(Pairs)>(Pairs))...)>;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_UTILITY_STATIC_MAP_HPP

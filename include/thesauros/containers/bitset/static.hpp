@@ -156,7 +156,7 @@ private:
         star::for_each([&](auto bit_index) {
           constexpr std::size_t index = chunk_bit_num * chunk_index + bit_index;
           chunk += Chunk{std::get<index>(data)} << bit_index;
-        })(star::iota<0, chunk_bit_num>);
+        })(star::tagged_iota<0, chunk_bit_num>);
       } else {
         // incomplete chunk
         constexpr std::size_t full_chunk_num = static_size / chunk_bit_num;
@@ -165,7 +165,7 @@ private:
         star::for_each([&chunk, &data](auto bit_index) {
           constexpr std::size_t index = chunk_bit_num * full_chunk_num + bit_index;
           chunk += Chunk{std::get<index>(data)} << bit_index;
-        })(star::iota<0, remainder>);
+        })(star::tagged_iota<0, remainder>);
       }
 
       return chunk;

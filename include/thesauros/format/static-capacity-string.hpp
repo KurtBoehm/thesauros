@@ -12,8 +12,8 @@
 #include "thesauros/format/fmtlib.hpp"
 #include "thesauros/string/static-capacity-string.hpp"
 
-template<std::size_t tCapacity>
-struct fmt::range_format_kind<thes::StaticCapacityString<tCapacity>, char> {
+template<std::size_t Capacity>
+struct fmt::range_format_kind<thes::StaticCapacityString<Capacity>, char> {
   static constexpr auto value = fmt::range_format::disabled;
 };
 

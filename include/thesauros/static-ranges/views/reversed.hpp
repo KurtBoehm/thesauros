@@ -26,9 +26,9 @@ struct ReversedView {
 
   TInner inner;
 
-  template<std::size_t tIndex>
+  template<std::size_t I>
   THES_ALWAYS_INLINE friend constexpr auto get(const ReversedView& self) {
-    return get_at<size - tIndex - 1>(self.inner);
+    return get_at<size - I - 1>(self.inner);
   }
 };
 

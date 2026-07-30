@@ -18,10 +18,10 @@ struct IntegralValueTrait {
     return value;
   }
 };
-template<typename T, T tValue>
-struct IntegralValueTrait<ValueTag<T, tValue>> {
+template<typename T, T V>
+struct IntegralValueTrait<ValueTag<T, V>> {
   using Type = IntegralValueTrait<T>::Type;
-  static constexpr Type value(const ValueTag<T, tValue> tag) THES_ALWAYS_INLINE {
+  static constexpr Type value(const ValueTag<T, V> tag) THES_ALWAYS_INLINE {
     return IntegralValueTrait<T>::value(tag.value);
   }
 };
@@ -29,7 +29,7 @@ struct IntegralValueTrait<ValueTag<T, tValue>> {
 template<typename T>
 using IntegralValue = IntegralValueTrait<T>::Type;
 template<typename T>
-inline constexpr IntegralValue<T> integral_value(const T value) {
+constexpr IntegralValue<T> integral_value(const T value) {
   return IntegralValueTrait<T>::value(value);
 }
 } // namespace thes

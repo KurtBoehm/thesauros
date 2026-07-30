@@ -25,9 +25,9 @@
 
 namespace thes {
 struct FixedOpenMpThreadPool {
-  template<typename TCpuSets = Empty>
-  explicit FixedOpenMpThreadPool(std::size_t size, TCpuSets cpu_sets = {}) : thread_num_(size) {
-    if constexpr (!std::same_as<TCpuSets, Empty>) {
+  template<typename CpuSets = Empty>
+  explicit FixedOpenMpThreadPool(std::size_t size, CpuSets cpu_sets = {}) : thread_num_(size) {
+    if constexpr (!std::same_as<CpuSets, Empty>) {
       if (size > std::size(cpu_sets)) {
         throw std::invalid_argument{cat(size, " threads have been requested, but there are only ",
                                         std::size(cpu_sets), " entries in the CPU set!")};
@@ -38,13 +38,13 @@ struct FixedOpenMpThreadPool {
     }
   }
 
-  template<typename TCpuInfos = Empty>
-  static FixedOpenMpThreadPool from_cpu_infos(std::size_t size, TCpuInfos&& cpu_infos = {}) {
-    if constexpr (std::same_as<TCpuInfos, Empty>) {
+  template<typename CpuInfos = Empty>
+  static FixedOpenMpThreadPool from_cpu_infos(std::size_t size, CpuInfos&& cpu_infos = {}) {
+    if constexpr (std::same_as<CpuInfos, Empty>) {
       return FixedOpenMpThreadPool{size, Empty{}};
     } else {
       return FixedOpenMpThreadPool{
-        size, std::views::transform(std::forward<TCpuInfos>(cpu_infos),
+        size, std::views::transform(std::forward<CpuInfos>(cpu_infos),
                                     [](auto cpu) { return CpuSet::single_set(cpu.id); })};
     }
   }

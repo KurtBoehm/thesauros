@@ -172,13 +172,13 @@ constexpr decltype(auto) flatten_type(T&& value) {
       return std::make_index_sequence<std::tuple_size_v<std::decay_t<decltype(tuple)>>>{}; \
     }; \
 \
-    constexpr auto variant_index_of = [=]<std::size_t tIdx>(std::index_sequence<tIdx>) { \
-      constexpr auto ptr = ::thes::star::get_at<tIdx>(member_infos).pointer; \
+    constexpr auto variant_index_of = [=]<std::size_t I>(std::index_sequence<I>) { \
+      constexpr auto ptr = ::thes::star::get_at<I>(member_infos).pointer; \
       std::optional<std::size_t> index = std::nullopt; \
-      [&]<std::size_t... tIdxs>(std::index_sequence<tIdxs...>) { \
+      [&]<std::size_t... J>(std::index_sequence<J...>) { \
         return ((::thes::reflect::detail::flatten::member_ptrs_eq( \
-                   ::thes::star::get_at<tIdxs>(variant_members), ptr) \
-                   ? (index = tIdxs, true) \
+                   ::thes::star::get_at<J>(variant_members), ptr) \
+                   ? (index = J, true) \
                    : false) || \
                 ...); \
       }(make_index_sequence(variant_members)); \
@@ -197,19 +197,19 @@ constexpr decltype(auto) flatten_type(T&& value) {
         Visited visited{BOOST_PP_LIST_FOR_EACH_I(THES_POLIS_FLATTEN_TYPE_VISITED_VALUES, TYPENAME, \
                                                  VARIANT_MEMBERS)}; \
 \
-        auto impl = [&]<std::size_t tIdx>(std::index_sequence<tIdx>) -> decltype(auto) { \
-          constexpr auto variant_idx = variant_index_of(std::index_sequence<tIdx>{}); \
+        auto impl = [&]<std::size_t I>(std::index_sequence<I>) -> decltype(auto) { \
+          constexpr auto variant_idx = variant_index_of(std::index_sequence<I>{}); \
           if constexpr (variant_idx.has_value()) { \
             return std::forward<std::tuple_element_t<*variant_idx, Visited>>( \
               thes::star::get_at<*variant_idx>(visited)); \
           } else { \
-            return std::forward<typename std::tuple_element_t<tIdx, MemberInfos>::Type>( \
-              this->*thes::star::get_at<tIdx>(member_infos).pointer); \
+            return std::forward<typename std::tuple_element_t<I, MemberInfos>::Type>( \
+              this->*thes::star::get_at<I>(member_infos).pointer); \
           } \
         }; \
 \
-        return [&]<std::size_t... tIdxs>(std::index_sequence<tIdxs...>) { \
-          return Out{impl(std::index_sequence<tIdxs>{})...}; \
+        return [&]<std::size_t... J>(std::index_sequence<J...>) { \
+          return Out{impl(std::index_sequence<J>{})...}; \
         }(make_index_sequence(member_infos)); \
       }, \
       BOOST_PP_LIST_FOR_EACH_I(THES_POLIS_FLATTEN_TYPE_VARIANT, TYPENAME, VARIANT_MEMBERS)); \

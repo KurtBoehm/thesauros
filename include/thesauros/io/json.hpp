@@ -233,7 +233,7 @@ struct JsonWriter<T> {
     constexpr std::size_t static_size = std::tuple_size_v<decltype(Info::static_members)>;
     constexpr std::size_t size = static_size + std::tuple_size_v<decltype(Info::members)>;
 
-    star::iota<0, size> | star::for_each([&](auto i) {
+    star::tagged_iota<0, size> | star::for_each([&](auto i) {
       constexpr bool is_static = i < static_size;
       constexpr auto member = [&] {
         if constexpr (is_static) {

@@ -15,9 +15,9 @@
 #include "thesauros/types/fixed-size-integer.hpp"
 
 namespace thes {
-template<std::size_t tByteNum>
+template<std::size_t ByteN>
 struct ByteInteger {
-  static constexpr std::size_t byte_num = tByteNum;
+  static constexpr std::size_t byte_num = ByteN;
   static constexpr std::size_t bit_num = CHAR_BIT * byte_num;
 
   using Unsigned = FixedUnsignedInt<std::bit_ceil(byte_num)>;

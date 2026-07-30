@@ -12,35 +12,34 @@
 #include <utility>
 
 namespace thes {
-template<typename TValue, typename TInfo, TInfo tValid>
+template<typename V, typename Info, Info Valid>
 struct InfoResult {
-  constexpr InfoResult(TValue value, TInfo info)
-      : value_{std::move(value)}, info_{std::move(info)} {}
+  constexpr InfoResult(V value, Info info) : value_{std::move(value)}, info_{std::move(info)} {}
 
-  [[nodiscard]] constexpr TValue operator*() const {
+  [[nodiscard]] constexpr V operator*() const {
     assert(is_valid());
     return value_;
   }
-  [[nodiscard]] constexpr TValue value_or(TValue def) const {
+  [[nodiscard]] constexpr V value_or(V def) const {
     return is_valid() ? value_ : def;
   }
 
   [[nodiscard]] constexpr bool is_valid() const {
-    return info_ == tValid;
+    return info_ == Valid;
   }
-  constexpr TValue valid_value() const {
+  constexpr V valid_value() const {
     if (!is_valid()) {
       throw std::runtime_error("The value is invalid!");
     }
     return value_;
   }
-  [[nodiscard]] constexpr TValue raw() const {
+  [[nodiscard]] constexpr V raw() const {
     return value_;
   }
 
 private:
-  TValue value_;
-  TInfo info_;
+  V value_;
+  Info info_;
 };
 } // namespace thes
 

@@ -11,11 +11,11 @@
 #include <utility>
 
 namespace thes::star {
-template<std::size_t tSize>
+template<std::size_t N>
 constexpr decltype(auto) static_apply(auto f) {
-  return [&]<std::size_t... tIdxs>(std::index_sequence<tIdxs...> /*seq*/) -> decltype(auto) {
-    return f.template operator()<tIdxs...>();
-  }(std::make_index_sequence<tSize>{});
+  return [&]<std::size_t... I>(std::index_sequence<I...> /*seq*/) -> decltype(auto) {
+    return f.template operator()<I...>();
+  }(std::make_index_sequence<N>{});
 }
 } // namespace thes::star
 

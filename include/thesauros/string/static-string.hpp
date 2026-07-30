@@ -43,9 +43,9 @@ struct StaticString {
     return StaticString{fill};
   }
 
-  template<std::size_t tIdx>
+  template<std::size_t I>
   [[nodiscard]] friend constexpr char get(const StaticString& self) {
-    return std::get<tIdx>(self.data);
+    return std::get<I>(self.data);
   }
 
   [[nodiscard]] constexpr std::string_view view() const {

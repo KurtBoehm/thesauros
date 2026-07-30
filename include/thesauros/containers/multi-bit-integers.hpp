@@ -22,15 +22,15 @@
 #include "thesauros/math/arithmetic.hpp"
 
 namespace thes {
-template<std::unsigned_integral TChunk, std::size_t tBitNum,
+template<std::unsigned_integral TChunk, std::size_t BitN,
          typename TAllocator = std::allocator<TChunk>>
-requires(std::has_single_bit(tBitNum))
+requires(std::has_single_bit(BitN))
 struct MultiBitIntegers {
   using Chunk = TChunk;
   using Allocator = TAllocator;
   using Limits = std::numeric_limits<Chunk>;
-  static constexpr std::size_t per_chunk = Limits::digits / tBitNum;
-  static constexpr Chunk mask = Limits::max() >> (Limits::digits - tBitNum);
+  static constexpr std::size_t per_chunk = Limits::digits / BitN;
+  static constexpr Chunk mask = Limits::max() >> (Limits::digits - BitN);
 
   struct SetProxy {
     Chunk& chunk;
@@ -81,8 +81,8 @@ struct MultiBitIntegers {
 
   explicit constexpr MultiBitIntegers(std::size_t size, Chunk value)
       : data_(div_ceil(size, per_chunk)), size_(size) {
-    const auto fill = [value]<std::size_t... tIdxs>(std::index_sequence<tIdxs...> /*idxs*/) {
-      return (... | (value << (tBitNum * tIdxs)));
+    const auto fill = [value]<std::size_t... I>(std::index_sequence<I...> /*idxs*/) {
+      return (... | (value << (BitN * I)));
     }(std::make_index_sequence<per_chunk>{});
     std::fill(data_.begin(), data_.end(), fill);
   }
@@ -90,13 +90,13 @@ struct MultiBitIntegers {
   [[nodiscard]] constexpr Chunk operator[](std::size_t index) const {
     assert(index < size_);
     Chunk out = data_[index / per_chunk];
-    const auto offset = tBitNum * (index % per_chunk);
+    const auto offset = BitN * (index % per_chunk);
     return (out >> offset) & mask;
   }
 
   [[nodiscard]] constexpr SetProxy operator[](std::size_t index) {
     assert(index < size_);
-    return {data_[index / per_chunk], static_cast<Chunk>(tBitNum * (index % per_chunk))};
+    return {data_[index / per_chunk], static_cast<Chunk>(BitN * (index % per_chunk))};
   }
 
   /**
@@ -106,7 +106,7 @@ struct MultiBitIntegers {
   [[nodiscard]] Chunk load(std::size_t index, std::memory_order order) {
     assert(index < size_);
     Chunk out = std::atomic_ref{data_[index / per_chunk]}.load(order);
-    const auto offset = tBitNum * (index % per_chunk);
+    const auto offset = BitN * (index % per_chunk);
     return (out >> offset) & mask;
   }
 

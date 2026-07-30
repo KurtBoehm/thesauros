@@ -63,9 +63,9 @@ struct FileReader {
     buf.resize(size);
     read(buf.span());
   }
-  template<typename T, std::size_t tSize>
+  template<typename T, std::size_t N>
   requires std::is_trivial_v<T>
-  THES_ALWAYS_INLINE void read(std::array<T, tSize>& array) {
+  THES_ALWAYS_INLINE void read(std::array<T, N>& array) {
     read(std::span{array.data(), array.size()});
   }
   template<typename T>

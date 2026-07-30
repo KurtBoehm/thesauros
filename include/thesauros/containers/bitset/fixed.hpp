@@ -70,7 +70,7 @@ struct FixedBitset {
       chunks_[i] = star::left_reduce(std::bit_or<>{}, false)(
         star::index_transform<std::min(chunk_bit_num, size - offset)>(
           [&](auto j) { return Chunk{std::get<offset + j>(arr)} << j; }));
-    })(star::iota<0, chunk_num>);
+    })(star::tagged_iota<0, chunk_num>);
   }
 
   void set(std::size_t index) {

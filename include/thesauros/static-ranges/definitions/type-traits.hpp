@@ -15,61 +15,61 @@
 #include "thesauros/types/type-sequence/type-sequence.hpp"
 
 namespace thes::star {
-template<std::size_t tIdx, typename TRange>
-using Element = std::tuple_element_t<tIdx, std::decay_t<TRange>>;
+template<std::size_t I, typename Range>
+using Element = std::tuple_element_t<I, std::decay_t<Range>>;
 
-template<typename TRange>
+template<typename Range>
 struct ValueSeqTrait {
-  template<typename TIdxRange>
+  template<typename IdxRange>
   struct Impl;
 
-  template<std::size_t... tIdxs>
-  struct Impl<std::index_sequence<tIdxs...>> {
-    using Type = TypeSeq<Element<tIdxs, TRange>...>;
+  template<std::size_t... I>
+  struct Impl<std::index_sequence<I...>> {
+    using Type = TypeSeq<Element<I, Range>...>;
   };
 
-  using Type = Impl<std::make_index_sequence<std::tuple_size_v<std::decay_t<TRange>>>>::Type;
+  using Type = Impl<std::make_index_sequence<std::tuple_size_v<std::decay_t<Range>>>>::Type;
 };
 
-template<typename TRange>
-using ValueSeq = ValueSeqTrait<TRange>::Type;
+template<typename Range>
+using ValueSeq = ValueSeqTrait<Range>::Type;
 
 namespace detail {
-template<typename TRange>
-concept HasValue = requires { typename TRange::Value; };
-template<typename TRange>
-concept HasTypeValue = requires { typename TRange::value_type; };
-template<typename TRange>
-concept HasElemType = ValueSeq<TRange>::is_unique;
+template<typename Range>
+concept HasValue = requires { typename Range::Value; };
+template<typename Range>
+concept HasTypeValue = requires { typename Range::value_type; };
+template<typename Range>
+concept HasElemType = ValueSeq<Range>::is_unique;
 } // namespace detail
 
-template<typename TRange>
+template<typename Range>
 struct ValueTrait;
 
-template<typename TRange>
-requires detail::HasValue<TRange>
-struct ValueTrait<TRange> {
-  using Type = TRange::Value;
+template<typename Range>
+requires detail::HasValue<Range>
+struct ValueTrait<Range> {
+  using Type = Range::Value;
 };
-template<typename TRange>
-requires(!detail::HasValue<TRange> && detail::HasTypeValue<TRange>)
-struct ValueTrait<TRange> {
-  using Type = TRange::value_type;
+template<typename Range>
+requires(!detail::HasValue<Range> && detail::HasTypeValue<Range>)
+struct ValueTrait<Range> {
+  using Type = Range::value_type;
 };
-template<typename TRange>
-requires(!detail::HasValue<TRange> && !detail::HasTypeValue<TRange> && detail::HasElemType<TRange>)
-struct ValueTrait<TRange> {
-  using Type = ValueSeq<TRange>::Unique;
+template<typename Range>
+requires(!detail::HasValue<Range> && !detail::HasTypeValue<Range> && detail::HasElemType<Range>)
+struct ValueTrait<Range> {
+  using Type = ValueSeq<Range>::Unique;
 };
 
-template<typename TRange>
-requires(detail::HasValue<TRange> || detail::HasTypeValue<TRange> || detail::HasElemType<TRange>)
-using RawValue = ValueTrait<TRange>::Type;
-template<typename TRange>
-using Value = std::decay_t<RawValue<TRange>>;
+template<typename Range>
+requires(detail::HasValue<Range> || detail::HasTypeValue<Range> || detail::HasElemType<Range>)
+using RawValue = ValueTrait<Range>::Type;
+template<typename Range>
+using Value = std::decay_t<RawValue<Range>>;
 
-template<typename TRange>
-concept HasValue = requires { typename Value<TRange>; };
+template<typename Range>
+concept HasValue = requires { typename Value<Range>; };
 } // namespace thes::star
 
 #endif // INCLUDE_THESAUROS_STATIC_RANGES_DEFINITIONS_TYPE_TRAITS_HPP

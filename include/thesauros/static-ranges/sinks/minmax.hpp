@@ -24,7 +24,7 @@ struct MinMaxGenerator : public ConsumerGeneratorBase {
     using Value = star::Value<TRange>;
     Value min = get_at(range, thes::index_tag<0>);
     Value max = min;
-    thes::star::iota<1, size> | thes::star::for_each([&](auto i) {
+    thes::star::tagged_iota<1, size> | thes::star::for_each([&](auto i) {
       Value c = get_at(range, i);
       min = std::min(min, c);
       max = std::max(max, c);

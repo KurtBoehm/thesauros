@@ -17,14 +17,14 @@
 
 namespace thes::star {
 struct HasUniqueValueGenerator : public ConsumerGeneratorBase {
-  template<typename TRange>
-  constexpr bool operator()(TRange&& range) const {
-    constexpr std::size_t size = star::size<TRange>;
-    if constexpr (size == 0 || !HasValue<TRange>) {
+  template<typename R>
+  constexpr bool operator()(R&& range) const {
+    constexpr std::size_t size = star::size<R>;
+    if constexpr (size == 0 || !HasValue<R>) {
       return false;
     } else {
-      return [&]<std::size_t... tIdxs>(std::index_sequence<tIdxs...>) {
-        return (... && (get_at<0>(range) == get_at<tIdxs + 1>(range)));
+      return [&]<std::size_t... I>(std::index_sequence<I...>) {
+        return (... && (get_at<0>(range) == get_at<I + 1>(range)));
       }(std::make_index_sequence<size - 1>{});
     }
   }
@@ -33,8 +33,8 @@ struct HasUniqueValueGenerator : public ConsumerGeneratorBase {
 inline constexpr HasUniqueValueGenerator has_unique_value{};
 
 struct UniqueValueGenerator : public ConsumerGeneratorBase {
-  template<HasValue TRange>
-  constexpr std::optional<Value<TRange>> operator()(TRange&& range) const {
+  template<HasValue R>
+  constexpr std::optional<Value<R>> operator()(R&& range) const {
     if (has_unique_value(range)) {
       return get_at<0>(range);
     }

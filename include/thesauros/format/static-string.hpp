@@ -13,7 +13,7 @@
 #include "thesauros/format/fmtlib.hpp"
 #include "thesauros/string/static-string.hpp"
 
-template<std::size_t tSize, typename TChar>
-struct fmt::is_tuple_formattable<thes::StaticString<tSize>, TChar> : public std::false_type {};
+template<std::size_t N, typename Char>
+struct fmt::is_tuple_formattable<thes::StaticString<N>, Char> : public std::false_type {};
 
 #endif // INCLUDE_THESAUROS_FORMAT_STATIC_STRING_HPP

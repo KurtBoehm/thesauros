@@ -12,15 +12,14 @@
 #include <functional>
 
 namespace thes {
-template<typename TMutRange, typename TPred>
-inline void erase_if(TMutRange& r, TPred pred) {
+template<typename MutRange, typename Pred>
+inline void erase_if(MutRange& r, Pred pred) {
   r.erase(std::remove_if(r.begin(), r.end(), pred), r.end());
 }
 
-template<typename TMutRange, typename TOtherRange, typename TCompare = std::less<>,
-         typename TEqual = std::equal_to<>>
-inline void set_union_unsorted(TMutRange& r1, const TOtherRange& r2, TCompare cmp = TCompare{},
-                               TEqual eq = TEqual{}) {
+template<typename MutRange, typename OtherRange, typename Cmp = std::less<>,
+         typename Eq = std::equal_to<>>
+inline void set_union_unsorted(MutRange& r1, const OtherRange& r2, Cmp cmp = Cmp{}, Eq eq = Eq{}) {
   std::size_t i1{0};
   const std::size_t size1{r1.size()};
   auto cur2{r2.begin()};
@@ -43,18 +42,16 @@ inline void set_union_unsorted(TMutRange& r1, const TOtherRange& r2, TCompare cm
   }
 }
 
-template<typename TMutRange, typename TOtherRange, typename TCompare = std::less<>,
-         typename TEqual = std::equal_to<>>
-inline void set_union(TMutRange& r1, const TOtherRange& r2, TCompare cmp = TCompare{},
-                      TEqual eq = TEqual{}) {
+template<typename MutRange, typename OtherRange, typename Cmp = std::less<>,
+         typename Eq = std::equal_to<>>
+inline void set_union(MutRange& r1, const OtherRange& r2, Cmp cmp = Cmp{}, Eq eq = Eq{}) {
   set_union_unsorted(r1, r2, cmp, eq);
   std::sort(r1.begin(), r1.end(), cmp);
 }
 
-template<typename TMutRange, typename TOtherRange, typename TCompare = std::less<>,
-         typename TEqual = std::equal_to<>>
-void set_difference(TMutRange& r1, const TOtherRange& r2, TCompare cmp = TCompare{},
-                    TEqual eq = TEqual{}) {
+template<typename MutRange, typename OtherRange, typename Cmp = std::less<>,
+         typename Eq = std::equal_to<>>
+void set_difference(MutRange& r1, const OtherRange& r2, Cmp cmp = Cmp{}, Eq eq = Eq{}) {
   auto first1{r1.begin()};
   const auto last1{r1.end()};
   auto first2{r2.begin()};
@@ -78,22 +75,18 @@ void set_difference(TMutRange& r1, const TOtherRange& r2, TCompare cmp = TCompar
   r1.erase(last_valid, last1);
 }
 
-template<typename TIt, typename TValue, typename TCompare = std::less<>,
-         typename TEqual = std::equal_to<>>
-inline TIt find_sorted(TIt begin, TIt end, const TValue& value, TCompare cmp = TCompare{},
-                       TEqual eq = TEqual{}) {
-  const TIt it{std::lower_bound(begin, end, value, cmp)};
+template<typename It, typename V, typename Cmp = std::less<>, typename Eq = std::equal_to<>>
+inline It find_sorted(It begin, It end, const V& value, Cmp cmp = Cmp{}, Eq eq = Eq{}) {
+  const It it{std::lower_bound(begin, end, value, cmp)};
   if (it != end && eq(*it, value)) {
     return it;
   }
   return end;
 }
 
-template<typename TIt, typename TValue, typename TCompare = std::less<>,
-         typename TEqual = std::equal_to<>>
-inline bool exists_sorted(TIt begin, TIt end, const TValue& value, TCompare cmp = TCompare{},
-                          TEqual eq = TEqual{}) {
-  const TIt it{std::lower_bound(begin, end, value, cmp)};
+template<typename It, typename V, typename Cmp = std::less<>, typename Eq = std::equal_to<>>
+inline bool exists_sorted(It begin, It end, const V& value, Cmp cmp = Cmp{}, Eq eq = Eq{}) {
+  const It it{std::lower_bound(begin, end, value, cmp)};
   return it != end && eq(*it, value);
 }
 } // namespace thes

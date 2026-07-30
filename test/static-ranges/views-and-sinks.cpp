@@ -29,9 +29,6 @@ namespace star = thes::star;
 namespace test = thes::test;
 
 namespace {
-/** `iota` yields one distinct `ValueTag` type per element, so a sink needs a common type first. */
-inline constexpr auto as_index = star::transform([](auto tag) { return std::size_t{tag.value}; });
-
 //==================================================================================================
 // reversed
 //==================================================================================================
@@ -42,7 +39,7 @@ static_assert((std::array{1, 2, 3} | star::reversed | star::reversed | star::to_
               std::array{1, 2, 3});
 // A one-element range, where reversing changes nothing.
 static_assert((std::array{7} | star::reversed | star::to_array) == std::array{7});
-static_assert((star::iota<0, 6> | as_index | star::reversed | star::to_array) ==
+static_assert((star::iota<0, 6> | star::reversed | star::to_array) ==
               std::array<std::size_t, 6>{5, 4, 3, 2, 1, 0});
 
 /** Checks that `reversed` walks a heterogeneous tuple back to front. */
@@ -114,7 +111,7 @@ THES_TEST_CASE("to_container builds arbitrary containers", "[static-ranges][to-c
   const auto vec = std::array{1, 2, 3, 4} | star::to_container<std::vector<int>>;
   THES_CHECK(test::range_eq(vec, std::array{1, 2, 3, 4}));
 
-  const auto indices = star::iota<1, 5> | as_index | star::to_container<std::vector<std::size_t>>;
+  const auto indices = star::iota<1, 5> | star::to_container<std::vector<std::size_t>>;
   THES_CHECK(test::range_eq(indices, std::array<std::size_t, 4>{1, 2, 3, 4}));
 
   const auto text = std::array{'a', 'b', 'c'} | star::to_container<std::string>;
@@ -154,8 +151,7 @@ THES_TEST_CASE("to_static_bitset handles uniform ranges", "[static-ranges][to-st
   }
 
   // Deriving the bits from a computation is the usual way this sink is reached.
-  const auto even = star::iota<0, 6> |
-                    star::transform([](auto tag) { return tag.value % 2 == 0; }) |
+  const auto even = star::iota<0, 6> | star::transform([](auto tag) { return tag % 2 == 0; }) |
                     star::to_static_bitset;
   for (std::size_t i = 0; i < 6; ++i) {
     THES_CHECK(even[i] == (i % 2 == 0));

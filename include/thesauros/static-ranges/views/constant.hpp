@@ -14,24 +14,24 @@
 #include "thesauros/static-ranges/definitions/tuple-defs.hpp"
 
 namespace thes::star {
-template<std::size_t tSize, typename T>
+template<std::size_t N, typename T>
 struct Constant {
   using Value = T;
-  static constexpr std::size_t size = tSize;
+  static constexpr std::size_t size = N;
   static constexpr TupleDefsMarker tuple_defs_marker{};
 
   T value;
 
-  template<std::size_t tIndex>
-  requires(tIndex < tSize)
+  template<std::size_t I>
+  requires(I < N)
   THES_ALWAYS_INLINE friend constexpr auto get(const Constant& self) {
     return self.value;
   }
 };
 
-template<std::size_t tSize, typename T>
+template<std::size_t N, typename T>
 THES_ALWAYS_INLINE inline constexpr auto constant(T&& value) {
-  return Constant<tSize, T>{std::forward<T>(value)};
+  return Constant<N, T>{std::forward<T>(value)};
 }
 } // namespace thes::star
 

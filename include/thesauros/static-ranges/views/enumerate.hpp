@@ -26,11 +26,10 @@ struct EnumerateView {
 
   TInner inner;
 
-  template<std::size_t tIndex>
-  THES_ALWAYS_INLINE friend constexpr std::pair<ValueTag<TSize, tIndex>,
-                                                decltype(get_at<tIndex>(inner))>
+  template<std::size_t I>
+  THES_ALWAYS_INLINE friend constexpr std::pair<ValueTag<TSize, I>, decltype(get_at<I>(inner))>
   get(const EnumerateView& self) {
-    return {value_tag<TSize, tIndex>, get_at<tIndex>(self.inner)};
+    return {value_tag<TSize, I>, get_at<I>(self.inner)};
   }
 };
 

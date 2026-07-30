@@ -20,7 +20,7 @@ template<typename T>
 void run() {
   static_assert(thes::isqrt_floor(0U) == 0);
   static_assert(thes::isqrt_ceil(0U) == 0);
-  thes::star::iota<1, 200> | thes::star::for_each([](auto i) {
+  thes::star::tagged_iota<1, 200> | thes::star::for_each([](auto i) {
     constexpr auto root_lb = thes::isqrt_floor(i.value);
     static_assert(root_lb * root_lb <= i && (root_lb + 1) * (root_lb + 1) > i);
     constexpr thes::u64 root_ub = thes::isqrt_ceil(i.value);

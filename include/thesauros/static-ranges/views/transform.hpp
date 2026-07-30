@@ -104,22 +104,22 @@ THES_ALWAYS_INLINE inline constexpr auto transform(Fun&& f, ArgRanges&&... range
 
 template<std::size_t End, typename Fun>
 THES_ALWAYS_INLINE inline constexpr auto index_transform(Fun&& f) {
-  using View = TransformView<Fun, void, IotaView<std::size_t, 0, End, 1>>;
+  using View = TransformView<Fun, void, IotaView<std::size_t, 0, End, 1, true>>;
   return View{std::forward<Fun>(f), {}};
 }
 template<std::size_t Begin, std::size_t End, typename Fun>
 THES_ALWAYS_INLINE inline constexpr auto index_transform(Fun&& f) {
-  using View = TransformView<Fun, void, IotaView<std::size_t, Begin, End, 1>>;
+  using View = TransformView<Fun, void, IotaView<std::size_t, Begin, End, 1, true>>;
   return View{std::forward<Fun>(f), {}};
 }
 template<typename Size, Size End, typename Fun>
 THES_ALWAYS_INLINE inline constexpr auto index_transform(Fun&& f) {
-  using View = TransformView<Fun, void, IotaView<Size, 0, End, 1>>;
+  using View = TransformView<Fun, void, IotaView<Size, 0, End, 1, true>>;
   return View{std::forward<Fun>(f), {}};
 }
 template<typename Size, Size Begin, Size End, typename Fun>
 THES_ALWAYS_INLINE inline constexpr auto index_transform(Fun&& f) {
-  using View = TransformView<Fun, void, IotaView<Size, Begin, End, 1>>;
+  using View = TransformView<Fun, void, IotaView<Size, Begin, End, 1, true>>;
   return View{std::forward<Fun>(f), {}};
 }
 } // namespace thes::star

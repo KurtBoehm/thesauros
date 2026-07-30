@@ -13,8 +13,8 @@
 #include "thesauros/types/primitives.hpp"
 
 namespace thes {
-template<std::size_t tByteNum>
-struct FixedIntTrait : public FixedIntTrait<std::bit_ceil(tByteNum)> {};
+template<std::size_t ByteN>
+struct FixedIntTrait : public FixedIntTrait<std::bit_ceil(ByteN)> {};
 
 template<>
 struct FixedIntTrait<1> {
@@ -42,10 +42,10 @@ struct FixedIntTrait<16> {
   using Signed = i128;
 };
 
-template<std::size_t tByteNum>
-using FixedUnsignedInt = FixedIntTrait<tByteNum>::Unsigned;
-template<std::size_t tByteNum>
-using FixedSignedInt = FixedIntTrait<tByteNum>::Signed;
+template<std::size_t ByteN>
+using FixedUnsignedInt = FixedIntTrait<ByteN>::Unsigned;
+template<std::size_t ByteN>
+using FixedSignedInt = FixedIntTrait<ByteN>::Signed;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_TYPES_FIXED_SIZE_INTEGER_HPP
