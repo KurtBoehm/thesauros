@@ -24,6 +24,8 @@ int main() {
     using Seq = thes::TypeSeq<int, float, double, long>;
     static_assert(
       std::same_as<thes::IndexFilteredTypeSeq<Seq, std::array{0, 3}>, thes::TypeSeq<int, long>>);
+    static_assert(
+      std::same_as<thes::IndexFilteredTypeSeq<Seq, thes::Tuple{0, 3}>, thes::TypeSeq<int, long>>);
   }
   {
     using Seq = thes::TypeSeq<int, float, double, long>;

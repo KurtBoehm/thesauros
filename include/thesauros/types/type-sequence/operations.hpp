@@ -11,6 +11,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "thesauros/static-ranges/definitions/size.hpp"
 #include "thesauros/types/type-sequence/type-sequence.hpp"
 
 namespace thes {
@@ -371,7 +372,7 @@ struct IndexFilteredTypeSeqTrait<Idx, TypeSeq<Head, Tail...>, IdxSeq> {
   /** Whether `IdxSeq` contains `Idx`, comparing regardless of the indices’ signedness. */
   static constexpr bool is_kept = []<std::size_t... Idxs>(std::index_sequence<Idxs...>) {
     return (... || std::cmp_equal(get<Idxs>(IdxSeq), Idx));
-  }(std::make_index_sequence<IdxSeq.size()>{});
+  }(std::make_index_sequence<star::size<decltype(IdxSeq)>>{});
 
   using Rec = IndexFilteredTypeSeqTrait<Idx + 1, TypeSeq<Tail...>, IdxSeq>::Type;
   using Type = std::conditional_t<is_kept, typename Rec::template Prepended<Head>, Rec>;

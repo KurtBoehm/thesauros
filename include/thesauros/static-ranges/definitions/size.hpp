@@ -14,12 +14,12 @@
 #include "thesauros/concepts/type-traits.hpp"
 
 namespace thes::star {
-template<typename TRange>
-concept HasSize = CompleteType<std::tuple_size<std::decay_t<TRange>>>;
-template<HasSize TRange>
-inline constexpr std::size_t size = std::tuple_size_v<std::decay_t<TRange>>;
-template<HasSize TRange>
-inline constexpr bool is_empty = size<TRange> == 0;
+template<typename Range>
+concept HasSize = CompleteType<std::tuple_size<std::decay_t<Range>>>;
+template<HasSize Range>
+inline constexpr std::size_t size = std::tuple_size_v<std::decay_t<Range>>;
+template<HasSize Range>
+inline constexpr bool is_empty = size<Range> == 0;
 } // namespace thes::star
 
 #endif // INCLUDE_THESAUROS_STATIC_RANGES_DEFINITIONS_SIZE_HPP
