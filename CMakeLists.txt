@@ -25,70 +25,18 @@ set(FMT_SHARED OFF CACHE BOOL "Build fmt as a shared library" FORCE)
 
 include(FetchContent)
 
-# Try CMake’s OpenMP module first
-find_package(OpenMP COMPONENTS CXX)
+# Fetch cmop for cmop_find_openmp() (used right below) and, when building tests, the target-option
+# functions.
+FetchContent_Declare(
+  cmop
+  GIT_REPOSITORY https://github.com/KurtBoehm/cmop.git
+  GIT_TAG main
+)
+FetchContent_MakeAvailable(cmop)
 
-# Figure out what to link for OpenMP
-set(THESAUROS_OPENMP_TARGET "")
-
-if(TARGET OpenMP::OpenMP_CXX)
-  # Normal case: CMake found OpenMP and created the imported target
-  set(THESAUROS_OPENMP_TARGET OpenMP::OpenMP_CXX)
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-  # Meson-like fallback for Apple Clang: `-Xpreprocessor -fopenmp` + `libomp`
-
-  # User-configurable OpenMP runtime prefix
-  set(THESAUROS_OPENMP_ROOT "" CACHE PATH "Prefix where libomp is installed")
-
-  # Collect candidate prefixes
-  set(_omp_prefixes "")
-
-  if(THESAUROS_OPENMP_ROOT)
-    list(APPEND _omp_prefixes "${THESAUROS_OPENMP_ROOT}")
-  else()
-    # If Homebrew is available, ask it for libomp’s prefix
-    find_program(HOMEBREW_EXECUTABLE brew)
-    if(HOMEBREW_EXECUTABLE)
-      execute_process(
-        COMMAND ${HOMEBREW_EXECUTABLE} --prefix libomp
-        RESULT_VARIABLE _brew_result
-        OUTPUT_VARIABLE
-          _brew_prefix OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET
-      )
-      if(_brew_result EQUAL 0 AND EXISTS "${_brew_prefix}")
-        list(APPEND _omp_prefixes "${_brew_prefix}")
-      endif()
-    endif()
-  endif()
-
-  # Search for the library
-  find_library(
-    THESAUROS_OMP_LIB
-    NAMES omp
-    HINTS ${_omp_prefixes} PATH_SUFFIXES lib lib64
-    REQUIRED
-  )
-
-  # Search for the header
-  find_path(
-    THESAUROS_OMP_INCLUDE_DIR
-    NAMES omp.h
-    HINTS ${_omp_prefixes} PATH_SUFFIXES include
-    REQUIRED
-  )
-
-  add_library(thesauros_openmp INTERFACE)
-  target_compile_options(thesauros_openmp INTERFACE -Xpreprocessor -fopenmp)
-  target_link_libraries(thesauros_openmp INTERFACE ${THESAUROS_OMP_LIB})
-  target_include_directories(
-    thesauros_openmp
-    INTERFACE ${THESAUROS_OMP_INCLUDE_DIR}
-  )
-
-  set(THESAUROS_OPENMP_TARGET thesauros_openmp)
-else()
-  message(FATAL_ERROR "OpenMP C++ support not found, but it is required.")
-endif()
+# thesauros_execution needs OpenMP for its OpenMP-based thread pool, and the umbrella target below
+# needs it too, so it is required unconditionally rather than only when building tests.
+cmop_find_openmp()
 
 FetchContent_Declare(
   boost_preprocessor
@@ -158,7 +106,7 @@ add_library(${PROJECT_NAME}_execution INTERFACE)
 add_library(${PROJECT_NAME}::execution ALIAS ${PROJECT_NAME}_execution)
 target_link_libraries(
   ${PROJECT_NAME}_execution
-  INTERFACE ${PROJECT_NAME}_core ${THESAUROS_OPENMP_TARGET}
+  INTERFACE ${PROJECT_NAME}_core cmop::openmp
 )
 
 # resources needs IOKit, and the library built from it, only on macOS; the link is added below.
@@ -179,7 +127,7 @@ target_link_libraries(
 target_link_libraries(
   ${PROJECT_NAME}
   INTERFACE
-    Boost::preprocessor fmt::fmt ${THESAUROS_OPENMP_TARGET}
+    Boost::preprocessor fmt::fmt cmop::openmp
 )
 
 # Optional library on macOS when THESAUROS_USE_IOKIT is true
@@ -202,7 +150,7 @@ if(APPLE AND THESAUROS_USE_IOKIT)
     ${PROJECT_NAME}_macos
     PRIVATE
       ${COREFOUNDATION_FRAMEWORK} ${IOKIT_FRAMEWORK} Boost::preprocessor
-      fmt::fmt ${THESAUROS_OPENMP_TARGET}
+      fmt::fmt cmop::openmp
   )
 
   target_link_libraries(${PROJECT_NAME}_resources INTERFACE ${PROJECT_NAME}_macos)
@@ -210,14 +158,8 @@ if(APPLE AND THESAUROS_USE_IOKIT)
 endif()
 
 if(THESAUROS_BUILD_TESTS)
-  # Fetch cmop to add functions that add target options
-  FetchContent_Declare(
-    cmop
-    GIT_REPOSITORY https://github.com/KurtBoehm/cmop.git
-    GIT_TAG main
-  )
-  FetchContent_MakeAvailable(cmop)
-
+  # cmop was already fetched above for cmop_find_openmp(); it also provides the target-option
+  # functions used below.
   include(CTest)
 
   foreach(
