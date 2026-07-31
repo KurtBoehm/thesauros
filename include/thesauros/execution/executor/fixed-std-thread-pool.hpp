@@ -22,6 +22,7 @@
 #include "thesauros/charconv/concat.hpp"
 #include "thesauros/containers/array/fixed-alloc.hpp"
 #include "thesauros/execution/system/affinity.hpp"
+#include "thesauros/ranges/index-type.hpp"
 #include "thesauros/ranges/indices.hpp"
 #include "thesauros/types/empty.hpp"
 
@@ -37,10 +38,10 @@ struct FixedStdThreadPool {
   using Threads = FixedAllocArray<std::jthread>;
   using TaskID = std::size_t;
 
-  template<typename TCpuSets = Empty>
-  explicit FixedStdThreadPool(std::size_t size, const TCpuSets& cpu_sets = {})
+  template<typename CpuSets = Empty>
+  explicit FixedStdThreadPool(std::size_t size, const CpuSets& cpu_sets = {})
       : threads_(Threads::create_with_capacity(size)) {
-    if constexpr (!std::same_as<TCpuSets, Empty>) {
+    if constexpr (!std::same_as<CpuSets, Empty>) {
       if (size > cpu_sets.size()) {
         throw std::invalid_argument{cat(size, " threads have been requested, but there are only ",
                                         cpu_sets.size(), " entries in the CPU set!")};
@@ -72,19 +73,20 @@ struct FixedStdThreadPool {
         }
       });
 
-      if constexpr (!std::same_as<TCpuSets, Empty>) {
-        (void)set_affinity(threads_[i], cpu_sets[i]);
+      if constexpr (!std::same_as<CpuSets, Empty>) {
+        using Index = ranges::RangeIndex<CpuSets>;
+        (void)set_affinity(threads_[i], cpu_sets[*thes::safe_cast<Index>(i)]);
       }
     }
   }
 
-  template<typename TCpuInfos = Empty>
-  static FixedStdThreadPool from_cpu_infos(std::size_t size, TCpuInfos&& cpu_infos = {}) {
-    if constexpr (std::same_as<TCpuInfos, Empty>) {
+  template<typename CpuInfos = Empty>
+  static FixedStdThreadPool from_cpu_infos(std::size_t size, CpuInfos&& cpu_infos = {}) {
+    if constexpr (std::same_as<CpuInfos, Empty>) {
       return FixedStdThreadPool{size, Empty{}};
     } else {
       return FixedStdThreadPool{
-        size, std::views::transform(std::forward<TCpuInfos>(cpu_infos),
+        size, std::views::transform(std::forward<CpuInfos>(cpu_infos),
                                     [](auto cpu) { return CpuSet::single_set(cpu.id); })};
     }
   }

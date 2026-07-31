@@ -6,6 +6,7 @@
 #include "ranges/concepts.hpp"
 #include "ranges/enumerate.hpp"
 #include "ranges/exposition.hpp"
+#include "ranges/index-type.hpp"
 #include "ranges/indices.hpp"
 // IWYU pragma: end_exports
 
