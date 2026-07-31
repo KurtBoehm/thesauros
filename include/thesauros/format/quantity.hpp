@@ -14,18 +14,18 @@
 #include "thesauros/quantity/io.hpp"
 #include "thesauros/quantity/quantity.hpp"
 
-template<typename TRep, typename TUnit>
-struct fmt::formatter<thes::Quantity<TRep, TUnit>> : fmt::nested_formatter<TRep> {
-  auto format(thes::Quantity<TRep, TUnit> q, format_context& ctx) const {
+template<typename R, typename U>
+struct fmt::formatter<thes::Quantity<R, U>> : fmt::nested_formatter<R> {
+  auto format(thes::Quantity<R, U> q, format_context& ctx) const {
     return this->write_padded(ctx, [&](auto out) {
-      return fmt::format_to(out, "{} {}", this->nested(q.count()), thes::unit_name<TUnit>);
+      return fmt::format_to(out, "{} {}", this->nested(q.count()), thes::unit_name<U>);
     });
   }
 };
 
-template<thes::AnyQuantity TQuantity>
-struct fmt::formatter<thes::SplitTimePrinter<TQuantity>> : thes::SimpleFormatter<> {
-  using Self = thes::SplitTimePrinter<TQuantity>;
+template<thes::AnyQuantity Q>
+struct fmt::formatter<thes::SplitTimePrinter<Q>> : thes::SimpleFormatter<> {
+  using Self = thes::SplitTimePrinter<Q>;
 
   auto format(Self p, format_context& ctx) const {
     return this->write_padded(ctx, [&](auto it) {

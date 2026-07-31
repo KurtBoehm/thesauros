@@ -39,17 +39,17 @@ struct FilterView {
 
 template<auto IdxRange>
 struct OnlyIndicesGenerator : public RangeGeneratorBase {
-  template<typename TRange>
-  THES_ALWAYS_INLINE constexpr FilterView<TRange, IdxRange> operator()(TRange&& range) const {
-    return {std::forward<TRange>(range)};
+  template<typename Range>
+  THES_ALWAYS_INLINE constexpr FilterView<Range, IdxRange> operator()(Range&& range) const {
+    return {std::forward<Range>(range)};
   }
 };
 
 template<auto IdxRange>
 struct AllExceptIndicesGenerator : public RangeGeneratorBase {
-  template<typename TRange>
-  THES_ALWAYS_INLINE constexpr auto operator()(TRange&& range) const {
-    constexpr std::size_t range_size = star::size<TRange>;
+  template<typename Range>
+  THES_ALWAYS_INLINE constexpr auto operator()(Range&& range) const {
+    constexpr std::size_t range_size = star::size<Range>;
 
     constexpr auto pair = [&]() THES_ALWAYS_INLINE {
       std::array<std::size_t, range_size> buffer{};
@@ -69,36 +69,36 @@ struct AllExceptIndicesGenerator : public RangeGeneratorBase {
     constexpr auto idxs = star::to_array(star::index_transform<pair.second>(
       [&](auto idx) THES_ALWAYS_INLINE { return std::get<idx>(pair.first); }));
 
-    return FilterView<TRange, idxs>{std::forward<TRange>(range)};
+    return FilterView<Range, idxs>{std::forward<Range>(range)};
   }
 };
 
 template<auto F>
 struct FilterGenerator : public RangeGeneratorBase {
-  template<typename TRange>
-  THES_ALWAYS_INLINE constexpr auto operator()(TRange&& range) const {
+  template<typename Range>
+  THES_ALWAYS_INLINE constexpr auto operator()(Range&& range) const {
     auto idx_num = []() THES_ALWAYS_INLINE {
-      constexpr std::size_t size = star::size<TRange>;
+      constexpr std::size_t size = star::size<Range>;
       std::size_t ctr = 0;
       tagged_iota<0, size> | for_each([&](auto idx) THES_ALWAYS_INLINE {
-        if (F(idx, type_tag<decltype(get_at(std::declval<TRange>(), idx))>)) {
+        if (F(idx, type_tag<decltype(get_at(std::declval<Range>(), idx))>)) {
           ++ctr;
         }
       });
       return ctr;
     };
     auto gen_idxs = [&]() THES_ALWAYS_INLINE {
-      constexpr std::size_t size = star::size<TRange>;
+      constexpr std::size_t size = star::size<Range>;
       std::array<std::size_t, idx_num()> idxs{};
       std::size_t ctr = 0;
       tagged_iota<0, size> | for_each([&](auto idx) THES_ALWAYS_INLINE {
-        if (F(idx, type_tag<decltype(get_at(std::declval<TRange>(), idx))>)) {
+        if (F(idx, type_tag<decltype(get_at(std::declval<Range>(), idx))>)) {
           idxs[ctr++] = idx;
         }
       });
       return idxs;
     };
-    return FilterView<TRange, gen_idxs()>{std::forward<TRange>(range)};
+    return FilterView<Range, gen_idxs()>{std::forward<Range>(range)};
   }
 };
 

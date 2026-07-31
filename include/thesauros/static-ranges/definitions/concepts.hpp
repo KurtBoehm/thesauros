@@ -36,19 +36,19 @@ template<typename Range, typename T, std::size_t Size>
 concept TypedSizedStaticRange = TypedStaticRange<Range, T> && SizedStaticRange<Range, Size>;
 
 struct RangeGeneratorBase {};
-template<typename TGen>
-struct RangeGeneratorTrait : std::is_base_of<RangeGeneratorBase, TGen> {};
+template<typename Gen>
+struct RangeGeneratorTrait : std::is_base_of<RangeGeneratorBase, Gen> {};
 
 struct ConsumerGeneratorBase {};
-template<typename TGen>
-struct ConsumerGeneratorTrait : std::is_base_of<ConsumerGeneratorBase, TGen> {};
+template<typename Gen>
+struct ConsumerGeneratorTrait : std::is_base_of<ConsumerGeneratorBase, Gen> {};
 
-template<typename TGen>
-concept IsRangeGenerator = RangeGeneratorTrait<std::decay_t<TGen>>::value;
-template<typename TGen>
-concept IsConsumerGenerator = ConsumerGeneratorTrait<std::decay_t<TGen>>::value;
-template<typename TGen>
-concept IsPipeSink = IsRangeGenerator<TGen> || IsConsumerGenerator<TGen>;
+template<typename Gen>
+concept IsRangeGenerator = RangeGeneratorTrait<std::remove_cvref_t<Gen>>::value;
+template<typename Gen>
+concept IsConsumerGenerator = ConsumerGeneratorTrait<std::remove_cvref_t<Gen>>::value;
+template<typename Gen>
+concept IsPipeSink = IsRangeGenerator<Gen> || IsConsumerGenerator<Gen>;
 } // namespace thes::star
 
 #endif // INCLUDE_THESAUROS_STATIC_RANGES_DEFINITIONS_CONCEPTS_HPP

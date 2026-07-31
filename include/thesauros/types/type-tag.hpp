@@ -15,10 +15,10 @@ template<typename T>
 struct TypeTag {
   using Type = T;
 
-  template<typename... TArgs>
-  requires(std::is_constructible_v<T, TArgs...>)
-  constexpr T construct(TArgs&&... args) const {
-    return T(std::forward<TArgs>(args)...);
+  template<typename... Args>
+  requires(std::is_constructible_v<T, Args...>)
+  constexpr T construct(Args&&... args) const {
+    return T(std::forward<Args>(args)...);
   }
 };
 

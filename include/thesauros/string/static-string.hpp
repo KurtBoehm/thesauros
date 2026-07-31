@@ -65,13 +65,13 @@ struct StaticString {
     return StaticString<size>(std::move(str));
   }
 
-  template<typename... TStrings>
-  requires(sizeof...(TStrings) > 0)
-  constexpr auto join(const TStrings&... strings) {
-    constexpr std::size_t str_num = sizeof...(TStrings);
-    constexpr std::size_t full_size = (... + TStrings::size) + (str_num - 1) * size;
+  template<typename... Strings>
+  requires(sizeof...(Strings) > 0)
+  constexpr auto join(const Strings&... strings) {
+    constexpr std::size_t str_num = sizeof...(Strings);
+    constexpr std::size_t full_size = (... + Strings::size) + (str_num - 1) * size;
     const auto tuple = std::tie(strings...);
-    using Tuple = std::tuple<TStrings...>;
+    using Tuple = std::tuple<Strings...>;
 
     // number of characters before string i and an array of these
     constexpr auto prefix_size = [=](auto i) {

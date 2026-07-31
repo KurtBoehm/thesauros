@@ -16,10 +16,10 @@
 #include "thesauros/utility.hpp"
 
 namespace {
-template<thes::IndexSegmenter TSeg>
-void check_segmenter_partition(const TSeg& seg) {
-  using Size = TSeg::Size;
-  using Segment = TSeg::Segment;
+template<thes::IndexSegmenter Seg>
+void check_segmenter_partition(const Seg& seg) {
+  using Size = Seg::Size;
+  using Segment = Seg::Segment;
 
   const Size total = seg.size();
   const Segment num_seg = seg.segment_num();

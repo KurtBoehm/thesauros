@@ -16,17 +16,16 @@
 #include "thesauros/containers/set-algorithms.hpp"
 
 namespace thes {
-template<typename TKey, typename TMapped, typename TKeyCompare = std::less<TKey>,
-         typename TKeyEqual = std::equal_to<TKey>,
-         typename TContainer = DynamicArray<std::pair<TKey, TMapped>>>
+template<typename K, typename V, typename KCmp = std::less<K>, typename KEq = std::equal_to<K>,
+         typename C = DynamicArray<std::pair<K, V>>>
 struct FlatMap {
-  using Key = TKey;
-  using Mapped = TMapped;
-  using KeyCompare = TKeyCompare;
-  using KeyEqual = TKeyEqual;
+  using Key = K;
+  using Mapped = V;
+  using KeyCompare = KCmp;
+  using KeyEqual = KEq;
 
   using Value = std::pair<Key, Mapped>;
-  using Container = TContainer;
+  using Container = C;
 
   using value_type = Value;
   using iterator = Container::iterator;
@@ -114,14 +113,14 @@ struct FlatMap {
     }
     return data_.insert(iter, Value{key, std::forward<Mapped>(value)})->second;
   }
-  template<typename TTrans, typename TCreate>
-  void transform_or_create(const Key& key, TTrans&& transform, TCreate&& create) {
+  template<typename Trans, typename Create>
+  void transform_or_create(const Key& key, Trans&& transform, Create&& create) {
     const auto iter = lower_bound(key);
     if (iter != end() && PairEqual{equal_}(*iter, key)) {
-      std::forward<TTrans>(transform)(iter->second);
+      std::forward<Trans>(transform)(iter->second);
       return;
     }
-    data_.insert(iter, Value{key, std::forward<TCreate>(create)()});
+    data_.insert(iter, Value{key, std::forward<Create>(create)()});
   }
 
   bool erase(const auto& key) {
@@ -140,18 +139,18 @@ struct FlatMap {
     return find(key)->second;
   }
 
-  template<typename TOther>
-  void set_difference(const TOther& other) {
+  template<typename Other>
+  void set_difference(const Other& other) {
     thes::set_difference(data_, other);
   }
 
-  template<typename TPred>
-  void erase_if(TPred pred) {
+  template<typename Pred>
+  void erase_if(Pred pred) {
     thes::erase_if(data_, pred);
   }
 
-  template<typename TOther>
-  void set_union(const TOther& other) {
+  template<typename Other>
+  void set_union(const Other& other) {
     thes::set_union(data_, other, PairCompare{compare_}, PairEqual{equal_});
   }
 
@@ -160,9 +159,9 @@ struct FlatMap {
   }
 
 private:
-  template<typename TOp>
+  template<typename Op>
   struct PairOp {
-    [[no_unique_address]] TOp op_{};
+    [[no_unique_address]] Op op_{};
 
     bool operator()(const Value& first, const Value& second) const {
       return op_(first.first, second.first);
@@ -182,8 +181,8 @@ private:
   using PairEqual = PairOp<KeyEqual>;
 
   Container data_{};
-  [[no_unique_address]] TKeyCompare compare_{};
-  [[no_unique_address]] TKeyEqual equal_{};
+  [[no_unique_address]] KCmp compare_{};
+  [[no_unique_address]] KEq equal_{};
 };
 } // namespace thes
 

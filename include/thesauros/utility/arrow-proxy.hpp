@@ -19,7 +19,7 @@ struct ArrowProxy {
   }
 };
 
-template<typename T, typename TOut>
+template<typename T, typename Out>
 struct ArrowCreator;
 
 template<typename T>

@@ -76,14 +76,14 @@ PREFIX_NAME(exbi, "Ei");
 
 #undef PREFIX_NAME
 
-template<typename TUnit>
+template<typename U>
 struct UnitNameTrait;
 template<typename T>
 inline constexpr auto unit_name = UnitNameTrait<T>::name;
 
-template<typename TMul, typename TBUnit>
-struct UnitNameTrait<Unit<TMul, TBUnit>> {
-  static constexpr auto name = prefix_name<TMul> + base_unit_name<TBUnit>;
+template<typename Mul, typename BUnit>
+struct UnitNameTrait<Unit<Mul, BUnit>> {
+  static constexpr auto name = prefix_name<Mul> + base_unit_name<BUnit>;
 };
 
 #define UNIT_NAME(UNIT, NAME) \
@@ -105,7 +105,7 @@ constexpr std::intmax_t ratio_as_integer(std::ratio<N> /*r*/) {
 }
 } // namespace detail
 
-template<AnyQuantity TQuantity>
+template<AnyQuantity Q>
 struct SplitTimePrinter {
   using Unit = unit::millisecond;
 
@@ -116,14 +116,14 @@ struct SplitTimePrinter {
   static constexpr std::intmax_t sec_limit =
     detail::ratio_as_integer(UnitRatio<unit::second, Unit>{});
 
-  explicit SplitTimePrinter(TQuantity&& q) : quantity(std::forward<TQuantity>(q)) {}
+  explicit SplitTimePrinter(Q&& q) : quantity(std::forward<Q>(q)) {}
 
-  TQuantity quantity;
+  Q quantity;
 };
 
-template<typename TQuantity>
-constexpr auto split_time(TQuantity&& q) {
-  return SplitTimePrinter<TQuantity>(std::forward<TQuantity>(q));
+template<typename Q>
+constexpr auto split_time(Q&& q) {
+  return SplitTimePrinter<Q>(std::forward<Q>(q));
 }
 } // namespace thes
 

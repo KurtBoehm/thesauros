@@ -18,14 +18,14 @@
 #include "thesauros/math/integer-cast.hpp"
 
 namespace thes {
-template<typename T, typename TExecutionPolicy, typename TForwardIt1, typename TForwardIt2,
-         typename TBinaryOperation, typename TUnaryOperation>
-inline void transform_inclusive_scan(TExecutionPolicy&& policy, TForwardIt1 first, TForwardIt1 last,
-                                     TForwardIt2 d_first, TBinaryOperation binary_op,
-                                     TUnaryOperation unary_op, T neutral) {
+template<typename T, typename ExecutionPolicy, typename ForwardIt1, typename ForwardIt2,
+         typename BinaryOperation, typename UnaryOperation>
+inline void transform_inclusive_scan(ExecutionPolicy&& policy, ForwardIt1 first, ForwardIt1 last,
+                                     ForwardIt2 d_first, BinaryOperation binary_op,
+                                     UnaryOperation unary_op, T neutral) {
   const auto raw_size = std::distance(first, last);
   const auto size = [raw_size] {
-    using ExPo = std::decay_t<TExecutionPolicy>;
+    using ExPo = std::decay_t<ExecutionPolicy>;
     if constexpr (requires { typename ExPo::Size; }) {
       return *safe_cast<typename ExPo::Size>(raw_size);
     } else {
@@ -36,7 +36,7 @@ inline void transform_inclusive_scan(TExecutionPolicy&& policy, TForwardIt1 firs
 
   std::latch barrier{*safe_cast<std::ptrdiff_t>(policy.thread_num())};
   FixedArray<T> offsets(policy.thread_num());
-  std::forward<TExecutionPolicy>(policy).execute_segmented(
+  std::forward<ExecutionPolicy>(policy).execute_segmented(
     size, [=, &barrier, &offsets](std::size_t thread_idx, auto begin, auto end) {
       auto thread_first = first;
       std::advance(thread_first, begin);

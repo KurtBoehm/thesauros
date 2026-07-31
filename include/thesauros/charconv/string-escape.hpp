@@ -37,16 +37,16 @@ constexpr char escape_char(UnicodeDecoder::CodePoint codep) {
   }
 }
 
-template<typename TChar>
-requires(std::same_as<TChar, char> || std::same_as<TChar, char8_t>)
-inline auto escape_string(std::basic_string_view<TChar> in, auto out_it) {
+template<typename C>
+requires(std::same_as<C, char> || std::same_as<C, char8_t>)
+inline auto escape_string(std::basic_string_view<C> in, auto out_it) {
   using enum UnicodeDecoder::State;
   auto extend = [&out_it]<typename... Ts>(Ts... chars) { ((*out_it++ = chars), ...); };
 
   UnicodeDecoder decoder{};
 
-  const TChar* end = in.end();
-  for (const TChar* ptr = in.begin(); ptr != end; ++ptr) {
+  const C* end = in.end();
+  for (const C* ptr = in.begin(); ptr != end; ++ptr) {
     const auto c = *ptr;
     const auto c8 = std::bit_cast<u8>(c);
 

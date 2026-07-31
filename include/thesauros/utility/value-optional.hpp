@@ -70,10 +70,10 @@ struct ValueOptional {
   }
 
   /** Invoke `f(*this)` if a value is present. */
-  template<typename TF>
-  constexpr void value_run(TF&& f) {
+  template<typename F>
+  constexpr void value_run(F&& f) {
     if (has_value()) {
-      std::invoke(std::forward<TF>(f), **this);
+      std::invoke(std::forward<F>(f), **this);
     }
   }
 
@@ -83,15 +83,15 @@ struct ValueOptional {
    * The callable `f` is invoked only when a value is present and must return an
    * optional-like, default-initializable result.
    */
-  template<typename TF>
-  [[nodiscard]] constexpr auto and_then(TF&& f) const
-  requires(std::invocable<TF, const Value&> &&
-           std::default_initializable<std::remove_cvref_t<std::invoke_result_t<TF, const Value&>>>)
+  template<typename F>
+  [[nodiscard]] constexpr auto and_then(F&& f) const
+  requires(std::invocable<F, const Value&> &&
+           std::default_initializable<std::remove_cvref_t<std::invoke_result_t<F, const Value&>>>)
   {
-    using Result = std::remove_cvref_t<std::invoke_result_t<TF, const Value&>>;
+    using Result = std::remove_cvref_t<std::invoke_result_t<F, const Value&>>;
 
     if (has_value()) {
-      return std::invoke(std::forward<TF>(f), **this);
+      return std::invoke(std::forward<F>(f), **this);
     }
 
     return Result{};
@@ -106,13 +106,13 @@ struct ValueOptional {
    * Unlike `std::optional::transform`, the element type does not change, because the empty
    * state is encoded via the sentinel `empty_value`.
    */
-  template<typename TF>
-  [[nodiscard]] constexpr ValueOptional transform(TF&& f) const
-  requires(std::invocable<TF, const Value&> &&
-           std::convertible_to<std::invoke_result_t<TF, const Value&>, Value>)
+  template<typename F>
+  [[nodiscard]] constexpr ValueOptional transform(F&& f) const
+  requires(std::invocable<F, const Value&> &&
+           std::convertible_to<std::invoke_result_t<F, const Value&>, Value>)
   {
     if (has_value()) {
-      return ValueOptional{std::invoke(std::forward<TF>(f), **this)};
+      return ValueOptional{std::invoke(std::forward<F>(f), **this)};
     }
 
     return ValueOptional{};
@@ -124,15 +124,15 @@ struct ValueOptional {
    * The callable `f` is invoked only when the optional is empty and must produce a
    * `ValueOptional` or something convertible to it.
    */
-  template<typename TF>
-  [[nodiscard]] constexpr ValueOptional or_else(TF&& f) const
-  requires(std::invocable<TF> && std::convertible_to<std::invoke_result_t<TF>, ValueOptional>)
+  template<typename F>
+  [[nodiscard]] constexpr ValueOptional or_else(F&& f) const
+  requires(std::invocable<F> && std::convertible_to<std::invoke_result_t<F>, ValueOptional>)
   {
     if (has_value()) {
       return *this;
     }
 
-    return std::invoke(std::forward<TF>(f));
+    return std::invoke(std::forward<F>(f));
   }
 
 private:

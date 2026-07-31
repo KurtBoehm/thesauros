@@ -15,31 +15,30 @@
 #include "thesauros/math/integer-cast.hpp"
 
 namespace thes::ranges {
-template<typename TSize, typename TIter>
+template<typename S, typename It>
 struct EnumerateRange {
-  using Value = std::pair<TSize, decltype(*std::declval<TIter>())>;
+  using Value = std::pair<S, decltype(*std::declval<It>())>;
 
   struct const_iterator : public StateIteratorFacade<iter::ValueTypes<Value, std::ptrdiff_t>> {
     friend StateIteratorFacade<iter::ValueTypes<Value, std::ptrdiff_t>>;
 
     constexpr const_iterator() = default;
-    explicit constexpr const_iterator(TIter begin, TIter it) : begin_(begin), it_(std::move(it)) {}
+    explicit constexpr const_iterator(It begin, It it) : begin_(begin), it_(std::move(it)) {}
 
   private:
     constexpr Value value() const {
-      return Value{*safe_cast<TSize>(it_ - begin_), *it_};
+      return Value{*safe_cast<S>(it_ - begin_), *it_};
     }
 
     constexpr auto& state(this auto& self) {
       return self.it_;
     }
 
-    TIter begin_{};
-    TIter it_{};
+    It begin_{};
+    It it_{};
   };
 
-  constexpr EnumerateRange(TIter begin, TIter end)
-      : begin_(std::move(begin)), end_(std::move(end)) {}
+  constexpr EnumerateRange(It begin, It end) : begin_(std::move(begin)), end_(std::move(end)) {}
 
   constexpr const_iterator begin() const {
     return const_iterator(begin_, begin_);
@@ -49,22 +48,22 @@ struct EnumerateRange {
   }
 
 private:
-  TIter begin_;
-  TIter end_;
+  It begin_;
+  It end_;
 };
 } // namespace thes::ranges
 
 namespace thes::views {
-/** Pairs every element of `container` with its zero-based index, of type `TSize`. */
-template<typename TSize, typename TRange>
-constexpr auto enumerate(TRange&& container) {
+/** Pairs every element of `container` with its zero-based index, of type `S`. */
+template<typename S, typename R>
+constexpr auto enumerate(R&& container) {
   using Iter = decltype(container.begin());
-  return ranges::EnumerateRange<TSize, Iter>{container.begin(), container.end()};
+  return ranges::EnumerateRange<S, Iter>{container.begin(), container.end()};
 }
-/** Pairs every element of `[begin, end)` with its zero-based index, of type `TSize`. */
-template<typename TSize, typename TIter>
-constexpr auto enumerate(TIter begin, TIter end) {
-  return ranges::EnumerateRange<TSize, TIter>{std::move(begin), std::move(end)};
+/** Pairs every element of `[begin, end)` with its zero-based index, of type `S`. */
+template<typename S, typename It>
+constexpr auto enumerate(It begin, It end) {
+  return ranges::EnumerateRange<S, It>{std::move(begin), std::move(end)};
 }
 } // namespace thes::views
 

@@ -53,8 +53,8 @@ inline void concat_append(std::string& out, T value) {
  * This is deliberately not a formatting facility: it exists so that the parts of Thesauros below
  * `format` can build messages, above all for exceptions, without depending on `{fmt}`.
  */
-template<typename... TArgs>
-[[nodiscard]] inline std::string cat(const TArgs&... args) {
+template<typename... Args>
+[[nodiscard]] inline std::string cat(const Args&... args) {
   std::string out{};
   (detail::concat_append(out, args), ...);
   return out;

@@ -8,7 +8,6 @@
 #define INCLUDE_THESAUROS_STATIC_RANGES_VIEWS_REVERSED_HPP
 
 #include <cstddef>
-#include <type_traits>
 #include <utility>
 
 #include "thesauros/macropolis/inlining.hpp"
@@ -18,13 +17,12 @@
 #include "thesauros/static-ranges/definitions/tuple-defs.hpp"
 
 namespace thes::star {
-template<typename TInner>
+template<typename Inner>
 struct ReversedView {
-  using Inner = std::decay_t<TInner>;
   static constexpr std::size_t size = thes::star::size<Inner>;
   static constexpr TupleDefsMarker tuple_defs_marker{};
 
-  TInner inner;
+  Inner inner;
 
   template<std::size_t I>
   THES_ALWAYS_INLINE friend constexpr auto get(const ReversedView& self) {
@@ -33,9 +31,9 @@ struct ReversedView {
 };
 
 struct ReversedGenerator : public RangeGeneratorBase {
-  template<typename TRange>
-  THES_ALWAYS_INLINE constexpr ReversedView<TRange> operator()(TRange&& range) const {
-    return {std::forward<TRange>(range)};
+  template<typename Range>
+  THES_ALWAYS_INLINE constexpr ReversedView<Range> operator()(Range&& range) const {
+    return {std::forward<Range>(range)};
   }
 };
 

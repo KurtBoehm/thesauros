@@ -22,23 +22,23 @@ struct Delimiter {
   explicit constexpr Delimiter(Raw str) : str_(str) {}
 
   /** Writes the separator, followed by `sep`, and returns the iterator past both. */
-  template<typename TIt>
-  constexpr TIt output(TIt it, char sep) const {
-    return output_impl(it, [sep](TIt cur) {
+  template<typename It>
+  constexpr It output(It it, char sep) const {
+    return output_impl(it, [sep](It cur) {
       *cur++ = sep;
       return cur;
     });
   }
 
   /** Writes the separator and returns the iterator past it. */
-  template<typename TIt>
-  constexpr TIt output(TIt it) const {
-    return output_impl(it, [](TIt cur) { return cur; });
+  template<typename It>
+  constexpr It output(It it) const {
+    return output_impl(it, [](It cur) { return cur; });
   }
 
 private:
-  template<typename TIt>
-  constexpr TIt output_impl(TIt it, auto op) const {
+  template<typename It>
+  constexpr It output_impl(It it, auto op) const {
     if (first_) {
       first_ = false;
       return it;

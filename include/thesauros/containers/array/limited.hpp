@@ -45,8 +45,8 @@ struct LimitedArray {
     assert(size_ <= capacity);
   }
 
-  template<std::input_iterator TIt>
-  constexpr LimitedArray(TIt first, TIt last)
+  template<std::input_iterator It>
+  constexpr LimitedArray(It first, It last)
       : size_(*safe_cast<std::size_t>(std::distance(first, last))) {
     assert(size_ <= capacity);
     std::ranges::copy(first, last, data_.begin());

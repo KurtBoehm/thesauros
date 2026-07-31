@@ -11,16 +11,16 @@
 #include <utility>
 
 namespace thes {
-template<typename TRet = void>
+template<typename Ret = void>
 struct NoOp {
-  TRet value{};
+  Ret value{};
 
-  explicit constexpr NoOp(TRet&& val) : value(std::forward<TRet>(val)) {}
+  explicit constexpr NoOp(Ret&& val) : value(std::forward<Ret>(val)) {}
   constexpr NoOp()
-  requires(std::is_default_constructible_v<TRet>)
+  requires(std::is_default_constructible_v<Ret>)
   = default;
 
-  constexpr TRet operator()(const auto&... /*args*/) const noexcept {
+  constexpr Ret operator()(const auto&... /*args*/) const noexcept {
     return value;
   }
 };
@@ -30,12 +30,12 @@ struct NoOp<void> {
 };
 NoOp() -> NoOp<void>;
 
-template<typename TOp>
+template<typename F>
 struct AnyNoOpTrait : public std::false_type {};
-template<typename TRet>
-struct AnyNoOpTrait<NoOp<TRet>> : public std::true_type {};
-template<typename TOp>
-concept AnyNoOp = AnyNoOpTrait<TOp>::value;
+template<typename Ret>
+struct AnyNoOpTrait<NoOp<Ret>> : public std::true_type {};
+template<typename F>
+concept AnyNoOp = AnyNoOpTrait<F>::value;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_FUNCTIONAL_NO_OP_HPP

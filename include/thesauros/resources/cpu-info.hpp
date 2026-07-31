@@ -59,11 +59,11 @@ enum struct EfficiencyClass : u8 { any, efficiency, medium, performance };
 //--------------------------------------------------------------------------------------------------
 
 /** A view over the CPU indices described by a sysfs range string. */
-template<typename TChars>
-auto cpu_range(TChars&& full) {
+template<typename Chars>
+auto cpu_range(Chars&& full) {
   const std::string_view fullsv{full.data(), full.size()};
   const auto size = full.size() - std::size_t(fullsv.ends_with("\n"));
-  return std::forward<TChars>(full) | std::views::take(size) | std::views::split(',') |
+  return std::forward<Chars>(full) | std::views::take(size) | std::views::split(',') |
          std::views::transform([](auto substr) {
            std::string_view subsv{substr.data(), substr.size()};
            const std::size_t hyphen = subsv.find('-');

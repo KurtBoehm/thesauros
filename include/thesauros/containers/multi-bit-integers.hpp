@@ -22,12 +22,11 @@
 #include "thesauros/math/arithmetic.hpp"
 
 namespace thes {
-template<std::unsigned_integral TChunk, std::size_t BitN,
-         typename TAllocator = std::allocator<TChunk>>
+template<std::unsigned_integral C, std::size_t BitN, typename A = std::allocator<C>>
 requires(std::has_single_bit(BitN))
 struct MultiBitIntegers {
-  using Chunk = TChunk;
-  using Allocator = TAllocator;
+  using Chunk = C;
+  using Allocator = A;
   using Limits = std::numeric_limits<Chunk>;
   static constexpr std::size_t per_chunk = Limits::digits / BitN;
   static constexpr Chunk mask = Limits::max() >> (Limits::digits - BitN);

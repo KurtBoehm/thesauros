@@ -10,11 +10,11 @@
 #include "thesauros/format/fmtlib.hpp"
 
 namespace thes {
-template<typename TChar = char>
+template<typename C = char>
 struct SimpleFormatter {
   constexpr SimpleFormatter() = default;
 
-  constexpr const TChar* parse(fmt::parse_context<TChar>& ctx) {
+  constexpr const C* parse(fmt::parse_context<C>& ctx) {
     auto it = ctx.begin();
     auto end = ctx.end();
     if (it == end) {
@@ -23,8 +23,8 @@ struct SimpleFormatter {
     fmt::format_specs specs{};
     it = fmt::detail::parse_align(it, end, specs);
     specs_ = specs;
-    TChar c = *it;
-    auto width_ref = fmt::detail::arg_ref<TChar>();
+    C c = *it;
+    auto width_ref = fmt::detail::arg_ref<C>();
     if ((c >= '0' && c <= '9') || c == '{') {
       it = fmt::detail::parse_width(it, end, specs, width_ref, ctx);
       width_ = specs.width;
@@ -33,19 +33,19 @@ struct SimpleFormatter {
     return it;
   }
 
-  template<typename TFormatContext, typename TF>
-  auto write_padded(TFormatContext& ctx, TF write) const -> decltype(ctx.out()) {
+  template<typename Ctx, typename F>
+  auto write_padded(Ctx& ctx, F write) const -> decltype(ctx.out()) {
     if (width_ == 0) {
       return write(ctx.out());
     }
-    auto buf = fmt::basic_memory_buffer<TChar>();
-    write(fmt::basic_appender<TChar>(buf));
+    auto buf = fmt::basic_memory_buffer<C>();
+    write(fmt::basic_appender<C>(buf));
     auto specs = fmt::format_specs();
     specs.width = width_;
-    specs.set_fill(fmt::basic_string_view<TChar>(specs_.fill<TChar>(), specs_.fill_size()));
+    specs.set_fill(fmt::basic_string_view<C>(specs_.fill<C>(), specs_.fill_size()));
     specs.set_align(specs_.align());
-    return fmt::detail::write<TChar>(ctx.out(),
-                                     fmt::basic_string_view<TChar>(buf.data(), buf.size()), specs);
+    return fmt::detail::write<C>(ctx.out(), fmt::basic_string_view<C>(buf.data(), buf.size()),
+                                 specs);
   }
 
 private:

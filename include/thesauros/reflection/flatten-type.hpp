@@ -72,8 +72,8 @@ struct FlattenType<std::optional<T>> {
   static constexpr Type flatten(std::optional<T>&& value) {
     if (value.has_value()) {
       return fancy_visit(
-        []<typename TFlat>(TFlat&& flat) {
-          return Type{std::in_place_type<TFlat>, std::forward<TFlat>(flat)};
+        []<typename Flat>(Flat&& flat) {
+          return Type{std::in_place_type<Flat>, std::forward<Flat>(flat)};
         },
         FlattenType<T>::flatten(std::forward<T>(*value)));
     }
@@ -81,8 +81,8 @@ struct FlattenType<std::optional<T>> {
   }
 };
 
-template<typename TVar>
-static constexpr auto flatten_variant(TVar&& value) {
+template<typename T>
+static constexpr auto flatten_variant(T&& value) {
   return fancy_flat_visit(
     []<typename T1>(auto maker1, T1&& inner1) {
       return fancy_visit_with_maker(
@@ -92,7 +92,7 @@ static constexpr auto flatten_variant(TVar&& value) {
         },
         FlattenType<std::decay_t<T1>>::flatten(std::forward<T1>(inner1)));
     },
-    std::forward<TVar>(value));
+    std::forward<T>(value));
 }
 
 template<typename... Ts>

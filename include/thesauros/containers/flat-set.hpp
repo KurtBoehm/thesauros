@@ -15,11 +15,11 @@
 #include "thesauros/containers/set-algorithms.hpp"
 
 namespace thes {
-template<typename TValue, typename TCompare = std::less<TValue>,
-         typename TEqual = std::equal_to<TValue>, typename TContainer = DynamicArray<TValue>>
+template<typename V, typename Cmp = std::less<V>, typename Eq = std::equal_to<V>,
+         typename C = DynamicArray<V>>
 struct FlatSet {
-  using Value = TValue;
-  using Container = TContainer;
+  using Value = V;
+  using Container = C;
 
   using value_type = Value;
   using const_iterator = Container::const_iterator;
@@ -47,7 +47,7 @@ struct FlatSet {
     return data_.empty();
   }
 
-  const TValue& front() const {
+  const V& front() const {
     return data_.front();
   }
   void pop_front() {
@@ -71,7 +71,7 @@ struct FlatSet {
     return end();
   }
 
-  void insert(const TValue& value) {
+  void insert(const V& value) {
     auto it = lower_bound(value);
     if (it != end() && equal_(*it, value)) {
       return;
@@ -88,18 +88,18 @@ struct FlatSet {
     return false;
   }
 
-  template<typename TOther>
-  void set_difference(const TOther& other) {
+  template<typename Other>
+  void set_difference(const Other& other) {
     thes::set_difference(data_, other);
   }
 
-  template<typename TPred>
-  void erase_if(TPred pred) {
+  template<typename Pred>
+  void erase_if(Pred pred) {
     thes::erase_if(data_, pred);
   }
 
-  template<typename TOther>
-  void set_union(const TOther& other) {
+  template<typename Other>
+  void set_union(const Other& other) {
     thes::set_union(data_, other, compare_, equal_);
   }
 
@@ -113,8 +113,8 @@ private:
   }
 
   Container data_{};
-  [[no_unique_address]] TCompare compare_{};
-  [[no_unique_address]] TEqual equal_{};
+  [[no_unique_address]] Cmp compare_{};
+  [[no_unique_address]] Eq equal_{};
 };
 } // namespace thes
 

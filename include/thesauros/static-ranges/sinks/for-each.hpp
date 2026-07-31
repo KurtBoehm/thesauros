@@ -29,9 +29,9 @@ struct ForEachGenerator : public ConsumerGeneratorBase {
   }
 };
 
-template<typename TOp>
-THES_ALWAYS_INLINE inline constexpr auto for_each(TOp&& op) {
-  return ForEachGenerator<TOp>{std::forward<TOp>(op)};
+template<typename F>
+THES_ALWAYS_INLINE inline constexpr auto for_each(F&& op) {
+  return ForEachGenerator<F>{std::forward<F>(op)};
 }
 } // namespace thes::star
 

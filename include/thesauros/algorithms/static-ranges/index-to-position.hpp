@@ -18,21 +18,21 @@
 namespace thes::star {
 template<typename Idx, typename S, std::size_t Dims>
 constexpr auto index_to_position(Idx index, const std::array<S, Dims>& sizes) {
-  auto impl = [&sizes]<typename... TArgs>(auto& self, Idx idx, auto end, TArgs&&... args) {
+  auto impl = [&sizes]<typename... Args>(auto& self, Idx idx, auto end, Args&&... args) {
     static_assert(Dims > 0);
 
     if constexpr (Dims == 1) {
       static_assert(end == 1);
-      static_assert(sizeof...(TArgs) == 0);
+      static_assert(sizeof...(Args) == 0);
       return std::array{idx};
     }
 
     static_assert(end >= 2);
     const auto [div, mod] = divmod(idx, get_at<end - 1>(sizes));
     if constexpr (end == 2) {
-      return std::array{div, mod, std::forward<TArgs>(args)...};
+      return std::array{div, mod, std::forward<Args>(args)...};
     } else {
-      return self(self, div, index_tag<end - 1>, mod, std::forward<TArgs>(args)...);
+      return self(self, div, index_tag<end - 1>, mod, std::forward<Args>(args)...);
     }
   };
 

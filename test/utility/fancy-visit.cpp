@@ -83,8 +83,8 @@ inline constexpr auto v4 = thes::fancy_flat_visit(
   [](auto maker, auto var1) {
     return thes::fancy_visit_with_maker(
       maker,
-      [&]<typename TVar2>(auto /*maker*/, TVar2 var2) {
-        return maker(std::in_place_type<TVar2>, var2);
+      [&]<typename Var2>(auto /*maker*/, Var2 var2) {
+        return maker(std::in_place_type<Var2>, var2);
       },
       var1);
   },

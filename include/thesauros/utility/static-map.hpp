@@ -53,19 +53,19 @@ constexpr StaticKey<String> operator""_key() {
 } // namespace static_map_literals
 } // namespace literals
 
-template<typename... TPairs>
+template<typename... Pairs>
 struct StaticMap;
 
-template<typename... TPairs>
-requires(Tuple<typename std::decay_t<TPairs>::Key...>{std::decay_t<TPairs>::key...} |
+template<typename... Pairs>
+requires(Tuple<typename std::decay_t<Pairs>::Key...>{std::decay_t<Pairs>::key...} |
          star::all_different)
-struct StaticMap<TPairs...> {
-  using Tuple = ::thes::Tuple<TPairs...>;
-  using DecayedTuple = ::thes::Tuple<std::decay_t<TPairs>...>;
+struct StaticMap<Pairs...> {
+  using Tuple = ::thes::Tuple<Pairs...>;
+  using DecayedTuple = ::thes::Tuple<std::decay_t<Pairs>...>;
 
   static constexpr bool contains(AnyValueTag auto key) {
     auto impl = [key](auto idx, auto rec) {
-      if constexpr (idx == sizeof...(TPairs)) {
+      if constexpr (idx == sizeof...(Pairs)) {
         return false;
       } else if constexpr (TupleElement<idx, DecayedTuple>::key == key.value) {
         return true;
@@ -78,11 +78,11 @@ struct StaticMap<TPairs...> {
 
   template<auto... K>
   static constexpr bool only_keys =
-    thes::Tuple{TPairs::key...} |
+    thes::Tuple{Pairs::key...} |
     star::transform([](auto key) { return thes::Tuple{K...} | star::contains(key); }) |
     star::left_reduce(std::logical_and{}, true);
 
-  explicit constexpr StaticMap(TPairs&&... pairs) : _pairs{std::forward<TPairs>(pairs)...} {}
+  explicit constexpr StaticMap(Pairs&&... pairs) : _pairs{std::forward<Pairs>(pairs)...} {}
 
   [[nodiscard]] constexpr const auto& get(AnyValueTag auto key) const {
     return get_impl<key.value>(*this);
@@ -105,7 +105,7 @@ private:
   template<auto K>
   static constexpr auto& get_impl(auto& self) {
     auto impl = [&self](auto idx, auto rec) -> const auto& {
-      static_assert(idx < sizeof...(TPairs), "The key is not known!");
+      static_assert(idx < sizeof...(Pairs), "The key is not known!");
       if constexpr (TupleElement<idx, DecayedTuple>::key == K) {
         return star::get_at<idx>(self._pairs).value;
       } else {
@@ -118,7 +118,7 @@ private:
   template<auto K>
   static constexpr auto& get_impl(auto& self, auto& def) {
     auto impl = [&](auto idx, auto rec) -> const auto& {
-      if constexpr (idx == sizeof...(TPairs)) {
+      if constexpr (idx == sizeof...(Pairs)) {
         return def;
       } else if constexpr (TupleElement<idx, DecayedTuple>::key == K) {
         return star::get_at<idx>(self._pairs).value;
@@ -148,8 +148,8 @@ struct StaticMap<> {
   }
 };
 
-template<typename... TPairs>
-StaticMap(TPairs&&... pairs) -> StaticMap<TPairs...>;
+template<typename... Pairs>
+StaticMap(Pairs&&... pairs) -> StaticMap<Pairs...>;
 
 template<auto... Pairs>
 inline constexpr auto static_map_tag =

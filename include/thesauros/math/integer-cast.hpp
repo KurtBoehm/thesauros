@@ -11,89 +11,90 @@
 #include <limits>
 
 #include "thesauros/macropolis/inlining.hpp"
+#include "thesauros/types/primitives.hpp"
 #include "thesauros/utility/info-result.hpp"
 
 namespace thes {
-enum struct CastInfo { OKAY, TOO_SMALL, TOO_LARGE };
+enum struct CastInfo : u8 { okay, too_small, too_large };
 template<typename T>
-using CastResult = InfoResult<T, CastInfo, CastInfo::OKAY>;
+using CastResult = InfoResult<T, CastInfo, CastInfo::okay>;
 
 namespace detail {
-template<std::integral TOut>
+template<std::integral Dst>
 struct SafeCastWorker {
-  using Ret = CastResult<TOut>;
+  using Ret = CastResult<Dst>;
 
-  THES_ALWAYS_INLINE explicit constexpr SafeCastWorker(TOut v) : value_(v) {}
+  THES_ALWAYS_INLINE explicit constexpr SafeCastWorker(Dst v) : value_(v) {}
 
   THES_ALWAYS_INLINE constexpr void too_small() {
-    info_ = CastInfo::TOO_SMALL;
+    info_ = CastInfo::too_small;
   }
   THES_ALWAYS_INLINE constexpr void too_large() {
-    info_ = CastInfo::TOO_LARGE;
+    info_ = CastInfo::too_large;
   }
   THES_ALWAYS_INLINE constexpr Ret value() {
     return Ret{value_, info_};
   }
 
 private:
-  TOut value_;
-  CastInfo info_{CastInfo::OKAY};
+  Dst value_;
+  CastInfo info_{CastInfo::okay};
 };
-template<std::integral TOut>
+template<std::integral Dst>
 struct SatCastWorker {
-  using Ret = TOut;
+  using Ret = Dst;
 
-  THES_ALWAYS_INLINE explicit constexpr SatCastWorker(TOut v) : value_(v) {}
+  THES_ALWAYS_INLINE explicit constexpr SatCastWorker(Dst v) : value_(v) {}
 
   THES_ALWAYS_INLINE constexpr void too_small() {
-    value_ = std::numeric_limits<TOut>::lowest();
+    value_ = std::numeric_limits<Dst>::lowest();
   }
   THES_ALWAYS_INLINE constexpr void too_large() {
-    value_ = std::numeric_limits<TOut>::max();
+    value_ = std::numeric_limits<Dst>::max();
   }
   THES_ALWAYS_INLINE constexpr Ret value() {
     return value_;
   }
 
 private:
-  TOut value_;
+  Dst value_;
 };
 } // namespace detail
 
-template<typename TIn, typename TOut, typename TWorker>
+template<typename Src, typename Dst, typename Worker>
 struct CastTrait;
-template<typename TIn, std::unsigned_integral TOut, typename TWorker>
-struct CastTrait<TIn, TOut, TWorker> {
-  using Ret = TWorker::Ret;
+template<typename Src, std::unsigned_integral Dst, typename Worker>
+struct CastTrait<Src, Dst, Worker> {
+  using Ret = Worker::Ret;
 
-  static constexpr Ret cast(TIn in) {
-    TWorker out{static_cast<TOut>(in)};
-    if constexpr (std::signed_integral<TIn>) {
+  static constexpr Ret cast(Src in) {
+    Worker out{static_cast<Dst>(in)};
+    if constexpr (std::signed_integral<Src>) {
       if (in < 0) {
         out.too_small();
       }
     }
-    if constexpr (std::numeric_limits<TOut>::digits < std::numeric_limits<TIn>::digits) {
-      if (in > TIn{std::numeric_limits<TOut>::max()}) {
+    if constexpr (std::numeric_limits<Dst>::digits < std::numeric_limits<Src>::digits) {
+      if (in > Src{std::numeric_limits<Dst>::max()}) {
         out.too_large();
       }
     }
     return out.value();
   }
 };
-template<typename TIn, std::signed_integral TOut, typename TWorker>
-struct CastTrait<TIn, TOut, TWorker> {
-  using Ret = TWorker::Ret;
+template<typename Src, std::signed_integral Dst, typename Worker>
+struct CastTrait<Src, Dst, Worker> {
+  using Ret = Worker::Ret;
 
-  static constexpr Ret cast(TIn in) {
-    TWorker out{static_cast<TOut>(in)};
-    if constexpr (std::numeric_limits<TOut>::digits < std::numeric_limits<TIn>::digits) {
-      if constexpr (std::signed_integral<TIn>) {
-        if (in < TIn{std::numeric_limits<TOut>::lowest()}) {
+  static constexpr Ret cast(Src in) {
+    Worker out{static_cast<Dst>(in)};
+    if constexpr (std::numeric_limits<Dst>::digits < std::numeric_limits<Src>::digits) {
+      if constexpr (std::signed_integral<Src>) {
+        if (in < Src{std::numeric_limits<Dst>::lowest()}) {
           out.too_small();
         }
       }
-      if (in > TIn{std::numeric_limits<TOut>::max()}) {
+      if (in > Src{std::numeric_limits<Dst>::max()}) {
         out.too_large();
       }
     }
@@ -101,13 +102,13 @@ struct CastTrait<TIn, TOut, TWorker> {
   }
 };
 
-template<std::integral TOut, std::integral TIn>
-inline constexpr CastResult<TOut> safe_cast(TIn in) {
-  return CastTrait<TIn, TOut, detail::SafeCastWorker<TOut>>::cast(in);
+template<std::integral Dst, std::integral Src>
+constexpr CastResult<Dst> safe_cast(Src in) {
+  return CastTrait<Src, Dst, detail::SafeCastWorker<Dst>>::cast(in);
 }
-template<std::integral TOut, std::integral TIn>
-inline constexpr TOut saturate_cast(TIn in) {
-  return CastTrait<TIn, TOut, detail::SatCastWorker<TOut>>::cast(in);
+template<std::integral Dst, std::integral Src>
+constexpr Dst saturate_cast(Src in) {
+  return CastTrait<Src, Dst, detail::SatCastWorker<Dst>>::cast(in);
 }
 } // namespace thes
 

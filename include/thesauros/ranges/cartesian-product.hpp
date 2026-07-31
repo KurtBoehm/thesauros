@@ -304,15 +304,15 @@ struct CartesianProductView
     }
 
     // C++23 26.7.32.3 §7.2
-    template<std::size_t N, typename TTuple>
-    [[nodiscard]] constexpr difference_type scaled_distance(const TTuple& t) const {
+    template<std::size_t N, typename Tuple>
+    [[nodiscard]] constexpr difference_type scaled_distance(const Tuple& t) const {
       return static_cast<difference_type>(std::get<N>(current_) - std::get<N>(t)) *
              scaled_size<N + 1>();
     }
 
     // C++23 26.7.32.3 §7-9
-    template<typename TTuple>
-    [[nodiscard]] constexpr difference_type distance_from(const TTuple& t) const {
+    template<typename Tuple>
+    [[nodiscard]] constexpr difference_type distance_from(const Tuple& t) const {
       return [&]<std::size_t... I>(std::index_sequence<I...>) {
         return (scaled_distance<I>(t) + ...);
       }(std::make_index_sequence<1 + sizeof...(V)>{});
@@ -416,16 +416,16 @@ CartesianProductView(V&&...) -> CartesianProductView<std::views::all_t<V>...>;
 namespace views {
 // Based on C++23 26.7.32.1
 struct CartesianProduct {
-  template<typename... TEs>
-  requires(sizeof...(TEs) == 0 ||
+  template<typename... Es>
+  requires(sizeof...(Es) == 0 ||
            requires {
-             ranges::CartesianProductView<std::views::all_t<TEs>...>(std::declval<TEs>()...);
+             ranges::CartesianProductView<std::views::all_t<Es>...>(std::declval<Es>()...);
            })
-  constexpr auto operator() [[nodiscard]] (TEs&&... es) const {
-    if constexpr (sizeof...(TEs) == 0) {
+  constexpr auto operator() [[nodiscard]] (Es&&... es) const {
+    if constexpr (sizeof...(Es) == 0) {
       return std::views::single(std::tuple{});
     } else {
-      return ranges::CartesianProductView<std::views::all_t<TEs>...>(std::forward<TEs>(es)...);
+      return ranges::CartesianProductView<std::views::all_t<Es>...>(std::forward<Es>(es)...);
     }
   }
 };

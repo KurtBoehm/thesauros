@@ -103,11 +103,11 @@ private:
 };
 
 /** A view over the Unicode codepoints decoded, lazily and on demand, from a UTF‑8 string. */
-template<typename TStr>
+template<typename S>
 struct UnicodeStringView {
   using CodePoint = u32;
 
-  explicit constexpr UnicodeStringView(TStr&& str) : str_(std::forward<TStr>(str)) {}
+  explicit constexpr UnicodeStringView(S&& str) : str_(std::forward<S>(str)) {}
 
   /** An iterator over the codepoints decoded from the referenced string. */
   struct Iterator {
@@ -149,11 +149,11 @@ struct UnicodeStringView {
   }
 
 private:
-  TStr str_;
+  S str_;
 };
 
-template<typename TStr>
-UnicodeStringView(TStr&&) -> UnicodeStringView<TStr>;
+template<typename S>
+UnicodeStringView(S&&) -> UnicodeStringView<S>;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_CHARCONV_UNICODE_HPP

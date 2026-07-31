@@ -83,9 +83,9 @@ struct FileReader {
     buf.resize(size());
     buf.resize(try_read(std::span{buf.data(), buf.size()}));
   }
-  template<BufferLike TBuf>
-  TBuf read_full(TypeTag<TBuf> /*tag*/ = {}) {
-    TBuf buf{};
+  template<BufferLike Buf>
+  Buf read_full(TypeTag<Buf> /*tag*/ = {}) {
+    Buf buf{};
     read_full(buf);
     return buf;
   }
@@ -161,13 +161,13 @@ private:
   FILE* handle_;
 };
 
-template<BufferLike TBuf>
-void read_file(TBuf& dst, const std::filesystem::path& path) {
+template<BufferLike Buf>
+void read_file(Buf& dst, const std::filesystem::path& path) {
   FileReader{path}.read_full(dst);
 }
-template<BufferLike TBuf>
-TBuf read_file(const std::filesystem::path& path, TypeTag<TBuf> /*tag*/ = {}) {
-  return FileReader{path}.read_full<TBuf>();
+template<BufferLike Buf>
+Buf read_file(const std::filesystem::path& path, TypeTag<Buf> /*tag*/ = {}) {
+  return FileReader{path}.read_full<Buf>();
 }
 } // namespace thes
 

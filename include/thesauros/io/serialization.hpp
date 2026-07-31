@@ -53,17 +53,17 @@ inline TypedChunk<V, S, Alloc> from_file(FileReader& reader,
 //--------------------------------------------------------------------------------------------------
 
 /** Writes `array` as its offsets followed by its values. */
-template<typename T, typename TSize, typename TAlloc>
-inline void to_file(const NestedDynamicArray<T, TSize, TAlloc>& array, FileWriter& writer) {
+template<typename T, typename S, typename A>
+inline void to_file(const NestedDynamicArray<T, S, A>& array, FileWriter& writer) {
   to_file(array.offsets(), writer);
   to_file(array.values(), writer);
 }
 
 /** Reads a `NestedDynamicArray` previously written by `to_file`. */
-template<typename T, typename TSize, typename TAlloc>
-inline NestedDynamicArray<T, TSize, TAlloc>
-from_file(FileReader& reader, TypeTag<NestedDynamicArray<T, TSize, TAlloc>> /*tag*/) {
-  using Array = NestedDynamicArray<T, TSize, TAlloc>;
+template<typename T, typename S, typename A>
+inline NestedDynamicArray<T, S, A> from_file(FileReader& reader,
+                                             TypeTag<NestedDynamicArray<T, S, A>> /*tag*/) {
+  using Array = NestedDynamicArray<T, S, A>;
   auto offsets = from_file(reader, type_tag<typename Array::SizeStorage>);
   auto values = from_file(reader, type_tag<typename Array::Storage>);
   return Array{std::move(offsets), std::move(values)};

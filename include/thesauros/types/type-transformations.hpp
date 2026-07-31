@@ -15,15 +15,15 @@
 #include "thesauros/types/fixed-size-integer.hpp"
 
 namespace thes {
-template<typename TMember>
+template<typename Member>
 struct MemberTypeTrait {
-  template<typename T, typename TMem>
-  static TMem get_type(TMem T::* v);
+  template<typename T, typename Mem>
+  static Mem get_type(Mem T::* v);
 
-  using Type = decltype(get_type(static_cast<TMember>(nullptr)));
+  using Type = decltype(get_type(static_cast<Member>(nullptr)));
 };
-template<typename TMember>
-using MemberType = typename MemberTypeTrait<TMember>::Type;
+template<typename Member>
+using MemberType = typename MemberTypeTrait<Member>::Type;
 
 template<typename T>
 struct AddConstTrait {
@@ -45,7 +45,7 @@ using TransferConst = std::conditional_t<std::is_const_v<From>, const To, To>;
 template<typename From, typename To>
 using TransferConstAccess = std::conditional_t<thes::ConstAccess<From>, const To, To>;
 
-template<typename T, typename TDummy>
+template<typename T, typename Dummy>
 using First = T;
 
 template<typename... Ts>

@@ -18,9 +18,9 @@
 
 namespace thes::star {
 struct AllDifferentGenerator : public ConsumerGeneratorBase {
-  template<typename TRange>
-  constexpr bool operator()(TRange&& range) const {
-    constexpr std::size_t size = star::size<TRange>;
+  template<typename Range>
+  constexpr bool operator()(Range&& range) const { // NOLINT(*-missing-std-forward)
+    constexpr std::size_t size = star::size<Range>;
     return star::left_reduce(std::logical_and<>{}, true)(star::index_transform<size>([&](auto i) {
       const auto trans = star::index_transform<i + 1, size>(
         [&](auto j) { return get_at(range, i) != get_at(range, j); });

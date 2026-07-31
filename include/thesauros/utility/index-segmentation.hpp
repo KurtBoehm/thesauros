@@ -39,13 +39,13 @@ concept IndexSegmenter = requires(const T& seg, typename T::Size size, typename 
 /**
  * Uniformly partitions contiguous indices into segments.
  *
- * @tparam TSize    Index type.
- * @tparam TSegment Segment index type.
+ * @tparam S   Index type.
+ * @tparam Seg Segment index type.
  */
-template<typename TSize, typename TSegment>
+template<typename S, typename Seg>
 struct UniformIndexSegmenter {
-  using Size = TSize;
-  using Segment = TSegment;
+  using Size = S;
+  using Segment = Seg;
   using Shared = Union<Size, Segment>;
 
   /** Constructs a segmenter for [0, size) into segment_num segments. */
@@ -105,11 +105,11 @@ private:
 };
 
 /** Uniform segmenter over [offset, offset + size). */
-template<typename TSize, typename TSegment>
-struct OffsetUniformIndexSegmenter : public UniformIndexSegmenter<TSize, TSegment> {
-  using Uniform = UniformIndexSegmenter<TSize, TSegment>;
-  using Size = TSize;
-  using Segment = TSegment;
+template<typename S, typename Seg>
+struct OffsetUniformIndexSegmenter : public UniformIndexSegmenter<S, Seg> {
+  using Uniform = UniformIndexSegmenter<S, Seg>;
+  using Size = S;
+  using Segment = Seg;
 
   /** Constructs an offset uniform segmenter. */
   constexpr OffsetUniformIndexSegmenter(Size offset, Size size, Segment segment_num) noexcept
@@ -142,11 +142,11 @@ private:
 };
 
 /** Uniform segmenter composed with affine transformation index ↦ factor * i + offset. */
-template<typename TSize, typename TSegment>
-struct AffineUniformIndexSegmenter : public UniformIndexSegmenter<TSize, TSegment> {
-  using Uniform = UniformIndexSegmenter<TSize, TSegment>;
-  using Size = TSize;
-  using Segment = TSegment;
+template<typename S, typename Seg>
+struct AffineUniformIndexSegmenter : public UniformIndexSegmenter<S, Seg> {
+  using Uniform = UniformIndexSegmenter<S, Seg>;
+  using Size = S;
+  using Segment = Seg;
 
   /** Constructs an affine uniform segmenter. */
   constexpr AffineUniformIndexSegmenter(Size factor, Size offset, Size size,
@@ -188,13 +188,13 @@ private:
 /**
  * Segments indices into blocks, then uniformly assigns blocks to segments.
  *
- * @tparam TSize    Index and block size type.
- * @tparam TSegment Segment index type.
+ * @tparam S   Index and block size type.
+ * @tparam Seg Segment index type.
  */
-template<typename TSize, typename TSegment>
+template<typename S, typename Seg>
 struct BlockedIndexSegmenter {
-  using Size = TSize;
-  using Segment = TSegment;
+  using Size = S;
+  using Segment = Seg;
 
   /**
    * Constructs a blocked segmenter.
@@ -246,7 +246,7 @@ struct BlockedIndexSegmenter {
 private:
   Size size_;
   Size block_size_;
-  UniformIndexSegmenter<TSize, TSegment> block_seg_;
+  UniformIndexSegmenter<S, Seg> block_seg_;
 };
 
 /**
@@ -259,15 +259,15 @@ private:
  *  - n0 new indices [A, A + n0) are prepended to segment 0.
  *  - n1 new indices [B + n0, B + n0 + n1) are appended to segment N-1.
  *
- * Template parameter `TSeg` must model `IndexSegmenter`.
+ * Template parameter `Seg` must model `IndexSegmenter`.
  */
-template<IndexSegmenter TSeg>
+template<IndexSegmenter Seg>
 struct PaddedIndexSegmenter {
-  using Size = TSeg::Size;
-  using Segment = TSeg::Segment;
+  using Size = Seg::Size;
+  using Segment = Seg::Segment;
 
   /** Construct padding adapter around an existing segmenter. */
-  constexpr PaddedIndexSegmenter(const TSeg& base, Size n0, Size n1) noexcept
+  constexpr PaddedIndexSegmenter(const Seg& base, Size n0, Size n1) noexcept
       : base_{base}, n0_{n0}, n1_{n1} {}
 
   /** Total number of indices including padding. */
@@ -330,7 +330,7 @@ struct PaddedIndexSegmenter {
   }
 
 private:
-  TSeg base_;
+  Seg base_;
   Size n0_;
   Size n1_;
 };

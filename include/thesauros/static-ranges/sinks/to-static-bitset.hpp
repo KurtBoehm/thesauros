@@ -9,7 +9,6 @@
 
 #include <concepts>
 #include <cstddef>
-#include <type_traits>
 #include <utility>
 
 #include "thesauros/containers/bitset/static.hpp"
@@ -20,13 +19,12 @@
 
 namespace thes::star {
 struct ToStaticBitsetGenerator : public ConsumerGeneratorBase {
-  template<typename TRange>
-  constexpr auto operator()(TRange&& range) const {
-    using Range = std::decay_t<TRange>;
-    static_assert(std::same_as<Value<TRange>, bool>);
+  template<typename Range>
+  constexpr auto operator()(Range&& range) const {
+    static_assert(std::same_as<Value<Range>, bool>);
     constexpr std::size_t size = thes::star::size<Range>;
 
-    return to_container<StaticBitset<size>>(std::forward<TRange>(range));
+    return to_container<StaticBitset<size>>(std::forward<Range>(range));
   }
 };
 

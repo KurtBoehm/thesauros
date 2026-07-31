@@ -36,9 +36,9 @@ struct MemberInfo {
 
   static_assert(std::same_as<std::remove_cvref_t<T>, MemberType<decltype(Pointer)>>);
 
-  template<typename TOther>
-  constexpr decltype(auto) value(TOther&& val) {
-    return std::forward<TOther>(val).*pointer;
+  template<typename Other>
+  constexpr decltype(auto) value(Other&& val) {
+    return std::forward<Other>(val).*pointer;
   }
 };
 

@@ -33,10 +33,10 @@ constexpr T div_ceil(const T dividend, const T divisor) {
   return T((dividend / divisor) + T{dividend % divisor != 0});
 }
 
-template<typename TBase, std::unsigned_integral TUInt>
-constexpr TBase pow(TBase x, const TUInt exponent) {
+template<typename Base, std::unsigned_integral Exp>
+constexpr Base pow(Base x, const Exp exponent) {
   const auto iter = static_cast<unsigned>(std::bit_width(exponent));
-  TBase y = 1;
+  Base y = 1;
   for (unsigned i = 0; i < iter; ++i, x *= x) {
     y *= (exponent & (1U << i)) ? x : 1;
   }
@@ -97,14 +97,14 @@ template<std::unsigned_integral T>
 constexpr bool get_bit(T value, auto bit_index) {
   return value & T(T{1} << bit_index);
 }
-template<std::unsigned_integral T, typename... TArgs>
-requires(... && std::same_as<TArgs, bool>)
-constexpr T combine_bits(TArgs... bits) {
+template<std::unsigned_integral T, typename... Args>
+requires(... && std::same_as<Args, bool>)
+constexpr T combine_bits(Args... bits) {
   return [bits...]<std::size_t... I>(std::index_sequence<I...> /*idxs*/) {
     T out{};
     (out += ... += T(T{bits} << I));
     return out;
-  }(std::index_sequence_for<TArgs...>{});
+  }(std::index_sequence_for<Args...>{});
 }
 
 // Computes floor(x^(1/n)) precisely. The complexity is Θ(log2(x)/n).

@@ -206,7 +206,7 @@ struct TypedChunk {
   }
 
 private:
-  /** Converts `p` to a `const TValue*` if `Self` is const, otherwise leaves it as `TValue*`. */
+  /** Converts `p` to a `const Value*` if `Self` is const, otherwise leaves it as `TValue*`. */
   template<typename Self>
   static constexpr auto const_or_mut(Value* p) noexcept {
     if constexpr (std::is_const_v<std::remove_reference_t<Self>>) {

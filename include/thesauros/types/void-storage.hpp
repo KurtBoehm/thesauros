@@ -13,24 +13,24 @@
 #include "thesauros/types/empty.hpp"
 
 namespace thes {
-template<typename T, template<typename> typename... TTrans>
+template<typename T, template<typename> typename... Trans>
 struct ApplyTypeTransformationsTrait;
 template<typename T>
 struct ApplyTypeTransformationsTrait<T> {
   using Type = T;
 };
-template<typename T, template<typename> typename TTrans, template<typename> typename... TOtherTrans>
-struct ApplyTypeTransformationsTrait<T, TTrans, TOtherTrans...> {
-  using Type = ApplyTypeTransformationsTrait<typename TTrans<T>::type, TOtherTrans...>::Type;
+template<typename T, template<typename> typename Trans, template<typename> typename... OtherTrans>
+struct ApplyTypeTransformationsTrait<T, Trans, OtherTrans...> {
+  using Type = ApplyTypeTransformationsTrait<typename Trans<T>::type, OtherTrans...>::Type;
 };
 
-template<typename T, template<typename> typename... TTrans>
+template<typename T, template<typename> typename... Trans>
 struct VoidTypeTrait {
-  using Type = ApplyTypeTransformationsTrait<T, TTrans...>::Type;
+  using Type = ApplyTypeTransformationsTrait<T, Trans...>::Type;
   using Storage = Type;
 };
-template<template<typename> typename... TTrans>
-struct VoidTypeTrait<void, TTrans...> {
+template<template<typename> typename... Trans>
+struct VoidTypeTrait<void, Trans...> {
   using Type = void;
   using Storage = Empty;
 };

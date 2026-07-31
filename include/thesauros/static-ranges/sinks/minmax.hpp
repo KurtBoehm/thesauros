@@ -17,11 +17,11 @@
 
 namespace thes::star {
 struct MinMaxGenerator : public ConsumerGeneratorBase {
-  template<typename TRange>
-  requires(star::size<TRange> > 0 && HasValue<TRange>)
-  constexpr auto operator()(TRange&& range) const {
-    constexpr std::size_t size = star::size<TRange>;
-    using Value = star::Value<TRange>;
+  template<typename Range>
+  requires(star::size<Range> > 0 && HasValue<Range>)
+  constexpr auto operator()(Range&& range) const { // NOLINT(*-missing-std-forward)
+    constexpr std::size_t size = star::size<Range>;
+    using Value = star::Value<Range>;
     Value min = get_at(range, thes::index_tag<0>);
     Value max = min;
     thes::star::tagged_iota<1, size> | thes::star::for_each([&](auto i) {

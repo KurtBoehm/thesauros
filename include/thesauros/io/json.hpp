@@ -273,12 +273,12 @@ struct JsonWriter<T> {
 template<reflect::HasEnumInfo Enum>
 struct JsonWriter<Enum> {
   using Path = std::filesystem::path;
-  template<typename TIt>
-  static auto write(TIt it, Enum value, Indentation indent = {}) {
+  template<typename It>
+  static auto write(It it, Enum value, Indentation indent = {}) {
     using Info = ::thes::reflect::EnumInfo<Enum>;
 
     auto impl = [&]<std::size_t Head, std::size_t... Tail>(
-                  auto rec, std::index_sequence<Head, Tail...>) -> TIt {
+                  auto rec, std::index_sequence<Head, Tail...>) -> It {
       constexpr auto value_info = star::get_at<Head>(Info::values);
       if (value_info.value == value) {
         return JsonWriter<std::string_view>::write(it, value_info.serial_name.view(), indent);

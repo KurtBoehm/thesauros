@@ -18,17 +18,17 @@
 #include "thesauros/utility/static-map.hpp"
 
 namespace thes {
-template<typename TRanges, typename TFixedAxes>
-THES_ALWAYS_INLINE inline constexpr void
-multidim_for_each(const TRanges& ranges, const TFixedAxes& fixed_axes, auto&& op) {
-  constexpr std::size_t size = star::size<TRanges>;
+template<typename Ranges, typename FixedAxes>
+THES_ALWAYS_INLINE inline constexpr void multidim_for_each(const Ranges& ranges,
+                                                           const FixedAxes& fixed_axes, auto&& f) {
+  constexpr std::size_t size = star::size<Ranges>;
 
   auto impl = [&](auto& self, auto&&... vals) THES_ALWAYS_INLINE {
     constexpr auto index = sizeof...(vals);
     static_assert(index <= size);
     if constexpr (index == size) {
-      op(std::move(vals)...);
-    } else if constexpr (TFixedAxes::contains(auto_tag<index>)) {
+      f(std::move(vals)...);
+    } else if constexpr (FixedAxes::contains(auto_tag<index>)) {
       self(self, std::move(vals)..., fixed_axes.get(auto_tag<index>));
     } else {
       for (auto&& value : star::get_at<index>(ranges)) {
@@ -39,20 +39,20 @@ multidim_for_each(const TRanges& ranges, const TFixedAxes& fixed_axes, auto&& op
   impl(impl);
 }
 
-template<typename TRanges, typename TOp>
-THES_ALWAYS_INLINE inline constexpr void multidim_for_each(const TRanges& ranges, TOp&& op) {
-  multidim_for_each(ranges, StaticMap{}, std::forward<TOp>(op));
+template<typename Ranges, typename F>
+THES_ALWAYS_INLINE inline constexpr void multidim_for_each(const Ranges& ranges, F&& f) {
+  multidim_for_each(ranges, StaticMap{}, std::forward<F>(f));
 }
 
-template<typename TSizes, typename TFixedAxes, typename TOp>
+template<typename Sizes, typename FixedAxes, typename F>
 THES_ALWAYS_INLINE inline constexpr void
-multidim_for_each_size(const TSizes& sizes, const TFixedAxes& fixed_axes, TOp&& op) {
+multidim_for_each_size(const Sizes& sizes, const FixedAxes& fixed_axes, F&& f) {
   multidim_for_each(star::transform([](auto size) { return views::indices(size); })(sizes),
-                    fixed_axes, std::forward<TOp>(op));
+                    fixed_axes, std::forward<F>(f));
 }
-template<typename TSizes, typename TOp>
-THES_ALWAYS_INLINE inline constexpr void multidim_for_each_size(const TSizes& sizes, TOp&& op) {
-  multidim_for_each_size(sizes, StaticMap{}, std::forward<TOp>(op));
+template<typename Sizes, typename F>
+THES_ALWAYS_INLINE inline constexpr void multidim_for_each_size(const Sizes& sizes, F&& f) {
+  multidim_for_each_size(sizes, StaticMap{}, std::forward<F>(f));
 }
 } // namespace thes
 

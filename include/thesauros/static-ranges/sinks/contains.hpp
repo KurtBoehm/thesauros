@@ -15,31 +15,31 @@
 #include "thesauros/static-ranges/sinks/apply.hpp"
 
 namespace thes::star {
-template<typename TValue>
+template<typename V>
 struct ContainsGenerator : public ConsumerGeneratorBase {
-  using Value = std::decay_t<TValue>;
+  using Value = std::decay_t<V>;
 
-  TValue value;
+  V value;
 
-  explicit constexpr ContainsGenerator(TValue&& v) : value(std::forward<TValue>(v)) {}
+  explicit constexpr ContainsGenerator(V&& v) : value(std::forward<V>(v)) {}
 
-  template<typename TRange>
-  constexpr bool operator()(TRange&& range) const {
+  template<typename Range>
+  constexpr bool operator()(Range&& range) const {
     return apply([&](const auto&... values) {
-      return (... || [&]<typename TV>(const TV& v) {
-        if constexpr (std::same_as<Value, std::decay_t<TV>>) {
+      return (... || [&]<typename T>(const T& v) {
+        if constexpr (std::same_as<Value, std::decay_t<T>>) {
           return value == v;
         } else {
           return false;
         }
       }(values));
-    })(std::forward<TRange>(range));
+    })(std::forward<Range>(range));
   }
 };
 
-template<typename TValue>
-inline constexpr auto contains(TValue&& value) {
-  return ContainsGenerator<TValue>{std::forward<TValue>(value)};
+template<typename V>
+constexpr auto contains(V&& value) {
+  return ContainsGenerator<V>{std::forward<V>(value)};
 }
 } // namespace thes::star
 

@@ -31,9 +31,9 @@ struct ApplyGenerator : public ConsumerGeneratorBase {
   }
 };
 
-template<typename TOp>
-THES_ALWAYS_INLINE inline constexpr auto apply(TOp&& op) {
-  return ApplyGenerator<TOp>{std::forward<TOp>(op)};
+template<typename F>
+THES_ALWAYS_INLINE inline constexpr auto apply(F&& op) {
+  return ApplyGenerator<F>{std::forward<F>(op)};
 }
 } // namespace thes::star
 

@@ -24,7 +24,7 @@ inline constexpr FancyVisitorIgnore fancy_visitor_ignore{};
 
 template<bool RemoveIgnored, bool Flatten, bool WithMaker, typename Visitor, typename... Variants>
 struct FancyVisitor {
-  template<typename Raw, typename TDecayed>
+  template<typename Raw, typename Bare>
   struct VariantHandlerImpl {
     using Tuple = TypeSeq<Raw>;
     using Base = std::remove_reference_t<Raw>;
@@ -55,14 +55,14 @@ struct FancyVisitor {
 
     using Tuple = TypeSeq<Transformed<Ts>...>;
 
-    template<typename TVar>
-    requires(std::same_as<std::decay_t<TVar>, Type>)
-    static constexpr TVar&& pack(TVar&& value) {
-      return std::forward<TVar>(value);
+    template<typename Var>
+    requires(std::same_as<std::remove_cvref_t<Var>, Type>)
+    static constexpr Var&& pack(Var&& value) {
+      return std::forward<Var>(value);
     }
   };
   template<typename Raw>
-  using VariantHandler = VariantHandlerImpl<Raw, std::decay_t<Raw>>;
+  using VariantHandler = VariantHandlerImpl<Raw, std::remove_cvref_t<Raw>>;
 
   template<typename Seq>
   struct BareFunReturnType;
@@ -76,8 +76,8 @@ struct FancyVisitor {
   template<typename... Args>
   struct TaggedFunReturnType<TypeSeq<Args...>> {
     using Type = decltype(std::declval<Visitor>()(
-      []<typename T, typename... TInnerArgs>(std::in_place_type_t<T>, TInnerArgs&&... args) {
-        return T{std::forward<TInnerArgs>(args)...};
+      []<typename T, typename... InnerArgs>(std::in_place_type_t<T>, InnerArgs&&... args) {
+        return T{std::forward<InnerArgs>(args)...};
       },
       unwrap(std::declval<Args>())...));
   };

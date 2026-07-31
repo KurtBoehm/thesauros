@@ -10,9 +10,9 @@
 #include <concepts>
 
 namespace thes {
-template<std::floating_point TFloat>
+template<std::floating_point F>
 struct FloatFraction {
-  using Float = TFloat;
+  using Float = F;
 
   constexpr FloatFraction(Float num, Float denom) : numerator(num), denominator(denom) {}
 

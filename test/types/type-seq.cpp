@@ -53,8 +53,8 @@ int main() {
   }
   {
     using Seq = thes::TypeSeq<std::uint8_t, std::uint16_t, std::uint32_t>;
-    constexpr auto combine = []<typename TAcc, typename T>(TAcc, thes::TypeTag<T>) {
-      return thes::auto_tag<TAcc::value + sizeof(T)>;
+    constexpr auto combine = []<typename Acc, typename T>(Acc, thes::TypeTag<T>) {
+      return thes::auto_tag<Acc::value + sizeof(T)>;
     };
     static_assert(thes::reduce(Seq{}, thes::auto_tag<std::size_t{0}>, combine).value == 7);
     static_assert(thes::reduce<combine>(Seq{}, thes::auto_tag<std::size_t{0}>).value == 7);

@@ -19,9 +19,9 @@ struct Empty {
   [[nodiscard]] bool operator==(const Empty& other) const = default;
 };
 
-template<typename TFun, typename TArgTuple>
-constexpr auto apply_empty(TFun&& fun, TArgTuple&& args) {
-  auto impl = [&] { return std::apply(std::forward<TFun>(fun), std::forward<TArgTuple>(args)); };
+template<typename Fun, typename ArgTuple>
+constexpr auto apply_empty(Fun&& fun, ArgTuple&& args) {
+  auto impl = [&] { return std::apply(std::forward<Fun>(fun), std::forward<ArgTuple>(args)); };
   using Type = decltype(impl());
 
   if constexpr (std::is_void_v<Type>) {

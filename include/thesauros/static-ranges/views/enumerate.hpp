@@ -8,7 +8,6 @@
 #define INCLUDE_THESAUROS_STATIC_RANGES_VIEWS_ENUMERATE_HPP
 
 #include <cstddef>
-#include <type_traits>
 #include <utility>
 
 #include "thesauros/macropolis/inlining.hpp"
@@ -18,31 +17,30 @@
 #include "thesauros/types/value-tag.hpp"
 
 namespace thes::star {
-template<typename TSize, typename TInner>
+template<typename S, typename Inner>
 struct EnumerateView {
-  using Inner = std::decay_t<TInner>;
   static constexpr std::size_t size = thes::star::size<Inner>;
   static constexpr TupleDefsMarker tuple_defs_marker{};
 
-  TInner inner;
+  Inner inner;
 
   template<std::size_t I>
-  THES_ALWAYS_INLINE friend constexpr std::pair<ValueTag<TSize, I>, decltype(get_at<I>(inner))>
+  THES_ALWAYS_INLINE friend constexpr std::pair<ValueTag<S, I>, decltype(get_at<I>(inner))>
   get(const EnumerateView& self) {
-    return {value_tag<TSize, I>, get_at<I>(self.inner)};
+    return {value_tag<S, I>, get_at<I>(self.inner)};
   }
 };
 
-template<typename TSize>
+template<typename S>
 struct EnumerateGenerator : public RangeGeneratorBase {
-  template<typename TRange>
-  THES_ALWAYS_INLINE constexpr EnumerateView<TSize, TRange> operator()(TRange&& range) const {
-    return {std::forward<TRange>(range)};
+  template<typename Range>
+  THES_ALWAYS_INLINE constexpr EnumerateView<S, Range> operator()(Range&& range) const {
+    return {std::forward<Range>(range)};
   }
 };
 
-template<typename TSize = std::size_t>
-inline constexpr EnumerateGenerator<TSize> enumerate{};
+template<typename S = std::size_t>
+inline constexpr EnumerateGenerator<S> enumerate{};
 } // namespace thes::star
 
 #endif // INCLUDE_THESAUROS_STATIC_RANGES_VIEWS_ENUMERATE_HPP

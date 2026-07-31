@@ -19,8 +19,8 @@ struct RangeRandomizer {
   static constexpr auto digits = std::numeric_limits<T>::digits;
   static constexpr T b1 = T{1} << (digits / 2);
 
-  template<typename TGen>
-  explicit RangeRandomizer(T size, TGen gen)
+  template<typename Gen>
+  explicit RangeRandomizer(T size, Gen gen)
       : size_(size), offset_(std::uniform_int_distribution<T>{0, size}(gen)) {}
 
   [[nodiscard]] constexpr T size() const {

@@ -21,57 +21,56 @@ template<bool Const, typename T>
 using MaybeConst = std::conditional_t<Const, const T, T>;
 
 // C++23 26.5.2
-template<typename TR>
-concept simple_view =
-  std::ranges::view<TR> && std::ranges::range<const TR> &&
-  std::same_as<std::ranges::iterator_t<TR>, std::ranges::iterator_t<const TR>> &&
-  std::same_as<std::ranges::sentinel_t<TR>, std::ranges::sentinel_t<const TR>>;
+template<typename R>
+concept simple_view = std::ranges::view<R> && std::ranges::range<const R> &&
+                      std::same_as<std::ranges::iterator_t<R>, std::ranges::iterator_t<const R>> &&
+                      std::same_as<std::ranges::sentinel_t<R>, std::ranges::sentinel_t<const R>>;
 
 // C++23 26.7.5
-template<typename TF, typename TTuple>
-constexpr auto tuple_transform(TF&& f, TTuple&& t) {
+template<typename F, typename Tuple>
+constexpr auto tuple_transform(F&& f, Tuple&& t) {
   return std::apply(
     [&]<typename... Ts>(Ts&&... elements) {
-      return std::tuple<std::invoke_result_t<TF&, Ts>...>(
+      return std::tuple<std::invoke_result_t<F&, Ts>...>(
         std::invoke(f, std::forward<Ts>(elements))...);
     },
-    std::forward<TTuple>(t));
+    std::forward<Tuple>(t));
 }
 
 // C++23 26.7.24.3
-template<bool Const, typename... TViews>
-concept all_random_access = (std::ranges::random_access_range<MaybeConst<Const, TViews>> && ...);
+template<bool Const, typename... Views>
+concept all_random_access = (std::ranges::random_access_range<MaybeConst<Const, Views>> && ...);
 
 // C++23 26.7.32.2
-template<bool Const, typename TFirst, typename... TVs>
+template<bool Const, typename First, typename... Vs>
 concept cartesian_product_is_random_access =
-  (std::ranges::random_access_range<MaybeConst<Const, TFirst>> && ... &&
-   (std::ranges::random_access_range<MaybeConst<Const, TVs>> &&
-    std::ranges::sized_range<MaybeConst<Const, TVs>>));
-template<typename TR>
+  (std::ranges::random_access_range<MaybeConst<Const, First>> && ... &&
+   (std::ranges::random_access_range<MaybeConst<Const, Vs>> &&
+    std::ranges::sized_range<MaybeConst<Const, Vs>>));
+template<typename R>
 concept cartesian_product_common_arg =
-  std::ranges::common_range<TR> ||
-  (std::ranges::sized_range<TR> && std::ranges::random_access_range<TR>);
-template<bool Const, typename TFirst, typename... TVs>
+  std::ranges::common_range<R> ||
+  (std::ranges::sized_range<R> && std::ranges::random_access_range<R>);
+template<bool Const, typename First, typename... Vs>
 concept cartesian_product_is_bidirectional =
-  (std::ranges::bidirectional_range<MaybeConst<Const, TFirst>> && ... &&
-   (std::ranges::bidirectional_range<MaybeConst<Const, TVs>> &&
-    cartesian_product_common_arg<MaybeConst<Const, TVs>>));
-template<typename TFirst, typename... TVs>
-concept cartesian_product_is_common = cartesian_product_common_arg<TFirst>;
-template<typename... TVs>
-concept cartesian_product_is_sized = (std::ranges::sized_range<TVs> && ...);
-template<bool Const, template<typename> typename TFirstSent, typename TFirst, typename... TVs>
+  (std::ranges::bidirectional_range<MaybeConst<Const, First>> && ... &&
+   (std::ranges::bidirectional_range<MaybeConst<Const, Vs>> &&
+    cartesian_product_common_arg<MaybeConst<Const, Vs>>));
+template<typename First, typename... Vs>
+concept cartesian_product_is_common = cartesian_product_common_arg<First>;
+template<typename... Vs>
+concept cartesian_product_is_sized = (std::ranges::sized_range<Vs> && ...);
+template<bool Const, template<typename> typename FirstSent, typename First, typename... Vs>
 concept cartesian_is_sized_sentinel =
-  (std::sized_sentinel_for<TFirstSent<MaybeConst<Const, TFirst>>,
-                           std::ranges::iterator_t<MaybeConst<Const, TFirst>>> &&
+  (std::sized_sentinel_for<FirstSent<MaybeConst<Const, First>>,
+                           std::ranges::iterator_t<MaybeConst<Const, First>>> &&
    ... &&
-   (std::ranges::sized_range<MaybeConst<Const, TVs>> &&
-    std::sized_sentinel_for<std::ranges::iterator_t<MaybeConst<Const, TVs>>,
-                            std::ranges::iterator_t<MaybeConst<Const, TVs>>>));
-template<cartesian_product_common_arg TR>
-constexpr auto cartesian_common_arg_end(TR& r) {
-  if constexpr (std::ranges::common_range<TR>) {
+   (std::ranges::sized_range<MaybeConst<Const, Vs>> &&
+    std::sized_sentinel_for<std::ranges::iterator_t<MaybeConst<Const, Vs>>,
+                            std::ranges::iterator_t<MaybeConst<Const, Vs>>>));
+template<cartesian_product_common_arg R>
+constexpr auto cartesian_common_arg_end(R& r) {
+  if constexpr (std::ranges::common_range<R>) {
     return std::ranges::end(r);
   } else {
     return std::ranges::begin(r) + std::ranges::distance(r);

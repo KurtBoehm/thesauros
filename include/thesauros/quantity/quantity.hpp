@@ -31,12 +31,12 @@ using std::peta;
 using std::pico;
 using std::tera;
 
-using kibi = std::ratio_multiply<std::ratio<1024>, std::ratio<1>>;
-using mebi = std::ratio_multiply<std::ratio<1024>, kibi>;
-using gibi = std::ratio_multiply<std::ratio<1024>, mebi>;
-using tebi = std::ratio_multiply<std::ratio<1024>, gibi>;
-using pebi = std::ratio_multiply<std::ratio<1024>, tebi>;
-using exbi = std::ratio_multiply<std::ratio<1024>, pebi>;
+using kibi = std::ratio_multiply<std::ratio<1024>, std::ratio<1>>; // NOLINT(*-identifier-naming)
+using mebi = std::ratio_multiply<std::ratio<1024>, kibi>; // NOLINT(*-identifier-naming)
+using gibi = std::ratio_multiply<std::ratio<1024>, mebi>; // NOLINT(*-identifier-naming)
+using tebi = std::ratio_multiply<std::ratio<1024>, gibi>; // NOLINT(*-identifier-naming)
+using pebi = std::ratio_multiply<std::ratio<1024>, tebi>; // NOLINT(*-identifier-naming)
+using exbi = std::ratio_multiply<std::ratio<1024>, pebi>; // NOLINT(*-identifier-naming)
 
 namespace unit::base {
 struct second;
@@ -50,83 +50,82 @@ struct byte;
 struct bit;
 } // namespace unit::base
 
-template<typename TMultiple, typename TBaseUnit>
+template<typename Mul, typename BaseU>
 struct Unit {
-  using Multiple = TMultiple::type;
-  using BaseUnit = TBaseUnit;
+  using Multiple = Mul::type;
+  using BaseUnit = BaseU;
 
   using Type = Unit<Multiple, BaseUnit>;
 };
-template<typename TMultiple, typename TUnit>
-using ScaledUnit =
-  Unit<std::ratio_multiply<TMultiple, typename TUnit::Multiple>, typename TUnit::BaseUnit>;
+template<typename Mul, typename U>
+using ScaledUnit = Unit<std::ratio_multiply<Mul, typename U::Multiple>, typename U::BaseUnit>;
 
 namespace unit {
 // SI multiples of second
-using attosecond = Unit<atto, unit::base::second>;
-using femtosecond = Unit<femto, unit::base::second>;
-using picosecond = Unit<pico, unit::base::second>;
-using nanosecond = Unit<nano, unit::base::second>;
-using microsecond = Unit<micro, unit::base::second>;
-using millisecond = Unit<milli, unit::base::second>;
-using centisecond = Unit<centi, unit::base::second>;
-using second = Unit<std::ratio<1>, unit::base::second>;
-using decisecond = Unit<deci, unit::base::second>;
-using decasecond = Unit<deca, unit::base::second>;
-using hectosecond = Unit<hecto, unit::base::second>;
-using kilosecond = Unit<kilo, unit::base::second>;
-using megasecond = Unit<mega, unit::base::second>;
-using gigasecond = Unit<giga, unit::base::second>;
-using terasecond = Unit<tera, unit::base::second>;
-using petasecond = Unit<peta, unit::base::second>;
-using exasecond = Unit<exa, unit::base::second>;
+using attosecond = Unit<atto, unit::base::second>; // NOLINT(*-identifier-naming)
+using femtosecond = Unit<femto, unit::base::second>; // NOLINT(*-identifier-naming)
+using picosecond = Unit<pico, unit::base::second>; // NOLINT(*-identifier-naming)
+using nanosecond = Unit<nano, unit::base::second>; // NOLINT(*-identifier-naming)
+using microsecond = Unit<micro, unit::base::second>; // NOLINT(*-identifier-naming)
+using millisecond = Unit<milli, unit::base::second>; // NOLINT(*-identifier-naming)
+using centisecond = Unit<centi, unit::base::second>; // NOLINT(*-identifier-naming)
+using second = Unit<std::ratio<1>, unit::base::second>; // NOLINT(*-identifier-naming)
+using decisecond = Unit<deci, unit::base::second>; // NOLINT(*-identifier-naming)
+using decasecond = Unit<deca, unit::base::second>; // NOLINT(*-identifier-naming)
+using hectosecond = Unit<hecto, unit::base::second>; // NOLINT(*-identifier-naming)
+using kilosecond = Unit<kilo, unit::base::second>; // NOLINT(*-identifier-naming)
+using megasecond = Unit<mega, unit::base::second>; // NOLINT(*-identifier-naming)
+using gigasecond = Unit<giga, unit::base::second>; // NOLINT(*-identifier-naming)
+using terasecond = Unit<tera, unit::base::second>; // NOLINT(*-identifier-naming)
+using petasecond = Unit<peta, unit::base::second>; // NOLINT(*-identifier-naming)
+using exasecond = Unit<exa, unit::base::second>; // NOLINT(*-identifier-naming)
 // Non-SI time units accepted for use with SI
-using minute = ScaledUnit<std::ratio<60>, second>;
-using hour = ScaledUnit<std::ratio<60>, minute>;
-using day = ScaledUnit<std::ratio<24>, hour>;
+using minute = ScaledUnit<std::ratio<60>, second>; // NOLINT(*-identifier-naming)
+using hour = ScaledUnit<std::ratio<60>, minute>; // NOLINT(*-identifier-naming)
+using day = ScaledUnit<std::ratio<24>, hour>; // NOLINT(*-identifier-naming)
 
 // SI multiples of metre
-using attometre = Unit<atto, unit::base::metre>;
-using femtometre = Unit<femto, unit::base::metre>;
-using picometre = Unit<pico, unit::base::metre>;
-using nanometre = Unit<nano, unit::base::metre>;
-using micrometre = Unit<micro, unit::base::metre>;
-using millimetre = Unit<milli, unit::base::metre>;
-using centimetre = Unit<centi, unit::base::metre>;
-using metre = Unit<std::ratio<1>, unit::base::metre>;
-using decimetre = Unit<deci, unit::base::metre>;
-using decametre = Unit<deca, unit::base::metre>;
-using hectometre = Unit<hecto, unit::base::metre>;
-using kilometre = Unit<kilo, unit::base::metre>;
-using megametre = Unit<mega, unit::base::metre>;
-using gigametre = Unit<giga, unit::base::metre>;
-using terametre = Unit<tera, unit::base::metre>;
-using petametre = Unit<peta, unit::base::metre>;
-using exametre = Unit<exa, unit::base::metre>;
+using attometre = Unit<atto, unit::base::metre>; // NOLINT(*-identifier-naming)
+using femtometre = Unit<femto, unit::base::metre>; // NOLINT(*-identifier-naming)
+using picometre = Unit<pico, unit::base::metre>; // NOLINT(*-identifier-naming)
+using nanometre = Unit<nano, unit::base::metre>; // NOLINT(*-identifier-naming)
+using micrometre = Unit<micro, unit::base::metre>; // NOLINT(*-identifier-naming)
+using millimetre = Unit<milli, unit::base::metre>; // NOLINT(*-identifier-naming)
+using centimetre = Unit<centi, unit::base::metre>; // NOLINT(*-identifier-naming)
+using metre = Unit<std::ratio<1>, unit::base::metre>; // NOLINT(*-identifier-naming)
+using decimetre = Unit<deci, unit::base::metre>; // NOLINT(*-identifier-naming)
+using decametre = Unit<deca, unit::base::metre>; // NOLINT(*-identifier-naming)
+using hectometre = Unit<hecto, unit::base::metre>; // NOLINT(*-identifier-naming)
+using kilometre = Unit<kilo, unit::base::metre>; // NOLINT(*-identifier-naming)
+using megametre = Unit<mega, unit::base::metre>; // NOLINT(*-identifier-naming)
+using gigametre = Unit<giga, unit::base::metre>; // NOLINT(*-identifier-naming)
+using terametre = Unit<tera, unit::base::metre>; // NOLINT(*-identifier-naming)
+using petametre = Unit<peta, unit::base::metre>; // NOLINT(*-identifier-naming)
+using exametre = Unit<exa, unit::base::metre>; // NOLINT(*-identifier-naming)
 
 // SI multiples of byte
-using byte = Unit<std::ratio<1>, unit::base::byte>;
-using kilobyte = Unit<kilo, unit::base::byte>;
-using megabyte = Unit<mega, unit::base::byte>;
-using gigabyte = Unit<giga, unit::base::byte>;
-using terabyte = Unit<tera, unit::base::byte>;
-using petabyte = Unit<peta, unit::base::byte>;
-using exabyte = Unit<exa, unit::base::byte>;
+using byte = Unit<std::ratio<1>, unit::base::byte>; // NOLINT(*-identifier-naming)
+using kilobyte = Unit<kilo, unit::base::byte>; // NOLINT(*-identifier-naming)
+using megabyte = Unit<mega, unit::base::byte>; // NOLINT(*-identifier-naming)
+using gigabyte = Unit<giga, unit::base::byte>; // NOLINT(*-identifier-naming)
+using terabyte = Unit<tera, unit::base::byte>; // NOLINT(*-identifier-naming)
+using petabyte = Unit<peta, unit::base::byte>; // NOLINT(*-identifier-naming)
+using exabyte = Unit<exa, unit::base::byte>; // NOLINT(*-identifier-naming)
 // Binary multiples of byte
-using kibibyte = Unit<kibi, unit::base::byte>;
-using mebibyte = Unit<mebi, unit::base::byte>;
-using gibibyte = Unit<gibi, unit::base::byte>;
-using tebibyte = Unit<tebi, unit::base::byte>;
-using pebibyte = Unit<pebi, unit::base::byte>;
-using exbibyte = Unit<exbi, unit::base::byte>;
+using kibibyte = Unit<kibi, unit::base::byte>; // NOLINT(*-identifier-naming)
+using mebibyte = Unit<mebi, unit::base::byte>; // NOLINT(*-identifier-naming)
+using gibibyte = Unit<gibi, unit::base::byte>; // NOLINT(*-identifier-naming)
+using tebibyte = Unit<tebi, unit::base::byte>; // NOLINT(*-identifier-naming)
+using pebibyte = Unit<pebi, unit::base::byte>; // NOLINT(*-identifier-naming)
+using exbibyte = Unit<exbi, unit::base::byte>; // NOLINT(*-identifier-naming)
 } // namespace unit
 
-template<typename TRep, typename TUnit>
+template<typename R, typename U>
 struct Quantity {
-  using Rep = TRep;
-  using Unit = TUnit;
+  using Rep = R;
+  using Unit = U;
 
-  explicit constexpr Quantity(TRep value) : value_(value) {}
+  explicit constexpr Quantity(R value) : value_(value) {}
 
   constexpr Rep count() const {
     return value_;
@@ -138,46 +137,46 @@ private:
 
 template<typename T>
 struct IsQuantityTrait : std::false_type {};
-template<typename TRep, typename TUnit>
-struct IsQuantityTrait<Quantity<TRep, TUnit>> : std::true_type {};
+template<typename R, typename U>
+struct IsQuantityTrait<Quantity<R, U>> : std::true_type {};
 template<typename T>
 concept AnyQuantity = IsQuantityTrait<std::decay_t<T>>::value;
 
-template<typename TU1, typename TU2>
+template<typename U1, typename U2>
 struct UnitRatioTrait;
-template<typename TMul1, typename TMul2, typename TBUnit>
-struct UnitRatioTrait<Unit<TMul1, TBUnit>, Unit<TMul2, TBUnit>> {
-  using Type = std::ratio_divide<TMul1, TMul2>;
+template<typename Mul1, typename Mul2, typename BUnit>
+struct UnitRatioTrait<Unit<Mul1, BUnit>, Unit<Mul2, BUnit>> {
+  using Type = std::ratio_divide<Mul1, Mul2>;
 };
-template<typename TU1, typename TU2>
-using UnitRatio = UnitRatioTrait<TU1, TU2>::Type;
+template<typename U1, typename U2>
+using UnitRatio = UnitRatioTrait<U1, U2>::Type;
 
-template<typename TRep, typename TUnit>
+template<typename R, typename U>
 struct IsBaseUnitQuantityTrait : std::false_type {};
-template<typename TRep, typename TMul, typename TBUnit>
-struct IsBaseUnitQuantityTrait<Quantity<TRep, Unit<TMul, TBUnit>>, TBUnit> : std::true_type {};
+template<typename R, typename Mul, typename BUnit>
+struct IsBaseUnitQuantityTrait<Quantity<R, Unit<Mul, BUnit>>, BUnit> : std::true_type {};
 
-template<typename TOutQuant, typename TRep, typename TMul, typename TBUnit>
-requires IsBaseUnitQuantityTrait<TOutQuant, TBUnit>::value
-inline constexpr TOutQuant quantity_cast(const Quantity<TRep, Unit<TMul, TBUnit>>& sc) {
-  using ToMultiple = TOutQuant::Unit::Multiple;
-  using ToRep = TOutQuant::Rep;
-  using CMul = std::ratio_divide<TMul, ToMultiple>;
-  using CRep = std::common_type_t<ToRep, TRep, std::intmax_t>;
+template<typename OutQuant, typename R, typename Mul, typename BUnit>
+requires IsBaseUnitQuantityTrait<OutQuant, BUnit>::value
+constexpr OutQuant quantity_cast(const Quantity<R, Unit<Mul, BUnit>>& sc) {
+  using ToMultiple = OutQuant::Unit::Multiple;
+  using ToRep = OutQuant::Rep;
+  using CMul = std::ratio_divide<Mul, ToMultiple>;
+  using CRep = std::common_type_t<ToRep, R, std::intmax_t>;
 
   if constexpr (CMul::num == 1) {
     if constexpr (CMul::den == 1) {
-      return TOutQuant(static_cast<ToRep>(sc.count()));
+      return OutQuant(static_cast<ToRep>(sc.count()));
     } else {
-      return TOutQuant(
+      return OutQuant(
         static_cast<ToRep>(static_cast<CRep>(sc.count()) / static_cast<CRep>(CMul::den)));
     }
   } else {
     if constexpr (CMul::den == 1) {
-      return TOutQuant(
+      return OutQuant(
         static_cast<ToRep>(static_cast<CRep>(sc.count()) * static_cast<CRep>(CMul::num)));
     } else {
-      return TOutQuant(
+      return OutQuant(
         static_cast<ToRep>(static_cast<CRep>(sc.count()) * static_cast<CRep>(CMul::num) /
                            static_cast<CRep>(CMul::den)));
     }
@@ -186,48 +185,48 @@ inline constexpr TOutQuant quantity_cast(const Quantity<TRep, Unit<TMul, TBUnit>
 } // namespace thes
 
 namespace std {
-template<typename TRep1, typename TMul1, typename TRep2, typename TMul2, typename TBUnit>
-requires(!std::same_as<thes::Unit<TRep1, TMul1>, thes::Unit<TRep2, TMul2>>)
-struct common_type<thes::Quantity<TRep1, thes::Unit<TMul1, TBUnit>>,
-                   thes::Quantity<TRep2, thes::Unit<TMul2, TBUnit>>> {
-  static constexpr auto gcd_num = std::gcd(TMul1::num, TMul2::num);
-  static constexpr auto gcd_den = std::gcd(TMul1::den, TMul2::den);
-  using CRep = std::common_type_t<TRep1, TRep2>;
-  using Ratio = std::ratio<gcd_num, (TMul1::den / gcd_den) * TMul2::den>::type;
+template<typename Rep1, typename Mul1, typename Rep2, typename Mul2, typename BUnit>
+requires(!std::same_as<thes::Unit<Rep1, Mul1>, thes::Unit<Rep2, Mul2>>)
+struct common_type<thes::Quantity<Rep1, thes::Unit<Mul1, BUnit>>,
+                   thes::Quantity<Rep2, thes::Unit<Mul2, BUnit>>> {
+  static constexpr auto gcd_num = std::gcd(Mul1::num, Mul2::num);
+  static constexpr auto gcd_den = std::gcd(Mul1::den, Mul2::den);
+  using CRep = std::common_type_t<Rep1, Rep2>;
+  using Ratio = std::ratio<gcd_num, (Mul1::den / gcd_den) * Mul2::den>::type;
 
-  using type = thes::Quantity<CRep, thes::Unit<Ratio, TBUnit>>;
+  using type = thes::Quantity<CRep, thes::Unit<Ratio, BUnit>>;
 };
 
-template<typename TRep, typename TUnit>
-struct common_type<thes::Quantity<TRep, TUnit>, thes::Quantity<TRep, TUnit>> {
-  using type = thes::Quantity<std::common_type_t<TRep>, typename TUnit::Type>;
+template<typename R, typename U>
+struct common_type<thes::Quantity<R, U>, thes::Quantity<R, U>> {
+  using type = thes::Quantity<std::common_type_t<R>, typename U::Type>;
 };
 } // namespace std
 
 namespace thes {
-template<typename TRep1, typename TMul1, typename TRep2, typename TMul2, typename TBUnit>
-constexpr auto operator+(const Quantity<TRep1, Unit<TMul1, TBUnit>>& lhs,
-                         const Quantity<TRep2, Unit<TMul2, TBUnit>>& rhs) {
+template<typename Rep1, typename Mul1, typename Rep2, typename Mul2, typename BUnit>
+constexpr auto operator+(const Quantity<Rep1, Unit<Mul1, BUnit>>& lhs,
+                         const Quantity<Rep2, Unit<Mul2, BUnit>>& rhs) {
   using Out =
-    std::common_type_t<Quantity<TRep1, Unit<TMul1, TBUnit>>, Quantity<TRep2, Unit<TMul2, TBUnit>>>;
+    std::common_type_t<Quantity<Rep1, Unit<Mul1, BUnit>>, Quantity<Rep2, Unit<Mul2, BUnit>>>;
   return Out(quantity_cast<Out>(lhs).count() + quantity_cast<Out>(rhs).count());
 }
-template<typename TRep1, typename TMul1, typename TRep2, typename TMul2, typename TBUnit>
-constexpr auto operator-(const Quantity<TRep1, Unit<TMul1, TBUnit>>& lhs,
-                         const Quantity<TRep2, Unit<TMul2, TBUnit>>& rhs) {
+template<typename Rep1, typename Mul1, typename Rep2, typename Mul2, typename BUnit>
+constexpr auto operator-(const Quantity<Rep1, Unit<Mul1, BUnit>>& lhs,
+                         const Quantity<Rep2, Unit<Mul2, BUnit>>& rhs) {
   using Out =
-    std::common_type_t<Quantity<TRep1, Unit<TMul1, TBUnit>>, Quantity<TRep2, Unit<TMul2, TBUnit>>>;
+    std::common_type_t<Quantity<Rep1, Unit<Mul1, BUnit>>, Quantity<Rep2, Unit<Mul2, BUnit>>>;
   return Out(quantity_cast<Out>(lhs).count() - quantity_cast<Out>(rhs).count());
 }
 
-template<typename TRep1, typename TMul, typename TRep2, typename TBUnit>
-constexpr auto operator*(const Quantity<TRep1, Unit<TMul, TBUnit>>& q, const TRep2& s) {
-  using Out = Quantity<std::common_type_t<TRep1, TRep2>, Unit<TMul, TBUnit>>;
+template<typename Rep1, typename Mul, typename Rep2, typename BUnit>
+constexpr auto operator*(const Quantity<Rep1, Unit<Mul, BUnit>>& q, const Rep2& s) {
+  using Out = Quantity<std::common_type_t<Rep1, Rep2>, Unit<Mul, BUnit>>;
   return quantity_cast<Out>(quantity_cast<Out>(q).count() * s);
 }
 
-template<typename TRep1, typename TMul, typename TRep2, typename TBUnit>
-constexpr auto operator*(const TRep1& s, const Quantity<TRep2, Unit<TMul, TBUnit>>& q) {
+template<typename Rep1, typename Mul, typename Rep2, typename BUnit>
+constexpr auto operator*(const Rep1& s, const Quantity<Rep2, Unit<Mul, BUnit>>& q) {
   return q * s;
 }
 } // namespace thes

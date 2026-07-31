@@ -26,14 +26,14 @@
 
 namespace thes {
 /**
- * A bitset whose bits are packed into chunks of `TChunk`, growing dynamically via `push_back` and
+ * A bitset whose bits are packed into chunks of `C`, growing dynamically via `push_back` and
  * `resize`. Models `std::ranges::sized_range` and `std::ranges::random_access_range`, with a
  * writable `iterator` in addition to the read-only `const_iterator`.
  */
-template<std::unsigned_integral TChunk = std::size_t, typename TAllocator = std::allocator<TChunk>>
+template<std::unsigned_integral C = std::size_t, typename Alloc = std::allocator<C>>
 struct DynamicBitset {
-  static_assert(std::numeric_limits<TChunk>::radix == 2);
-  using Chunk = TChunk;
+  static_assert(std::numeric_limits<C>::radix == 2);
+  using Chunk = C;
   static constexpr std::size_t chunk_byte_num = sizeof(Chunk);
   static constexpr std::size_t chunk_bit_num = CHAR_BIT * chunk_byte_num;
 
@@ -148,8 +148,8 @@ private:
   static constexpr Chunk zero_chunk{0};
   static constexpr Chunk one_chunk{static_cast<Chunk>(~zero_chunk)};
 
-  template<typename TCounter>
-  std::size_t count(TCounter counter) const {
+  template<typename Counter>
+  std::size_t count(Counter counter) const {
     if (size_ == 0) {
       return 0;
     }
@@ -170,7 +170,7 @@ private:
     return Chunk(Chunk{1} << i);
   }
 
-  DynamicArray<Chunk, DefaultInit, DoublingGrowth, TAllocator> chunks_{};
+  DynamicArray<Chunk, DefaultInit, DoublingGrowth, Alloc> chunks_{};
   std::size_t size_ = 0;
 };
 } // namespace thes

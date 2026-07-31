@@ -16,11 +16,11 @@
 #include "thesauros/static-ranges/definitions/type-traits.hpp"
 
 namespace thes::star {
-template<typename TPos, typename TProds>
-requires(std::same_as<star::Value<TPos>, star::Value<TProds>> &&
-         star::size<TPos> + 1 == star::size<TProds>)
-constexpr auto position_to_index(const TPos& pos, const TProds& incl_postfix_products) {
-  constexpr auto size = star::size<TPos>;
+template<typename Pos, typename Prods>
+requires(std::same_as<star::Value<Pos>, star::Value<Prods>> &&
+         star::size<Pos> + 1 == star::size<Prods>)
+constexpr auto position_to_index(const Pos& pos, const Prods& incl_postfix_products) {
+  constexpr auto size = star::size<Pos>;
   return [&]<std::size_t... I>(std::index_sequence<I...> /*idxs*/) {
     return (... + (star::get_at<I>(pos) * star::get_at<I + 1>(incl_postfix_products)));
   }(std::make_index_sequence<size>{});

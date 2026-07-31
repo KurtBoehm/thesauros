@@ -20,20 +20,19 @@
 #include "thesauros/types/type-transformations.hpp"
 
 namespace thes {
-template<typename TDerived, typename TValue, typename TSize, typename TAllocator,
-         typename TSizeAllocator>
+template<typename D, typename V, typename S, typename VAlloc, typename SAlloc>
 struct NestedDynamicArrayBase {
-  using Derived = TDerived;
-  using Value = TValue;
-  using Size = TSize;
-  using Allocator = TAllocator;
-  using SizeAllocator = TSizeAllocator;
+  using Derived = D;
+  using Value = V;
+  using Size = S;
+  using Allocator = VAlloc;
+  using SizeAllocator = SAlloc;
 
   using value_type = Value;
   using size_type = Size;
 
   using SizeStorage = TypedChunk<Size, Size, SizeAllocator>;
-  using Storage = TypedChunk<TValue, Size, Allocator>;
+  using Storage = TypedChunk<V, Size, Allocator>;
 
   template<bool IsConst>
   struct Iterator
@@ -127,9 +126,9 @@ struct NestedDynamicArrayBase {
       values_current_ = values_.begin();
     }
 
-    template<typename... TArgs>
-    void emplace(TArgs&&... args) {
-      new (values_current_) Value(std::forward<TArgs>(args)...);
+    template<typename... Args>
+    void emplace(Args&&... args) {
+      new (values_current_) Value(std::forward<Args>(args)...);
       ++values_current_;
     }
 
@@ -156,9 +155,9 @@ struct NestedDynamicArrayBase {
         : offsets_current_(offsets_current), values_begin_(values_begin),
           values_current_(values_current) {}
 
-    template<typename... TArgs>
-    void emplace(TArgs&&... args) {
-      new (values_current_) Value(std::forward<TArgs>(args)...);
+    template<typename... Args>
+    void emplace(Args&&... args) {
+      new (values_current_) Value(std::forward<Args>(args)...);
       ++values_current_;
     }
 
@@ -246,14 +245,13 @@ private:
   Storage values_;
 };
 
-template<typename T, typename TSize, typename TAlloc = std::allocator<T>>
-struct NestedDynamicArray
-    : public NestedDynamicArrayBase<
-        NestedDynamicArray<T, TSize, TAlloc>, T, TSize, TAlloc,
-        typename std::allocator_traits<TAlloc>::template rebind_alloc<TSize>> {
+template<typename T, typename S, typename Alloc = std::allocator<T>>
+struct NestedDynamicArray : public NestedDynamicArrayBase<
+                              NestedDynamicArray<T, S, Alloc>, T, S, Alloc,
+                              typename std::allocator_traits<Alloc>::template rebind_alloc<S>> {
   using Parent =
-    NestedDynamicArrayBase<NestedDynamicArray<T, TSize, TAlloc>, T, TSize, TAlloc,
-                           typename std::allocator_traits<TAlloc>::template rebind_alloc<TSize>>;
+    NestedDynamicArrayBase<NestedDynamicArray, T, S, Alloc,
+                           typename std::allocator_traits<Alloc>::template rebind_alloc<S>>;
 
   using Parent::Parent;
 };

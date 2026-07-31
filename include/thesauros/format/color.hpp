@@ -93,26 +93,26 @@ struct IsFormatTagTrait<FormattingTag<IsFormat>> : public std::true_type {};
 template<typename T>
 concept AnyFormatTag = IsFormatTagTrait<T>::value;
 
-template<typename... TArgs>
+template<typename... Args>
 inline void tsprint(FormattingTag<true> /*tag*/, const fmt::text_style& ts,
-                    fmt::format_string<TArgs...> fmt, TArgs&&... args) {
-  fmt::print(ts, fmt, std::forward<TArgs>(args)...);
+                    fmt::format_string<Args...> fmt, Args&&... args) {
+  fmt::print(ts, fmt, std::forward<Args>(args)...);
 }
-template<typename... TArgs>
+template<typename... Args>
 inline void tsprint(FormattingTag<false> /*tag*/, const fmt::text_style& /*ts*/,
-                    fmt::format_string<TArgs...> fmt, TArgs&&... args) {
-  fmt::print(fmt, std::forward<TArgs>(args)...);
+                    fmt::format_string<Args...> fmt, Args&&... args) {
+  fmt::print(fmt, std::forward<Args>(args)...);
 }
 
-template<typename... TArgs>
+template<typename... Args>
 inline auto tsformat_to(FormattingTag<true> /*tag*/, auto it, const fmt::text_style& ts,
-                        fmt::format_string<TArgs...> fmt, TArgs&&... args) {
-  return fmt::format_to(it, ts, fmt, std::forward<TArgs>(args)...);
+                        fmt::format_string<Args...> fmt, Args&&... args) {
+  return fmt::format_to(it, ts, fmt, std::forward<Args>(args)...);
 }
-template<typename... TArgs>
+template<typename... Args>
 inline auto tsformat_to(FormattingTag<false> /*tag*/, auto it, const fmt::text_style& /*ts*/,
-                        fmt::format_string<TArgs...> fmt, TArgs&&... args) {
-  return fmt::format_to(it, fmt, std::forward<TArgs>(args)...);
+                        fmt::format_string<Args...> fmt, Args&&... args) {
+  return fmt::format_to(it, fmt, std::forward<Args>(args)...);
 }
 
 inline auto tstyled(FormattingTag<true> /*tag*/, const auto& value, fmt::text_style ts) {

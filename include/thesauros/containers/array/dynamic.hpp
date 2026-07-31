@@ -42,10 +42,10 @@ namespace thes {
  * The growth policy `GP` determines the growth behavior when e.g. `resize` or `push_back` are
  * called.
  */
-template<typename TValue, typename TInitPolicy = DefaultInit,
-         typename TGrowthPolicy = DoublingGrowth, typename TAllocator = std::allocator<TValue>>
+template<typename V, typename InitPol = DefaultInit, typename GrowthPol = DoublingGrowth,
+         typename Alloc = std::allocator<V>>
 struct DynamicArray {
-  using Data = TypedChunk<TValue, std::size_t, TAllocator>;
+  using Data = TypedChunk<V, std::size_t, Alloc>;
 
   using Value = Data::Value;
   using Size = Data::Size;
@@ -54,7 +54,7 @@ struct DynamicArray {
   using value_type = Value;
   using allocator_type = Allocator;
   using size_type = Size;
-  using difference_type = std::iter_difference_t<TValue*>;
+  using difference_type = std::iter_difference_t<V*>;
   using reference = Value&;
   using const_reference = const Value&;
   using pointer = Value*;
@@ -63,8 +63,8 @@ struct DynamicArray {
   using iterator = Data::iterator;
   using const_iterator = Data::const_iterator;
 
-  using InitPolicy = TInitPolicy;
-  using GrowthPolicy = TGrowthPolicy;
+  using InitPolicy = InitPol;
+  using GrowthPolicy = GrowthPol;
 
   constexpr DynamicArray() = default;
   explicit constexpr DynamicArray(const Allocator& alloc) : allocation_(alloc) {}
@@ -82,7 +82,7 @@ struct DynamicArray {
     initialize_all();
   }
 
-  explicit constexpr DynamicArray(Size size, const TValue& value) : allocation_(size) {
+  explicit constexpr DynamicArray(Size size, const V& value) : allocation_(size) {
     std::uninitialized_fill(begin(), end(), value);
   }
 
@@ -132,19 +132,19 @@ struct DynamicArray {
     swap(lhs.data_end_, rhs.data_end_);
   }
 
-  template<typename... TArgs>
-  void initial_emplace(Size index, TArgs&&... args)
-  requires(std::same_as<TInitPolicy, NoInit>)
+  template<typename... Args>
+  void initial_emplace(Size index, Args&&... args)
+  requires(std::same_as<InitPol, NoInit>)
   {
-    new (this->begin() + index) Value(std::forward<TArgs>(args)...);
+    new (this->begin() + index) Value(std::forward<Args>(args)...);
   }
   void initialize(Size index, Value&& value)
-  requires(std::same_as<TInitPolicy, NoInit>)
+  requires(std::same_as<InitPol, NoInit>)
   {
     initial_emplace(index, std::forward<Value>(value));
   }
   void initialize(Size index, const Value& value)
-  requires(std::same_as<TInitPolicy, NoInit>)
+  requires(std::same_as<InitPol, NoInit>)
   {
     initial_emplace(index, value);
   }
@@ -242,16 +242,16 @@ struct DynamicArray {
     }
   }
 
-  template<typename... TArgs>
-  constexpr Value& emplace_back(TArgs&&... args) {
+  template<typename... Args>
+  constexpr Value& emplace_back(Args&&... args) {
     const Size old_size = size();
     const Size new_size = old_size + 1;
     if (new_size <= allocation_.size()) {
-      new (data_end_) Value(std::forward<TArgs>(args)...);
+      new (data_end_) Value(std::forward<Args>(args)...);
       ++data_end_;
     } else {
       allocation_expand(new_size, [old_size, &args...](iterator new_begin) {
-        new (new_begin + old_size) Value(std::forward<TArgs>(args)...);
+        new (new_begin + old_size) Value(std::forward<Args>(args)...);
       });
       data_end_ = allocation_.begin() + new_size;
     }

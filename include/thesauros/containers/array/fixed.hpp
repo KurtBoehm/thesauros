@@ -22,9 +22,9 @@
 #include "thesauros/containers/array/typed-chunk.hpp"
 
 namespace thes {
-template<typename V, typename InitPolicy = DefaultInit, typename TAllocator = std::allocator<V>>
+template<typename V, typename InitPol = DefaultInit, typename Alloc = std::allocator<V>>
 struct FixedArray {
-  using Data = TypedChunk<V, std::size_t, TAllocator>;
+  using Data = TypedChunk<V, std::size_t, Alloc>;
 
   using Value = Data::Value;
   using Size = Data::Size;
@@ -42,7 +42,7 @@ struct FixedArray {
   using iterator = Data::iterator;
   using const_iterator = Data::const_iterator;
 
-  using InitializationPolicy = InitPolicy;
+  using InitPolicy = InitPol;
 
   constexpr FixedArray() = default;
   explicit constexpr FixedArray(Size size) : allocation_(size) {
@@ -56,17 +56,17 @@ struct FixedArray {
     initialize_all();
   }
 
-  template<typename TOther>
-  explicit constexpr FixedArray(Size size, const TOther& value) : allocation_(size) {
+  template<typename Other>
+  explicit constexpr FixedArray(Size size, const Other& value) : allocation_(size) {
     uninit_fill(value);
   }
-  template<typename TOther>
-  constexpr FixedArray(Size size, const TOther& value, Allocator&& alloc)
+  template<typename Other>
+  constexpr FixedArray(Size size, const Other& value, Allocator&& alloc)
       : allocation_(size, std::forward<Allocator>(alloc)) {
     uninit_fill(value);
   }
-  template<typename TOther>
-  constexpr FixedArray(Size size, const TOther& value, const Allocator& alloc)
+  template<typename Other>
+  constexpr FixedArray(Size size, const Other& value, const Allocator& alloc)
       : allocation_(size, alloc) {
     uninit_fill(value);
   }
@@ -107,19 +107,19 @@ struct FixedArray {
     return *this;
   }
 
-  template<typename... TArgs>
-  void initial_emplace(Size index, TArgs&&... args)
-  requires(std::same_as<InitPolicy, NoInit>)
+  template<typename... Args>
+  void initial_emplace(Size index, Args&&... args)
+  requires(std::same_as<InitPol, NoInit>)
   {
-    new (this->begin() + index) Value(std::forward<TArgs>(args)...);
+    new (this->begin() + index) Value(std::forward<Args>(args)...);
   }
   void initialize(Size index, Value&& value)
-  requires(std::same_as<InitPolicy, NoInit>)
+  requires(std::same_as<InitPol, NoInit>)
   {
     initial_emplace(index, std::forward<Value>(value));
   }
   void initialize(Size index, const Value& value)
-  requires(std::same_as<InitPolicy, NoInit>)
+  requires(std::same_as<InitPol, NoInit>)
   {
     initial_emplace(index, value);
   }
@@ -183,11 +183,11 @@ private:
     initialize(allocation_.begin(), allocation_.end());
   }
   static constexpr void initialize(iterator begin, iterator end) {
-    InitializationPolicy::initialize(begin, end);
+    InitPolicy::initialize(begin, end);
   }
 
-  template<typename TOther>
-  constexpr void uninit_fill(const TOther& value) {
+  template<typename Other>
+  constexpr void uninit_fill(const Other& value) {
     std::uninitialized_fill(allocation_.begin(), allocation_.end(), value);
   }
 

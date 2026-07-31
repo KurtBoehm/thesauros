@@ -117,16 +117,16 @@ static_assert(Test6Info::serial_name == thes::StaticString<3>::filled('t'));
 
 ////////////////////////////////////////////////////////////////
 
-template<inner::Test2 V, typename TType>
+template<inner::Test2 V, typename T>
 struct Test7 {
   THES_DEFINE_TYPE(SNAKE_CASE(Test7), CONSTEXPR_CONSTRUCTOR,
-                   TEMPLATE_PARAMS((inner::Test2)V, (typename)TType),
-                   MEMBERS((SNAKE_CASE(a), TType), (SNAKE_CASE(b), int)),
-                   STATIC_MEMBERS((KEEP(value), V), (KEEP(type), thes::type_tag<TType>)))
+                   TEMPLATE_PARAMS((inner::Test2)V, (typename)T),
+                   MEMBERS((SNAKE_CASE(a), T), (SNAKE_CASE(b), int)),
+                   STATIC_MEMBERS((KEEP(value), V), (KEEP(type), thes::type_tag<T>)))
   Test7(Test7&&) noexcept = default;
   Test7(const Test7&) = delete;
 
-  THES_DEFINE_FLATTEN_TYPE((V, TNewType), (TNewType)a)
+  THES_DEFINE_FLATTEN_TYPE((V, NewType), (NewType)a)
 };
 
 ////////////////////////////////////////////////////////////////
@@ -135,9 +135,9 @@ THES_CREATE_TYPE(SNAKE_CASE(Test8), CONSTEXPR_CONSTRUCTOR,
                  MEMBERS((SNAKE_CASE(a), int), (SNAKE_CASE(b), bool)),
                  BODY(int test() const { return a; }))
 namespace n1::n2 {
-THES_CREATE_TYPE(SNAKE_CASE(Test9), CONSTEXPR_CONSTRUCTOR, TEMPLATE_PARAMS((int)V, (typename)TType),
-                 MEMBERS((SNAKE_CASE(a), TType), (KEEP(b), char), (SNAKE_CASE(c), int)),
-                 STATIC_MEMBERS((KEEP(value), V), (KEEP(type), thes::type_tag<TType>)))
+THES_CREATE_TYPE(SNAKE_CASE(Test9), CONSTEXPR_CONSTRUCTOR, TEMPLATE_PARAMS((int)V, (typename)T),
+                 MEMBERS((SNAKE_CASE(a), T), (KEEP(b), char), (SNAKE_CASE(c), int)),
+                 STATIC_MEMBERS((KEEP(value), V), (KEEP(type), thes::type_tag<T>)))
 }
 
 using Type7a = Test7<inner::Test2::A, int>;

@@ -12,19 +12,19 @@
 #include "thesauros/utility/index-segmentation.hpp"
 
 namespace thes {
-template<typename TExecutor>
+template<typename E>
 struct LinearExecutionPolicy {
-  using Executor = TExecutor;
+  using Executor = E;
 
-  explicit LinearExecutionPolicy(const TExecutor& executor) : executor_(executor) {}
+  explicit LinearExecutionPolicy(const E& executor) : executor_(executor) {}
 
-  template<typename TSize, typename TOp>
-  void execute_segmented(TSize size, TOp&& op) const {
+  template<typename S, typename F>
+  void execute_segmented(S size, F&& f) const { // NOLINT(*-missing-std-forward)
     UniformIndexSegmenter segmenter(size, executor_.thread_num());
-    executor_.execute([&op, &segmenter](std::size_t thread_idx) {
+    executor_.execute([&f, &segmenter](std::size_t thread_idx) {
       const auto begin = segmenter.segment_start(thread_idx);
       const auto end = segmenter.segment_end(thread_idx);
-      op(thread_idx, begin, end);
+      f(thread_idx, begin, end);
     });
   }
   [[nodiscard]] std::size_t thread_num() const {
