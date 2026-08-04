@@ -166,6 +166,112 @@ THES_TEST_CASE("ValueOptional can be set and cleared", "[utility][value-optional
   THES_CHECK(!value.has_value());
 }
 
+/** Checks `reset` (alias for `clear`) and `emplace` (alias for `set`, returning the value). */
+THES_TEST_CASE("ValueOptional reset and emplace", "[utility][value-optional]") {
+  Sentinel value{};
+
+  THES_CHECK(value.emplace(4) == 4);
+  THES_CHECK(value.has_value());
+  THES_CHECK(value.value() == 4);
+
+  value.reset();
+  THES_CHECK(value.is_empty());
+}
+
+/** Checks `operator bool` and `value_or`. */
+THES_TEST_CASE("ValueOptional bool conversion and value_or", "[utility][value-optional]") {
+  const Sentinel empty{};
+  const Sentinel value{7};
+
+  THES_CHECK(!empty);
+  THES_CHECK(value);
+  THES_CHECK(!static_cast<bool>(empty));
+  THES_CHECK(static_cast<bool>(value));
+
+  THES_CHECK(empty.value_or(42) == 42);
+  THES_CHECK(value.value_or(42) == 7);
+}
+
+/** Checks member and free `swap`. */
+THES_TEST_CASE("ValueOptional swap", "[utility][value-optional]") {
+  Sentinel a{1};
+  Sentinel b{};
+
+  a.swap(b);
+  THES_CHECK(a.is_empty());
+  THES_CHECK(b.value() == 1);
+
+  using std::swap;
+  swap(a, b);
+  THES_CHECK(a.value() == 1);
+  THES_CHECK(b.is_empty());
+}
+
+/**
+ * Checks equality: two optionals compare equal iff both are empty or hold equal values; an
+ * optional compares equal to a raw value iff it holds that value; and to `nullopt` iff empty.
+ */
+THES_TEST_CASE("ValueOptional equality", "[utility][value-optional]") {
+  const Sentinel empty1{};
+  const Sentinel empty2{};
+  const Sentinel five{5};
+  const Sentinel other_five{5};
+  const Sentinel six{6};
+
+  THES_CHECK(empty1 == empty2);
+  THES_CHECK(five == other_five);
+  THES_CHECK(five != six);
+  THES_CHECK(five != empty1);
+
+  THES_CHECK(five == 5);
+  THES_CHECK(5 == five);
+  THES_CHECK(five != 6);
+  THES_CHECK(empty1 != 5);
+
+  // Parenthesized because `std::nullopt_t` doesn’t itself satisfy `std::equality_comparable`,
+  // which `THES_CHECK`’s expression decomposition requires of a bare `==`/`!=` operand.
+  THES_CHECK((empty1 == std::nullopt));
+  THES_CHECK((std::nullopt == empty1));
+  THES_CHECK((five != std::nullopt));
+}
+
+/** Checks ordering: the empty state sorts before every value, and values sort by magnitude. */
+THES_TEST_CASE("ValueOptional ordering", "[utility][value-optional]") {
+  const Sentinel empty{};
+  const Sentinel three{3};
+  const Sentinel five{5};
+
+  THES_CHECK(empty < three);
+  THES_CHECK(three < five);
+  THES_CHECK(empty <= empty);
+  THES_CHECK(five > three);
+  THES_CHECK(five >= five);
+  THES_CHECK((empty <=> three) == std::strong_ordering::less);
+  THES_CHECK((three <=> empty) == std::strong_ordering::greater);
+  THES_CHECK((empty <=> std::nullopt) == std::strong_ordering::equal);
+
+  // Ordering against a raw value: the empty state is still ordered before every value.
+  THES_CHECK(empty < 0);
+  THES_CHECK(three < 5);
+  THES_CHECK(five > 3);
+}
+
+/**
+ * Checks that `MaxOptional`'s empty state sorts before every value, even though its sentinel
+ * (the type maximum) is numerically the largest representable raw value.
+ */
+THES_TEST_CASE("MaxOptional orders the empty state before every value",
+               "[utility][value-optional]") {
+  const MaxOpt empty{};
+  const MaxOpt zero{0};
+  const MaxOpt large{MaxOpt::empty_value - 1};
+
+  THES_CHECK(empty < zero);
+  THES_CHECK(empty < large);
+  THES_CHECK(zero < large);
+  THES_CHECK(empty != large);
+}
+
 /** Checks that `value_run` invokes its callable only when a value is present. */
 THES_TEST_CASE("ValueOptional::value_run runs conditionally", "[utility][value-optional]") {
   int seen = 0;

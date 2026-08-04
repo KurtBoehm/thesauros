@@ -8,6 +8,7 @@
 #define INCLUDE_THESAUROS_UTILITY_VALUE_OPTIONAL_HPP
 
 #include <cassert>
+#include <compare>
 #include <concepts>
 #include <functional>
 #include <limits>
@@ -25,6 +26,7 @@ namespace thes {
 template<typename T, T EmptyValue>
 struct ValueOptional {
   using Value = T;
+  using value_type = T;
 
   /** Sentinel representing the empty state. */
   static constexpr Value empty_value = EmptyValue;
@@ -45,17 +47,41 @@ struct ValueOptional {
   constexpr void clear() {
     value_ = empty_value;
   }
+  /** Set the optional to the empty state; equivalent to `clear`, matching `std::optional`. */
+  constexpr void reset() {
+    clear();
+  }
 
   /** Store a new value, which must not be equal to `empty_value`. */
   constexpr void set(const Value& value) {
     assert(value != empty_value);
     value_ = value;
   }
+  /** Store a new value and return it; equivalent to `set`, matching `std::optional::emplace`. */
+  constexpr const Value& emplace(const Value& value) {
+    set(value);
+    return value_;
+  }
+
+  /** Exchange the states of `*this` and `other`. */
+  constexpr void swap(ValueOptional& other) noexcept {
+    using std::swap;
+    swap(value_, other.value_);
+  }
+  /** Exchange the states of `lhs` and `rhs`. */
+  friend constexpr void swap(ValueOptional& lhs, ValueOptional& rhs) noexcept {
+    lhs.swap(rhs);
+  }
 
   /** Access the stored value; asserts that a value is present. */
   [[nodiscard]] constexpr const Value& value() const {
     assert(value_ != empty_value);
     return value_;
+  }
+
+  /** Return the stored value if present, or `default_value` otherwise. */
+  [[nodiscard]] constexpr Value value_or(Value default_value) const {
+    return has_value() ? value_ : default_value;
   }
 
   /** Dereference to the stored value; does not check for emptiness. */
@@ -71,6 +97,41 @@ struct ValueOptional {
   /** Return whether the optional is empty (`value_ == empty_value`). */
   [[nodiscard]] constexpr bool is_empty() const {
     return value_ == empty_value;
+  }
+
+  /** Return whether a value is present; equivalent to `has_value`, matching `std::optional`. */
+  [[nodiscard]] constexpr explicit operator bool() const {
+    return has_value();
+  }
+
+  /** Return whether `lhs` and `rhs` represent the same state, i.e. both empty or equal values. */
+  friend constexpr bool operator==(const ValueOptional& lhs, const ValueOptional& rhs) {
+    return lhs.value_ == rhs.value_;
+  }
+  /** Return whether `lhs` holds a value equal to `rhs`. */
+  friend constexpr bool operator==(const ValueOptional& lhs, const Value& rhs) {
+    return lhs.has_value() && lhs.value_ == rhs;
+  }
+  /** Return whether `lhs` is empty. */
+  friend constexpr bool operator==(const ValueOptional& lhs, std::nullopt_t) {
+    return lhs.is_empty();
+  }
+
+  /** Compare `lhs` and `rhs`, with the empty state ordered before every value. */
+  friend constexpr std::strong_ordering operator<=>(const ValueOptional& lhs,
+                                                    const ValueOptional& rhs) {
+    if (lhs.has_value() != rhs.has_value()) {
+      return lhs.has_value() ? std::strong_ordering::greater : std::strong_ordering::less;
+    }
+    return lhs.has_value() ? (lhs.value_ <=> rhs.value_) : std::strong_ordering::equal;
+  }
+  /** Compare `lhs` against `rhs`, with the empty state ordered before every value. */
+  friend constexpr std::strong_ordering operator<=>(const ValueOptional& lhs, const Value& rhs) {
+    return lhs.has_value() ? (lhs.value_ <=> rhs) : std::strong_ordering::less;
+  }
+  /** Compare `lhs` against the empty state, which is ordered before every value. */
+  friend constexpr std::strong_ordering operator<=>(const ValueOptional& lhs, std::nullopt_t) {
+    return lhs.has_value() ? std::strong_ordering::greater : std::strong_ordering::equal;
   }
 
   /** Invoke `f(*this)` if a value is present. */

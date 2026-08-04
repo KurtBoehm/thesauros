@@ -17,6 +17,7 @@
 #include <initializer_list>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <span>
 #include <type_traits>
 
@@ -312,6 +313,25 @@ struct MultiByteIntegersBase {
       Value v{};
       v.set(value);
       *this = v;
+    }
+
+    /** Returns whether the optionals referenced by `lhs` and `rhs` represent the same state. */
+    friend bool operator==(const IntRef& lhs, const IntRef& rhs)
+    requires(IsOptional)
+    {
+      return Value{lhs} == Value{rhs};
+    }
+    /** Returns whether the optional referenced by `lhs` equals `rhs`. */
+    friend bool operator==(const IntRef& lhs, const Value& rhs)
+    requires(IsOptional)
+    {
+      return Value{lhs} == rhs;
+    }
+    /** Returns whether the optional referenced by `lhs` is empty. */
+    friend bool operator==(const IntRef& lhs, std::nullopt_t rhs)
+    requires(IsOptional)
+    {
+      return Value{lhs} == rhs;
     }
 
     /** Exchanges the values referenced by `vw1` and `vw2`. */

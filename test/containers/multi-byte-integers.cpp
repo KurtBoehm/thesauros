@@ -763,6 +763,10 @@ void test_int_ref_optional_accessors() {
   static_assert(requires(typename OptMbi::IntRef r) { *r; });
   static_assert(requires(typename OptMbi::IntRef r) { r.clear(); });
   static_assert(requires(typename OptMbi::IntRef r) { r.set(UInt{1}); });
+  static_assert(requires(typename OptMbi::IntRef r) { r == r; });
+  static_assert(requires(typename OptMbi::IntRef r, typename OptMbi::value_type v) { r == v; });
+  static_assert(requires(typename OptMbi::IntRef r) { r == std::nullopt; });
+  static_assert(!requires(typename Mbi::IntRef r) { r == std::nullopt; });
 
   OptMbi mbi = OptMbi::create_empty(3);
   THES_ALWAYS_ASSERT(mbi[0].is_empty());
@@ -783,6 +787,26 @@ void test_int_ref_optional_accessors() {
   THES_ALWAYS_ASSERT(mbi[1].value() == wrap<ByteInt>(9));
   mbi[1] = std::nullopt;
   THES_ALWAYS_ASSERT(mbi[1].is_empty());
+
+  // `IntRef == IntRef`, `IntRef == Value` and `IntRef == std::nullopt` compare like
+  // `ValueOptional`, in both operand orders.
+  mbi[0] = wrap<ByteInt>(5);
+  mbi[1] = wrap<ByteInt>(5);
+  mbi[2] = wrap<ByteInt>(6);
+  THES_ALWAYS_ASSERT(mbi[0] == mbi[1]);
+  THES_ALWAYS_ASSERT(mbi[0] != mbi[2]);
+  THES_ALWAYS_ASSERT(mbi[0] == wrap<ByteInt>(5));
+  THES_ALWAYS_ASSERT(wrap<ByteInt>(5) == mbi[0]);
+  THES_ALWAYS_ASSERT(mbi[0] != std::nullopt);
+
+  mbi[2].clear();
+  THES_ALWAYS_ASSERT(mbi[2] == std::nullopt);
+  THES_ALWAYS_ASSERT(std::nullopt == mbi[2]);
+  THES_ALWAYS_ASSERT(mbi[0] != mbi[2]);
+
+  const OptMbi& cmbi = mbi;
+  THES_ALWAYS_ASSERT(cmbi[0] == cmbi[1]);
+  THES_ALWAYS_ASSERT(mbi[0] == cmbi[1]);
 }
 
 //==================================================================================================
