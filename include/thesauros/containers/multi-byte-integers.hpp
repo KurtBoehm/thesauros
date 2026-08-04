@@ -183,6 +183,96 @@ struct MultiByteIntegersBase {
       return load(ptr_);
     }
 
+    /** Increments the referenced value and returns `*this`. */
+    const IntRef& operator++() const
+    requires(!IsOptional)
+    {
+      return *this = *safe_cast<Value>(Value{*this} + 1);
+    }
+    /** Increments the referenced value and returns its previous value. */
+    Value operator++(int) const
+    requires(!IsOptional)
+    {
+      const Value old = *this;
+      *this = *safe_cast<Value>(old + 1);
+      return old;
+    }
+    /** Decrements the referenced value and returns `*this`. */
+    const IntRef& operator--() const
+    requires(!IsOptional)
+    {
+      return *this = *safe_cast<Value>(Value{*this} - 1);
+    }
+    /** Decrements the referenced value and returns its previous value. */
+    Value operator--(int) const
+    requires(!IsOptional)
+    {
+      const Value old = *this;
+      *this = *safe_cast<Value>(old - 1);
+      return old;
+    }
+
+    /** Adds `rhs` to the referenced value. */
+    const IntRef& operator+=(Value rhs) const
+    requires(!IsOptional)
+    {
+      return *this = *safe_cast<Value>(Value{*this} + rhs);
+    }
+    /** Subtracts `rhs` from the referenced value. */
+    const IntRef& operator-=(Value rhs) const
+    requires(!IsOptional)
+    {
+      return *this = *safe_cast<Value>(Value{*this} - rhs);
+    }
+    /** Multiplies the referenced value by `rhs`. */
+    const IntRef& operator*=(Value rhs) const
+    requires(!IsOptional)
+    {
+      return *this = *safe_cast<Value>(Value{*this} * rhs);
+    }
+    /** Divides the referenced value by `rhs`. */
+    const IntRef& operator/=(Value rhs) const
+    requires(!IsOptional)
+    {
+      return *this = *safe_cast<Value>(Value{*this} / rhs);
+    }
+    /** Reduces the referenced value modulo `rhs`. */
+    const IntRef& operator%=(Value rhs) const
+    requires(!IsOptional)
+    {
+      return *this = *safe_cast<Value>(Value{*this} % rhs);
+    }
+    /** Bitwise-ANDs the referenced value with `rhs`. */
+    const IntRef& operator&=(Value rhs) const
+    requires(!IsOptional)
+    {
+      return *this = *safe_cast<Value>(Value{*this} & rhs);
+    }
+    /** Bitwise-ORs the referenced value with `rhs`. */
+    const IntRef& operator|=(Value rhs) const
+    requires(!IsOptional)
+    {
+      return *this = *safe_cast<Value>(Value{*this} | rhs);
+    }
+    /** Bitwise-XORs the referenced value with `rhs`. */
+    const IntRef& operator^=(Value rhs) const
+    requires(!IsOptional)
+    {
+      return *this = *safe_cast<Value>(Value{*this} ^ rhs);
+    }
+    /** Left-shifts the referenced value by `shift` bits. */
+    const IntRef& operator<<=(int shift) const
+    requires(!IsOptional)
+    {
+      return *this = *safe_cast<Value>(Value{*this} << shift);
+    }
+    /** Right-shifts the referenced value by `shift` bits. */
+    const IntRef& operator>>=(int shift) const
+    requires(!IsOptional)
+    {
+      return *this = *safe_cast<Value>(Value{*this} >> shift);
+    }
+
     /** Exchanges the values referenced by `vw1` and `vw2`. */
     friend void swap(IntRef vw1, IntRef vw2) noexcept {
       Value v1 = vw1;

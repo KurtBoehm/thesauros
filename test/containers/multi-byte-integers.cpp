@@ -466,6 +466,52 @@ void test_int_ref_assignment() {
   THES_ALWAYS_ASSERT(mbi[1] == wrap<ByteInt>(3));
 }
 
+/** Checks the increment, decrement and compound-assignment operators exposed by `IntRef`. */
+template<typename ByteInt, std::size_t PaddingBytes = 13>
+void test_int_ref_arithmetic() {
+  using UInt = ByteInt::Unsigned;
+  using Mbi = thes::MultiByteIntegers<ByteInt, PaddingBytes>;
+
+  Mbi mbi{wrap<ByteInt>(5), wrap<ByteInt>(10)};
+
+  THES_ALWAYS_ASSERT(mbi[0]++ == wrap<ByteInt>(5));
+  THES_ALWAYS_ASSERT(mbi[0] == wrap<ByteInt>(6));
+  THES_ALWAYS_ASSERT(++mbi[0] == wrap<ByteInt>(7));
+  THES_ALWAYS_ASSERT(mbi[0] == wrap<ByteInt>(7));
+
+  THES_ALWAYS_ASSERT(mbi[0]-- == wrap<ByteInt>(7));
+  THES_ALWAYS_ASSERT(mbi[0] == wrap<ByteInt>(6));
+  THES_ALWAYS_ASSERT(--mbi[0] == wrap<ByteInt>(5));
+  THES_ALWAYS_ASSERT(mbi[0] == wrap<ByteInt>(5));
+
+  mbi[0] += wrap<ByteInt>(3);
+  THES_ALWAYS_ASSERT(mbi[0] == wrap<ByteInt>(8));
+  mbi[0] -= wrap<ByteInt>(2);
+  THES_ALWAYS_ASSERT(mbi[0] == wrap<ByteInt>(6));
+  mbi[0] *= wrap<ByteInt>(3);
+  THES_ALWAYS_ASSERT(mbi[0] == wrap<ByteInt>(18));
+  mbi[0] /= wrap<ByteInt>(4);
+  THES_ALWAYS_ASSERT(mbi[0] == wrap<ByteInt>(4));
+  mbi[0] %= wrap<ByteInt>(3);
+  THES_ALWAYS_ASSERT(mbi[0] == wrap<ByteInt>(1));
+
+  mbi[1] &= wrap<ByteInt>(0b1100);
+  THES_ALWAYS_ASSERT(mbi[1] == wrap<ByteInt>(0b1000));
+  mbi[1] |= wrap<ByteInt>(0b0011);
+  THES_ALWAYS_ASSERT(mbi[1] == wrap<ByteInt>(0b1011));
+  mbi[1] ^= wrap<ByteInt>(0b1111);
+  THES_ALWAYS_ASSERT(mbi[1] == wrap<ByteInt>(0b0100));
+  mbi[1] <<= 2;
+  THES_ALWAYS_ASSERT(mbi[1] == wrap<ByteInt>(0b10000));
+  mbi[1] >>= 3;
+  THES_ALWAYS_ASSERT(mbi[1] == wrap<ByteInt>(0b00010));
+
+  // The compound-assignment operators return a reference usable for chaining and conversion.
+  const UInt result = (mbi[0] += wrap<ByteInt>(1));
+  THES_ALWAYS_ASSERT(result == wrap<ByteInt>(2));
+  THES_ALWAYS_ASSERT(mbi[0] == wrap<ByteInt>(2));
+}
+
 /** Checks reverse iteration and mutation for the optional variant. */
 template<typename ByteInt, std::size_t PaddingBytes = 13>
 void test_optional_reverse_iteration() {
@@ -881,6 +927,7 @@ void run_full_suite() {
   test_swap<ByteInt>();
   test_element_access<ByteInt>();
   test_int_ref_assignment<ByteInt>();
+  test_int_ref_arithmetic<ByteInt>();
   test_reverse_iteration<ByteInt>();
   test_reverse_iterator_mutation<ByteInt>();
   test_reverse_iterator_arithmetic<ByteInt>();
