@@ -187,6 +187,7 @@ if(THESAUROS_BUILD_TESTS)
     "containers/set-algorithms"
     "containers/static-bitset"
     "execution/execution"
+    "execution/thread-pool"
     "filesystem/tempfile"
     "format/format"
     "format/formatters"

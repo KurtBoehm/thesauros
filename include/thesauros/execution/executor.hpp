@@ -4,6 +4,7 @@
 // IWYU pragma: begin_exports
 #include "executor/fixed-omp-thread-pool.hpp"
 #include "executor/fixed-std-thread-pool.hpp"
+#include "executor/fixed-thread-pool.hpp"
 #include "executor/sequential.hpp"
 // IWYU pragma: end_exports
 

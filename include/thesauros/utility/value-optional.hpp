@@ -113,7 +113,7 @@ struct ValueOptional {
     return lhs.has_value() && lhs.value_ == rhs;
   }
   /** Return whether `lhs` is empty. */
-  friend constexpr bool operator==(const ValueOptional& lhs, std::nullopt_t) {
+  friend constexpr bool operator==(const ValueOptional& lhs, std::nullopt_t /*rhs*/) {
     return lhs.is_empty();
   }
 
@@ -130,7 +130,8 @@ struct ValueOptional {
     return lhs.has_value() ? (lhs.value_ <=> rhs) : std::strong_ordering::less;
   }
   /** Compare `lhs` against the empty state, which is ordered before every value. */
-  friend constexpr std::strong_ordering operator<=>(const ValueOptional& lhs, std::nullopt_t) {
+  friend constexpr std::strong_ordering operator<=>(const ValueOptional& lhs,
+                                                    std::nullopt_t /*rhs*/) {
     return lhs.has_value() ? std::strong_ordering::greater : std::strong_ordering::equal;
   }
 

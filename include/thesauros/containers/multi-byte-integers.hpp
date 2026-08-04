@@ -21,6 +21,7 @@
 #include <span>
 #include <type_traits>
 
+#include "thesauros/concepts/type-traits.hpp"
 #include "thesauros/containers/array/dynamic.hpp"
 #include "thesauros/containers/array/growth-policy.hpp"
 #include "thesauros/containers/array/initialization-policy.hpp"
@@ -602,10 +603,6 @@ struct MultiByteIntegersBase {
   auto full_sub_range(this auto&& self) {
     return self.sub_range(0, self.size());
   }
-
-  //------------------------------------------------------------------------------------------------
-  // Serialization
-  //------------------------------------------------------------------------------------------------
 
 protected:
   /** Converts an element count to a byte count. */

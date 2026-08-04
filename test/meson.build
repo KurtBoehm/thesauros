@@ -34,7 +34,7 @@ foreach module, names : {
     'set-algorithms',
     'static-bitset',
   ],
-  'execution': ['execution'],
+  'execution': ['execution', 'thread-pool'],
   'filesystem': ['tempfile'],
   'format': ['format', 'formatters'],
   'functional': ['functional'],

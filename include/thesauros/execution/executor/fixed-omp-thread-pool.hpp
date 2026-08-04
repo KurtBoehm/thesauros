@@ -10,6 +10,7 @@
 #include <cassert>
 #include <concepts>
 #include <cstddef>
+#include <functional>
 #include <optional>
 #include <ranges>
 #include <stdexcept>

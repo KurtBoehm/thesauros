@@ -56,6 +56,7 @@ int main() try {
 
   run_scan(thes::FixedStdThreadPool{2});
   run_scan(thes::FixedOpenMpThreadPool{2});
+  run_scan(thes::FixedThreadPool{2});
 
   const auto logical = std::ranges::to<std::vector<thes::CpuInfo>>(thes::CpuInfo::logical());
   fmt::print("{}× logical: {}\n", logical.size(), logical);

@@ -4,6 +4,7 @@
 // IWYU pragma: begin_exports
 #include "system/affinity.hpp"
 #include "system/scheduler.hpp"
+#include "system/spin.hpp"
 // IWYU pragma: end_exports
 
 #endif // INCLUDE_THESAUROS_EXECUTION_SYSTEM_HPP
