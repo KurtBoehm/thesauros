@@ -616,6 +616,66 @@ struct MultiByteIntegerArray
     array().reserve(Storage::effective_allocation(allocation));
   }
 
+  /** Returns the number of elements that can be held without reallocating. */
+  [[nodiscard]] Size capacity() const {
+    return (array().allocation_size() - 2 * padding_bytes) / element_bytes;
+  }
+
+  /** Reallocates so that the capacity exactly matches the current size. */
+  void shrink_to_fit() {
+    const Size current_size = storage().size();
+    if (array().allocation_size() == Storage::effective_allocation(current_size)) {
+      return;
+    }
+    Storage new_storage{current_size};
+    std::memcpy(new_storage.span().data(), span().data(), byte_size(current_size));
+    storage() = std::move(new_storage);
+  }
+
+  /** Resizes the array to `new_size` elements, value-initializing (zeroing) any new ones. */
+  void resize(Size new_size) {
+    resize(new_size, Value{});
+  }
+  /** Resizes the array to `new_size` elements, copying `value` into any new ones. */
+  void resize(Size new_size, Value value) {
+    const Size old_size = storage().size();
+    if (new_size < old_size) {
+      array().shrink(Storage::effective_allocation(new_size));
+      storage().size() = new_size;
+    } else if (new_size > old_size) {
+      array().expand(Storage::effective_allocation(new_size));
+      storage().size() = new_size;
+      std::byte* dst = span().data() + byte_size(old_size);
+      for (Size i = old_size; i < new_size; ++i, dst += element_bytes) {
+        this->store_full(dst, value);
+      }
+    }
+  }
+
+  /** Removes all elements, without changing the capacity. */
+  void clear() {
+    if (!this->empty()) {
+      array().shrink(Storage::effective_allocation(0));
+      storage().size() = 0;
+    }
+  }
+
+  /** Replaces the contents with `count` copies of `value`. */
+  void assign(Size count, Value value) {
+    clear();
+    resize(count, value);
+  }
+  /** Replaces the contents with the elements of `[first, last)`. */
+  template<typename It>
+  void assign(It first, It last) {
+    clear();
+    insert(this->begin(), first, last);
+  }
+  /** Replaces the contents with the elements of `init`, in order. */
+  void assign(std::initializer_list<Value> init) {
+    assign(init.begin(), init.end());
+  }
+
   /** Sets every bit of every element in the half-open index range `[first, last)`. */
   void set_all(Size first, Size last) {
     std::byte* ptr = span().data();
@@ -667,11 +727,77 @@ struct MultiByteIntegerArray
     }
   }
 
-  /** Inserts the elements of `[first, last)` before `pos`. */
+  /**
+   * Inserts the elements of `[first, last)` before `pos` and returns an iterator to the first
+   * inserted element.
+   */
   template<typename It>
-  void insert(const_iterator pos, It first, It last) {
+  requires(!std::integral<It>)
+  iterator insert(const_iterator pos, It first, It last) {
     const auto insize = *safe_cast<Size>(std::distance(first, last));
-    copy_uninit(insert_any(pos, insize), first, last);
+    iterator it = insert_any(pos, insize);
+    copy_uninit(it, first, last);
+    return it;
+  }
+  /** Inserts a copy of `value` before `pos` and returns an iterator to the inserted element. */
+  iterator insert(const_iterator pos, Value value) {
+    iterator it = insert_any(pos, 1);
+    this->store(it.raw(), value);
+    return it;
+  }
+  /**
+   * Inserts `count` copies of `value` before `pos` and returns an iterator to the first inserted
+   * element.
+   */
+  iterator insert(const_iterator pos, Size count, Value value) {
+    iterator it = insert_any(pos, count);
+    std::byte* dst = it.raw();
+    for (Size i = 0; i < count; ++i, dst += element_bytes) {
+      this->store(dst, value);
+    }
+    return it;
+  }
+  /**
+   * Inserts the elements of `init`, in order, before `pos` and returns an iterator to the first
+   * inserted element.
+   */
+  iterator insert(const_iterator pos, std::initializer_list<Value> init) {
+    return insert(pos, init.begin(), init.end());
+  }
+
+  /** Removes the element at `pos` and returns an iterator to the following element. */
+  iterator erase(const_iterator pos) {
+    return erase(pos, pos + 1);
+  }
+  /**
+   * Removes the elements in `[first, last)`, shifting the following elements down, and returns
+   * an iterator to the element that followed the erased range.
+   */
+  iterator erase(const_iterator first, const_iterator last) {
+    assert(first <= last);
+    const std::ptrdiff_t offset = first.raw() - span().data();
+    const Size erase_bytes = *safe_cast<Size>(last.raw() - first.raw());
+    if (erase_bytes == 0) {
+      return iterator{span().data() + offset};
+    }
+
+    std::byte* dst = span().data() + offset;
+    const Size tail_bytes = byte_size(storage().size()) - (*safe_cast<Size>(offset) + erase_bytes);
+    std::memmove(dst, dst + erase_bytes, tail_bytes);
+
+    array().shrink(array().size() - erase_bytes);
+    storage().size() -= erase_bytes / element_bytes;
+    return iterator{span().data() + offset};
+  }
+
+  /** Exchanges the contents of `*this` and `other`. */
+  void swap(MultiByteIntegerArray& other) noexcept {
+    using std::swap;
+    swap(storage(), other.storage());
+  }
+  /** Exchanges the contents of `lhs` and `rhs`. */
+  friend void swap(MultiByteIntegerArray& lhs, MultiByteIntegerArray& rhs) noexcept {
+    lhs.swap(rhs);
   }
 
 private:

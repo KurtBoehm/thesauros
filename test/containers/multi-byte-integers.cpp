@@ -239,6 +239,185 @@ void test_reserve() {
 }
 
 //==================================================================================================
+// resize, clear, assign, insert (value overloads) and erase
+//==================================================================================================
+
+/** Checks growing and shrinking `resize`, both with and without an explicit fill value. */
+template<typename ByteInt, std::size_t PaddingBytes = 13>
+void test_resize() {
+  using UInt = ByteInt::Unsigned;
+  using Mbi = thes::MultiByteIntegers<ByteInt, PaddingBytes>;
+
+  Mbi mbi{UInt{1}, UInt{2}, UInt{3}};
+
+  mbi.resize(5);
+  THES_ALWAYS_ASSERT(
+    test::range_eq(mbi, std::vector<UInt>{UInt{1}, UInt{2}, UInt{3}, UInt{0}, UInt{0}}));
+
+  mbi.resize(3);
+  THES_ALWAYS_ASSERT(test::range_eq(mbi, std::vector<UInt>{UInt{1}, UInt{2}, UInt{3}}));
+
+  mbi.resize(6, wrap<ByteInt>(9));
+  THES_ALWAYS_ASSERT(test::range_eq(
+    mbi, std::vector<UInt>{UInt{1}, UInt{2}, UInt{3}, wrap<ByteInt>(9), wrap<ByteInt>(9),
+                           wrap<ByteInt>(9)}));
+
+  mbi.resize(0);
+  THES_ALWAYS_ASSERT(mbi.empty());
+}
+
+/** Checks that `clear` empties the array without shrinking its capacity. */
+template<typename ByteInt, std::size_t PaddingBytes = 13>
+void test_clear() {
+  using UInt = ByteInt::Unsigned;
+  using Mbi = thes::MultiByteIntegers<ByteInt, PaddingBytes>;
+
+  Mbi mbi{UInt{1}, UInt{2}, UInt{3}};
+  mbi.reserve(64);
+  const std::size_t cap = mbi.capacity();
+
+  mbi.clear();
+  THES_ALWAYS_ASSERT(mbi.empty());
+  THES_ALWAYS_ASSERT(mbi.size() == 0);
+  THES_ALWAYS_ASSERT(mbi.capacity() == cap);
+
+  // Clearing an already empty array must be a no-op.
+  mbi.clear();
+  THES_ALWAYS_ASSERT(mbi.empty());
+
+  mbi.push_back(wrap<ByteInt>(7));
+  THES_ALWAYS_ASSERT(test::range_eq(mbi, std::vector<UInt>{wrap<ByteInt>(7)}));
+}
+
+/** Checks the `assign` overloads for count/value, iterator range and initializer list. */
+template<typename ByteInt, std::size_t PaddingBytes = 13>
+void test_assign() {
+  using UInt = ByteInt::Unsigned;
+  using Mbi = thes::MultiByteIntegers<ByteInt, PaddingBytes>;
+
+  Mbi mbi{UInt{1}, UInt{2}, UInt{3}};
+
+  mbi.assign(4, wrap<ByteInt>(5));
+  THES_ALWAYS_ASSERT(test::range_eq(
+    mbi,
+    std::vector<UInt>{wrap<ByteInt>(5), wrap<ByteInt>(5), wrap<ByteInt>(5), wrap<ByteInt>(5)}));
+
+  const std::vector<UInt> range{wrap<ByteInt>(11), wrap<ByteInt>(22)};
+  mbi.assign(range.begin(), range.end());
+  THES_ALWAYS_ASSERT(test::range_eq(mbi, range));
+
+  mbi.assign({UInt{1}, UInt{2}, UInt{3}});
+  THES_ALWAYS_ASSERT(test::range_eq(mbi, std::vector<UInt>{UInt{1}, UInt{2}, UInt{3}}));
+}
+
+/** Checks the single-value, count/value and initializer-list `insert` overloads. */
+template<typename ByteInt, std::size_t PaddingBytes = 13>
+void test_insert_value_overloads() {
+  using UInt = ByteInt::Unsigned;
+  using Mbi = thes::MultiByteIntegers<ByteInt, PaddingBytes>;
+
+  Mbi mbi{UInt{1}, UInt{2}, UInt{3}};
+
+  auto it1 = mbi.insert(mbi.begin() + 1, wrap<ByteInt>(9));
+  THES_ALWAYS_ASSERT(*it1 == wrap<ByteInt>(9));
+  THES_ALWAYS_ASSERT(
+    test::range_eq(mbi, std::vector<UInt>{UInt{1}, wrap<ByteInt>(9), UInt{2}, UInt{3}}));
+
+  auto it2 = mbi.insert(mbi.begin(), 2, wrap<ByteInt>(4));
+  THES_ALWAYS_ASSERT(it2 == mbi.begin());
+  THES_ALWAYS_ASSERT(test::range_eq(
+    mbi, std::vector<UInt>{wrap<ByteInt>(4), wrap<ByteInt>(4), UInt{1}, wrap<ByteInt>(9), UInt{2},
+                           UInt{3}}));
+
+  auto it3 = mbi.insert(mbi.end(), {UInt{7}, UInt{8}});
+  THES_ALWAYS_ASSERT(*it3 == UInt{7});
+  THES_ALWAYS_ASSERT(test::range_eq(
+    mbi, std::vector<UInt>{wrap<ByteInt>(4), wrap<ByteInt>(4), UInt{1}, wrap<ByteInt>(9), UInt{2},
+                           UInt{3}, UInt{7}, UInt{8}}));
+
+  // Inserting zero copies must be a no-op that returns an iterator to the insertion point.
+  auto it4 = mbi.insert(mbi.begin() + 2, 0, wrap<ByteInt>(4));
+  THES_ALWAYS_ASSERT(it4 == mbi.begin() + 2);
+  THES_ALWAYS_ASSERT(mbi.size() == 8);
+}
+
+/** Checks single-element and range `erase`, including erasing at the very end. */
+template<typename ByteInt, std::size_t PaddingBytes = 13>
+void test_erase() {
+  using UInt = ByteInt::Unsigned;
+  using Mbi = thes::MultiByteIntegers<ByteInt, PaddingBytes>;
+
+  Mbi mbi{UInt{1}, UInt{2}, UInt{3}, UInt{4}, UInt{5}};
+
+  auto it1 = mbi.erase(mbi.begin() + 1);
+  THES_ALWAYS_ASSERT(*it1 == UInt{3});
+  THES_ALWAYS_ASSERT(test::range_eq(mbi, std::vector<UInt>{UInt{1}, UInt{3}, UInt{4}, UInt{5}}));
+
+  auto it2 = mbi.erase(mbi.begin() + 1, mbi.begin() + 3);
+  THES_ALWAYS_ASSERT(*it2 == UInt{5});
+  THES_ALWAYS_ASSERT(test::range_eq(mbi, std::vector<UInt>{UInt{1}, UInt{5}}));
+
+  // Erasing an empty range must be a no-op that returns an iterator to `first`.
+  auto it3 = mbi.erase(mbi.begin(), mbi.begin());
+  THES_ALWAYS_ASSERT(it3 == mbi.begin());
+  THES_ALWAYS_ASSERT(mbi.size() == 2);
+
+  auto it4 = mbi.erase(mbi.end() - 1);
+  THES_ALWAYS_ASSERT(it4 == mbi.end());
+  THES_ALWAYS_ASSERT(test::range_eq(mbi, std::vector<UInt>{UInt{1}}));
+
+  mbi.erase(mbi.begin(), mbi.end());
+  THES_ALWAYS_ASSERT(mbi.empty());
+}
+
+//==================================================================================================
+// capacity, shrink_to_fit and swap
+//==================================================================================================
+
+/** Checks that `capacity` reports at least the reserved size and `shrink_to_fit` tightens it. */
+template<typename ByteInt, std::size_t PaddingBytes = 13>
+void test_capacity_and_shrink_to_fit() {
+  using UInt = ByteInt::Unsigned;
+  using Mbi = thes::MultiByteIntegers<ByteInt, PaddingBytes>;
+
+  Mbi mbi{UInt{1}, UInt{2}, UInt{3}};
+  mbi.reserve(64);
+  THES_ALWAYS_ASSERT(mbi.capacity() >= 64);
+
+  mbi.shrink_to_fit();
+  THES_ALWAYS_ASSERT(mbi.capacity() == mbi.size());
+  THES_ALWAYS_ASSERT(test::range_eq(mbi, std::vector<UInt>{UInt{1}, UInt{2}, UInt{3}}));
+
+  // Shrinking an already tight array must be a no-op.
+  mbi.shrink_to_fit();
+  THES_ALWAYS_ASSERT(mbi.capacity() == mbi.size());
+  THES_ALWAYS_ASSERT(test::range_eq(mbi, std::vector<UInt>{UInt{1}, UInt{2}, UInt{3}}));
+}
+
+/** Checks member and free `swap`, including their effect on subsequent modification. */
+template<typename ByteInt, std::size_t PaddingBytes = 13>
+void test_swap() {
+  using UInt = ByteInt::Unsigned;
+  using Mbi = thes::MultiByteIntegers<ByteInt, PaddingBytes>;
+
+  Mbi mbi1{UInt{1}, UInt{2}, UInt{3}};
+  Mbi mbi2{UInt{9}, UInt{8}};
+
+  mbi1.swap(mbi2);
+  THES_ALWAYS_ASSERT(test::range_eq(mbi1, std::vector<UInt>{UInt{9}, UInt{8}}));
+  THES_ALWAYS_ASSERT(test::range_eq(mbi2, std::vector<UInt>{UInt{1}, UInt{2}, UInt{3}}));
+
+  using std::swap;
+  swap(mbi1, mbi2);
+  THES_ALWAYS_ASSERT(test::range_eq(mbi1, std::vector<UInt>{UInt{1}, UInt{2}, UInt{3}}));
+  THES_ALWAYS_ASSERT(test::range_eq(mbi2, std::vector<UInt>{UInt{9}, UInt{8}}));
+
+  mbi1.push_back(wrap<ByteInt>(4));
+  THES_ALWAYS_ASSERT(
+    test::range_eq(mbi1, std::vector<UInt>{UInt{1}, UInt{2}, UInt{3}, wrap<ByteInt>(4)}));
+}
+
+//==================================================================================================
 // Element access and iteration
 //==================================================================================================
 
@@ -693,6 +872,13 @@ void run_full_suite() {
   test_factory_functions<ByteInt>();
   test_set_all<ByteInt>();
   test_reserve<ByteInt>();
+  test_resize<ByteInt>();
+  test_clear<ByteInt>();
+  test_assign<ByteInt>();
+  test_insert_value_overloads<ByteInt>();
+  test_erase<ByteInt>();
+  test_capacity_and_shrink_to_fit<ByteInt>();
+  test_swap<ByteInt>();
   test_element_access<ByteInt>();
   test_int_ref_assignment<ByteInt>();
   test_reverse_iteration<ByteInt>();
