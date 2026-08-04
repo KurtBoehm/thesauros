@@ -153,7 +153,9 @@ struct MultiByteIntegersBase {
 
   /**
    * A proxy reference to a single packed integer, allowing it to be read as a `Value` and assigned
-   * through, similar to `std::vector<bool>::reference`.
+   * through, similar to `std::vector<bool>::reference`. If `IsOptional` is `true`, arithmetic
+   * operators are unavailable and `ValueOptional`-like accessors (`has_value`, `value`, …) are
+   * provided instead.
    */
   struct IntRef {
     explicit IntRef(std::byte* ptr) : ptr_(ptr) {}
@@ -271,6 +273,45 @@ struct MultiByteIntegersBase {
     requires(!IsOptional)
     {
       return *this = *safe_cast<Value>(Value{*this} >> shift);
+    }
+
+    /** Returns whether a value is present. */
+    [[nodiscard]] bool has_value() const
+    requires(IsOptional)
+    {
+      return Value{*this}.has_value();
+    }
+    /** Returns whether the referenced optional is empty. */
+    [[nodiscard]] bool is_empty() const
+    requires(IsOptional)
+    {
+      return Value{*this}.is_empty();
+    }
+    /** Returns the stored value; asserts that a value is present. */
+    [[nodiscard]] BaseValue value() const
+    requires(IsOptional)
+    {
+      return Value{*this}.value();
+    }
+    /** Dereferences to the stored value without checking for emptiness. */
+    [[nodiscard]] BaseValue operator*() const
+    requires(IsOptional)
+    {
+      return *Value{*this};
+    }
+    /** Sets the referenced optional to the empty state. */
+    void clear() const
+    requires(IsOptional)
+    {
+      *this = Value{};
+    }
+    /** Stores `value`, which must not equal the sentinel empty value. */
+    void set(BaseValue value) const
+    requires(IsOptional)
+    {
+      Value v{};
+      v.set(value);
+      *this = v;
     }
 
     /** Exchanges the values referenced by `vw1` and `vw2`. */

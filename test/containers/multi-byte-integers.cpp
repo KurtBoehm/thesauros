@@ -8,6 +8,7 @@
 #include <climits>
 #include <cstddef>
 #include <initializer_list>
+#include <optional>
 #include <vector>
 
 #include "thesauros/containers.hpp"
@@ -258,9 +259,9 @@ void test_resize() {
   THES_ALWAYS_ASSERT(test::range_eq(mbi, std::vector<UInt>{UInt{1}, UInt{2}, UInt{3}}));
 
   mbi.resize(6, wrap<ByteInt>(9));
-  THES_ALWAYS_ASSERT(test::range_eq(
-    mbi, std::vector<UInt>{UInt{1}, UInt{2}, UInt{3}, wrap<ByteInt>(9), wrap<ByteInt>(9),
-                           wrap<ByteInt>(9)}));
+  THES_ALWAYS_ASSERT(
+    test::range_eq(mbi, std::vector<UInt>{UInt{1}, UInt{2}, UInt{3}, wrap<ByteInt>(9),
+                                          wrap<ByteInt>(9), wrap<ByteInt>(9)}));
 
   mbi.resize(0);
   THES_ALWAYS_ASSERT(mbi.empty());
@@ -298,9 +299,8 @@ void test_assign() {
   Mbi mbi{UInt{1}, UInt{2}, UInt{3}};
 
   mbi.assign(4, wrap<ByteInt>(5));
-  THES_ALWAYS_ASSERT(test::range_eq(
-    mbi,
-    std::vector<UInt>{wrap<ByteInt>(5), wrap<ByteInt>(5), wrap<ByteInt>(5), wrap<ByteInt>(5)}));
+  THES_ALWAYS_ASSERT(test::range_eq(mbi, std::vector<UInt>{wrap<ByteInt>(5), wrap<ByteInt>(5),
+                                                           wrap<ByteInt>(5), wrap<ByteInt>(5)}));
 
   const std::vector<UInt> range{wrap<ByteInt>(11), wrap<ByteInt>(22)};
   mbi.assign(range.begin(), range.end());
@@ -325,15 +325,15 @@ void test_insert_value_overloads() {
 
   auto it2 = mbi.insert(mbi.begin(), 2, wrap<ByteInt>(4));
   THES_ALWAYS_ASSERT(it2 == mbi.begin());
-  THES_ALWAYS_ASSERT(test::range_eq(
-    mbi, std::vector<UInt>{wrap<ByteInt>(4), wrap<ByteInt>(4), UInt{1}, wrap<ByteInt>(9), UInt{2},
-                           UInt{3}}));
+  THES_ALWAYS_ASSERT(
+    test::range_eq(mbi, std::vector<UInt>{wrap<ByteInt>(4), wrap<ByteInt>(4), UInt{1},
+                                          wrap<ByteInt>(9), UInt{2}, UInt{3}}));
 
   auto it3 = mbi.insert(mbi.end(), {UInt{7}, UInt{8}});
   THES_ALWAYS_ASSERT(*it3 == UInt{7});
-  THES_ALWAYS_ASSERT(test::range_eq(
-    mbi, std::vector<UInt>{wrap<ByteInt>(4), wrap<ByteInt>(4), UInt{1}, wrap<ByteInt>(9), UInt{2},
-                           UInt{3}, UInt{7}, UInt{8}}));
+  THES_ALWAYS_ASSERT(
+    test::range_eq(mbi, std::vector<UInt>{wrap<ByteInt>(4), wrap<ByteInt>(4), UInt{1},
+                                          wrap<ByteInt>(9), UInt{2}, UInt{3}, UInt{7}, UInt{8}}));
 
   // Inserting zero copies must be a no-op that returns an iterator to the insertion point.
   auto it4 = mbi.insert(mbi.begin() + 2, 0, wrap<ByteInt>(4));
@@ -739,6 +739,52 @@ void test_optional_variant() {
   THES_ALWAYS_ASSERT(mbi.size() == 4);
 }
 
+/**
+ * Checks that `IntRef` exposes `ValueOptional`-style accessors (`has_value`, `is_empty`, `value`,
+ * `operator*`, `clear`, `set`) exactly when the container is the optional variant, and that
+ * arithmetic operators are available exactly for the non-optional variant.
+ */
+template<typename ByteInt, std::size_t PaddingBytes = 13>
+void test_int_ref_optional_accessors() {
+  using UInt = ByteInt::Unsigned;
+  using Mbi = thes::MultiByteIntegers<ByteInt, PaddingBytes>;
+  using OptMbi = thes::OptionalMultiByteIntegers<ByteInt, PaddingBytes>;
+
+  static_assert(requires(typename Mbi::IntRef r) { ++r; });
+  static_assert(requires(typename Mbi::IntRef r) { r += UInt{1}; });
+  static_assert(!requires(typename Mbi::IntRef r) { r.has_value(); });
+  static_assert(!requires(typename Mbi::IntRef r) { r.clear(); });
+
+  static_assert(!requires(typename OptMbi::IntRef r) { ++r; });
+  static_assert(!requires(typename OptMbi::IntRef r) { r += UInt{1}; });
+  static_assert(requires(typename OptMbi::IntRef r) { r.has_value(); });
+  static_assert(requires(typename OptMbi::IntRef r) { r.is_empty(); });
+  static_assert(requires(typename OptMbi::IntRef r) { r.value(); });
+  static_assert(requires(typename OptMbi::IntRef r) { *r; });
+  static_assert(requires(typename OptMbi::IntRef r) { r.clear(); });
+  static_assert(requires(typename OptMbi::IntRef r) { r.set(UInt{1}); });
+
+  OptMbi mbi = OptMbi::create_empty(3);
+  THES_ALWAYS_ASSERT(mbi[0].is_empty());
+  THES_ALWAYS_ASSERT(!mbi[0].has_value());
+
+  mbi[0].set(wrap<ByteInt>(5));
+  THES_ALWAYS_ASSERT(mbi[0].has_value());
+  THES_ALWAYS_ASSERT(!mbi[0].is_empty());
+  THES_ALWAYS_ASSERT(mbi[0].value() == wrap<ByteInt>(5));
+  THES_ALWAYS_ASSERT(*mbi[0] == wrap<ByteInt>(5));
+
+  mbi[0].clear();
+  THES_ALWAYS_ASSERT(mbi[0].is_empty());
+  THES_ALWAYS_ASSERT(!mbi[0].has_value());
+
+  // `operator=` still accepts a raw value or `std::nullopt` directly.
+  mbi[1] = wrap<ByteInt>(9);
+  THES_ALWAYS_ASSERT(mbi[1].value() == wrap<ByteInt>(9));
+  mbi[1] = std::nullopt;
+  THES_ALWAYS_ASSERT(mbi[1].is_empty());
+}
+
 //==================================================================================================
 // insert_any: direct exercise of size/pad_end combinations, no-ops, and reallocation
 //==================================================================================================
@@ -937,6 +983,7 @@ void run_full_suite() {
   test_sub_range_reverse_iteration<ByteInt>();
   test_reverse_iterator_with_algorithms<ByteInt>();
   test_optional_variant<ByteInt>();
+  test_int_ref_optional_accessors<ByteInt>();
   test_optional_reverse_iteration<ByteInt>();
   test_insert_any_direct<ByteInt>();
   test_insert_all_positions<ByteInt>();

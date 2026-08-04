@@ -11,6 +11,7 @@
 #include <concepts>
 #include <functional>
 #include <limits>
+#include <optional>
 #include <type_traits>
 #include <utility>
 
@@ -31,11 +32,14 @@ struct ValueOptional {
   /** Construct an empty optional (`empty_value`). */
   constexpr ValueOptional() = default;
 
-  /** Construct an optional containing `value`. */
-  constexpr ValueOptional(const Value& value) : value_{value} {}
+  /** Construct an empty optional (`empty_value`). */
+  constexpr ValueOptional(std::nullopt_t) noexcept {} // NOLINT
 
   /** Construct an optional containing `value`. */
-  constexpr ValueOptional(Value&& value) : value_{std::forward<Value>(value)} {}
+  constexpr ValueOptional(const Value& value) : value_{value} {} // NOLINT
+
+  /** Construct an optional containing `value`. */
+  constexpr ValueOptional(Value&& value) : value_{std::forward<Value>(value)} {} // NOLINT
 
   /** Set the optional to the empty state. */
   constexpr void clear() {

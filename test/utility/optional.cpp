@@ -112,6 +112,7 @@ using MaxOpt = thes::MaxOptional<thes::u32>;
 
 static_assert(Sentinel::empty_value == -1);
 static_assert(!Sentinel{}.has_value());
+static_assert(!Sentinel{std::nullopt}.has_value());
 static_assert(Sentinel{3}.has_value());
 static_assert(*Sentinel{3} == 3);
 
@@ -132,6 +133,20 @@ THES_TEST_CASE("ValueOptional uses its sentinel as the empty state", "[utility][
   const Sentinel zero{0};
   THES_CHECK(zero.has_value());
   THES_CHECK(zero.value() == 0);
+}
+
+/** Checks that `std::nullopt` constructs and assigns the empty state. */
+THES_TEST_CASE("ValueOptional constructs and assigns from std::nullopt",
+               "[utility][value-optional]") {
+  const Sentinel from_nullopt{std::nullopt};
+  THES_CHECK(from_nullopt.is_empty());
+  THES_CHECK(*from_nullopt == Sentinel::empty_value);
+
+  Sentinel value{5};
+  THES_CHECK(value.has_value());
+  value = std::nullopt;
+  THES_CHECK(value.is_empty());
+  THES_CHECK(!value.has_value());
 }
 
 /** Checks `set` and `clear`. */
