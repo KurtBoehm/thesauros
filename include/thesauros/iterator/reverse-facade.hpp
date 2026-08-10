@@ -8,6 +8,7 @@
 #define INCLUDE_THESAUROS_ITERATOR_REVERSE_FACADE_HPP
 
 #include <compare>
+#include <type_traits>
 
 #include "thesauros/iterator/facade.hpp"
 
@@ -22,8 +23,10 @@ namespace thes {
  */
 template<typename IterTypes>
 struct ReverseIteratorFacade : IteratorFacade<IterTypes> {
+  friend IteratorFacade<IterTypes>;
   using Diff = IterTypes::IterDiff;
 
+private:
   constexpr decltype(auto) deref(this const auto& self)
   requires(
     requires { self.rev_deref(); } ||

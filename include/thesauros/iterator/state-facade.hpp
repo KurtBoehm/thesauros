@@ -9,6 +9,7 @@
 
 #include <compare>
 #include <concepts>
+#include <type_traits>
 
 #include "thesauros/iterator/facade.hpp"
 #include "thesauros/math/integer-cast.hpp"
@@ -29,10 +30,12 @@ namespace thes {
  */
 template<typename IterTypes>
 struct StateIteratorFacade : IteratorFacade<IterTypes> {
+  friend IteratorFacade<IterTypes>;
   using Base = IteratorFacade<IterTypes>;
 
   using Diff = IterTypes::IterDiff;
 
+private:
   //------------------------------------------------------------------------------------------------
   // Forward and bidirectional primitives
   //------------------------------------------------------------------------------------------------
@@ -51,12 +54,19 @@ struct StateIteratorFacade : IteratorFacade<IterTypes> {
   {
     --self.state();
   }
-  template<typename Derived>
-  constexpr bool eq(this const Derived& self, const Derived& other)
-  requires(requires { self.state() == other.state(); })
+  template<typename Self, std::convertible_to<Self> Other>
+  constexpr bool eq(this const Self& self, const Other& other)
+  requires(requires { self.state() == self.state(); })
   {
-    self.check_cmp(other);
-    return self.state() == other.state();
+    decltype(auto) self_other = [&]() -> decltype(auto) {
+      if constexpr (std::same_as<Self, Other>) {
+        return other;
+      } else {
+        return static_cast<Self>(other);
+      }
+    }();
+    self.check_cmp(self_other);
+    return self.state() == self_other.state();
   }
 
   //------------------------------------------------------------------------------------------------
@@ -66,7 +76,7 @@ struct StateIteratorFacade : IteratorFacade<IterTypes> {
   constexpr void iadd(this auto& self, Diff diff)
   requires(requires { self.state() += diff; })
   {
-    using State = std::decay_t<decltype(self.state())>;
+    using State = std::remove_cvref_t<decltype(self.state())>;
     if constexpr (std::integral<State>) {
       if (diff < Diff{0}) {
         self.state() -= *safe_cast<State>(integral_value(-diff));
@@ -80,7 +90,7 @@ struct StateIteratorFacade : IteratorFacade<IterTypes> {
   constexpr void isub(this auto& self, Diff diff)
   requires(requires { self.state() -= diff; })
   {
-    using State = std::decay_t<decltype(self.state())>;
+    using State = std::remove_cvref_t<decltype(self.state())>;
     if constexpr (std::integral<State>) {
       if (diff < Diff{0}) {
         self.state() += *safe_cast<State>(integral_value(-diff));
@@ -96,7 +106,7 @@ struct StateIteratorFacade : IteratorFacade<IterTypes> {
   constexpr Diff sub(this const Derived& self, const Derived& other)
   requires(requires { self.state() - other.state(); })
   {
-    using State = std::decay_t<decltype(self.state())>;
+    using State = std::remove_cvref_t<decltype(self.state())>;
     self.check_cmp(other);
     if constexpr (std::integral<State>) {
       return *safe_cast<Diff>(self.state()) - *safe_cast<Diff>(other.state());
@@ -112,7 +122,6 @@ struct StateIteratorFacade : IteratorFacade<IterTypes> {
     return self.state() <=> other.state();
   }
 
-private:
   /** Calls `Derived::test_if_cmp`, if provided. */
   template<typename Derived>
   constexpr void check_cmp(this const Derived& self, const Derived& other) {
