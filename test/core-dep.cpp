@@ -14,6 +14,7 @@
 // `format` and `test`.
 
 #include "thesauros/algorithms.hpp"
+#include "thesauros/argparse.hpp"
 #include "thesauros/charconv.hpp"
 #include "thesauros/concepts.hpp"
 #include "thesauros/containers.hpp"
@@ -32,6 +33,7 @@
 int main() {
   // Touch one entity per sub-library so the includes cannot be optimized into nothing.
   static_assert(thes::views::indices(3).size() == 3);
+  static_assert(thes::argparse::parse_value<int>("0x10") == 16);
   static_assert(thes::StaticString{"ab"}.size == 2);
   static_assert(thes::numeric_string(7).has_value());
   return 0;

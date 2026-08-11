@@ -16,6 +16,7 @@ test_timeouts = {
 # One directory per sub-library, mirroring `include/thesauros`.
 foreach module, names : {
   'algorithms': ['sort-indices', 'swap-or-equal', 'tiling'],
+  'argparse': ['argparse', 'reflect-enum'],
   'charconv': ['charconv', 'concat'],
   'concepts': ['concepts'],
   'containers': [

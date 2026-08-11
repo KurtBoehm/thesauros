@@ -86,9 +86,9 @@ target_include_directories(
 # Dependencies per group of sub-libraries, so that consumers only pay for what they include.
 # These mirror the `thesauros_*_dep` objects declared in meson.build.
 
-# Everything that needs nothing beyond the standard library: algorithms, charconv, concepts,
-# containers, filesystem, functional, iterator, literals, math, memory, quantity, random,
-# ranges, string and types.
+# Everything that needs nothing beyond the standard library: algorithms, argparse, charconv,
+# concepts, containers, filesystem, functional, iterator, literals, math, memory, quantity,
+# random, ranges, string and types.
 add_library(${PROJECT_NAME}_core INTERFACE)
 add_library(${PROJECT_NAME}::core ALIAS ${PROJECT_NAME}_core)
 target_link_libraries(${PROJECT_NAME}_core INTERFACE ${PROJECT_NAME})
@@ -169,6 +169,8 @@ if(THESAUROS_BUILD_TESTS)
     "algorithms/sort-indices"
     "algorithms/swap-or-equal"
     "algorithms/tiling"
+    "argparse/argparse"
+    "argparse/reflect-enum"
     "charconv/charconv"
     "charconv/concat"
     "concepts/concepts"

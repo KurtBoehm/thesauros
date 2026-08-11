@@ -16,7 +16,7 @@
 
 #include "thesauros/charconv.hpp"
 #include "thesauros/io.hpp"
-#include "thesauros/macropolis.hpp"
+#include "thesauros/reflection.hpp"
 #include "thesauros/test.hpp"
 #include "thesauros/types.hpp"
 
@@ -35,6 +35,8 @@ THES_CREATE_TYPE(SNAKE_CASE(Test4), NORMAL_CONSTRUCTOR,
                  MEMBERS((KEEP(a), int), (KEEP(b), std::vector<double>)))
 THES_CREATE_TYPE(SNAKE_CASE(Test4b), NORMAL_CONSTRUCTOR, LAYOUT_INFO(false),
                  MEMBERS((KEEP(a), int), (KEEP(b), (std::map<std::string, double>))))
+
+THES_DEFINE_ENUM(SNAKE_CASE(Test5), int, LOWERCASE(None), SNAKE_CASE(HighRatio))
 
 int main() {
   using namespace thes::primitives;
@@ -133,5 +135,21 @@ int main() {
     thes::write_json(s.begin(), t3);
     THES_ALWAYS_ASSERT(test::string_eq(
       "{ \"p\": \"Zażółć gęślą jaźń\", \"d\": { \"a\": 3.141592653589793, \"b\": -1 } }*", s));
+  }
+
+  // Reflected enumerations, written by their serial name.
+
+  {
+    std::string s{};
+    thes::write_json(std::back_inserter(s), Test5::None);
+    s.push_back(' ');
+    thes::write_json(std::back_inserter(s), Test5::HighRatio);
+    THES_ALWAYS_ASSERT(test::string_eq("\"none\" \"high_ratio\"", s));
+  }
+  {
+    // A value that is no named enumerator falls back to its underlying number.
+    std::string s{};
+    thes::write_json(std::back_inserter(s), static_cast<Test5>(7));
+    THES_ALWAYS_ASSERT(test::string_eq("7", s));
   }
 }

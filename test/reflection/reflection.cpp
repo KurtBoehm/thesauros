@@ -75,6 +75,11 @@ static_assert(thes::reflect::enum_cast<inner::Test2>("a") == inner::Test2::A);
 static_assert(thes::reflect::enum_cast<inner::Test2>("b") == inner::Test2::B);
 static_assert(thes::reflect::enum_cast<inner::Test2>("ab") == std::nullopt);
 
+static_assert(thes::reflect::serial_name_of<inner::Test2::A>() == "a"_sstr);
+static_assert(thes::reflect::serial_name_of(inner::Test2::A) == "a");
+static_assert(thes::reflect::serial_name_of(inner::Test2::B) == "b");
+static_assert(thes::reflect::serial_name_of(static_cast<inner::Test2>(7)) == std::nullopt);
+
 ////////////////////////////////////////////////////////////////
 
 template<inner::Test2 V>

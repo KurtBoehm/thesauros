@@ -38,9 +38,9 @@ inc_dir = include_directories('include')
 # Dependencies per group of sub-libraries
 #-------------------------------------------------------------------------------
 
-# Everything that needs nothing beyond the standard library: `algorithms`, `charconv`, `concepts`,
-# `containers`, `filesystem`, `functional`, `iterator`, `literals`, `math`, `memory`, `quantity`,
-# `random`, `ranges`, `string` and `types`.
+# Everything that needs nothing beyond the standard library: `algorithms`, `argparse`, `charconv`,
+# `concepts`, `containers`, `filesystem`, `functional`, `iterator`, `literals`, `math`, `memory`,
+# `quantity`, `random`, `ranges`, `string` and `types`.
 thesauros_core_dep = declare_dependency(
   include_directories: inc_dir,
   compile_args: cpp_args,

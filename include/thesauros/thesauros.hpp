@@ -3,6 +3,7 @@
 
 // IWYU pragma: begin_exports
 #include "algorithms.hpp"
+#include "argparse.hpp"
 #include "charconv.hpp"
 #include "concepts.hpp"
 #include "containers.hpp"

@@ -275,22 +275,12 @@ struct JsonWriter<Enum> {
   using Path = std::filesystem::path;
   template<typename It>
   static auto write(It it, Enum value, Indentation indent = {}) {
-    using Info = ::thes::reflect::EnumInfo<Enum>;
-
-    auto impl = [&]<std::size_t Head, std::size_t... Tail>(
-                  auto rec, std::index_sequence<Head, Tail...>) -> It {
-      constexpr auto value_info = star::get_at<Head>(Info::values);
-      if (value_info.value == value) {
-        return JsonWriter<std::string_view>::write(it, value_info.serial_name.view(), indent);
-      }
-      if constexpr (sizeof...(Tail) > 0) {
-        return rec(rec, std::index_sequence<Tail...>{});
-      } else {
-        using Under = std::underlying_type_t<Enum>;
-        return JsonWriter<Under>::write(it, static_cast<Under>(value), indent);
-      }
-    };
-    return impl(impl, std::make_index_sequence<std::tuple_size_v<decltype(Info::values)>>{});
+    // A value that is no named enumerator falls back to its underlying number.
+    if (const auto name = reflect::serial_name_of(value); name.has_value()) {
+      return JsonWriter<std::string_view>::write(it, *name, indent);
+    }
+    using Under = std::underlying_type_t<Enum>;
+    return JsonWriter<Under>::write(it, static_cast<Under>(value), indent);
   }
 };
 } // namespace thes

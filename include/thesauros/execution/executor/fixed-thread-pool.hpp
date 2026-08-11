@@ -42,7 +42,7 @@ namespace thes {
  * - The task is passed as a function pointer plus a pointer to the callable, which lives on the
  *   caller’s stack for the duration of the blocking `execute`, so nothing is allocated or copied.
  * - Threads spin for `spin_count` iterations before parking on `std::atomic::wait`, which maps to
- *   `futex` on Linux, `__ulock_wait` on macOS and `WaitOnAddress` on Windows. Back-to-back regions
+ *   `futex` on Linux, `__ulock_wait` on macOS, and `WaitOnAddress` on Windows. Back-to-back regions
  *   therefore never enter the kernel, while a pool left idle stops consuming CPU time.
  *
  * Unlike an OpenMP parallel region, an exception escaping a task is not fatal: the first one is
@@ -57,9 +57,9 @@ struct FixedThreadPool {
    * region against the CPU time burnt while waiting for it. The default corresponds to a few tens
    * of microseconds, in the spirit of libgomp’s `GOMP_SPINCOUNT`; zero parks immediately.
    */
-  static constexpr std::size_t default_spin_count = std::size_t{1} << 14U;
+  static constexpr std::size_t default_spin_count = 1UZ << 14UZ;
   /** The largest supported pool size, imposed by the packing of the dispatch state. */
-  static constexpr std::size_t max_thread_num = (std::size_t{1} << 16U) - 1;
+  static constexpr std::size_t max_thread_num = (1UZ << 16UZ) - 1;
 
   using Threads = FixedAllocArray<std::jthread>;
 
