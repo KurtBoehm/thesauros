@@ -23,7 +23,9 @@
 #include "thesauros/argparse/error.hpp"
 #include "thesauros/argparse/group.hpp"
 #include "thesauros/argparse/help.hpp"
+#include "thesauros/argparse/style.hpp"
 #include "thesauros/argparse/value-parse.hpp"
+#include "thesauros/format/fmtlib.hpp"
 #include "thesauros/static-ranges/definitions/get-at.hpp"
 #include "thesauros/static-ranges/definitions/static-apply.hpp"
 #include "thesauros/string/static-string.hpp"
@@ -128,6 +130,21 @@ struct ArgumentParser {
   [[nodiscard]] constexpr const Arguments& arguments() const {
     return arguments_;
   }
+  [[nodiscard]] constexpr const HelpStyle& style() const {
+    return style_;
+  }
+
+  /**
+   * A parser whose help text and error messages are written in `style`, which is `plain_style`
+   * unless it is set. Since a parser is normally `constexpr`, this settles the styling where the
+   * arguments are declared; and because the style is not part of the type, the same expression also
+   * serves to decide at run time, as in `tty ? base.styled(ansi_style) : base`.
+   */
+  [[nodiscard]] constexpr ArgumentParser styled(HelpStyle style) const {
+    ArgumentParser copy = *this;
+    copy.style_ = style;
+    return copy;
+  }
 
   /**
    * Whether no positional argument that collects without an upper bound is followed by another one,
@@ -147,7 +164,8 @@ struct ArgumentParser {
   template<typename Arg>
   [[nodiscard]] constexpr ArgumentParser<Args..., Arg> add(Arg arg) const {
     return star::static_apply<argument_num>([&]<std::size_t... Is>() {
-      return ArgumentParser<Args..., Arg>{info_, star::get_at<Is>(arguments_)..., std::move(arg)};
+      return ArgumentParser<Args..., Arg>{info_, star::get_at<Is>(arguments_)..., std::move(arg)}
+        .styled(style_);
     });
   }
 
@@ -230,8 +248,7 @@ struct ArgumentParser {
       std::exit(EXIT_SUCCESS); // NOLINT
     }
     if (error.kind == ParseErrorKind::version_requested) {
-      detail::write_text(stdout, info_.version);
-      detail::write_text(stdout, "\n");
+      fmt::print(stdout, "{}\n", info_.version);
       std::exit(EXIT_SUCCESS); // NOLINT
     }
     print_error(error, stderr, program);
@@ -244,8 +261,10 @@ struct ArgumentParser {
 
   /** Writes the usage line to `out`, naming the program `program` unless `info().name` is set. */
   void print_usage(std::FILE* out, std::string_view program = {}) const {
+    const HelpStyle& style = style_;
     const detail::TextWriter sink{out};
-    sink("Usage: ");
+    sink(style.heading, "Usage:");
+    sink(" ");
     sink(program_name(program));
     if (!has_own_help()) {
       sink(" [-h]");
@@ -256,13 +275,13 @@ struct ArgumentParser {
     for_each_argument([&](const auto& arg) {
       if constexpr (std::decay_t<decltype(arg)>::is_named) {
         sink(" ");
-        detail::usage_parts(arg, sink);
+        detail::usage_parts(arg, sink, style);
       }
     });
     for_each_argument([&](const auto& arg) {
       if constexpr (!std::decay_t<decltype(arg)>::is_named) {
         sink(" ");
-        detail::usage_parts(arg, sink);
+        detail::usage_parts(arg, sink, style);
       }
     });
     sink("\n");
@@ -270,6 +289,7 @@ struct ArgumentParser {
 
   /** Writes the description, the usage line, the argument list and the epilog to `out`. */
   void print_help(std::FILE* out = stdout, std::string_view program = {}) const {
+    const HelpStyle& style = style_;
     const detail::TextWriter sink{out};
     if (!info_.description.empty()) {
       sink(info_.description);
@@ -277,12 +297,14 @@ struct ArgumentParser {
     }
     print_usage(out, program);
 
-    const std::size_t width = list_width();
+    const std::size_t width = list_width(style);
     if constexpr (positional_num > 0) {
-      sink("\nPositional arguments:\n");
+      sink("\n");
+      sink(style.heading, "Positional arguments:");
+      sink("\n");
       for_each_argument([&](const auto& arg) {
         if constexpr (!std::decay_t<decltype(arg)>::is_named) {
-          detail::write_row(out, arg, width);
+          detail::write_row(out, arg, width, style);
         }
       });
     }
@@ -291,7 +313,7 @@ struct ArgumentParser {
       for_each_argument([&](const auto& arg) {
         if constexpr (std::decay_t<decltype(arg)>::is_named) {
           if (arg.section_name == title) {
-            detail::write_row(out, arg, width);
+            detail::write_row(out, arg, width, style);
           }
         }
       });
@@ -301,12 +323,14 @@ struct ArgumentParser {
     // parser provides by itself.
     const bool implicit_shown = !has_own_help() || !info_.version.empty();
     if (implicit_shown || named_num_in({}) > 0) {
-      sink("\nOptions:\n");
+      sink("\n");
+      sink(style.heading, "Options:");
+      sink("\n");
       if (!has_own_help()) {
-        detail::write_plain_row(out, help_label, width, "Show this help text and exit");
+        detail::write_plain_row(out, help_label, width, "Show this help text and exit.", style);
       }
       if (!info_.version.empty()) {
-        detail::write_plain_row(out, version_label, width, "Show the version and exit");
+        detail::write_plain_row(out, version_label, width, "Show the version and exit.", style);
       }
       write_section({});
     }
@@ -314,8 +338,8 @@ struct ArgumentParser {
     const auto [sections, section_num] = section_names();
     for (std::size_t i = 0; i < section_num; ++i) {
       sink("\n");
-      sink(sections[i]);
-      sink(":\n");
+      sink.format(style.heading, "{}:", sections[i]);
+      sink("\n");
       write_section(sections[i]);
     }
 
@@ -330,19 +354,10 @@ struct ArgumentParser {
   void print_error(const ParseError& error, std::FILE* out = stderr,
                    std::string_view program = {}) const {
     const detail::TextWriter sink{out};
-    sink(program_name(program));
-    sink(": error: ");
-    sink(error.description());
-    if (!error.argument.empty()) {
-      sink(" “");
-      sink(error.argument);
-      sink("”");
-    }
-    if (!error.value.empty()) {
-      sink(": “");
-      sink(error.value);
-      sink("”");
-    }
+    sink(style_.error, "Error:");
+    sink(" ");
+    fmt::print(out, fmt::runtime(error.message_format()), fmt::styled(error.argument, style_.name),
+               fmt::styled(error.value, style_.value));
     sink("\n");
     print_usage(out, program);
   }
@@ -379,7 +394,8 @@ private:
     return star::static_apply<argument_num>([&]<std::size_t... Is>() {
       return star::static_apply<sizeof...(Others)>([&]<std::size_t... Js>() {
         return ArgumentParser<Args..., Others...>{info_, star::get_at<Is>(arguments_)...,
-                                                  star::get_at<Js>(group.arguments())...};
+                                                  star::get_at<Js>(group.arguments())...}
+          .styled(style_);
       });
     });
   }
@@ -493,7 +509,7 @@ private:
   }
 
   /** The width the labels in the argument list are padded to. */
-  [[nodiscard]] std::size_t list_width() const {
+  [[nodiscard]] std::size_t list_width(const HelpStyle& style) const {
     std::size_t width = 0;
     if (!has_own_help()) {
       width = std::max(width, help_label.size());
@@ -501,7 +517,8 @@ private:
     if (!info_.version.empty()) {
       width = std::max(width, version_label.size());
     }
-    for_each_argument([&](const auto& arg) { width = std::max(width, detail::label_width(arg)); });
+    for_each_argument(
+      [&](const auto& arg) { width = std::max(width, detail::label_width(arg, style)); });
     return width;
   }
 
@@ -732,6 +749,7 @@ private:
 
   ProgramInfo info_;
   Arguments arguments_;
+  HelpStyle style_{};
 };
 
 template<typename... Args>

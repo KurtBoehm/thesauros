@@ -23,13 +23,13 @@ namespace {
 namespace ap = thes::argparse;
 using namespace std::string_view_literals;
 
-/** The help text `parser` writes, captured through a temporary file. */
-std::string capture_help(const auto& help_parser) {
+/** What `write` writes to the file it is handed, captured through a temporary file. */
+std::string capture(const auto& write) {
   std::FILE* file = std::tmpfile();
   if (file == nullptr) {
     return {};
   }
-  help_parser.print_help(file);
+  write(file);
   std::rewind(file); // NOLINT
 
   std::string text{};
@@ -39,6 +39,11 @@ std::string capture_help(const auto& help_parser) {
   }
   static_cast<void>(std::fclose(file));
   return text;
+}
+
+/** The help text `help_parser` writes. */
+std::string capture_help(const auto& help_parser) {
+  return capture([&](std::FILE* file) { help_parser.print_help(file); });
 }
 
 //==================================================================================================
@@ -340,6 +345,55 @@ THES_TEST_CASE("A bounded list is neither bracketed nor silent", "[argparse][par
   const std::string help = capture_help(cropping);
   THES_CHECK(help.find("Usage: crop [-h] [-v] CORNER... OUTPUT") != std::string::npos);
   THES_CHECK(help.find("The x and y of the corner (count: 2)") != std::string::npos);
+}
+
+/** `text` with every ANSI escape sequence removed. */
+std::string without_escapes(std::string_view text) {
+  std::string out{};
+  for (std::size_t i = 0; i < text.size(); ++i) {
+    if (text[i] != '\x1b') {
+      out.push_back(text[i]);
+      continue;
+    }
+    // A CSI sequence runs until its final byte, which for the ones used here is “m”.
+    while (i < text.size() && text[i] != 'm') {
+      ++i;
+    }
+  }
+  return out;
+}
+
+THES_TEST_CASE("A style is written and leaves the layout alone", "[argparse][help]") {
+  const std::string plain = capture_help(parser);
+  const std::string styled = capture_help(parser.styled(ap::ansi_style));
+
+  // Styling is off unless it is asked for, so redirected output stays free of escape sequences.
+  THES_CHECK(plain.find('\x1b') == std::string::npos);
+  THES_CHECK(styled.find('\x1b') != std::string::npos);
+  // The column widths are measured over the text alone, so the two differ in nothing else.
+  THES_CHECK(plain == without_escapes(styled));
+}
+
+THES_TEST_CASE("A style carries over to the parsers built from one", "[argparse][help]") {
+  constexpr auto styled = ap::ArgumentParser{ap::ProgramInfo{.name = "demo"}}
+                            .styled(ap::ansi_style)
+                            .add(ap::flag<"quiet">("-q"))
+                            .merge(ap::ArgumentGroup{ap::flag<"force">("-f")});
+  THES_CHECK(capture_help(styled).find('\x1b') != std::string::npos);
+}
+
+THES_TEST_CASE("The built-in messages end in a full stop", "[argparse][help]") {
+  const std::string help = capture_help(parser);
+  THES_CHECK(help.find("Show this help text and exit.\n") != std::string::npos);
+  THES_CHECK(help.find("Show the version and exit.\n") != std::string::npos);
+
+  const auto result = parse(std::array{"in.txt", "--nope"});
+  THES_REQUIRE(!result.has_value());
+  const std::string message =
+    capture([&](std::FILE* file) { parser.print_error(result.error(), file, "demo"); });
+  // The message is one sentence, and the full stop stands outside the quotation marks, which
+  // enclose the offending token and nothing more.
+  THES_CHECK(message.starts_with("Error: Unknown argument “--nope”.\n"));
 }
 
 THES_TEST_CASE("A required named argument is marked as such", "[argparse][help]") {

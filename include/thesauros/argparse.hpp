@@ -7,6 +7,7 @@
 #include "argparse/group.hpp"
 #include "argparse/help.hpp"
 #include "argparse/parser.hpp"
+#include "argparse/style.hpp"
 #include "argparse/value-parse.hpp"
 // IWYU pragma: end_exports
 

@@ -9,9 +9,9 @@ Umbrella includes
   headers at or below `P/`; any other header may not include an umbrella at all.
 
 {fmt} confinement
-  `{fmt}` is reachable only from the `format` and `test` modules, so that everything
-  below them stays free of it and can be built without the dependency. Code outside
-  those modules builds messages with `thes::cat` from `charconv/concat.hpp` instead.
+  `{fmt}` is reachable only from the `argparse`, `format` and `test` modules, so that
+  everything below them stays free of it and can be built without the dependency. Code
+  outside those modules builds messages with `thes::cat` from `charconv/concat.hpp`.
 """
 
 import sys
@@ -28,8 +28,9 @@ INCLUDE = re.compile(r'^\s*#\s*include\s+"thesauros/([^"]+)"', re.MULTILINE)
 # so the umbrella creates no cycle.
 EXEMPT = {"test/assert.hpp", "test/equality.hpp", "test/test.hpp"}
 
-# Modules allowed to reach {fmt}. `format` wraps it; `test` renders values with it.
-FMT_MODULES = ("format/", "test/")
+# Modules allowed to reach {fmt}. `format` wraps it, `test` renders values with it, and
+# `argparse` writes its help text and error messages with it.
+FMT_MODULES = ("argparse/", "format/", "test/")
 FMT_USE = re.compile(r"fmt::|#\s*include\s+[\"<](?:fmt/|thesauros/format/fmtlib\.hpp)")
 
 

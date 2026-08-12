@@ -52,21 +52,28 @@ struct ParseError {
     return kind == ParseErrorKind::help_requested || kind == ParseErrorKind::version_requested;
   }
 
-  /** A description of `kind` alone, phrased to be followed by `argument` and `value`. */
-  [[nodiscard]] constexpr std::string_view description() const {
+  /**
+   * A {fmt} format string for the whole message, taking the offending argument as `{0}` and the
+   * offending value as `{1}`. Each is a sentence in its own right, so that it reads as one wherever
+   * it is shown rather than only as the tail of a longer line.
+   */
+  [[nodiscard]] constexpr std::string_view message_format() const {
     switch (kind) {
-      case ParseErrorKind::help_requested: return "help requested";
-      case ParseErrorKind::version_requested: return "version requested";
-      case ParseErrorKind::unknown_argument: return "unknown argument";
-      case ParseErrorKind::missing_value: return "missing value for argument";
-      case ParseErrorKind::unexpected_value: return "unexpected value for argument";
-      case ParseErrorKind::invalid_value: return "invalid value for argument";
-      case ParseErrorKind::invalid_choice: return "impermissible value for argument";
-      case ParseErrorKind::missing_argument: return "missing required argument";
-      case ParseErrorKind::excess_positional: return "unexpected positional argument";
-      case ParseErrorKind::split_values: return "values interrupted by a named argument for";
+      case ParseErrorKind::help_requested: return "Help requested.";
+      case ParseErrorKind::version_requested: return "Version requested.";
+      case ParseErrorKind::unknown_argument: return "Unknown argument “{0}”.";
+      case ParseErrorKind::missing_value: return "Missing value for argument “{0}”.";
+      case ParseErrorKind::unexpected_value:
+        return "Argument “{0}” takes no value, but “{1}” was given.";
+      case ParseErrorKind::invalid_value: return "Invalid value “{1}” for argument “{0}”.";
+      case ParseErrorKind::invalid_choice:
+        return "Value “{1}” is not among the choices for argument “{0}”.";
+      case ParseErrorKind::missing_argument: return "Missing required argument “{0}”.";
+      case ParseErrorKind::excess_positional: return "Unexpected positional argument “{0}”.";
+      case ParseErrorKind::split_values:
+        return "Value “{1}” of argument “{0}” is separated from the others by a named argument.";
     }
-    return "unknown error";
+    return "Unknown error.";
   }
 };
 } // namespace thes::argparse

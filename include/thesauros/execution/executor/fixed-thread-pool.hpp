@@ -18,6 +18,7 @@
 #include <ranges>
 #include <stdexcept>
 #include <thread>
+#include <type_traits>
 #include <utility>
 
 #include <pthread.h>
@@ -100,7 +101,7 @@ struct FixedThreadPool {
   template<typename CpuInfos = Empty>
   static FixedThreadPool from_cpu_infos(std::size_t size, CpuInfos&& cpu_infos = {},
                                         std::size_t spin_count = default_spin_count) {
-    if constexpr (std::same_as<CpuInfos, Empty>) {
+    if constexpr (std::same_as<std::remove_cvref_t<CpuInfos>, Empty>) {
       return FixedThreadPool{size, Empty{}, spin_count};
     } else {
       return FixedThreadPool{
