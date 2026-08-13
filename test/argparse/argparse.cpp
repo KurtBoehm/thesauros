@@ -278,8 +278,10 @@ inline constexpr ap::ArgumentParser collecting{
 };
 
 THES_TEST_CASE("A list leaves the named arguments alone", "[argparse][parse]") {
-  for (const auto& result : {collecting.parse(std::array{"-o", "dir", "a", "b"}),
-                             collecting.parse(std::array{"a", "b", "-o", "dir"})}) {
+  // The tokens outlive the results, which reference them.
+  constexpr std::array leading{"-o", "dir", "a", "b"};
+  constexpr std::array trailing{"a", "b", "-o", "dir"};
+  for (const auto& result : {collecting.parse(leading), collecting.parse(trailing)}) {
     THES_REQUIRE(result.has_value());
     THES_CHECK(result->get<"output">() == "dir");
     THES_REQUIRE(result->get<"input-files">().size() == 2);
@@ -309,7 +311,8 @@ inline constexpr ap::ArgumentParser cropping{
 };
 
 THES_TEST_CASE("A fixed count collects exactly that many values", "[argparse][parse]") {
-  const auto result = cropping.parse(std::array{"-v", "1", "2", "out.png"});
+  constexpr std::array tokens{"-v", "1", "2", "out.png"};
+  const auto result = cropping.parse(tokens);
   THES_REQUIRE(result.has_value());
   THES_CHECK(result->get<"verbose">());
   THES_REQUIRE(result->get<"corner">().size() == 2);
@@ -419,7 +422,8 @@ THES_TEST_CASE("A required list demands at least one value", "[argparse][parse]"
   THES_CHECK(empty.error().kind == ap::ParseErrorKind::missing_argument);
   THES_CHECK(empty.error().argument == "INPUT-FILES");
 
-  const auto given = collecting.parse(std::array{"a"});
+  constexpr std::array tokens{"a"};
+  const auto given = collecting.parse(tokens);
   THES_REQUIRE(given.has_value());
   // Being required rather than defaulted, the value needs no `std::optional` around it.
   static_assert(std::same_as<decltype(given->get<"input-files">()), const ap::TokenSpan&>);
