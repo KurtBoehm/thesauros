@@ -50,6 +50,15 @@ struct ValueRefTypes {
   using IterDiff = Diff;
 };
 
+/** `IterTypes` for which all types are specified explicitly. */
+template<typename Value, typename Ref, typename Ptr, typename Diff>
+struct SeparateTypes {
+  using IterValue = Value;
+  using IterRef = Ref;
+  using IterPtr = Ptr;
+  using IterDiff = Diff;
+};
+
 /** The `IterTypes` for an iterator that does not support dereferencing. */
 template<typename Diff>
 struct VoidTypes {
