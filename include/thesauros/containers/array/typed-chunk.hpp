@@ -74,10 +74,6 @@ struct TypedChunk {
   [[nodiscard]] constexpr auto data(this auto&& self) {
     return const_or_mut<decltype(self)>(self.begin_);
   }
-  /** Allows users to skirt const-correctness */
-  [[nodiscard]] constexpr Value* mutable_data(this auto&& self) {
-    return self.begin_;
-  }
 
   [[nodiscard]] constexpr Size size() const {
     return static_cast<Size>(end_ - begin_);
