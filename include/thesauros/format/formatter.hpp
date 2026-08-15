@@ -49,7 +49,7 @@ struct SimpleFormatter {
   }
 
 private:
-  fmt::basic_specs specs_{};
+  fmt::format_specs specs_{};
   int width_{};
 };
 } // namespace thes

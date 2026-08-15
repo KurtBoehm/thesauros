@@ -62,8 +62,8 @@ struct TypeInfoTemplate {
   static constexpr auto name = Name;
   static constexpr auto serial_name = SerialName;
 
-  static constexpr ::thes::Tuple members = Mems;
-  static constexpr ::thes::Tuple static_members = StaticMems;
+  static constexpr Tuple members = Mems;
+  static constexpr Tuple static_members = StaticMems;
 
   using Members = decltype(members);
 };

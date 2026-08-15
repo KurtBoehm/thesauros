@@ -45,7 +45,7 @@ int main() try {
 #endif
 
   auto run_scan = [&](auto pool) {
-    thes::LinearExecutionPolicy expo{pool};
+    const thes::LinearExecutionPolicy expo{pool};
 
     thes::transform_inclusive_scan(
       expo, values.begin(), values.end(), scanned.begin(), std::plus<>{}, [](Type v) { return v; },

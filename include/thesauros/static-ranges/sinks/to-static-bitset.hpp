@@ -22,7 +22,7 @@ struct ToStaticBitsetGenerator : public ConsumerGeneratorBase {
   template<typename Range>
   constexpr auto operator()(Range&& range) const {
     static_assert(std::same_as<Value<Range>, bool>);
-    constexpr std::size_t size = thes::star::size<Range>;
+    constexpr std::size_t size = star::size<Range>;
 
     return to_container<StaticBitset<size>>(std::forward<Range>(range));
   }

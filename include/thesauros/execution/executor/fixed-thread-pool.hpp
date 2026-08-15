@@ -92,7 +92,7 @@ struct FixedThreadPool {
         (void)set_affinity(pthread_self(), cpu_sets[Index{0}]);
       }
       for (const std::size_t i : views::indices(workers)) {
-        (void)set_affinity(threads_[i], cpu_sets[*thes::safe_cast<Index>(i + 1)]);
+        (void)set_affinity(threads_[i], cpu_sets[*safe_cast<Index>(i + 1)]);
       }
     }
   }

@@ -111,7 +111,7 @@ struct TypedChunk {
     end_ = begin_ + size;
   }
 
-  const Allocator& allocator() const {
+  [[nodiscard]] const Allocator& allocator() const {
     return alloc_;
   }
 

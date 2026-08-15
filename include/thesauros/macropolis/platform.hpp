@@ -7,10 +7,10 @@
 #ifndef INCLUDE_THESAUROS_MACROPOLIS_PLATFORM_HPP
 #define INCLUDE_THESAUROS_MACROPOLIS_PLATFORM_HPP
 
-#if defined(__clang__)
+#ifdef __clang__
 #define THES_CLANG true
 #define THES_GCC false
-#elif defined(__GNUC__)
+#elifdef __GNUC__
 #define THES_CLANG false
 #define THES_GCC true
 #else

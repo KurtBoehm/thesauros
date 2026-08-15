@@ -17,7 +17,7 @@ struct TypeTag {
 
   template<typename... Args>
   requires(std::is_constructible_v<T, Args...>)
-  constexpr T construct(Args&&... args) const {
+  [[nodiscard]] constexpr T construct(Args&&... args) const {
     return T(std::forward<Args>(args)...);
   }
 };

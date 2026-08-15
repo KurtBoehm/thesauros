@@ -113,7 +113,7 @@ template<typename T>
 struct EscapedPrinter {
   explicit EscapedPrinter(T&& value) : value_{std::forward<T>(value)} {}
 
-  const T& value() const {
+  [[nodiscard]] const T& value() const {
     return value_;
   }
 

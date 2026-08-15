@@ -26,7 +26,7 @@ namespace thes::star {
 template<typename Ranges>
 struct JoinView {
   static constexpr std::size_t size = []<std::size_t... I>(std::index_sequence<I...>) {
-    return (0UZ + ... + thes::star::size<std::decay_t<Element<I, Ranges>>>);
+    return (0UZ + ... + star::size<std::decay_t<Element<I, Ranges>>>);
   }(std::make_index_sequence<star::size<Ranges>>{});
   static constexpr TupleDefsMarker tuple_defs_marker{};
 

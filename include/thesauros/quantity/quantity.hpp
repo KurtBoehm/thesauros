@@ -127,7 +127,7 @@ struct Quantity {
 
   explicit constexpr Quantity(R value) : value_(value) {}
 
-  constexpr Rep count() const {
+  [[nodiscard]] constexpr Rep count() const {
     return value_;
   }
 

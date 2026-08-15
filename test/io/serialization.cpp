@@ -40,7 +40,7 @@ T round_trip(const std::filesystem::path& dir, const T& value) {
 /** Collects the elements of a `TypedChunk` into a `std::vector` for comparison. */
 std::vector<int> to_vector(const Chunk& chunk) {
   const auto span = chunk.span();
-  return std::vector<int>(span.begin(), span.end());
+  return {span.begin(), span.end()};
 }
 
 THES_TEST_CASE("TypedChunk round-trips through a file", "[io][serialization]") {

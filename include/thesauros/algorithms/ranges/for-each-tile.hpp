@@ -165,7 +165,7 @@ THES_ALWAYS_INLINE inline constexpr void for_each_tile(const Ranges& ranges, con
       const auto end = dim_range.end_value();
       const auto tile_size = star::get_at<dim>(tile_sizes);
 
-      static_assert(!FixedAxes::contains(thes::index_tag<dim_num - 1>));
+      static_assert(!FixedAxes::contains(index_tag<dim_num - 1>));
 
       if constexpr (dim + 1 == dim_num) {
         for_each_tile_unroll<Dir>(

@@ -67,14 +67,14 @@ struct FixedOpenMpThreadPool {
     assert(tnum <= thread_num_);
 
     const int max_threads = omp_get_max_threads();
-    if (max_threads < 0 || std::size_t(max_threads) < thread_num_) {
+    if (max_threads < 0 || std::cmp_less(max_threads, thread_num_)) {
       throw std::runtime_error{
         cat("The thread pool needs ", thread_num_, " threads, but the max is ", max_threads)};
     }
 
 #pragma omp parallel for num_threads(thread_num_)
     for (std::size_t t = 0; t < tnum; ++t) {
-      auto thread = pthread_self();
+      auto* thread = pthread_self();
       if (cpu_sets_.has_value()) {
         (void)set_affinity(thread, (*cpu_sets_)[t]);
       }

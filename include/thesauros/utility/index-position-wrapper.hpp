@@ -38,10 +38,10 @@ struct SingleIndexManager {
 
   explicit constexpr SingleIndexManager(Size idx) : idx_(idx) {}
 
-  constexpr Size index() const {
+  [[nodiscard]] constexpr Size index() const {
     return idx_;
   }
-  constexpr Size pos_index() const {
+  [[nodiscard]] constexpr Size pos_index() const {
     return idx_;
   }
 
@@ -72,10 +72,10 @@ struct DualIndexManager {
 
   constexpr DualIndexManager(IdxSize idx, PosSize pos_idx) : idx_(idx), pos_idx_(pos_idx) {}
 
-  constexpr IdxSize index() const {
+  [[nodiscard]] constexpr IdxSize index() const {
     return idx_;
   }
-  constexpr PosSize pos_index() const {
+  [[nodiscard]] constexpr PosSize pos_index() const {
     return pos_idx_;
   }
 

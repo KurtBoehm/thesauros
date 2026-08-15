@@ -23,7 +23,7 @@ struct FloatFraction {
     return f2 * f1;
   }
 
-  constexpr Float to_float() const {
+  [[nodiscard]] constexpr Float to_float() const {
     return numerator / denominator;
   }
 

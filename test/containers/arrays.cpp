@@ -8,6 +8,7 @@
 #include <array>
 #include <concepts>
 #include <cstddef>
+#include <functional>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -169,10 +170,10 @@ THES_TEST_CASE("DynamicArray: initializer_list construction", "[containers][arra
 
 THES_TEST_CASE("DynamicArray: equality compares contents, not capacity",
                "[containers][array][dynamic]") {
-  thes::DynamicArray<int, thes::DefaultInit> a{1, 2, 3};
+  const thes::DynamicArray<int, thes::DefaultInit> a{1, 2, 3};
   thes::DynamicArray<int, thes::DefaultInit> b{1, 2, 3};
   b.reserve(64);
-  thes::DynamicArray<int, thes::DefaultInit> c{1, 2, 4};
+  const thes::DynamicArray<int, thes::DefaultInit> c{1, 2, 4};
 
   THES_CHECK(a == b);
   THES_CHECK(a != c);
@@ -370,7 +371,7 @@ THES_TEST_CASE("DynamicArray: insert_any grows and initializes gap and padding",
   thes::DynamicArray<S, thes::ValueInit> darray5(5);
   darray5.reserve(16);
   for (const auto i : thes::views::indices(5ZU)) {
-    darray5[i] = S{int(i)};
+    darray5[i] = S{static_cast<int>(i)};
   }
   fmt::print("{}\n", darray5);
 
@@ -504,7 +505,7 @@ THES_TEST_CASE("FixedAllocArray: initializer_list construction and reverse itera
 
 THES_TEST_CASE("FixedAllocArray: equality and ADL swap", "[containers][array][fixed-alloc]") {
   thes::FixedAllocArray<int> a{1, 2, 3};
-  thes::FixedAllocArray<int> b{1, 2, 3};
+  const thes::FixedAllocArray<int> b{1, 2, 3};
   thes::FixedAllocArray<int> c{4, 5};
 
   THES_CHECK(a == b);
@@ -570,9 +571,9 @@ THES_TEST_CASE("LimitedArray: push_back, pop_back, clear", "[containers][array][
 
 THES_TEST_CASE("LimitedArray: equality compares only the logical size",
                "[containers][array][limited]") {
-  thes::LimitedArray<int, 4> a(1, 2, 3);
-  thes::LimitedArray<int, 4> b(1, 2, 3);
-  thes::LimitedArray<int, 4> c(1, 2);
+  const thes::LimitedArray<int, 4> a(1, 2, 3);
+  const thes::LimitedArray<int, 4> b(1, 2, 3);
+  const thes::LimitedArray<int, 4> c(1, 2);
   THES_CHECK(a == b);
   THES_CHECK(a != c);
 }
@@ -606,7 +607,7 @@ THES_TEST_CASE("DynamicArray: erase returns the following element",
                "[containers][array][dynamic]") {
   {
     auto array = iota_array(5);
-    const auto it = array.erase(array.begin() + 1, array.begin() + 3);
+    auto* const it = array.erase(array.begin() + 1, array.begin() + 3);
     THES_CHECK(test::range_eq(array, std::array{1, 4, 5}));
     THES_REQUIRE(it != array.end());
     THES_CHECK(*it == 4);
@@ -615,7 +616,7 @@ THES_TEST_CASE("DynamicArray: erase returns the following element",
   {
     // Erasing a prefix leaves the iterator at the new first element.
     auto array = iota_array(4);
-    const auto it = array.erase(array.begin(), array.begin() + 2);
+    auto* const it = array.erase(array.begin(), array.begin() + 2);
     THES_CHECK(test::range_eq(array, std::array{3, 4}));
     THES_CHECK(it == array.begin());
     THES_CHECK(*it == 3);
@@ -623,7 +624,7 @@ THES_TEST_CASE("DynamicArray: erase returns the following element",
   {
     // Erasing a suffix leaves the iterator at the new end.
     auto array = iota_array(4);
-    const auto it = array.erase(array.begin() + 2, array.end());
+    auto* const it = array.erase(array.begin() + 2, array.end());
     THES_CHECK(test::range_eq(array, std::array{1, 2}));
     THES_CHECK(it == array.end());
   }
@@ -644,7 +645,7 @@ THES_TEST_CASE("DynamicArray: erasing an empty range is a no-op", "[containers][
   THES_CHECK(test::range_eq(array, std::array{1, 2, 3}));
 
   thes::DynamicArray<int> empty{};
-  const auto empty_it = empty.erase(empty.begin(), empty.end());
+  auto* const empty_it = empty.erase(empty.begin(), empty.end());
   THES_CHECK(empty_it == empty.end());
   THES_CHECK(empty.empty());
 }
@@ -654,7 +655,7 @@ THES_TEST_CASE("DynamicArray: erasing everything empties the array",
                "[containers][array][dynamic]") {
   auto array = iota_array(4);
 
-  const auto it = array.erase(array.begin(), array.end());
+  auto* const it = array.erase(array.begin(), array.end());
   THES_CHECK(it == array.end());
   THES_CHECK(array.empty());
   THES_CHECK(array.size() == 0);

@@ -20,7 +20,7 @@
 
 namespace thes {
 template<typename T>
-concept IndexSegmenter = requires(const T& seg, typename T::Size size, typename T::Segment s) {
+concept IndexSegmenter = requires(const T& seg, T::Size size, T::Segment s) {
   // associated types
   typename T::Size;
   typename T::Segment;
@@ -32,7 +32,7 @@ concept IndexSegmenter = requires(const T& seg, typename T::Size size, typename 
   // segment boundaries
   { seg.segment_start(s) } -> std::same_as<typename T::Size>;
   { seg.segment_end(s) } -> std::same_as<typename T::Size>;
-  { seg.segment_range(s) } -> std::same_as<thes::ranges::IotaRange<typename T::Size>>;
+  { seg.segment_range(s) } -> std::same_as<ranges::IotaRange<typename T::Size>>;
   { seg.segment_of(size) } -> std::same_as<typename T::Segment>;
 };
 
@@ -313,7 +313,7 @@ struct PaddedIndexSegmenter {
   [[nodiscard]] constexpr Segment segment_of(Size idx) const noexcept {
     assert(idx < size());
 
-    const Segment last_seg = Segment(segment_num() - 1);
+    const auto last_seg = Segment(segment_num() - 1);
     const Size base_first = base_.segment_start(0) + n0_;
     const Size base_last = base_.segment_end(last_seg) + n0_;
 

@@ -286,7 +286,8 @@ struct ExpressionCapture {
 
 private:
   template<typename Rhs>
-  DecomposedExpression compare(bool passed, std::string_view op, const Rhs& rhs) const {
+  [[nodiscard]] DecomposedExpression compare(bool passed, std::string_view op,
+                                             const Rhs& rhs) const {
     std::string message{};
     if (!passed) {
       if constexpr (fmt::formattable<Lhs> && fmt::formattable<Rhs>) {

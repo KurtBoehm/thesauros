@@ -19,14 +19,14 @@ template<typename S, typename It>
 struct EnumerateRange {
   using Value = std::pair<S, decltype(*std::declval<It>())>;
 
-  struct const_iterator : public StateIteratorFacade<iter::ValueTypes<Value, std::ptrdiff_t>> {
+  struct ConstIterator : public StateIteratorFacade<iter::ValueTypes<Value, std::ptrdiff_t>> {
     friend StateIteratorFacade<iter::ValueTypes<Value, std::ptrdiff_t>>;
 
-    constexpr const_iterator() = default;
-    explicit constexpr const_iterator(It begin, It it) : begin_(begin), it_(std::move(it)) {}
+    constexpr ConstIterator() = default;
+    explicit constexpr ConstIterator(It begin, It it) : begin_(begin), it_(std::move(it)) {}
 
   private:
-    constexpr Value value() const {
+    [[nodiscard]] constexpr Value value() const {
       return Value{*safe_cast<S>(it_ - begin_), *it_};
     }
 
@@ -37,14 +37,15 @@ struct EnumerateRange {
     It begin_{};
     It it_{};
   };
+  using const_iterator = ConstIterator;
 
   constexpr EnumerateRange(It begin, It end) : begin_(std::move(begin)), end_(std::move(end)) {}
 
-  constexpr const_iterator begin() const {
-    return const_iterator(begin_, begin_);
+  [[nodiscard]] constexpr ConstIterator begin() const {
+    return ConstIterator(begin_, begin_);
   }
-  constexpr const_iterator end() const {
-    return const_iterator(begin_, end_);
+  [[nodiscard]] constexpr ConstIterator end() const {
+    return ConstIterator(begin_, end_);
   }
 
 private:

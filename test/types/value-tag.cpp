@@ -8,12 +8,16 @@
 
 #include "thesauros/types.hpp"
 
+namespace {
 template<bool IsValued>
 struct TestTag : public thes::BoolTag<IsValued> {};
 using FalseTestTag = TestTag<false>;
 inline constexpr FalseTestTag false_test_tag{};
 using TrueTestTag = TestTag<true>;
 inline constexpr TrueTestTag true_test_tag{};
+static_assert(!false_test_tag);
+static_assert(true_test_tag);
+
 template<typename T>
 struct IsTestTagTrait : public std::false_type {};
 template<bool IsValued>
@@ -25,6 +29,7 @@ template<bool V1, bool V2>
 constexpr bool operator==(TestTag<V1> /*tag1*/, TestTag<V2> /*tag2*/) {
   return V1 == V2;
 }
+} // namespace
 
 int main() {
   {

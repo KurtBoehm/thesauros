@@ -9,6 +9,8 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cctype>
+#include <concepts>
 #include <cstdlib>
 #include <iterator>
 #include <optional>
@@ -51,7 +53,7 @@ inline std::string to_lower(std::string_view sv) {
   result.reserve(sv.size());
 
   std::ranges::transform(sv, std::back_inserter(result),
-                         [](char c) { return char(std::tolower(c)); });
+                         [](char c) { return static_cast<char>(std::tolower(c)); });
   return result;
 }
 

@@ -152,7 +152,7 @@ struct ChunkedDynamicArrayBase {
           value_begin_(value_begin) {}
 
   private:
-    CBlock value() const {
+    [[nodiscard]] CBlock value() const {
       CSize* size_ptr = size_begin_ + index_;
       const Size size = *size_ptr;
       CValue* block_begin = value_begin_ + block_size_ * index_;
@@ -283,7 +283,7 @@ private:
   template<typename Self>
   using SelfIterator = BaseIterator<std::is_const_v<std::remove_reference_t<Self>>>;
 
-  constexpr Size grown_size(Size new_size_lower_bound) const {
+  [[nodiscard]] constexpr Size grown_size(Size new_size_lower_bound) const {
     return GrowthPolicy::new_allocation_size(block_num_, new_size_lower_bound);
   }
 

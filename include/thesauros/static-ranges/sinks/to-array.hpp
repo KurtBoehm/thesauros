@@ -23,7 +23,7 @@ struct ToArrayGenerator : public ConsumerGeneratorBase {
   template<typename R>
   THES_ALWAYS_INLINE constexpr auto operator()(R&& range) const {
     using Range = std::decay_t<R>;
-    constexpr std::size_t size = thes::star::size<Range>;
+    constexpr std::size_t size = star::size<Range>;
 
     if constexpr (size > 0) {
       return star::static_apply<size>([range = std::forward<R>(range)]<std::size_t... I>() {

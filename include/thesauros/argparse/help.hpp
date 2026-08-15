@@ -67,7 +67,7 @@ struct TextCounter {
  */
 template<typename T>
 concept HasValueText = requires(const T& value) {
-  { argument_value_text(thes::type_tag<T>, value) } -> std::convertible_to<std::string_view>;
+  { argument_value_text(type_tag<T>, value) } -> std::convertible_to<std::string_view>;
 };
 
 /**
@@ -76,9 +76,7 @@ concept HasValueText = requires(const T& value) {
  */
 template<typename T>
 concept HasValueNames = requires {
-  {
-    argument_value_names(thes::type_tag<T>)
-  } -> std::convertible_to<std::span<const std::string_view>>;
+  { argument_value_names(type_tag<T>) } -> std::convertible_to<std::span<const std::string_view>>;
 };
 
 /** Whether values of type `T` can be shown in the help text. */
@@ -89,7 +87,7 @@ concept Printable = HasValueText<T> || fmt::formattable<T>;
 template<Printable T>
 auto value_text(const T& value) {
   if constexpr (HasValueText<T>) {
-    return std::string_view{argument_value_text(thes::type_tag<T>, value)};
+    return std::string_view{argument_value_text(type_tag<T>, value)};
   } else {
     return value;
   }
@@ -162,7 +160,7 @@ void tail_parts(const Arg& arg, const auto& sink, const HelpStyle& style) {
     write_choices(sink, tail, arg.choice_values);
   } else if constexpr (Arg::takes_value && HasValueNames<Value>) {
     // A type admitting only a fixed set of values lists them even where none were singled out.
-    write_choices(sink, tail, argument_value_names(thes::type_tag<Value>));
+    write_choices(sink, tail, argument_value_names(type_tag<Value>));
   }
 
   if constexpr (Arg::kind == ArgumentKind::list) {

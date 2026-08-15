@@ -33,23 +33,23 @@ struct FlatMap {
 
   FlatMap() = default;
 
-  iterator begin() {
+  [[nodiscard]] iterator begin() {
     return data_.begin();
   }
-  const_iterator begin() const {
+  [[nodiscard]] const_iterator begin() const {
     return data_.begin();
   }
-  iterator end() {
+  [[nodiscard]] iterator end() {
     return data_.end();
   }
-  const_iterator end() const {
+  [[nodiscard]] const_iterator end() const {
     return data_.end();
   }
 
-  const_iterator cbegin() const {
+  [[nodiscard]] const_iterator cbegin() const {
     return begin();
   }
-  const_iterator cend() const {
+  [[nodiscard]] const_iterator cend() const {
     return end();
   }
 
@@ -60,36 +60,36 @@ struct FlatMap {
     return data_.empty();
   }
 
-  const Value& front() const {
+  [[nodiscard]] const Value& front() const {
     return data_.front();
   }
-  Value& front() {
+  [[nodiscard]] Value& front() {
     return data_.front();
   }
   void pop_front() {
     data_.erase(data_.begin());
   }
 
-  iterator lower_bound(const auto& key) {
+  [[nodiscard]] iterator lower_bound(const auto& key) {
     return std::lower_bound(data_.begin(), data_.end(), key, PairCompare{compare_});
   }
-  const_iterator lower_bound(const auto& key) const {
+  [[nodiscard]] const_iterator lower_bound(const auto& key) const {
     return std::lower_bound(data_.begin(), data_.end(), key, PairCompare{compare_});
   }
 
-  bool contains(const auto& key) const {
+  [[nodiscard]] bool contains(const auto& key) const {
     const auto it{lower_bound(key)};
     return it != end() && PairEqual{equal_}(*it, key);
   }
 
-  iterator find(const auto& key) {
+  [[nodiscard]] iterator find(const auto& key) {
     const auto it{lower_bound(key)};
     if (it != end() && PairEqual{equal_}(*it, key)) {
       return it;
     }
     return end();
   }
-  const_iterator find(const auto& key) const {
+  [[nodiscard]] const_iterator find(const auto& key) const {
     const auto it{lower_bound(key)};
     if (it != end() && PairEqual{equal_}(*it, key)) {
       return it;
@@ -132,10 +132,10 @@ struct FlatMap {
     return false;
   }
 
-  Mapped& at(const auto& key) {
+  [[nodiscard]] Mapped& at(const auto& key) {
     return find(key)->second;
   }
-  const Mapped& at(const auto& key) const {
+  [[nodiscard]] const Mapped& at(const auto& key) const {
     return find(key)->second;
   }
 

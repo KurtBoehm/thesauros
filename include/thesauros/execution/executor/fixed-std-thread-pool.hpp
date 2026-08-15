@@ -75,7 +75,7 @@ struct FixedStdThreadPool {
 
       if constexpr (!std::same_as<CpuSets, Empty>) {
         using Index = ranges::RangeIndex<CpuSets>;
-        (void)set_affinity(threads_[i], cpu_sets[*thes::safe_cast<Index>(i)]);
+        (void)set_affinity(threads_[i], cpu_sets[*safe_cast<Index>(i)]);
       }
     }
   }
@@ -98,7 +98,7 @@ struct FixedStdThreadPool {
 
   ~FixedStdThreadPool() {
     {
-      const std::lock_guard lock{work_mutex_};
+      const std::scoped_lock lock{work_mutex_};
       assert(!task_.has_value());
       ++task_id_;
     }
@@ -113,7 +113,7 @@ struct FixedStdThreadPool {
     assert(!used_thread_num.has_value() || *used_thread_num <= threads_.size());
 
     {
-      const std::lock_guard lock{work_mutex_};
+      const std::scoped_lock lock{work_mutex_};
       task_.emplace(std::move(task), used_thread_num);
       unfinished_ = threads_.size();
       ++task_id_;

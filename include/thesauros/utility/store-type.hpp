@@ -20,7 +20,7 @@ struct StoreTypeTrait<T&> {
   using Type = std::add_pointer_t<T>;
 };
 template<typename T>
-using StoreType = typename StoreTypeTrait<T>::Type;
+using StoreType = StoreTypeTrait<T>::Type;
 
 template<typename T>
 constexpr StoreType<T&&> to_stored(T&& value) noexcept {

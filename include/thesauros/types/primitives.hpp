@@ -10,8 +10,7 @@
 #include <cstdint>
 #include <limits>
 
-namespace thes {
-inline namespace primitives {
+namespace thes::inline primitives {
 using u8 = std::uint8_t;
 using u16 = std::uint16_t;
 using u32 = std::uint32_t;
@@ -33,7 +32,6 @@ using f32 = float;
 static_assert(std::numeric_limits<f32>::is_iec559 && sizeof(f32) == 4);
 using f64 = double;
 static_assert(std::numeric_limits<f64>::is_iec559 && sizeof(f64) == 8);
-} // namespace primitives
-} // namespace thes
+} // namespace thes::inline primitives
 
 #endif // INCLUDE_THESAUROS_TYPES_PRIMITIVES_HPP

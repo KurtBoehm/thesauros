@@ -31,13 +31,13 @@ inline std::array<Int, Dims> box_tesselate(Int tile_num, std::array<Int, Dims> b
   }
 
   Sol best{};
-  auto op = [&](auto rec, Sol& sol, Int remaining, thes::AnyIndexTag auto dim) {
+  auto op = [&](auto rec, Sol& sol, Int remaining, AnyIndexTag auto dim) {
     if constexpr (dim + 1 == Dims) {
       std::get<dim>(sol.sol) = remaining;
       const auto [min, max] =
-        thes::star::transform([](Int box_dim, Int cnum) { return Cost(box_dim) / Cost(cnum); },
-                              box_dims, sol.sol) |
-        thes::star::minmax;
+        star::transform([](Int box_dim, Int cnum) { return Cost(box_dim) / Cost(cnum); }, box_dims,
+                        sol.sol) |
+        star::minmax;
       sol.cost = max / min;
       if (sol.cost < best.cost) {
         best = sol;
@@ -46,13 +46,13 @@ inline std::array<Int, Dims> box_tesselate(Int tile_num, std::array<Int, Dims> b
       for (Int dcnum = remaining; dcnum > 0; --dcnum) {
         if (remaining % dcnum == 0) {
           std::get<dim>(sol.sol) = dcnum;
-          rec(rec, sol, remaining / dcnum, thes::index_tag<dim + 1>);
+          rec(rec, sol, remaining / dcnum, index_tag<dim + 1>);
         }
       }
     }
   };
   Sol out{};
-  op(op, out, tile_num, thes::index_tag<0>);
+  op(op, out, tile_num, index_tag<0>);
   return best.sol;
 }
 } // namespace thes

@@ -4,12 +4,25 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+#include <algorithm>
+#include <array>
+#include <cstddef>
 #include <stdexcept>
+#include <vector>
 
+#include <CoreFoundation/CFBase.h>
+#include <CoreFoundation/CFData.h>
+#include <CoreFoundation/CFNumber.h>
+#include <CoreFoundation/CFString.h>
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/IOKitLib.h>
+#include <IOKit/IOTypes.h>
+#include <MacTypes.h>
+#include <mach/kern_return.h>
 
+#include "thesauros/math/integer-cast.hpp"
 #include "thesauros/resources/cpu-info.hpp"
+#include "thesauros/types/primitives.hpp"
 
 // The approach is based on https://github.com/open-mpi/hwloc/blob/master/hwloc/topology-darwin.c,
 // but heavily modernized and somewhat optimized.

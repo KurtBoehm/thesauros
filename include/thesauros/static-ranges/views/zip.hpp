@@ -22,16 +22,15 @@
 namespace thes::star {
 template<typename... Ranges>
 struct ZipView {
-  static constexpr std::size_t size = *unique_value(std::array{thes::star::size<Ranges>...});
+  static constexpr std::size_t size = *unique_value(std::array{star::size<Ranges>...});
   static constexpr TupleDefsMarker tuple_defs_marker{};
 
   Tuple<Ranges...> ranges;
 
   template<std::size_t I>
   THES_ALWAYS_INLINE friend constexpr auto get(const ZipView& self) {
-    return apply([](auto&... inner) THES_ALWAYS_INLINE {
-      return Tuple{thes::star::get_at<I>(inner)...};
-    })(self.ranges);
+    return apply([](auto&... inner)
+                   THES_ALWAYS_INLINE { return Tuple{get_at<I>(inner)...}; })(self.ranges);
   }
 };
 

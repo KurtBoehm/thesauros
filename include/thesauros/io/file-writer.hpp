@@ -54,7 +54,7 @@ struct FileWriter {
   }
 
   void seek(long offset, Seek whence) {
-    const auto ret = std::fseek(handle_, offset, int(whence));
+    const auto ret = std::fseek(handle_, offset, static_cast<int>(whence));
     if (ret != 0) {
       throw FileException(cat("fseek failed: ", ret));
     }

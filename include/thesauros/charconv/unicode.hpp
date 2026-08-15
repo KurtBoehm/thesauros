@@ -68,7 +68,7 @@ struct UnicodeDecoder {
 
     const u8 kind = char_kind[byte];
 
-    codep_ = (state_ != 0) ? (byte & 0x3FU) | (codep_ << 6U) : (0xFFU >> kind) & (byte);
+    codep_ = (state_ != 0) ? (byte & 0x3FU) | (codep_ << 6U) : (0xFFU >> kind) & byte;
     state_ = trans[state_ + kind];
 
     return {codep_, State{state_}};

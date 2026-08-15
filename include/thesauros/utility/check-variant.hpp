@@ -16,7 +16,7 @@
 
 namespace thes {
 template<typename... Ts>
-inline constexpr auto check_variant(std::variant<Ts...>&& variant, auto checker) {
+constexpr auto check_variant(std::variant<Ts...>&& variant, auto checker) {
   return fancy_filter_visit(
     [&]<typename T>(T&& val) {
       if constexpr (std::derived_from<decltype(checker(val)), std::exception>) {

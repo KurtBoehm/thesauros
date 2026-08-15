@@ -17,21 +17,21 @@ template<typename T>
 using OverflowResult = InfoResult<T, bool, false>;
 
 template<typename T>
-inline constexpr OverflowResult<T> overflow_add(T arg1, T arg2) {
+constexpr OverflowResult<T> overflow_add(T arg1, T arg2) {
   T result;
   const bool overflow = __builtin_add_overflow(arg1, arg2, &result);
   return {result, overflow};
 }
 
 template<typename T>
-inline constexpr OverflowResult<T> overflow_subtract(T arg1, T arg2) {
+constexpr OverflowResult<T> overflow_subtract(T arg1, T arg2) {
   T result;
   const bool overflow = __builtin_sub_overflow(arg1, arg2, &result);
   return {result, overflow};
 }
 
 template<typename T>
-inline constexpr OverflowResult<T> overflow_multiply(T arg1, T arg2) {
+constexpr OverflowResult<T> overflow_multiply(T arg1, T arg2) {
   T result;
   const bool overflow = __builtin_mul_overflow(arg1, arg2, &result);
   return {result, overflow};
@@ -77,19 +77,19 @@ struct OverflowMultiplies<void> {
 };
 
 template<std::unsigned_integral T>
-inline constexpr T saturate_add(T a, T b) {
+constexpr T saturate_add(T a, T b) {
   const T sum = a + b;
   return (sum < a) ? std::numeric_limits<T>::max() : sum;
 }
 
 template<std::unsigned_integral T>
-inline constexpr T saturate_subtract(T a, T b) {
+constexpr T saturate_subtract(T a, T b) {
   const T diff = a - b;
   return (a < diff) ? 0 : diff;
 }
 
 template<std::unsigned_integral T>
-inline constexpr T saturate_multiply(T arg1, T arg2) {
+constexpr T saturate_multiply(T arg1, T arg2) {
   return overflow_multiply(arg1, arg2).value_or(std::numeric_limits<T>::max());
 }
 } // namespace thes

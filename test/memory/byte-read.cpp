@@ -8,6 +8,7 @@
 #include <bit>
 #include <cstddef>
 #include <cstring>
+#include <type_traits>
 
 #include "thesauros/memory/byte-read.hpp"
 #include "thesauros/test/test.hpp"

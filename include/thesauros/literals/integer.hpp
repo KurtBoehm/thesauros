@@ -15,14 +15,13 @@
 #include "thesauros/types/primitives.hpp"
 #include "thesauros/types/value-tag.hpp"
 
-namespace thes::inline literals {
-inline namespace integer_literals {
+namespace thes::inline literals::inline integer_literals {
 #define USER_DEFINED_LITERALS(OP_NAME, TYPE) \
   consteval TYPE operator""_##OP_NAME(const char* ptr) { \
-    return parse_integer<TYPE>(ptr, thes::auto_tag<IntegerParseMode::literal>).value(); \
+    return parse_integer<TYPE>(ptr, auto_tag<IntegerParseMode::literal>).value(); \
   } \
   consteval TYPE operator""_##OP_NAME(const char* ptr, std::size_t len) { \
-    return parse_integer<TYPE>({ptr, len}, thes::auto_tag<IntegerParseMode::extended>).value(); \
+    return parse_integer<TYPE>({ptr, len}, auto_tag<IntegerParseMode::extended>).value(); \
   }
 
 USER_DEFINED_LITERALS(iz, std::make_signed_t<std::size_t>)
@@ -55,7 +54,6 @@ USER_DEFINED_LITERALS(32)
 USER_DEFINED_LITERALS(64)
 
 #undef USER_DEFINED_LITERALS
-} // namespace integer_literals
-} // namespace thes::inline literals
+} // namespace thes::inline literals::inline integer_literals
 
 #endif // INCLUDE_THESAUROS_LITERALS_INTEGER_HPP

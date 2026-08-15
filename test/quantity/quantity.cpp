@@ -35,7 +35,7 @@ int main() {
     std::ranges::generate(data, std::rand);
   }
 
-  thes::ResourceUsage usage{};
+  const thes::ResourceUsage usage{};
   const auto rawmaxrss = usage.max_memory();
   const auto binmaxrss =
     thes::quantity_cast<thes::Quantity<double, thes::unit::gibibyte>>(rawmaxrss);

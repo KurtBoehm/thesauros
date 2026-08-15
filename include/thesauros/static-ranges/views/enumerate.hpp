@@ -19,7 +19,7 @@
 namespace thes::star {
 template<typename S, typename Inner>
 struct EnumerateView {
-  static constexpr std::size_t size = thes::star::size<Inner>;
+  static constexpr std::size_t size = star::size<Inner>;
   static constexpr TupleDefsMarker tuple_defs_marker{};
 
   Inner inner;

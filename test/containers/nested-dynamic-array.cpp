@@ -34,7 +34,7 @@ static_assert(std::ranges::random_access_range<const Nested>);
   Nested::FlatBuilder builder{};
   builder.initialize(groups.size(), element_num);
   for (const auto& group : groups) {
-    for (int value : group) {
+    for (const int value : group) {
       builder.emplace(value);
     }
     builder.advance_group();
@@ -56,7 +56,7 @@ static_assert(std::ranges::random_access_range<const Nested>);
   std::size_t value_index = 0;
   for (const auto& group : groups) {
     auto part = builder.part_builder(group_index, value_index);
-    for (int value : group) {
+    for (const int value : group) {
       part.emplace(value);
     }
     part.advance_group();
@@ -84,7 +84,7 @@ static_assert(std::ranges::random_access_range<const Nested>);
   }
 
   std::size_t index = 0;
-  for (std::span<const int> group : nested) {
+  for (const std::span<const int> group : nested) {
     if (index >= groups.size() || !test::range_eq(group, groups[index])) {
       return false;
     }

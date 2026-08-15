@@ -12,11 +12,11 @@
 
 namespace thes {
 template<typename T>
-inline constexpr T&& unwrap(T&& value) {
+constexpr T&& unwrap(T&& value) {
   return std::forward<T>(value);
 }
 template<typename T>
-inline constexpr T& unwrap(std::reference_wrapper<T> value) {
+constexpr T& unwrap(std::reference_wrapper<T> value) {
   return value;
 }
 } // namespace thes

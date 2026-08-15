@@ -49,7 +49,7 @@ static_assert(
 
 /** Checks that `ArrowProxy` keeps a value alive so that `operator->` can reach into it. */
 THES_TEST_CASE("ArrowProxy owns the value it points at", "[utility][arrow-proxy]") {
-  thes::ArrowProxy<Point> proxy{Point{1, 2}};
+  thes::ArrowProxy<Point> proxy{Point{.x = 1, .y = 2}};
 
   THES_CHECK(proxy->x == 1);
   THES_CHECK(proxy->y == 2);
@@ -72,7 +72,7 @@ THES_TEST_CASE("ArrowCreator selects a pointer or a proxy", "[utility][arrow-pro
   THES_CHECK(const_ptr == &point.y);
 
   // A prvalue has to be stored somewhere, which is what the proxy is for.
-  auto proxy = thes::ArrowCreator<Point, thes::ArrowProxy<Point>>::create(Point{5, 6});
+  auto proxy = thes::ArrowCreator<Point, thes::ArrowProxy<Point>>::create(Point{.x = 5, .y = 6});
   static_assert(std::same_as<decltype(proxy), thes::ArrowProxy<Point>>);
   THES_CHECK(proxy->sum() == 11);
 }
@@ -119,7 +119,7 @@ static_assert(std::same_as<thes::StoreType<const int&>, const int*>);
 
 /** Checks that a value is stored by copy and comes back as a reference to that copy. */
 THES_TEST_CASE("values are stored by copy", "[utility][store-type]") {
-  int original = 3;
+  const int original = 3;
   auto stored = thes::to_stored(std::move(original));
   static_assert(std::same_as<decltype(stored), int>);
 
@@ -135,7 +135,7 @@ THES_TEST_CASE("values are stored by copy", "[utility][store-type]") {
 /** Checks that an lvalue is stored as a pointer and comes back as a reference to the original. */
 THES_TEST_CASE("lvalues are stored by address", "[utility][store-type]") {
   int original = 3;
-  auto stored = thes::to_stored(original);
+  auto* stored = thes::to_stored(original);
   static_assert(std::same_as<decltype(stored), int*>);
 
   THES_CHECK(stored == &original);
@@ -149,8 +149,8 @@ THES_TEST_CASE("lvalues are stored by address", "[utility][store-type]") {
 /** Checks the const overload of `from_stored`. */
 THES_TEST_CASE("from_stored has a const overload", "[utility][store-type]") {
   int value = 5;
-  const auto stored_ref = thes::to_stored(value);
-  const auto stored_val = thes::to_stored(int{9});
+  auto* const stored_ref = thes::to_stored(value);
+  const auto stored_val = thes::to_stored(9);
 
   static_assert(std::same_as<decltype(thes::from_stored<int&>(stored_ref)), const int&>);
   static_assert(std::same_as<decltype(thes::from_stored<int>(stored_val)), const int&>);

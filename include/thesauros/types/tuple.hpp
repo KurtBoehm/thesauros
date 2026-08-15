@@ -105,13 +105,13 @@ template<std::size_t I, typename Tup>
 using TupleElement = decltype(tuple_element_tag<I>(std::declval<Tup>()))::Type;
 
 template<typename... Ts>
-constexpr thes::Tuple<Ts...> make_tuple(Ts&&... values) {
-  return thes::Tuple<Ts...>{std::forward<Ts>(values)...};
+constexpr Tuple<Ts...> make_tuple(Ts&&... values) {
+  return Tuple<Ts...>{std::forward<Ts>(values)...};
 }
 
 template<typename... Ts>
-constexpr thes::Tuple<Ts&...> tie(Ts&... values) {
-  return thes::Tuple<Ts&...>{values...};
+constexpr Tuple<Ts&...> tie(Ts&... values) {
+  return Tuple<Ts&...>{values...};
 }
 
 template<typename T, typename Idxs>

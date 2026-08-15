@@ -31,7 +31,7 @@ using Lcg = thes::Lcg<thes::u32>;
     return false;
   }
   std::vector<bool> seen(size, false);
-  for (thes::u32 value : values) {
+  for (const thes::u32 value : values) {
     if (value >= size || seen[value]) {
       return false;
     }
@@ -101,7 +101,7 @@ THES_TEST_CASE("degenerate sizes", "[random][lcg]") {
   // An increment of zero repeats the seed.
   const auto constant = collect(Lcg{4, 0, 5});
   THES_CHECK(constant.size() == 5);
-  for (thes::u32 value : constant) {
+  for (const thes::u32 value : constant) {
     THES_CHECK(value == 4);
   }
 }

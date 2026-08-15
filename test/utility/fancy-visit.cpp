@@ -39,6 +39,7 @@ static_assert(
                         thes::TypeSeq<float, char, double>, thes::TypeSeq<float, char, long>>>);
 } // namespace nsp1
 
+namespace {
 struct Test1 {
   int a;
 
@@ -68,6 +69,10 @@ inline constexpr Test4 t4{std::in_place_type<Test1>, 4};
 inline constexpr Test5 t5{std::in_place_type<Test1>, 5};
 inline constexpr Test6 t6{std::in_place_type<Test4>, t4};
 
+static_assert(t1.a == 1);
+static_assert(t2.a == 2);
+static_assert(t3.a == 3);
+
 inline constexpr auto v1 = thes::fancy_visit([](auto v) { return v.a; }, t4);
 inline constexpr auto v1a = std::get<int>(v1);
 static_assert(v1a == 4);
@@ -89,11 +94,13 @@ inline constexpr auto v4 = thes::fancy_flat_visit(
       var1);
   },
   t6);
+static_assert(std::visit([](const auto& v) { return static_cast<double>(v.a); }, v4) == 4.0);
 
 inline constexpr std::variant<float, int> in5{1.F};
 inline constexpr decltype(auto) v5a =
   thes::fancy_visit([](auto& v) -> decltype(auto) { return v; }, in5);
 inline constexpr decltype(auto) v5b = std::get<0>(v5a).get();
 static_assert(v5b == 1.F);
+} // namespace
 
 int main() {}

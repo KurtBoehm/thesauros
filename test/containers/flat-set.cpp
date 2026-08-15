@@ -22,7 +22,7 @@ using Vec = std::vector<int>;
 /** Builds a set from `values`, inserting them in the given order. */
 [[nodiscard]] Set make_set(std::initializer_list<int> values) {
   Set set{};
-  for (int value : values) {
+  for (const int value : values) {
     set.insert(value);
   }
   return set;
@@ -190,7 +190,7 @@ THES_TEST_CASE("set_difference removes shared values", "[containers][flat-set]")
 /** Checks that a reversed comparator flips the stored order while lookup keeps working. */
 THES_TEST_CASE("a custom comparator reverses the order", "[containers][flat-set]") {
   thes::FlatSet<int, std::greater<>> set{};
-  for (int value : {1, 3, 2}) {
+  for (const int value : {1, 3, 2}) {
     set.insert(value);
   }
 

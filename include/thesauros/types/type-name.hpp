@@ -19,7 +19,7 @@ inline std::string demangle(const char* name) {
   using CSmartPtr = std::unique_ptr<char[], decltype([](auto* p) { std::free(p); })>;
 
   int status{};
-  CSmartPtr ptr{abi::__cxa_demangle(name, nullptr, nullptr, &status)};
+  const CSmartPtr ptr{abi::__cxa_demangle(name, nullptr, nullptr, &status)};
   if (status != 0) {
     return name;
   }

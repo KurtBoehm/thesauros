@@ -22,10 +22,10 @@ struct MinMaxGenerator : public ConsumerGeneratorBase {
   constexpr auto operator()(Range&& range) const { // NOLINT(*-missing-std-forward)
     constexpr std::size_t size = star::size<Range>;
     using Value = star::Value<Range>;
-    Value min = get_at(range, thes::index_tag<0>);
+    Value min = get_at(range, index_tag<0>);
     Value max = min;
-    thes::star::tagged_iota<1, size> | thes::star::for_each([&](auto i) {
-      Value c = get_at(range, i);
+    tagged_iota<1, size> | for_each([&](auto i) {
+      const Value c = get_at(range, i);
       min = std::min(min, c);
       max = std::max(max, c);
     });

@@ -14,7 +14,7 @@ template<std::integral T>
 struct SafeInt {
   explicit constexpr SafeInt(T value) : value_(value) {}
 
-  T unsafe() const {
+  [[nodiscard]] T unsafe() const {
     return value_;
   }
 

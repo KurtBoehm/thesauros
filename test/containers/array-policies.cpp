@@ -100,7 +100,7 @@ THES_TEST_CASE("ValueInit zeroes trivial storage", "[containers][initialization-
   THES_REQUIRE(storage.begin()[0] != 0);
 
   thes::ValueInit::initialize(storage.begin(), storage.end());
-  for (int& it : storage) {
+  for (const int& it : storage) {
     THES_CHECK(it == 0);
   }
   std::ranges::destroy(storage);
@@ -113,7 +113,7 @@ THES_TEST_CASE("DefaultInit does not zero trivial storage", "[containers][initia
   THES_REQUIRE(poison != 0);
 
   thes::DefaultInit::initialize(storage.begin(), storage.end());
-  for (int& it : storage) {
+  for (const int& it : storage) {
     THES_CHECK(it == poison);
   }
   std::ranges::destroy(storage);
@@ -140,7 +140,7 @@ THES_TEST_CASE("NoInit touches nothing", "[containers][initialization-policy]") 
     const int poison = storage.begin()[0];
 
     thes::NoInit::initialize(storage.begin(), storage.end());
-    for (int& it : storage) {
+    for (const int& it : storage) {
       THES_CHECK(it == poison);
     }
   }

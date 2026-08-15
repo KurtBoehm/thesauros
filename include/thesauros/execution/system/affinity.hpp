@@ -207,7 +207,7 @@ inline std::expected<void, WINBOOL> set_affinity(std::thread::native_handle_type
   //   require weird compromises, and the cases in which this ignores the provided affinities seem
   //   limited and reasonable.
   const WINBOOL ret = SetThreadSelectedCpuSets(pthread_gethandle(handle), cpu_set.base().data(),
-                                               *thes::safe_cast<ULONG>(cpu_set.base().size()));
+                                               *safe_cast<ULONG>(cpu_set.base().size()));
   if (ret == 0) {
     return std::unexpected(ret);
   }

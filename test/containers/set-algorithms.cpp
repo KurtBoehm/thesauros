@@ -107,13 +107,13 @@ THES_TEST_CASE("set_union does not duplicate shared elements", "[containers][set
 
 /** Checks that a custom comparator and equality relation decide which elements are shared. */
 THES_TEST_CASE("set_union honours custom comparators", "[containers][set-algorithms]") {
-  std::vector<Entry> values{Entry{1, "a"}, Entry{3, "c"}};
-  const std::vector<Entry> other{Entry{2, "B"}, Entry{3, "C"}};
+  std::vector<Entry> values{Entry{.key = 1, .tag = "a"}, Entry{.key = 3, .tag = "c"}};
+  const std::vector<Entry> other{Entry{.key = 2, .tag = "B"}, Entry{.key = 3, .tag = "C"}};
 
   thes::set_union(values, other, EntryLess{}, EntryEqual{});
-  const std::vector<Entry> expected{Entry{1, "a"}, Entry{2, "B"},
+  const std::vector<Entry> expected{Entry{.key = 1, .tag = "a"}, Entry{.key = 2, .tag = "B"},
                                     // The existing entry wins, so its payload is left untouched.
-                                    Entry{3, "c"}};
+                                    Entry{.key = 3, .tag = "c"}};
   THES_CHECK(test::range_eq(values, expected));
 }
 
@@ -163,7 +163,7 @@ THES_TEST_CASE("set_difference matches the standard algorithm", "[containers][se
     Vec other{};
     for (int i = 0; i < size; ++i) {
       values.push_back(i);
-      if ((bits & (1U << unsigned(i))) != 0) {
+      if ((bits & (1U << static_cast<unsigned>(i))) != 0) {
         other.push_back(i);
       }
     }

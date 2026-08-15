@@ -26,7 +26,7 @@ constexpr std::optional<unsigned> digit_value(char c) {
   if (c >= '0' && c <= '9') {
     return static_cast<unsigned>(c - '0');
   }
-  const char lower = thes::to_lowercase(c);
+  const char lower = to_lowercase(c);
   if (lower >= 'a' && lower <= 'f') {
     return static_cast<unsigned>(lower - 'a') + 10U;
   }
@@ -39,7 +39,7 @@ constexpr bool equals_ignoring_case(std::string_view text, std::string_view expe
     return false;
   }
   for (std::size_t i = 0; i < text.size(); ++i) {
-    if (thes::to_lowercase(text[i]) != expected[i]) {
+    if (to_lowercase(text[i]) != expected[i]) {
       return false;
     }
   }
@@ -73,7 +73,7 @@ requires(!std::same_as<T, bool>)
 
   unsigned base = 10;
   if (text.size() > 2 && text.front() == '0') {
-    switch (thes::to_lowercase(text[1])) {
+    switch (to_lowercase(text[1])) {
       case 'x': base = 16; break;
       case 'o': base = 8; break;
       case 'b': base = 2; break;
@@ -161,7 +161,7 @@ namespace detail {
 /** Whether `parse_argument_value` is defined for `T` and findable by argument-dependent lookup. */
 template<typename T>
 concept CustomValue = requires(std::string_view text) {
-  { parse_argument_value(thes::type_tag<T>, text) } -> std::same_as<std::optional<T>>;
+  { parse_argument_value(type_tag<T>, text) } -> std::same_as<std::optional<T>>;
 };
 } // namespace detail
 
@@ -181,7 +181,7 @@ concept ArgumentValue = detail::CustomValue<T> || std::same_as<T, std::string_vi
 template<ArgumentValue T>
 [[nodiscard]] constexpr std::optional<T> parse_value(std::string_view text) {
   if constexpr (detail::CustomValue<T>) {
-    return parse_argument_value(thes::type_tag<T>, text);
+    return parse_argument_value(type_tag<T>, text);
   } else if constexpr (std::same_as<T, std::string_view>) {
     return text;
   } else if constexpr (std::same_as<T, bool>) {

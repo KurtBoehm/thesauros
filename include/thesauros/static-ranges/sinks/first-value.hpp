@@ -20,7 +20,7 @@ namespace thes::star {
 struct FirstValueGenerator : public ConsumerGeneratorBase {
   template<typename Range>
   THES_ALWAYS_INLINE constexpr auto operator()(Range&& range) const {
-    constexpr std::size_t size = thes::star::size<Range>;
+    constexpr std::size_t size = star::size<Range>;
     using Ret = Value<Range>;
     return work<Ret>(range, std::make_index_sequence<size>{});
   }

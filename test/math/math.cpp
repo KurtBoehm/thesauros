@@ -9,6 +9,7 @@
 #include "thesauros/test.hpp"
 #include "thesauros/types.hpp"
 
+namespace {
 static_assert(thes::add_max<unsigned char>(1, 4, 3) == 3);
 static_assert(thes::add_max<unsigned char>(1, 2, 4) == 3);
 static_assert(thes::add_max<unsigned char>(128, 128, 254) == 254);
@@ -37,6 +38,7 @@ void run() {
     THES_ALWAYS_ASSERT((root_ub - 1) * (root_ub - 1) < i && root_ub * root_ub >= i);
   }
 }
+} // namespace
 
 int main() {
   run<thes::f32>();

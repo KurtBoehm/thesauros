@@ -24,10 +24,9 @@ constexpr bool is_close(const T a, const T b, Args&&... kwargs) {
   const T rel_tol = kwargs_map.get(auto_tag<"rel_tol"_sstr>, T(1e-9));
   const T abs_tol = kwargs_map.get(auto_tag<"abs_tol"_sstr>, T(0.0));
 
-  // As of macOS Tahoe, Apple Clang does not provide constexpr abs, even for C++23,
-  // so a compatibility function is used
-  return thes::cmath::abs(a - b) <=
-         std::max(rel_tol * std::max(thes::cmath::abs(a), thes::cmath::abs(b)), abs_tol);
+  // As of macOS Tahoe, Apple Clang does not provide constexpr abs, even for C++23, so a
+  // compatibility function is used
+  return cmath::abs(a - b) <= std::max(rel_tol * std::max(cmath::abs(a), cmath::abs(b)), abs_tol);
 }
 } // namespace thes
 

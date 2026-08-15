@@ -53,7 +53,7 @@ foreach module, names : {
   'memory': ['byte-read'],
   'quantity': ['quantity'],
   'random': ['lcg', 'randomize-range'],
-  'ranges': ['ranges'],
+  'ranges': ['cartesian-product', 'ranges'],
   'reflection': ['reflection'],
   'static-ranges': ['static-ranges', 'views-and-sinks'],
   'string': ['static-capacity-string', 'static-string'],

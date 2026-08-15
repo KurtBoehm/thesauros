@@ -18,6 +18,7 @@
 #include <type_traits>
 
 #include "thesauros/containers/array/dynamic.hpp"
+#include "thesauros/containers/array/growth-policy.hpp"
 #include "thesauros/containers/array/initialization-policy.hpp"
 #include "thesauros/containers/bitset/iterator.hpp"
 #include "thesauros/math/arithmetic.hpp"
@@ -73,7 +74,7 @@ struct DynamicBitset {
     assert(index < size_);
     const auto index_mask = mask(index % chunk_bit_num);
 
-    std::atomic_ref atomic_chunk{chunks_[index / chunk_bit_num]};
+    const std::atomic_ref atomic_chunk{chunks_[index / chunk_bit_num]};
     const Chunk prev = atomic_chunk.fetch_or(index_mask);
     return (prev & index_mask) == 0;
   }
@@ -149,7 +150,7 @@ private:
   static constexpr Chunk one_chunk{static_cast<Chunk>(~zero_chunk)};
 
   template<typename Counter>
-  std::size_t count(Counter counter) const {
+  [[nodiscard]] std::size_t count(Counter counter) const {
     if (size_ == 0) {
       return 0;
     }

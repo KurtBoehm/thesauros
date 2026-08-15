@@ -145,7 +145,7 @@ struct CartesianProductView
     }
 
     // C++23 26.7.32.3 §26
-    friend constexpr bool operator==(const Iterator& x, std::default_sentinel_t) {
+    friend constexpr bool operator==(const Iterator& x, std::default_sentinel_t /*sentinel*/) {
       return [&]<std::size_t... I>(std::index_sequence<I...>) {
         return ((std::get<I>(x.current_) == std::ranges::end(std::get<I>(x.parent_->bases_))) ||
                 ...);
@@ -211,7 +211,12 @@ struct CartesianProductView
     }
 
     // C++23 26.7.32.3 §37
-    friend constexpr void iter_swap(const Iterator& l, const Iterator& r)
+    friend constexpr void
+    iter_swap(const Iterator& l,
+              const Iterator& r) noexcept([&]<std::size_t... I>(std::index_sequence<I...> /*seq*/) {
+      return (... &&
+              noexcept(std::ranges::iter_swap(std::get<I>(l.current_), std::get<I>(r.current_))));
+    }(std::index_sequence_for<V...>{}))
     requires(
       std::indirectly_swappable<std::ranges::iterator_t<exposition::MaybeConst<Const, First>>> &&
       ... && std::indirectly_swappable<std::ranges::iterator_t<exposition::MaybeConst<Const, V>>>)
@@ -366,7 +371,7 @@ struct CartesianProductView
     auto its = [this]<std::size_t... I>(std::index_sequence<I...>) {
       using Ret =
         std::tuple<std::ranges::iterator_t<const First>, std::ranges::iterator_t<const V>...>;
-      bool is_empty = (std::ranges::empty(std::get<1 + I>(bases_)) || ...);
+      const bool is_empty = (std::ranges::empty(std::get<1 + I>(bases_)) || ...);
       auto& first = std::get<0>(bases_);
       return Ret{
         (is_empty ? std::ranges::begin(first) : exposition::cartesian_common_arg_end(first)),

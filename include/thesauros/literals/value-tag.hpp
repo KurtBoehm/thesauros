@@ -22,14 +22,12 @@ struct IndexTagLiteral {
 };
 } // namespace thes
 
-namespace thes::inline literals {
-inline namespace value_tag_literals {
+namespace thes::inline literals::inline value_tag_literals {
 /** Creates the `index_tag` denoted by the preceding digits, e.g. `3_it`. */
 template<IndexTagLiteral String>
 constexpr auto operator""_it() {
-  return thes::index_tag<String.value>;
+  return index_tag<String.value>;
 }
-} // namespace value_tag_literals
-} // namespace thes::inline literals
+} // namespace thes::inline literals::inline value_tag_literals
 
 #endif // INCLUDE_THESAUROS_LITERALS_VALUE_TAG_HPP

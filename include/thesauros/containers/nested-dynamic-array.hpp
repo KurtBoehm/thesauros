@@ -51,10 +51,10 @@ struct NestedDynamicArrayBase {
         : index_(index), offset_begin_(offset_begin), value_begin_(value_begin) {}
 
   private:
-    DValue value() const {
+    [[nodiscard]] DValue value() const {
       return span_impl<IsConst>(value_begin_, offset_begin_ + index_);
     }
-    auto& state(this auto& self) {
+    [[nodiscard]] auto& state(this auto& self) {
       return self.index_;
     }
 
@@ -71,43 +71,43 @@ struct NestedDynamicArrayBase {
   using iterator = Iterator<false>;
   using const_iterator = Iterator<true>;
 
-  const_iterator begin() const {
+  [[nodiscard]] const_iterator begin() const {
     return const_iterator(offsets_.begin(), values_.begin(), 0);
   }
-  iterator begin() {
+  [[nodiscard]] iterator begin() {
     return iterator(offsets_.begin(), values_.begin(), 0);
   }
-  const_iterator end() const {
+  [[nodiscard]] const_iterator end() const {
     return const_iterator(offsets_.begin(), values_.begin(), group_num());
   }
-  iterator end() {
+  [[nodiscard]] iterator end() {
     return iterator(offsets_.begin(), values_.begin(), group_num());
   }
 
-  std::span<Value> operator[](Size index) {
+  [[nodiscard]] std::span<Value> operator[](Size index) {
     assert(index + 1 < offsets_.size());
     return span_impl<false>(values_.begin(), offsets_.begin() + index);
   }
-  std::span<const Value> operator[](Size index) const {
+  [[nodiscard]] std::span<const Value> operator[](Size index) const {
     assert(index + 1 < offsets_.size());
     return span_impl<true>(values_.begin(), offsets_.begin() + index);
   }
 
-  // element access: outer groups
-  std::span<value_type> front() {
+  // Element access: outer groups.
+  [[nodiscard]] std::span<value_type> front() {
     assert(!empty());
     return (*this)[0];
   }
-  std::span<const value_type> front() const {
+  [[nodiscard]] std::span<const value_type> front() const {
     assert(!empty());
     return (*this)[0];
   }
 
-  std::span<value_type> back() {
+  [[nodiscard]] std::span<value_type> back() {
     assert(!empty());
     return (*this)[size() - 1];
   }
-  std::span<const value_type> back() const {
+  [[nodiscard]] std::span<const value_type> back() const {
     assert(!empty());
     return (*this)[size() - 1];
   }
@@ -137,7 +137,7 @@ struct NestedDynamicArrayBase {
       new (offsets_current_) Size(static_cast<Size>(values_current_ - values_.begin()));
     }
 
-    Derived build() {
+    [[nodiscard]] Derived build() {
       assert(offsets_current_ + 1 == offsets_.end());
       assert(values_current_ == values_.end());
       return Derived(std::move(offsets_), std::move(values_));
@@ -228,7 +228,7 @@ struct NestedDynamicArrayBase {
     return element_num();
   }
 
-  ranges::IotaRange<Size> offsets_of(Size i) const {
+  [[nodiscard]] ranges::IotaRange<Size> offsets_of(Size i) const {
     return views::indices(offsets_[i], offsets_[i + 1]);
   }
 

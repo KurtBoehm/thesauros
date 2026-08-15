@@ -442,7 +442,7 @@ private:
 
   /** The index of the first argument satisfying `pred`, or `no_index`. */
   template<typename Pred>
-  constexpr std::size_t find_argument(Pred pred) const {
+  [[nodiscard]] constexpr std::size_t find_argument(Pred pred) const {
     std::size_t found = no_index;
     star::static_apply<argument_num>([&]<std::size_t... Is>() {
       static_cast<void>(((pred(star::get_at<Is>(arguments_)) ? (found = Is, true) : false) || ...));
@@ -659,7 +659,7 @@ private:
       }
     }
     if (positional_index >= positional_num) {
-      return ParseError{ParseErrorKind::excess_positional, token};
+      return ParseError{.kind = ParseErrorKind::excess_positional, .argument = token};
     }
     const std::size_t index = positional_indices[positional_index];
     const std::size_t first = token_index;
@@ -693,7 +693,8 @@ private:
         return assign(arg, slot, token);
       } else {
         // Named arguments are never reached by position, but the branch has to compile.
-        return std::optional{ParseError{ParseErrorKind::excess_positional, token}};
+        return std::optional{
+          ParseError{.kind = ParseErrorKind::excess_positional, .argument = token}};
       }
     });
     if (error.has_value()) {

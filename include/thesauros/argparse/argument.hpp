@@ -68,7 +68,7 @@ inline constexpr StaticString<Name.size> upper_name = [] {
   auto data = Name.data;
   for (char& c : data) {
     if ('a' <= c && c <= 'z') {
-      c = char(c - 'a' + 'A');
+      c = static_cast<char>(c - 'a' + 'A');
     }
   }
   return StaticString<Name.size>{std::move(data)};
@@ -200,7 +200,7 @@ struct Argument {
   template<typename... Vs>
   requires(sizeof...(Vs) > 0 && (... && std::convertible_to<Vs, T>))
   [[nodiscard]] constexpr Rebound<Pres, sizeof...(Vs)> choices(const Vs&... values) const {
-    using ReboundChoices = typename Rebound<Pres, sizeof...(Vs)>::Choices;
+    using ReboundChoices = Rebound<Pres, sizeof...(Vs)>::Choices;
     return {short_name,   long_name, help_text, value_name,
             section_name, least_num, most_num,  ReboundChoices{static_cast<T>(values)...},
             default_value};

@@ -57,7 +57,7 @@ constexpr bool range_eq(Range1&& r1, Range2&& r2, // NOLINT(*-missing-std-forwar
       printer("range_eq: ");
     }
     std::size_t counter = 0;
-    for (Delimiter delim{", "}; it1 != end1 && it2 != end2; ++it1, ++it2) {
+    for (const Delimiter delim{", "}; it1 != end1 && it2 != end2; ++it1, ++it2) {
       if constexpr (print) {
         printer("{}", delim);
         printer(rainbow_fg(counter++), "{}/{}", *it1, *it2);
@@ -100,12 +100,12 @@ inline bool string_eq(const std::string_view s1, const std::string_view s2, Prin
     if (eq) {
       printer(fg_green, "{}\n", s1);
     } else {
-      for (Delimiter delim{", "}; char c : s1) {
-        printer("{}{}", delim, int(c));
+      for (Delimiter delim{", "}; const char c : s1) {
+        printer("{}{}", delim, static_cast<int>(c));
       }
       printer(" vs. ");
-      for (Delimiter delim{", "}; char c : s2) {
-        printer("{}{}", delim, int(c));
+      for (Delimiter delim{", "}; const char c : s2) {
+        printer("{}{}", delim, static_cast<int>(c));
       }
       printer("\n");
 

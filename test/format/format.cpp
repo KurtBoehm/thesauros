@@ -9,7 +9,7 @@
 #include <string>
 
 #include "thesauros/format.hpp"
-#include "thesauros/macropolis.hpp"
+#include "thesauros/reflection/type.hpp"
 
 struct S {
   int i;

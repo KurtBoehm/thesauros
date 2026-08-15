@@ -42,7 +42,7 @@ struct MultiBitIntegers {
     }
 
     void store(Chunk value, std::memory_order mem_order) {
-      std::atomic_ref ref{chunk};
+      const std::atomic_ref ref{chunk};
       for (Chunk c = ref;
            !ref.compare_exchange_weak(c, update_chunk(c, offset, value), mem_order);) {
       }
@@ -52,8 +52,8 @@ struct MultiBitIntegers {
       chunk = thes::set_bit<Chunk>(chunk, index + offset, value);
     }
     constexpr void set_bit(Chunk index, bool value, std::memory_order mem_order) {
-      std::atomic_ref ref{chunk};
-      Chunk bmask = Chunk(Chunk{1} << (index + offset));
+      const std::atomic_ref ref{chunk};
+      const auto bmask = Chunk(Chunk{1} << (index + offset));
       if (value) {
         ref.fetch_or(bmask, mem_order);
       } else {
@@ -88,7 +88,7 @@ struct MultiBitIntegers {
 
   [[nodiscard]] constexpr Chunk operator[](std::size_t index) const {
     assert(index < size_);
-    Chunk out = data_[index / per_chunk];
+    const Chunk out = data_[index / per_chunk];
     const auto offset = BitN * (index % per_chunk);
     return (out >> offset) & mask;
   }
@@ -104,7 +104,7 @@ struct MultiBitIntegers {
    */
   [[nodiscard]] Chunk load(std::size_t index, std::memory_order order) {
     assert(index < size_);
-    Chunk out = std::atomic_ref{data_[index / per_chunk]}.load(order);
+    const Chunk out = std::atomic_ref{data_[index / per_chunk]}.load(order);
     const auto offset = BitN * (index % per_chunk);
     return (out >> offset) & mask;
   }

@@ -17,7 +17,7 @@
 
 namespace thes {
 /** Governs how `parse_integer` interprets a leading zero and digit separators. */
-enum struct IntegerParseMode : thes::u8 {
+enum struct IntegerParseMode : u8 {
   /** A leading `0` denotes an octal literal, as in a C++ integer literal; only `'` is skipped. */
   literal,
   /** A leading `0o`/`0O` denotes an octal literal; both `_` and `'` are skipped as separators. */
@@ -29,8 +29,8 @@ enum struct IntegerParseMode : thes::u8 {
  * Supports `0x`/`0X` (hexadecimal) and `0b`/`0B` (binary) prefixes and, for signed `T`, a leading
  * `-`. See `IntegerParseMode` for how a leading `0` and digit separators are handled.
  */
-template<typename T, thes::TypedValueTag<IntegerParseMode> ParseMode =
-                       thes::AutoTag<IntegerParseMode::extended>>
+template<typename T,
+         TypedValueTag<IntegerParseMode> ParseMode = AutoTag<IntegerParseMode::extended>>
 [[nodiscard]] constexpr std::optional<T> parse_integer(std::string_view src,
                                                        ParseMode parse_mode = {}) {
   auto parse_impl = [&](std::string_view number, auto op) -> std::optional<T> {
@@ -71,7 +71,7 @@ template<typename T, thes::TypedValueTag<IntegerParseMode> ParseMode =
       };
 
       T v = 0;
-      for (char c : sv) {
+      for (const char c : sv) {
         if constexpr (parse_mode == IntegerParseMode::extended) {
           if (c == '_') {
             continue;
@@ -93,7 +93,7 @@ template<typename T, thes::TypedValueTag<IntegerParseMode> ParseMode =
       if (number.empty()) {
         return T{0};
       }
-      char c = number.front();
+      const char c = number.front();
       if (c == 'x' || c == 'X') {
         return parse_base(number.substr(1), index_tag<16>);
       }

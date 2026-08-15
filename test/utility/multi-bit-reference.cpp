@@ -70,7 +70,7 @@ THES_TEST_CASE("assignment is idempotent", "[utility][multi-bit-reference]") {
 
   for (std::size_t i = 0; i < 16; ++i) {
     const Ref<2> ref{chunk, i};
-    ref = bool(ref);
+    ref = static_cast<bool>(ref);
   }
   THES_CHECK(chunk == before);
 }

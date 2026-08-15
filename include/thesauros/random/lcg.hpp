@@ -29,12 +29,12 @@ struct Lcg {
     constexpr ConstIterator(const Lcg& lcg, T index, T value)
         : lcg_(&lcg), index_(index), value_(value) {}
 
-    constexpr T index() const {
+    [[nodiscard]] constexpr T index() const {
       return index_;
     }
 
   private:
-    constexpr T deref() const {
+    [[nodiscard]] constexpr T deref() const {
       return value_;
     }
     constexpr void incr() {
@@ -49,23 +49,23 @@ struct Lcg {
       index_ += static_cast<T>(diff);
       value_ = added(value_, skip_step(diff));
     }
-    constexpr bool eq(const ConstIterator& other) const {
+    [[nodiscard]] constexpr bool eq(const ConstIterator& other) const {
       return index_ == other.index_;
     }
-    constexpr std::strong_ordering three_way(const ConstIterator& other) const {
+    [[nodiscard]] constexpr std::strong_ordering three_way(const ConstIterator& other) const {
       return index_ <=> other.index_;
     }
-    constexpr Diff sub(const ConstIterator& other) const {
+    [[nodiscard]] constexpr Diff sub(const ConstIterator& other) const {
       return static_cast<Diff>(index_) - static_cast<Diff>(other.index_);
     }
 
     /** Adds `step < size` to `value < size` modulo `size`, without ever overflowing `T`. */
-    constexpr T added(T value, T step) const {
+    [[nodiscard]] constexpr T added(T value, T step) const {
       const auto ref = static_cast<T>(lcg_->size_ - step);
       return (value < ref) ? static_cast<T>(value + step) : static_cast<T>(value - ref);
     }
     /** The total step for a jump of `diff` elements, by doubling the per-element step. */
-    constexpr T skip_step(Diff diff) const {
+    [[nodiscard]] constexpr T skip_step(Diff diff) const {
       const bool forward = diff >= 0;
       T step = forward ? lcg_->increment_ : static_cast<T>(lcg_->size_ - lcg_->increment_);
       T num = forward ? static_cast<T>(diff) : static_cast<T>(-static_cast<T>(diff));
@@ -94,10 +94,10 @@ struct Lcg {
     return increment_;
   }
 
-  const_iterator begin() const {
+  [[nodiscard]] const_iterator begin() const {
     return {*this, 0, seed_};
   }
-  const_iterator end() const {
+  [[nodiscard]] const_iterator end() const {
     return {*this, size_, seed_};
   }
 

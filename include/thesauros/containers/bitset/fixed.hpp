@@ -155,7 +155,7 @@ private:
   }
 
   template<typename Counter>
-  std::size_t count(Counter counter) const {
+  [[nodiscard]] std::size_t count(Counter counter) const {
     if (size_ == 0) {
       return 0;
     }

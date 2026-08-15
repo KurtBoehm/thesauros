@@ -42,7 +42,7 @@ struct Indentation {
     }
     return *this;
   }
-  auto output(auto it) const {
+  [[nodiscard]] auto output(auto it) const {
     if (state_.has_value()) {
       const auto depth = state_->depth * state_->step;
       for (std::size_t i = 0; i < depth; ++i) {
@@ -177,7 +177,7 @@ struct JsonWriter<Map> {
     *it++ = '{';
     *it++ = indent.separator();
 
-    for (Delimiter delim{","}; const auto& [k, v] : map) {
+    for (const Delimiter delim{","}; const auto& [k, v] : map) {
       it = delim.output(it, indent1.separator());
       it = indent1.output(it);
 
@@ -207,7 +207,7 @@ struct JsonWriter<Range> {
     *it++ = '[';
     indent.reduced_separator([&](auto c) { *it++ = c; });
 
-    for (Delimiter delim{","}; const auto& v : rng) {
+    for (const Delimiter delim{","}; const auto& v : rng) {
       it = delim.output(it, indent1.separator());
       it = indent1.output(it);
       it = write_json(it, reflect::serial_value(v), indent1);

@@ -27,7 +27,7 @@ struct InfoResult {
   [[nodiscard]] constexpr bool is_valid() const {
     return info_ == Valid;
   }
-  constexpr V valid_value() const {
+  [[nodiscard]] constexpr V valid_value() const {
     if (!is_valid()) {
       throw std::runtime_error("The value is invalid!");
     }

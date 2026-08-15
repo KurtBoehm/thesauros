@@ -6,6 +6,7 @@
 
 #include <array>
 #include <concepts>
+#include <cstddef>
 #include <cstdint>
 #include <tuple>
 #include <type_traits>
@@ -13,11 +14,15 @@
 #include "thesauros/static-ranges/type-seq.hpp"
 #include "thesauros/types/tuple.hpp"
 #include "thesauros/types/type-sequence.hpp"
+#include "thesauros/types/type-tag.hpp"
+#include "thesauros/types/value-tag.hpp"
 
+namespace {
 template<typename T>
 struct Filter : public std::is_integral<T> {};
 template<typename T>
 using AddPointer = T*;
+} // namespace
 
 int main() {
   {

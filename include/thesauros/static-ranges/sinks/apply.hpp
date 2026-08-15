@@ -23,7 +23,7 @@ struct ApplyGenerator : public ConsumerGeneratorBase {
 
   template<typename Range>
   THES_ALWAYS_INLINE constexpr decltype(auto) operator()(Range&& range) const {
-    constexpr std::size_t size = thes::star::size<Range>;
+    constexpr std::size_t size = star::size<Range>;
     return [&]<std::size_t... I>(std::index_sequence<I...> /*idxs*/)
              THES_ALWAYS_INLINE -> decltype(auto) {
                return fun(get_at<I>(range)...);

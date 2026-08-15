@@ -337,21 +337,21 @@ struct MultiByteIntegersBase {
 
     /** Exchanges the values referenced by `vw1` and `vw2`. */
     friend void swap(IntRef vw1, IntRef vw2) noexcept {
-      Value v1 = vw1;
-      Value v2 = vw2;
+      const Value v1 = vw1;
+      const Value v2 = vw2;
       vw1 = v2;
       vw2 = v1;
     }
 
     /** Exchanges the value referenced by `vw1` with `i2`. */
     friend void swap(IntRef vw1, Value& i2) noexcept {
-      Value v1 = vw1;
+      const Value v1 = vw1;
       vw1 = i2;
       i2 = v1;
     }
     /** Exchanges `i1` with the value referenced by `vw2`. */
     friend void swap(Value& i1, IntRef vw2) noexcept {
-      Value v2 = vw2;
+      const Value v2 = vw2;
       vw2 = i1;
       i1 = v2;
     }
@@ -393,7 +393,7 @@ struct MultiByteIntegersBase {
     }
 
   private:
-    Ref deref() const {
+    [[nodiscard]] Ref deref() const {
       assert(ptr_ != nullptr);
       if constexpr (IsConst) {
         return load(ptr_);
@@ -416,16 +416,16 @@ struct MultiByteIntegersBase {
       ptr_ -= byte_size(d);
     }
 
-    bool eq(const BaseIterator& other) const {
+    [[nodiscard]] bool eq(const BaseIterator& other) const {
       return ptr_ == other.ptr_;
     }
-    std::strong_ordering three_way(const BaseIterator& other) const {
+    [[nodiscard]] std::strong_ordering three_way(const BaseIterator& other) const {
       return ptr_ <=> other.ptr_;
     }
 
-    Diff sub(const auto& other) const {
+    [[nodiscard]] Diff sub(const auto& other) const {
       static constexpr Diff eb = element_bytes;
-      Diff diff = ptr_ - other.ptr_;
+      const Diff diff = ptr_ - other.ptr_;
       assert(diff % eb == 0);
       return diff / eb;
     }
@@ -489,7 +489,7 @@ struct MultiByteIntegersBase {
   //------------------------------------------------------------------------------------------------
 
   /** Returns an iterator to the first element, mutable if `self` allows it. */
-  auto begin(this auto&& self) {
+  [[nodiscard]] auto begin(this auto&& self) {
     if constexpr (const_access<decltype(self)>) {
       return const_iterator(self.span().data());
     } else {
@@ -497,12 +497,12 @@ struct MultiByteIntegersBase {
     }
   }
   /** Returns a const iterator to the first element. */
-  const_iterator cbegin() const {
+  [[nodiscard]] const_iterator cbegin() const {
     return const_iterator(span().data());
   }
 
   /** Returns an iterator past the last element, mutable if `self` allows it. */
-  auto end(this auto&& self) {
+  [[nodiscard]] auto end(this auto&& self) {
     if constexpr (const_access<decltype(self)>) {
       return const_iterator(self.span().data() + byte_size(self.size()));
     } else {
@@ -510,12 +510,12 @@ struct MultiByteIntegersBase {
     }
   }
   /** Returns a const iterator past the last element. */
-  const_iterator cend() const {
+  [[nodiscard]] const_iterator cend() const {
     return const_iterator(span().data() + byte_size(storage_.size()));
   }
 
   /** Returns a reverse iterator to the last element, mutable if `self` allows it. */
-  auto rbegin(this auto&& self) {
+  [[nodiscard]] auto rbegin(this auto&& self) {
     if constexpr (const_access<decltype(self)>) {
       return const_reverse_iterator(self.span().data() + byte_size(self.size()));
     } else {
@@ -523,12 +523,12 @@ struct MultiByteIntegersBase {
     }
   }
   /** Returns a const reverse iterator to the last element. */
-  const_reverse_iterator crbegin() const {
+  [[nodiscard]] const_reverse_iterator crbegin() const {
     return const_reverse_iterator(span().data() + byte_size(storage_.size()));
   }
 
   /** Returns a reverse iterator preceding the first element, mutable if `self` allows it. */
-  auto rend(this auto&& self) {
+  [[nodiscard]] auto rend(this auto&& self) {
     if constexpr (const_access<decltype(self)>) {
       return const_reverse_iterator(self.span().data());
     } else {
@@ -536,7 +536,7 @@ struct MultiByteIntegersBase {
     }
   }
   /** Returns a const reverse iterator preceding the first element. */
-  const_reverse_iterator crend() const {
+  [[nodiscard]] const_reverse_iterator crend() const {
     return const_reverse_iterator(span().data());
   }
 
@@ -554,7 +554,7 @@ struct MultiByteIntegersBase {
   }
 
   /** Returns the element at index `i`, as a mutable reference if `self` allows it. */
-  decltype(auto) operator[](this auto&& self, Size i) {
+  [[nodiscard]] decltype(auto) operator[](this auto&& self, Size i) {
     assert(i < self.size());
     if constexpr (const_access<decltype(self)>) {
       return load(self.span().data() + byte_size(i));
@@ -564,7 +564,7 @@ struct MultiByteIntegersBase {
   }
 
   /** Returns the first element, as a mutable reference if `self` allows it. */
-  decltype(auto) front(this auto&& self) {
+  [[nodiscard]] decltype(auto) front(this auto&& self) {
     assert(self.size() > 0);
     if constexpr (const_access<decltype(self)>) {
       return load(self.span().data());
@@ -574,7 +574,7 @@ struct MultiByteIntegersBase {
   }
 
   /** Returns the last element, as a mutable reference if `self` allows it. */
-  decltype(auto) back(this auto&& self) {
+  [[nodiscard]] decltype(auto) back(this auto&& self) {
     assert(self.size() > 0);
     if constexpr (const_access<decltype(self)>) {
       return load(self.span().data() + byte_size(self.size() - 1));
@@ -593,25 +593,25 @@ struct MultiByteIntegersBase {
   //------------------------------------------------------------------------------------------------
 
   /** Returns a view of the half-open index range `[begin, end)`, mutable if `self` is. */
-  auto sub_range(this auto&& self, Size begin, Size end) {
+  [[nodiscard]] auto sub_range(this auto&& self, Size begin, Size end) {
     using Result = std::conditional_t<const_access<decltype(self)>, ConstSubRange, MutableSubRange>;
     assert(end >= begin);
     return Result(self.span().data() + byte_size(begin), end - begin);
   }
 
   /** Returns a view of the entire range, mutable if `self` is. */
-  auto full_sub_range(this auto&& self) {
+  [[nodiscard]] auto full_sub_range(this auto&& self) {
     return self.sub_range(0, self.size());
   }
 
 protected:
   /** Converts an element count to a byte count. */
-  static Size byte_size(Size size) THES_ALWAYS_INLINE {
+  [[nodiscard]] static Size byte_size(Size size) THES_ALWAYS_INLINE {
     return size * element_bytes;
   }
 
   /** Loads and unpacks the value stored at `ptr`. */
-  static Value load(const std::byte* ptr) THES_ALWAYS_INLINE {
+  [[nodiscard]] static Value load(const std::byte* ptr) THES_ALWAYS_INLINE {
     BaseValue output;
     std::memcpy(&output, ptr, int_bytes);
     if constexpr (std::endian::native == std::endian::little) {
@@ -624,7 +624,7 @@ protected:
   }
 
   /** Shifts `value` into position for a full-width store, in place. */
-  static Value& store_transform(Value& value) noexcept THES_ALWAYS_INLINE {
+  [[nodiscard]] static Value& store_transform(Value& value) noexcept THES_ALWAYS_INLINE {
     if constexpr (std::endian::native == std::endian::big) {
       value <<= overhead_bits;
     }
@@ -640,7 +640,7 @@ protected:
   }
 
   /** Returns the underlying storage. */
-  auto& storage(this auto&& self) {
+  [[nodiscard]] auto& storage(this auto&& self) {
     return self.storage_;
   }
 

@@ -34,7 +34,7 @@ struct StaticKeyValuePair {
 template<auto K>
 struct StaticKey {
   template<typename V>
-  constexpr StaticKeyValuePair<K, V> operator=(V&& value) const {
+  constexpr StaticKeyValuePair<K, V> operator=(V&& value) const { // NOLINT
     return {std::forward<V>(value)};
   }
 };
@@ -60,8 +60,8 @@ template<typename... Pairs>
 requires(Tuple<typename std::decay_t<Pairs>::Key...>{std::decay_t<Pairs>::key...} |
          star::all_different)
 struct StaticMap<Pairs...> {
-  using Tuple = ::thes::Tuple<Pairs...>;
-  using DecayedTuple = ::thes::Tuple<std::decay_t<Pairs>...>;
+  using Tuple = thes::Tuple<Pairs...>;
+  using DecayedTuple = thes::Tuple<std::decay_t<Pairs>...>;
 
   static constexpr bool contains(AnyValueTag auto key) {
     auto impl = [key](auto idx, auto rec) {

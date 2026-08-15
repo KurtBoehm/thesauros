@@ -4,8 +4,12 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+#include <algorithm>
 #include <compare>
+#include <concepts>
 #include <cstddef>
+#include <functional>
+#include <iterator>
 #include <ranges>
 #include <vector>
 
@@ -275,8 +279,8 @@ THES_TEST_CASE("forward-only iterator", "[iterator-facades]") {
   static_assert(!std::bidirectional_iterator<ForwardOnlyIter>);
   static_assert(!std::random_access_iterator<ForwardOnlyIter>);
 
-  ForwardOnlyIter it{0};
-  ForwardOnlyIter end{5};
+  const ForwardOnlyIter it{0};
+  const ForwardOnlyIter end{5};
   const auto sum = std::ranges::fold_left(it, end, 0, std::plus{});
   const auto expected = std::ranges::fold_left(std::views::iota(0, 5), 0, std::plus{});
   THES_CHECK(sum == expected);

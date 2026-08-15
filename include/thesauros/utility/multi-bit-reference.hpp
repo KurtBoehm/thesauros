@@ -61,7 +61,7 @@ struct MutableBitReference {
   }
 
 private:
-  constexpr Chunk mask() const {
+  [[nodiscard]] constexpr Chunk mask() const {
     return Chunk(Chunk{1} << index_);
   }
 

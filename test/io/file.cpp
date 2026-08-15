@@ -6,10 +6,12 @@
 
 #include <array>
 #include <cstddef>
+#include <cstdio>
 #include <filesystem>
 #include <iterator>
 #include <span>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "thesauros/containers/dynamic-buffer.hpp"
@@ -43,9 +45,9 @@ static_assert(thes::ByteLike<char>);
 static_assert(thes::ByteLike<unsigned char>);
 static_assert(thes::ByteLike<signed char>);
 
-static_assert(int(thes::Seek::set) == SEEK_SET);
-static_assert(int(thes::Seek::cur) == SEEK_CUR);
-static_assert(int(thes::Seek::end) == SEEK_END);
+static_assert(static_cast<int>(thes::Seek::set) == SEEK_SET);
+static_assert(static_cast<int>(thes::Seek::cur) == SEEK_CUR);
+static_assert(static_cast<int>(thes::Seek::end) == SEEK_END);
 
 //==================================================================================================
 // Round-tripping through a file
@@ -278,8 +280,8 @@ THES_TEST_CASE("a delimiter separates but does not surround", "[io][delimiter]")
   std::string out{};
   auto it = std::back_inserter(out);
 
-  thes::Delimiter delim{", "};
-  for (int value : {1, 2, 3}) {
+  const thes::Delimiter delim{", "};
+  for (const int value : {1, 2, 3}) {
     it = delim.output(it);
     *it++ = static_cast<char>('0' + value);
   }
@@ -294,8 +296,8 @@ THES_TEST_CASE("a delimiter threads a positional iterator", "[io][delimiter]") {
   std::array<char, 16> buffer{};
   char* it = buffer.data();
 
-  thes::Delimiter delim{", "};
-  for (int value : {1, 2, 3}) {
+  const thes::Delimiter delim{", "};
+  for (const int value : {1, 2, 3}) {
     it = delim.output(it);
     *it++ = static_cast<char>('0' + value);
   }
@@ -307,8 +309,8 @@ THES_TEST_CASE("a trailing character is written after the separator", "[io][deli
   std::array<char, 16> buffer{};
   char* it = buffer.data();
 
-  thes::Delimiter delim{","};
-  for (int value : {1, 2, 3}) {
+  const thes::Delimiter delim{","};
+  for (const int value : {1, 2, 3}) {
     it = delim.output(it, '\n');
     *it++ = static_cast<char>('0' + value);
   }
@@ -320,8 +322,8 @@ THES_TEST_CASE("a delimiter works at compile time", "[io][delimiter]") {
   static constexpr auto joined = [] {
     std::array<char, 8> buffer{};
     char* it = buffer.data();
-    thes::Delimiter delim{"-"};
-    for (char c : {'a', 'b', 'c'}) {
+    const thes::Delimiter delim{"-"};
+    for (const char c : {'a', 'b', 'c'}) {
       it = delim.output(it);
       *it++ = c;
     }
@@ -337,7 +339,7 @@ THES_TEST_CASE("a delimiter starts over for each instance", "[io][delimiter]") {
   {
     std::string out{};
     auto it = std::back_inserter(out);
-    thes::Delimiter delim{"|"};
+    const thes::Delimiter delim{"|"};
     it = delim.output(it);
     THES_CHECK(out.empty());
     it = delim.output(it);
@@ -349,7 +351,7 @@ THES_TEST_CASE("a delimiter starts over for each instance", "[io][delimiter]") {
     // An empty separator still tracks the first call, it just emits nothing.
     std::string out{};
     auto it = std::back_inserter(out);
-    thes::Delimiter delim{""};
+    const thes::Delimiter delim{""};
     it = delim.output(it);
     it = delim.output(it);
     THES_CHECK(out.empty());
@@ -361,7 +363,7 @@ THES_TEST_CASE("a delimiter can append a trailing character", "[io][delimiter]")
   std::string out{};
   auto it = std::back_inserter(out);
 
-  thes::Delimiter delim{","};
+  const thes::Delimiter delim{","};
   it = delim.output(it, '\n');
   THES_CHECK(out.empty());
 

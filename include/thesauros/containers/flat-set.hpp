@@ -26,17 +26,17 @@ struct FlatSet {
 
   FlatSet() = default;
 
-  const_iterator begin() const {
+  [[nodiscard]] const_iterator begin() const {
     return data_.begin();
   }
-  const_iterator end() const {
+  [[nodiscard]] const_iterator end() const {
     return data_.end();
   }
 
-  const_iterator cbegin() const {
+  [[nodiscard]] const_iterator cbegin() const {
     return begin();
   }
-  const_iterator cend() const {
+  [[nodiscard]] const_iterator cend() const {
     return end();
   }
 
@@ -47,23 +47,23 @@ struct FlatSet {
     return data_.empty();
   }
 
-  const V& front() const {
+  [[nodiscard]] const V& front() const {
     return data_.front();
   }
   void pop_front() {
     data_.erase(data_.begin());
   }
 
-  const_iterator lower_bound(const auto& value) const {
+  [[nodiscard]] const_iterator lower_bound(const auto& value) const {
     return std::lower_bound(data_.begin(), data_.end(), value, compare_);
   }
 
-  bool contains(const auto& value) const {
+  [[nodiscard]] bool contains(const auto& value) const {
     const auto it{lower_bound(value)};
     return it != end() && equal_(*it, value);
   }
 
-  const_iterator find(const auto& value) const {
+  [[nodiscard]] const_iterator find(const auto& value) const {
     const auto it{lower_bound(value)};
     if (it != end() && equal_(*it, value)) {
       return it;
@@ -72,7 +72,7 @@ struct FlatSet {
   }
 
   void insert(const V& value) {
-    auto it = lower_bound(value);
+    auto* it = lower_bound(value);
     if (it != end() && equal_(*it, value)) {
       return;
     }
@@ -80,7 +80,7 @@ struct FlatSet {
   }
 
   bool erase(const auto& value) {
-    const auto it{lower_bound(value)};
+    auto* const it{lower_bound(value)};
     if (it != end() && equal_(*it, value)) {
       data_.erase(it);
       return true;

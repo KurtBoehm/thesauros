@@ -26,11 +26,11 @@ int main() {
   auto insert = [&](int key, int value) {
     const auto res1 = map.insert(key, value);
 
-    auto it = std::find_if(ref.begin(), ref.end(), [&](auto e) { return e.first == key; });
+    auto it = std::ranges::find_if(ref, [&](auto e) { return e.first == key; });
     const auto res2 = it == ref.end();
     if (res2) {
       ref.emplace_back(key, value);
-      std::sort(ref.begin(), ref.end());
+      std::ranges::sort(ref);
     }
 
     THES_ALWAYS_ASSERT(res1 == res2);
@@ -41,7 +41,7 @@ int main() {
   auto erase = [&](int key) {
     const auto res1 = map.erase(key);
 
-    auto it = std::find_if(ref.begin(), ref.end(), [&](auto e) { return e.first == key; });
+    auto it = std::ranges::find_if(ref, [&](auto e) { return e.first == key; });
     const auto res2 = it != ref.end();
     if (res2) {
       ref.erase(it);

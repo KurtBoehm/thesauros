@@ -44,7 +44,7 @@ void check_segmenter_partition(const Seg& seg) {
     THES_ALWAYS_ASSERT(r.end_value() == end);
 
     // segment_of(i) should return s for all i in this segment
-    for (Size i : thes::views::indices(start, end)) {
+    for (const Size i : thes::views::indices(start, end)) {
       const Segment s2 = seg.segment_of(i);
       THES_ALWAYS_ASSERT(s2 == s);
       THES_ALWAYS_ASSERT(seg.segment_range(s2).contains(i));
@@ -55,7 +55,7 @@ void check_segmenter_partition(const Seg& seg) {
   THES_ALWAYS_ASSERT(sum == total);
 
   // Check that segment_of() never goes out of range for all indices
-  for (Size i : thes::views::indices(total)) {
+  for (const Size i : thes::views::indices(total)) {
     const Segment s = seg.segment_of(i);
     THES_ALWAYS_ASSERT(s < num_seg);
     THES_ALWAYS_ASSERT(seg.segment_range(s).contains(i));
@@ -142,10 +142,10 @@ int main() {
     using Size = thes::u32;
     using Segment = thes::u16;
 
-    for (Size size : {Size(0), Size(1), Size(2), Size(10), Size(100)}) {
-      for (Segment seg_num : thes::views::indices<Segment>(1, 8)) {
-        for (Size offset : {Size(0), Size(1), Size(5), Size(1000)}) {
-          thes::OffsetUniformIndexSegmenter seg{offset, size, seg_num};
+    for (const Size size : {Size{0}, Size{1}, Size{2}, Size{10}, Size{100}}) {
+      for (const Segment seg_num : thes::views::indices<Segment>(1, 8)) {
+        for (const Size offset : {Size{0}, Size{1}, Size{5}, Size{1000}}) {
+          const thes::OffsetUniformIndexSegmenter seg{offset, size, seg_num};
 
           // Basic invariants: total size and num segments
           THES_ALWAYS_ASSERT(seg.size() == size);
@@ -154,7 +154,7 @@ int main() {
           // Contiguous coverage of [offset, offset + size)
           Size last_end = offset;
           Size sum = 0;
-          for (Segment s : thes::views::indices(seg_num)) {
+          for (const Segment s : thes::views::indices(seg_num)) {
             const Size start = seg.segment_start(s);
             const Size end = seg.segment_end(s);
             THES_ALWAYS_ASSERT(start <= end);
@@ -163,7 +163,7 @@ int main() {
             sum += end - start;
 
             // Check that segment_of() in mapped domain is correct
-            for (Size i : thes::views::indices(start, end)) {
+            for (const Size i : thes::views::indices(start, end)) {
               const Segment s2 = seg.segment_of(i);
               THES_ALWAYS_ASSERT(s2 == s);
               THES_ALWAYS_ASSERT(seg.segment_range(s2).contains(i));
@@ -173,7 +173,7 @@ int main() {
           THES_ALWAYS_ASSERT(sum == size);
 
           // segment_of should hit the right segment for all indices in [offset, offset + size)
-          for (Size i : thes::views::indices(offset, offset + size)) {
+          for (const Size i : thes::views::indices(offset, offset + size)) {
             const Segment s = seg.segment_of(i);
             THES_ALWAYS_ASSERT(seg.segment_range(s).contains(i));
           }
@@ -186,11 +186,11 @@ int main() {
     using Size = std::uint32_t;
     using Segment = std::uint16_t;
 
-    for (Size base_size : {Size(0), Size(1), Size(2), Size(7), Size(23)}) {
-      for (Segment seg_num : thes::views::indices<Segment>(1, 8)) {
-        for (Size factor : {Size(1), Size(2), Size(3), Size(5)}) {
-          for (Size offset : {Size(0), Size(1), Size(10)}) {
-            thes::AffineUniformIndexSegmenter seg{factor, offset, base_size, seg_num};
+    for (const Size base_size : {Size{0}, Size{1}, Size{2}, Size{7}, Size{23}}) {
+      for (const Segment seg_num : thes::views::indices<Segment>(1, 8)) {
+        for (const Size factor : {Size{1}, Size{2}, Size{3}, Size{5}}) {
+          for (const Size offset : {Size{0}, Size{1}, Size{10}}) {
+            const thes::AffineUniformIndexSegmenter seg{factor, offset, base_size, seg_num};
 
             // Total size must be factor * base_size
             THES_ALWAYS_ASSERT(seg.size() == base_size * factor);
@@ -199,7 +199,7 @@ int main() {
             // Check contiguous coverage of [offset, offset + factor * base_size)
             Size last_end = offset;
             Size sum = 0;
-            for (Segment s : thes::views::indices(seg_num)) {
+            for (const Segment s : thes::views::indices(seg_num)) {
               const Size start = seg.segment_start(s);
               const Size end = seg.segment_end(s);
               THES_ALWAYS_ASSERT(start <= end);
@@ -208,7 +208,7 @@ int main() {
               sum += end - start;
 
               // all indices in [start, end) must map back to this segment
-              for (Size i : thes::views::indices(start, end)) {
+              for (const Size i : thes::views::indices(start, end)) {
                 const Segment s2 = seg.segment_of(i);
                 THES_ALWAYS_ASSERT(s2 == s);
                 THES_ALWAYS_ASSERT(seg.segment_range(s2).contains(i));
@@ -217,7 +217,7 @@ int main() {
             THES_ALWAYS_ASSERT(last_end == offset + factor * base_size);
             THES_ALWAYS_ASSERT(sum == factor * base_size);
 
-            for (Size i : thes::views::indices(offset, offset + factor * base_size)) {
+            for (const Size i : thes::views::indices(offset, offset + factor * base_size)) {
               const Segment s = seg.segment_of(i);
               THES_ALWAYS_ASSERT(seg.segment_range(s).contains(i));
             }
@@ -245,11 +245,11 @@ int main() {
     using Size = std::uint32_t;
     using Segment = std::uint16_t;
 
-    for (Size size :
-         {Size(0), Size(1), Size(2), Size(15), Size(63), Size(64), Size(65), Size(127)}) {
-      for (Segment seg_num : thes::views::indices<Segment>(1, 9)) {
-        for (Size block_size : {Size(1), Size(2), Size(3), Size(4), Size(16)}) {
-          thes::BlockedIndexSegmenter<Size, Segment> seg{size, seg_num, block_size};
+    for (const Size size :
+         {Size{0}, Size{1}, Size{2}, Size{15}, Size{63}, Size{64}, Size{65}, Size{127}}) {
+      for (const Segment seg_num : thes::views::indices<Segment>(1, 9)) {
+        for (const Size block_size : {Size{1}, Size{2}, Size{3}, Size{4}, Size{16}}) {
+          const thes::BlockedIndexSegmenter<Size, Segment> seg{size, seg_num, block_size};
 
           THES_ALWAYS_ASSERT(seg.size() == size);
           THES_ALWAYS_ASSERT(seg.segment_num() == seg_num);
@@ -267,8 +267,8 @@ int main() {
     using Segment = std::uint16_t;
 
     auto test_case = [](Size size, Segment seg_num, Size n0, Size n1) {
-      thes::UniformIndexSegmenter<Size, Segment> base{size, seg_num};
-      thes::PaddedIndexSegmenter padded{base, n0, n1};
+      const thes::UniformIndexSegmenter<Size, Segment> base{size, seg_num};
+      const thes::PaddedIndexSegmenter padded{base, n0, n1};
 
       // Global expected range is [0, size + n0 + n1)
       THES_ALWAYS_ASSERT(padded.size() == size + n0 + n1);
@@ -287,7 +287,7 @@ int main() {
       check_segmenter_partition(padded);
 
       // Check that the shifted area [n0, n0 + size) corresponds to base
-      for (Size i : thes::views::indices(size)) {
+      for (const Size i : thes::views::indices(size)) {
         const Size global_i = i + n0;
         const Segment s_p = padded.segment_of(global_i);
         const Segment s_b = base.segment_of(i);
@@ -306,7 +306,7 @@ int main() {
 
       // Leading padding [0, n0) belongs entirely to segment 0 if seg_num > 0
       if (seg_num > 0 && n0 > 0) {
-        for (Size i : thes::views::indices<Size>(n0)) {
+        for (const Size i : thes::views::indices<Size>(n0)) {
           THES_ALWAYS_ASSERT(padded.segment_of(i) == Segment(0));
         }
       }
@@ -314,17 +314,17 @@ int main() {
       // Trailing padding [n0 + size, n0 + size + n1) belongs to last segment
       if (seg_num > 0 && n1 > 0) {
         const Segment last = seg_num - 1;
-        for (Size i : thes::views::indices<Size>(n0 + size, n0 + size + n1)) {
+        for (const Size i : thes::views::indices<Size>(n0 + size, n0 + size + n1)) {
           THES_ALWAYS_ASSERT(padded.segment_of(i) == last);
         }
       }
     };
 
     // Small sizes and various paddings
-    for (Size size : {Size(0), Size(1), Size(2), Size(5), Size(16)}) {
-      for (Segment seg_num : thes::views::indices<Segment>(1, 6)) {
-        for (Size n0 : {Size(0), Size(1), Size(3)}) {
-          for (Size n1 : {Size(0), Size(2), Size(4)}) {
+    for (const Size size : {Size{0}, Size{1}, Size{2}, Size{5}, Size{16}}) {
+      for (const Segment seg_num : thes::views::indices<Segment>(1, 6)) {
+        for (const Size n0 : {Size{0}, Size{1}, Size{3}}) {
+          for (const Size n1 : {Size{0}, Size{2}, Size{4}}) {
             test_case(size, seg_num, n0, n1);
           }
         }
@@ -332,6 +332,6 @@ int main() {
     }
 
     // A larger example
-    test_case(Size(1000), Segment(7), Size(5), Size(13));
+    test_case(Size{1000}, Segment{7}, Size{5}, Size{13});
   }
 }

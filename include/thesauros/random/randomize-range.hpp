@@ -27,7 +27,7 @@ struct RangeRandomizer {
     return size_;
   }
 
-  constexpr T transform(T x) const {
+  [[nodiscard]] constexpr T transform(T x) const {
     auto part = [this](const T y) {
       const T splits = size_ & ~y;
       // y < size_ => split != 0

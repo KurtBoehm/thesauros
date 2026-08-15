@@ -7,6 +7,7 @@
 #include <array>
 #include <cstddef>
 #include <iterator>
+#include <ranges>
 
 #include "thesauros/containers.hpp"
 #include "thesauros/format.hpp"
@@ -209,7 +210,7 @@ THES_TEST_CASE("push_back copy and move", "[chunked][block]") {
   arr.push_block();
   auto block = arr[0];
 
-  S lvalue{7};
+  const S lvalue{7};
   block.push_back(lvalue);
   block.push_back(S{9});
   THES_REQUIRE(block.size() == 2);
@@ -390,7 +391,7 @@ THES_TEST_CASE("nested builder integration", "[chunked][nested]") {
     }
   }
 
-  Nested nested = builder.build();
+  const Nested nested = builder.build();
   THES_CHECK(nested.group_num() == vec.block_num());
   THES_CHECK(nested.element_num() == vec.value_num());
   THES_CHECK(test::range_eq(vec[0], std::array{S{0}, S{1}, S{4}, S{5}, S{6}, S{7}}));

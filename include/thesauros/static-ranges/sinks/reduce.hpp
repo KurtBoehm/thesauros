@@ -28,7 +28,7 @@ struct InitReduceGenerator : public ConsumerGeneratorBase {
 
   template<typename Range>
   THES_ALWAYS_INLINE constexpr auto operator()(Range&& range) const {
-    constexpr std::size_t size = thes::star::size<Range>;
+    constexpr std::size_t size = star::size<Range>;
     if constexpr (!Right) {
       auto impl = [&](auto& self, auto idx, auto value) THES_ALWAYS_INLINE {
         if constexpr (idx < size) {
@@ -59,7 +59,7 @@ struct ReduceGenerator : public ConsumerGeneratorBase {
 
   template<typename Range>
   THES_ALWAYS_INLINE constexpr auto operator()(Range&& range) const {
-    constexpr std::size_t size = thes::star::size<Range>;
+    constexpr std::size_t size = star::size<Range>;
     if constexpr (!Right) {
       auto impl = [&](auto& self, auto idx, auto value) THES_ALWAYS_INLINE {
         if constexpr (idx < size) {

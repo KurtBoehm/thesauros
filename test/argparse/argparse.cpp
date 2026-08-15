@@ -119,7 +119,7 @@ THES_TEST_CASE("parse_value handles the built-in types", "[argparse][value]") {
 }
 
 THES_TEST_CASE("parse_value prefers a custom conversion", "[argparse][value]") {
-  constexpr Fraction three_quarters{3, 4};
+  constexpr Fraction three_quarters{.numerator = 3, .denominator = 4};
   THES_CHECK(ap::parse_value<Fraction>("3/4") == three_quarters);
   THES_CHECK(!ap::parse_value<Fraction>("3").has_value());
   THES_CHECK(!ap::parse_value<Fraction>("3/0").has_value());

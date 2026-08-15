@@ -392,7 +392,7 @@ private:
     InitPolicy::initialize(begin, end);
   }
 
-  constexpr Size grown_size(Size new_size_lower_bound) const {
+  [[nodiscard]] constexpr Size grown_size(Size new_size_lower_bound) const {
     return GrowthPolicy::new_allocation_size(size(), new_size_lower_bound);
   }
 

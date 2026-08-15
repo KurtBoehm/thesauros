@@ -172,7 +172,7 @@ private:
     }));
   }
 
-  constexpr auto countr(auto counter) const {
+  [[nodiscard]] constexpr auto countr(auto counter) const {
     if constexpr (static_chunk_num == 0) {
       return 0;
     }

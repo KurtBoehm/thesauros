@@ -7,14 +7,17 @@
 #include <algorithm>
 #include <array>
 #include <atomic>
+#include <concepts>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <iterator>
 #include <ranges>
 #include <thread>
 #include <utility>
 
 #include "thesauros/containers.hpp"
+#include "thesauros/math/integer-cast.hpp"
 #include "thesauros/ranges.hpp"
 #include "thesauros/test.hpp"
 
@@ -38,11 +41,11 @@ static_assert(
 
 void test_construction() {
   // Default construction: empty.
-  thes::DynamicBitset<std::uint32_t> b1{};
+  const thes::DynamicBitset<std::uint32_t> b1{};
   THES_ALWAYS_ASSERT(b1.chunk_num() == 0 && b1.size() == 0);
 
   // Size-only construction: correct size/chunk_num, values unspecified.
-  thes::DynamicBitset<std::uint32_t> b2{10};
+  const thes::DynamicBitset<std::uint32_t> b2{10};
   THES_ALWAYS_ASSERT(b2.size() == 10 && b2.chunk_num() == 1);
 
   // Size + value = true, spanning multiple chunks.
@@ -196,21 +199,21 @@ void test_operator_bracket() {
 
 void test_countr_edge_cases() {
   // Empty bitset: both counts are zero.
-  thes::DynamicBitset<std::uint32_t> b0{};
+  const thes::DynamicBitset<std::uint32_t> b0{};
   THES_ALWAYS_ASSERT(b0.countr_zero() == 0 && b0.countr_one() == 0);
 
   // Bitset shorter than a single chunk.
-  thes::DynamicBitset<std::uint32_t> b1{10, false};
+  const thes::DynamicBitset<std::uint32_t> b1{10, false};
   THES_ALWAYS_ASSERT(b1.countr_zero() == 10 && b1.countr_one() == 0);
 
-  thes::DynamicBitset<std::uint32_t> b2{10, true};
+  const thes::DynamicBitset<std::uint32_t> b2{10, true};
   THES_ALWAYS_ASSERT(b2.countr_one() == 10 && b2.countr_zero() == 0);
 
   // Exactly two full chunks, uniform value.
-  thes::DynamicBitset<std::uint32_t> b3{64, false};
+  const thes::DynamicBitset<std::uint32_t> b3{64, false};
   THES_ALWAYS_ASSERT(b3.countr_zero() == 64);
 
-  thes::DynamicBitset<std::uint32_t> b4{64, true};
+  const thes::DynamicBitset<std::uint32_t> b4{64, true};
   THES_ALWAYS_ASSERT(b4.countr_one() == 64);
 
   // Run stops exactly at a chunk boundary.
@@ -368,8 +371,8 @@ void test_concurrent_set_if_unset_disjoint() {
   };
 
   {
-    std::jthread t0{worker, std::size_t{0}, total / 2, std::ref(claimed[0])};
-    std::jthread t1{worker, total / 2, total, std::ref(claimed[1])};
+    const std::jthread t0{worker, std::size_t{0}, total / 2, std::ref(claimed[0])};
+    const std::jthread t1{worker, total / 2, total, std::ref(claimed[1])};
   }
 
   THES_ALWAYS_ASSERT(claimed[0].load() == total / 2);
@@ -395,8 +398,8 @@ void test_concurrent_set_if_unset_overlapping() {
   };
 
   {
-    std::jthread t0{worker, std::ref(claimed[0])};
-    std::jthread t1{worker, std::ref(claimed[1])};
+    const std::jthread t0{worker, std::ref(claimed[0])};
+    const std::jthread t1{worker, std::ref(claimed[1])};
   }
 
   // Exactly one thread should have won each of the `total` indices.

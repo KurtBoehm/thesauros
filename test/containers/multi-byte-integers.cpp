@@ -7,12 +7,15 @@
 #include <algorithm>
 #include <climits>
 #include <cstddef>
+#include <functional>
 #include <initializer_list>
 #include <optional>
+#include <ranges>
 #include <vector>
 
 #include "thesauros/containers.hpp"
 #include "thesauros/test.hpp"
+#include "thesauros/types/primitives.hpp"
 #include "thesauros/utility/byte-integer.hpp"
 
 namespace test = thes::test;
@@ -28,8 +31,8 @@ inline constexpr thes::u64 modulus_of = thes::u64{1} << (CHAR_BIT * ByteInt::byt
 
 /** Reduces `value` modulo `modulus_of<ByteInt>` and casts it down to `ByteInt::Unsigned`. */
 template<typename ByteInt>
-[[nodiscard]] typename ByteInt::Unsigned wrap(thes::u64 value) {
-  return static_cast<typename ByteInt::Unsigned>(value % modulus_of<ByteInt>);
+[[nodiscard]] ByteInt::Unsigned wrap(thes::u64 value) {
+  return static_cast<ByteInt::Unsigned>(value % modulus_of<ByteInt>);
 }
 
 //==================================================================================================
@@ -570,7 +573,7 @@ void test_reverse_iterator_mutation() {
 
   Mbi mbi{wrap<ByteInt>(1), wrap<ByteInt>(2), wrap<ByteInt>(3), wrap<ByteInt>(4)};
 
-  UInt value = wrap<ByteInt>(10);
+  const UInt value = wrap<ByteInt>(10);
   for (auto it = mbi.rbegin(); it != mbi.rend(); ++it) {
     *it = value;
   }
@@ -591,8 +594,8 @@ template<typename ByteInt, std::size_t PaddingBytes = 13>
 void test_reverse_iterator_arithmetic() {
   using Mbi = thes::MultiByteIntegers<ByteInt, PaddingBytes>;
 
-  Mbi mbi{wrap<ByteInt>(10), wrap<ByteInt>(20), wrap<ByteInt>(30), wrap<ByteInt>(40),
-          wrap<ByteInt>(50)};
+  const Mbi mbi{wrap<ByteInt>(10), wrap<ByteInt>(20), wrap<ByteInt>(30), wrap<ByteInt>(40),
+                wrap<ByteInt>(50)};
   const Mbi& cmbi = mbi;
 
   auto rit = cmbi.rbegin();
@@ -622,7 +625,7 @@ template<typename ByteInt, std::size_t PaddingBytes = 13>
 void test_reverse_iterator_conversion() {
   using UInt = ByteInt::Unsigned;
   using Mbi = thes::MultiByteIntegers<ByteInt, PaddingBytes>;
-  using ConstRevIt = typename Mbi::const_reverse_iterator;
+  using ConstRevIt = Mbi::const_reverse_iterator;
 
   Mbi mbi{UInt{1}, UInt{2}, UInt{3}};
   auto rit = mbi.rbegin();
@@ -750,23 +753,23 @@ void test_int_ref_optional_accessors() {
   using Mbi = thes::MultiByteIntegers<ByteInt, PaddingBytes>;
   using OptMbi = thes::OptionalMultiByteIntegers<ByteInt, PaddingBytes>;
 
-  static_assert(requires(typename Mbi::IntRef r) { ++r; });
-  static_assert(requires(typename Mbi::IntRef r) { r += UInt{1}; });
-  static_assert(!requires(typename Mbi::IntRef r) { r.has_value(); });
-  static_assert(!requires(typename Mbi::IntRef r) { r.clear(); });
+  static_assert(requires(Mbi::IntRef r) { ++r; });
+  static_assert(requires(Mbi::IntRef r) { r += UInt{1}; });
+  static_assert(!requires(Mbi::IntRef r) { r.has_value(); });
+  static_assert(!requires(Mbi::IntRef r) { r.clear(); });
 
-  static_assert(!requires(typename OptMbi::IntRef r) { ++r; });
-  static_assert(!requires(typename OptMbi::IntRef r) { r += UInt{1}; });
-  static_assert(requires(typename OptMbi::IntRef r) { r.has_value(); });
-  static_assert(requires(typename OptMbi::IntRef r) { r.is_empty(); });
-  static_assert(requires(typename OptMbi::IntRef r) { r.value(); });
-  static_assert(requires(typename OptMbi::IntRef r) { *r; });
-  static_assert(requires(typename OptMbi::IntRef r) { r.clear(); });
-  static_assert(requires(typename OptMbi::IntRef r) { r.set(UInt{1}); });
-  static_assert(requires(typename OptMbi::IntRef r) { r == r; });
-  static_assert(requires(typename OptMbi::IntRef r, typename OptMbi::value_type v) { r == v; });
-  static_assert(requires(typename OptMbi::IntRef r) { r == std::nullopt; });
-  static_assert(!requires(typename Mbi::IntRef r) { r == std::nullopt; });
+  static_assert(!requires(OptMbi::IntRef r) { ++r; });
+  static_assert(!requires(OptMbi::IntRef r) { r += UInt{1}; });
+  static_assert(requires(OptMbi::IntRef r) { r.has_value(); });
+  static_assert(requires(OptMbi::IntRef r) { r.is_empty(); });
+  static_assert(requires(OptMbi::IntRef r) { r.value(); });
+  static_assert(requires(OptMbi::IntRef r) { *r; });
+  static_assert(requires(OptMbi::IntRef r) { r.clear(); });
+  static_assert(requires(OptMbi::IntRef r) { r.set(UInt{1}); });
+  static_assert(requires(OptMbi::IntRef r) { r == r; });
+  static_assert(requires(OptMbi::IntRef r, OptMbi::value_type v) { r == v; });
+  static_assert(requires(OptMbi::IntRef r) { r == std::nullopt; });
+  static_assert(!requires(Mbi::IntRef r) { r == std::nullopt; });
 
   OptMbi mbi = OptMbi::create_empty(3);
   THES_ALWAYS_ASSERT(mbi[0].is_empty());

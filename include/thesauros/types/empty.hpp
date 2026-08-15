@@ -16,7 +16,7 @@ struct Empty {
     return false;
   }
 
-  [[nodiscard]] bool operator==(const Empty& other) const = default;
+  [[nodiscard]] bool operator==(const Empty&) const = default;
 };
 
 template<typename Fun, typename ArgTuple>

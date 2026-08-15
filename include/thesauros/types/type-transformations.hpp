@@ -23,7 +23,7 @@ struct MemberTypeTrait {
   using Type = decltype(get_type(static_cast<Member>(nullptr)));
 };
 template<typename Member>
-using MemberType = typename MemberTypeTrait<Member>::Type;
+using MemberType = MemberTypeTrait<Member>::Type;
 
 template<typename T>
 struct AddConstTrait {
@@ -43,7 +43,7 @@ template<typename From, typename To>
 using TransferConst = std::conditional_t<std::is_const_v<From>, const To, To>;
 
 template<typename From, typename To>
-using TransferConstAccess = std::conditional_t<thes::ConstAccess<From>, const To, To>;
+using TransferConstAccess = std::conditional_t<ConstAccess<From>, const To, To>;
 
 template<typename T, typename Dummy>
 using First = T;
