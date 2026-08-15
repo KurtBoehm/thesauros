@@ -27,7 +27,7 @@
 
 namespace thes {
 /** Iteration direction (forward or backward). */
-enum struct IterDirection : bool { FORWARD, BACKWARD };
+enum struct IterDirection : bool { forward, backward };
 
 /**
  * Pair of flat index and multi-dimensional position.
@@ -108,7 +108,7 @@ namespace detail {
 template<IterDirection Dir, typename S>
 THES_ALWAYS_INLINE inline constexpr void for_each_tile_unroll(S begin, S end, auto tile_size,
                                                               auto&& full_fun, auto&& part_fun) {
-  if constexpr (Dir == IterDirection::FORWARD) {
+  if constexpr (Dir == IterDirection::forward) {
     S i = begin;
     for (; i + tile_size <= end; i += tile_size) {
       full_fun(views::indices_n(i, tile_size));
@@ -261,7 +261,7 @@ THES_ALWAYS_INLINE inline constexpr void tile_for_each(const auto& multi_size, c
     const auto begin = range.begin_value();
     const auto end = range.end_value();
 
-    if constexpr (Dir == IterDirection::FORWARD) {
+    if constexpr (Dir == IterDirection::forward) {
       for (Size i = begin; i < end; ++i) {
         if constexpr (dim + 1 < dim_num) {
           const auto factor = multi_size.after_size(dim);
@@ -314,7 +314,7 @@ tile_for_each(const auto& multi_size, const Ranges& ranges, auto&& full_fun, aut
   auto impl = [&](auto dim, auto&& rec, auto index, auto... coords) THES_ALWAYS_INLINE {
     const auto range = star::get_at<dim>(ranges);
 
-    if constexpr (Dir == IterDirection::FORWARD) {
+    if constexpr (Dir == IterDirection::forward) {
       if constexpr (dim + 1 < dim_num) {
         for (const Size i : range) {
           const auto factor = multi_size.after_size(dim);

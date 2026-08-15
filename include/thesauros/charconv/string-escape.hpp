@@ -52,7 +52,7 @@ inline auto escape_string(std::basic_string_view<C> in, auto out_it) {
 
     const auto [codep, state] = decoder.decode(c8);
     switch (state) {
-      case ACCEPTED: {
+      case accepted: {
         if (const char esc = escape_char(codep); esc != '\0') {
           extend('\\', esc);
         } else if (codep <= 0x1F) {
@@ -68,7 +68,7 @@ inline auto escape_string(std::basic_string_view<C> in, auto out_it) {
         }
         break;
       }
-      case REJECTED: {
+      case rejected: {
         throw std::invalid_argument("Found an invalid UTF-8 codepoint!");
       }
       default: {
@@ -78,7 +78,7 @@ inline auto escape_string(std::basic_string_view<C> in, auto out_it) {
     }
   }
 
-  if (decoder.state() != ACCEPTED) {
+  if (decoder.state() != accepted) {
     throw std::invalid_argument("The string ends with an incomplete codepoint!");
   }
 

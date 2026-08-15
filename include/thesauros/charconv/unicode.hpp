@@ -22,8 +22,8 @@ struct UnicodeDecoder {
   using CodePoint = u32;
   /** The decoding automaton’s terminal states; other values mean decoding is in progress. */
   enum struct State : u8 {
-    ACCEPTED = 0,
-    REJECTED = 12,
+    accepted = 0,
+    rejected = 12,
   };
 
   // Copyright (c) 2008-2010 Bjoern Hoehrmann <bjoern@hoehrmann.de>
@@ -80,10 +80,10 @@ struct UnicodeDecoder {
     for (const char* ptr = str.begin(); ptr != end; ++ptr) {
       const auto [codep, state] = decode(std::bit_cast<u8>(*ptr));
       switch (state) {
-        case State::ACCEPTED: {
+        case State::accepted: {
           return {codep, {ptr + 1, end}};
         }
-        case State::REJECTED: {
+        case State::rejected: {
           throw std::invalid_argument{"The string is invalid!"};
         }
         default: break;

@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <system_error>
 
 #include "thesauros/charconv/numeric-string.hpp"
 #include "thesauros/charconv/parse-integer.hpp"
@@ -19,6 +20,8 @@
 #include "thesauros/charconv/string-escape.hpp"
 #include "thesauros/charconv/unicode.hpp"
 #include "thesauros/test/test.hpp"
+#include "thesauros/types/primitives.hpp"
+#include "thesauros/types/value-tag.hpp"
 
 namespace {
 using namespace std::string_view_literals;
@@ -221,7 +224,7 @@ THES_TEST_CASE("escape_string throws on a truncated multi-byte sequence",
 THES_TEST_CASE("UnicodeDecoder decodes single-byte ASCII", "[charconv][unicode]") {
   thes::UnicodeDecoder decoder{};
   const auto [codep, state] = decoder.decode(thes::u8{'A'});
-  THES_CHECK(state == thes::UnicodeDecoder::State::ACCEPTED);
+  THES_CHECK(state == thes::UnicodeDecoder::State::accepted);
   THES_CHECK(codep == thes::u32{'A'});
 }
 

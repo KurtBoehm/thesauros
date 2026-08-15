@@ -14,7 +14,7 @@
 #include "thesauros/types/primitives.hpp"
 
 namespace {
-using Lcg = thes::LCG<thes::u32>;
+using Lcg = thes::Lcg<thes::u32>;
 
 /** Collects the values an `LCG` produces, in order. */
 [[nodiscard]] std::vector<thes::u32> collect(const Lcg& lcg) {

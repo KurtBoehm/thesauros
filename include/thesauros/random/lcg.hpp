@@ -14,8 +14,8 @@
 
 namespace thes {
 template<typename T>
-struct LCG {
-  explicit constexpr LCG(T seed, T increment, T size)
+struct Lcg {
+  explicit constexpr Lcg(T seed, T increment, T size)
       : seed_(seed), increment_(increment), size_(size) {}
 
   struct ConstIterator : public IteratorFacade<iter::ValueTypes<T, std::ptrdiff_t>> {
@@ -26,7 +26,7 @@ struct LCG {
     // Required for `std::sentinel_for`, and hence for `LCG` to model `std::ranges::range`.
     constexpr ConstIterator() = default;
 
-    constexpr ConstIterator(const LCG& lcg, T index, T value)
+    constexpr ConstIterator(const Lcg& lcg, T index, T value)
         : lcg_(&lcg), index_(index), value_(value) {}
 
     constexpr T index() const {
@@ -80,7 +80,7 @@ struct LCG {
       return prod;
     }
 
-    LCG const* lcg_{};
+    const Lcg* lcg_{};
     T index_{};
     T value_{};
   };
