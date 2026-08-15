@@ -74,7 +74,7 @@ struct FixedOpenMpThreadPool {
 
 #pragma omp parallel for num_threads(thread_num_)
     for (std::size_t t = 0; t < tnum; ++t) {
-      auto* thread = pthread_self();
+      auto thread = pthread_self();
       if (cpu_sets_.has_value()) {
         (void)set_affinity(thread, (*cpu_sets_)[t]);
       }
