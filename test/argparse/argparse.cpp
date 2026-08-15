@@ -571,6 +571,61 @@ THES_TEST_CASE("A group heads its own section in the help text", "[argparse][mer
   THES_CHECK(help.find("Logging:\n  -v, --verbose") != std::string::npos);
 }
 
+//==================================================================================================
+// Recursive constructor
+//==================================================================================================
+
+inline constexpr auto empty_recursive_parser = ap::ArgumentParser{
+  ap::ProgramInfo{.name = "merged", .description = "Merged contributions."},
+  ap::ArgumentGroup{},
+};
+static_assert(decltype(empty_recursive_parser)::argument_num == 0);
+
+inline constexpr auto recursive_parser = ap::ArgumentParser{
+  ap::ProgramInfo{.name = "merged", .description = "Merged contributions."},
+  ap::ArgumentGroup{ap::counter<"verbose">()},
+};
+static_assert(decltype(recursive_parser)::argument_num == 1);
+
+/** A group put together from groups, which contributes the arguments in them rather than itself. */
+constexpr auto nested_arguments() {
+  return ap::ArgumentGroup{
+    ap::ArgumentGroup{},
+    ap::ArgumentGroup{ap::positional<"input">().help("The file to read")},
+    ap::flag<"force">("-f"),
+    ap::ArgumentGroup{ap::ArgumentGroup{ap::counter<"verbose">("-v")}}.titled("Logging"),
+  };
+}
+
+THES_TEST_CASE("A group is declared from groups as well as arguments", "[argparse][merge]") {
+  constexpr auto nested = nested_arguments();
+  static_assert(decltype(nested)::argument_num == 3);
+
+  constexpr auto nested_parser = ap::ArgumentParser{ap::ProgramInfo{.name = "nested"}, nested};
+  static_assert(decltype(nested_parser)::argument_num == 3);
+  constexpr std::array tokens{"-vf", "in.txt"};
+  const auto result = nested_parser.parse(tokens);
+  THES_REQUIRE(result.has_value());
+  THES_CHECK(result->get<"input">() == "in.txt");
+  THES_CHECK(result->get<"force">());
+  THES_CHECK(result->get<"verbose">() == 1U);
+  // A group nested in another still heads the section it was given.
+  THES_CHECK(capture_help(nested_parser).find("Logging:\n  -v, --verbose") != std::string::npos);
+}
+
+THES_TEST_CASE("Nesting and merging arrive at the same declaration", "[argparse][merge]") {
+  constexpr auto nested = nested_arguments();
+  constexpr auto assembled = ap::ArgumentGroup{}
+                               .merge(ap::ArgumentGroup{ap::positional<"input">()})
+                               .add(ap::flag<"force">("-f"))
+                               .merge(ap::ArgumentGroup{ap::counter<"verbose">("-v")});
+  static_assert(std::same_as<decltype(nested)::Arguments, decltype(assembled)::Arguments>);
+}
+
+//==================================================================================================
+// Declaration
+//==================================================================================================
+
 THES_TEST_CASE("Long names default to the argument name", "[argparse][declaration]") {
   constexpr auto plain = ap::ArgumentParser{ap::ProgramInfo{}, ap::flag<"quiet">()};
   constexpr std::array tokens{"--quiet"};

@@ -16,6 +16,8 @@
 #include "thesauros/argparse/argument.hpp"
 #include "thesauros/static-ranges/definitions/get-at.hpp"
 #include "thesauros/static-ranges/definitions/static-apply.hpp"
+#include "thesauros/static-ranges/sinks/to-tuple.hpp"
+#include "thesauros/static-ranges/views/join.hpp"
 #include "thesauros/types/tuple.hpp"
 
 namespace thes::argparse {
@@ -69,15 +71,54 @@ constexpr bool flags_are_unique(const Tuple<Args...>& arguments) {
  *       }.titled("Logging");
  *     }
  *
- * Merging concatenates the declarations, so a group costs nothing beyond the arguments in it and
- * the parser it ends up in is the same as one written out in a single place.
+ * Arguments and groups may be mixed freely in the declaration, a group contributing the arguments
+ * in it rather than itself, so that a contribution put together from others is written the same way
+ * as one written out in a single place. Merging concatenates the declarations, so a group costs
+ * nothing beyond the arguments in it.
+ *
+ * @tparam ArgTuple The `Tuple` of the arguments in the group, which is what a declaration flattens
+ * to and thus need not be spelled out: `ArgumentGroup{…}` deduces it.
  */
-template<typename... Args>
-struct ArgumentGroup {
+template<typename ArgTuple>
+struct ArgumentGroup;
+
+namespace detail {
+/**
+ * The arguments `src` contributes to a flattened declaration: `src` itself if it is an argument,
+ * and the arguments in it if it declares several, as a group and a parser do.
+ */
+template<typename Src>
+constexpr auto argument_tuple(const Src& src) {
+  if constexpr (AnyArgument<Src>) {
+    return Tuple<Src>{src};
+  } else {
+    return src.arguments();
+  }
+}
+
+/** The arguments of `args`, which are arguments and groups thereof, in one flat tuple. */
+template<typename... ArgsOrGroups>
+constexpr auto flatten_arguments(const ArgsOrGroups&... args) {
+  if constexpr (sizeof...(ArgsOrGroups) == 0) {
+    return Tuple<>{};
+  } else {
+    return star::to_tuple(star::joined(argument_tuple(args)...));
+  }
+}
+
+/** The tuple the declaration `ArgsOrGroups` flattens to. */
+template<typename... ArgsOrGroups>
+using FlattenedArguments = decltype(flatten_arguments(std::declval<const ArgsOrGroups&>()...));
+} // namespace detail
+
+template<AnyArgument... Args>
+struct ArgumentGroup<Tuple<Args...>> {
   using Arguments = Tuple<Args...>;
   static constexpr std::size_t argument_num = sizeof...(Args);
 
-  explicit constexpr ArgumentGroup(Args... args) : arguments_{std::move(args)...} {
+  template<typename... ArgsOrGroups>
+  explicit constexpr ArgumentGroup(const ArgsOrGroups&... args)
+      : arguments_{detail::flatten_arguments(args...)} {
     assert(detail::flags_are_unique(arguments_));
   }
 
@@ -86,21 +127,15 @@ struct ArgumentGroup {
   }
 
   /** The group with `arg` appended. */
-  template<typename Arg>
-  [[nodiscard]] constexpr ArgumentGroup<Args..., Arg> add(Arg arg) const {
-    return star::static_apply<argument_num>([&]<std::size_t... Is>() {
-      return ArgumentGroup<Args..., Arg>{star::get_at<Is>(arguments_)..., std::move(arg)};
-    });
+  template<AnyArgument Arg>
+  [[nodiscard]] constexpr auto add(const Arg& arg) const {
+    return appended(arg);
   }
 
   /** The group with the arguments of `groups` appended, in the order they are given in. */
-  template<typename First, typename... Rest>
-  [[nodiscard]] constexpr auto merge(const First& first, const Rest&... rest) const {
-    if constexpr (sizeof...(Rest) == 0) {
-      return merged(first);
-    } else {
-      return merged(first).merge(rest...);
-    }
+  template<typename... Groups>
+  [[nodiscard]] constexpr auto merge(const Groups&... groups) const {
+    return appended(groups...);
   }
 
   /**
@@ -124,23 +159,18 @@ struct ArgumentGroup {
 private:
   static_assert(detail::names_are_unique<Args...>, "The argument names must be unique!");
 
-  /** The group with the arguments of `other` appended. */
-  template<typename... Others>
-  [[nodiscard]] constexpr ArgumentGroup<Args..., Others...>
-  merged(const ArgumentGroup<Others...>& other) const {
-    return star::static_apply<argument_num>([&]<std::size_t... Is>() {
-      return star::static_apply<sizeof...(Others)>([&]<std::size_t... Js>() {
-        return ArgumentGroup<Args..., Others...>{star::get_at<Is>(arguments_)...,
-                                                 star::get_at<Js>(other.arguments())...};
-      });
-    });
+  /** The group with the arguments of `args`, which may be arguments or groups, appended. */
+  template<typename... ArgsOrGroups>
+  [[nodiscard]] constexpr auto appended(const ArgsOrGroups&... args) const {
+    using Result = ArgumentGroup<detail::FlattenedArguments<ArgumentGroup, ArgsOrGroups...>>;
+    return Result{*this, args...};
   }
 
   Arguments arguments_;
 };
 
-template<typename... Args>
-ArgumentGroup(Args...) -> ArgumentGroup<Args...>;
+template<typename... ArgsOrGroups>
+ArgumentGroup(ArgsOrGroups...) -> ArgumentGroup<detail::FlattenedArguments<ArgsOrGroups...>>;
 } // namespace thes::argparse
 
 #endif // INCLUDE_THESAUROS_ARGPARSE_GROUP_HPP

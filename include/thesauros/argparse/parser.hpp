@@ -103,10 +103,17 @@ struct ArgumentValues {
  *     const int count = values.get<"count">();
  *
  * The arguments need not be declared in one place: a function can return an `ArgumentGroup`
- * covering one concern, and `merge` puts several such contributions together into one parser.
+ * covering one concern, which the declaration may contain in place of the arguments in it, and
+ * `merge` puts several such contributions together into one parser.
+ *
+ * @tparam ArgTuple The `Tuple` of the arguments of the parser, which is what a declaration flattens
+ * to and thus need not be spelled out: `ArgumentParser{…}` deduces it.
  */
-template<typename... Args>
-struct ArgumentParser {
+template<typename ArgTuple>
+struct ArgumentParser;
+
+template<AnyArgument... Args>
+struct ArgumentParser<Tuple<Args...>> {
   using Values = ArgumentValues<Args...>;
   using Arguments = Tuple<Args...>;
 
@@ -114,8 +121,9 @@ struct ArgumentParser {
   /** The index standing for “no such argument”. */
   static constexpr std::size_t no_index = argument_num;
 
-  explicit constexpr ArgumentParser(ProgramInfo program_info, Args... args)
-      : info_{program_info}, arguments_{std::move(args)...} {
+  template<typename... ArgsOrGroups>
+  explicit constexpr ArgumentParser(ProgramInfo program_info, const ArgsOrGroups&... args)
+      : info_{program_info}, arguments_{detail::flatten_arguments(args...)} {
     assert(detail::flags_are_unique(arguments_));
     assert(unbounded_is_last());
   }
@@ -161,25 +169,18 @@ struct ArgumentParser {
   }
 
   /** A parser with `arg` appended to its arguments. */
-  template<typename Arg>
-  [[nodiscard]] constexpr ArgumentParser<Args..., Arg> add(Arg arg) const {
-    return star::static_apply<argument_num>([&]<std::size_t... Is>() {
-      return ArgumentParser<Args..., Arg>{info_, star::get_at<Is>(arguments_)..., std::move(arg)}
-        .styled(style_);
-    });
+  template<AnyArgument Arg>
+  [[nodiscard]] constexpr auto add(const Arg& arg) const {
+    return appended(arg);
   }
 
   /**
    * A parser with the arguments of `groups` appended, in the order they are given in, which is how
    * the contributions of several functions are put together.
    */
-  template<typename First, typename... Rest>
-  [[nodiscard]] constexpr auto merge(const First& first, const Rest&... rest) const {
-    if constexpr (sizeof...(Rest) == 0) {
-      return merged(first);
-    } else {
-      return merged(first).merge(rest...);
-    }
+  template<typename... Groups>
+  [[nodiscard]] constexpr auto merge(const Groups&... groups) const {
+    return appended(groups...);
   }
 
   //------------------------------------------------------------------------------------------------
@@ -387,17 +388,11 @@ private:
 
   static_assert(detail::names_are_unique<Args...>, "The argument names must be unique!");
 
-  /** The parser with the arguments of `group` appended. */
-  template<typename... Others>
-  [[nodiscard]] constexpr ArgumentParser<Args..., Others...>
-  merged(const ArgumentGroup<Others...>& group) const {
-    return star::static_apply<argument_num>([&]<std::size_t... Is>() {
-      return star::static_apply<sizeof...(Others)>([&]<std::size_t... Js>() {
-        return ArgumentParser<Args..., Others...>{info_, star::get_at<Is>(arguments_)...,
-                                                  star::get_at<Js>(group.arguments())...}
-          .styled(style_);
-      });
-    });
+  /** The parser with the arguments of `args`, which may be arguments or groups, appended. */
+  template<typename... ArgsOrGroups>
+  [[nodiscard]] constexpr auto appended(const ArgsOrGroups&... args) const {
+    using Result = ArgumentParser<detail::FlattenedArguments<ArgumentParser, ArgsOrGroups...>>;
+    return Result{info_, *this, args...}.styled(style_);
   }
 
   /** Whether `token` introduces one or more named arguments rather than being a value. */
@@ -754,7 +749,7 @@ private:
 };
 
 template<typename... Args>
-ArgumentParser(ProgramInfo, Args...) -> ArgumentParser<Args...>;
+ArgumentParser(ProgramInfo, Args...) -> ArgumentParser<detail::FlattenedArguments<Args...>>;
 } // namespace thes::argparse
 
 #endif // INCLUDE_THESAUROS_ARGPARSE_PARSER_HPP
