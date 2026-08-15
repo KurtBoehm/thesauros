@@ -344,6 +344,51 @@ THES_TEST_CASE("A bounded count admits a range of sizes", "[argparse][parse]") {
   THES_CHECK(!ranged.parse(std::array{"1", "2", "3", "4", "5"}).has_value());
 }
 
+// Every list keeps a range of its own, so a bounded one may be followed by another.
+inline constexpr ap::ArgumentParser boxing{
+  ap::ProgramInfo{.name = "box"},
+  ap::list<"corner">().exactly(2).help("The x and y of the corner"),
+  ap::list<"size">().between(1, 3).required().help("One to three extents"),
+};
+
+THES_TEST_CASE("Several lists collect side by side", "[argparse][parse]") {
+  constexpr std::array tokens{"1", "2", "3"};
+  const auto result = boxing.parse(tokens);
+  THES_REQUIRE(result.has_value());
+  THES_REQUIRE(result->get<"corner">().size() == 2);
+  THES_CHECK(std::string_view{result->get<"corner">()[0]} == "1");
+  THES_CHECK(std::string_view{result->get<"corner">()[1]} == "2");
+  THES_REQUIRE(result->get<"size">().size() == 1);
+  THES_CHECK(std::string_view{result->get<"size">()[0]} == "3");
+}
+
+THES_TEST_CASE("Each list is measured against its own bounds", "[argparse][parse]") {
+  // The first list is short, which the second one having values of its own does not make up for.
+  const auto few = boxing.parse(std::array{"1", "2"});
+  THES_REQUIRE(!few.has_value());
+  THES_CHECK(few.error().kind == ap::ParseErrorKind::missing_argument);
+  THES_CHECK(few.error().argument == "SIZE");
+
+  // The second list stops at its upper bound rather than swallowing what follows.
+  const auto many = boxing.parse(std::array{"1", "2", "3", "4", "5", "6"});
+  THES_REQUIRE(!many.has_value());
+  THES_CHECK(many.error().kind == ap::ParseErrorKind::excess_positional);
+}
+
+THES_TEST_CASE("A list split by a named argument is reported per list", "[argparse][parse]") {
+  constexpr ap::ArgumentParser splitting{
+    ap::ProgramInfo{.name = "split"},
+    ap::flag<"verbose">("-v"),
+    ap::list<"first">().exactly(2),
+    ap::list<"second">().between(1, 2),
+  };
+  // The first list is closed by its bound before the flag, so only the second one is split.
+  const auto result = splitting.parse(std::array{"1", "2", "3", "-v", "4"});
+  THES_REQUIRE(!result.has_value());
+  THES_CHECK(result.error().kind == ap::ParseErrorKind::split_values);
+  THES_CHECK(result.error().argument == "SECOND");
+}
+
 THES_TEST_CASE("A bounded list is neither bracketed nor silent", "[argparse][parse]") {
   const std::string help = capture_help(cropping);
   THES_CHECK(help.find("Usage: crop [-h] [-v] CORNER... OUTPUT") != std::string::npos);

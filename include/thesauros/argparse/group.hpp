@@ -11,6 +11,7 @@
 #include <cassert>
 #include <cstddef>
 #include <string_view>
+#include <type_traits>
 #include <utility>
 
 #include "thesauros/argparse/argument.hpp"
@@ -22,6 +23,28 @@
 
 namespace thes::argparse {
 namespace detail {
+/** A trait that detects the tuple of arguments a declaration flattens to. */
+template<typename T>
+struct IsArgumentTupleTrait : std::false_type {};
+template<AnyArgument... Args>
+struct IsArgumentTupleTrait<Tuple<Args...>> : std::true_type {};
+} // namespace detail
+
+/** Whether `T` is a `Tuple` of arguments, which is what a declaration flattens to. */
+template<typename T>
+concept AnyArgumentTuple = detail::IsArgumentTupleTrait<std::remove_cvref_t<T>>::value;
+
+/**
+ * Whether `T` may appear in a declaration: an argument, or anything declaring a sequence of them,
+ * which is what an `ArgumentGroup` and an `ArgumentParser` are. The latter contributes the
+ * arguments it declares rather than itself, so that declarations nest.
+ */
+template<typename T>
+concept AnyArgumentSource = AnyArgument<T> || requires(const T& src) {
+  { src.arguments() } -> AnyArgumentTuple;
+};
+
+namespace detail {
 /** Whether the compile-time names of `Args...` are pairwise different. */
 template<typename... Args>
 inline constexpr bool names_are_unique = [] {
@@ -32,6 +55,28 @@ inline constexpr bool names_are_unique = [] {
         return false;
       }
     }
+  }
+  return true;
+}();
+
+/**
+ * Whether no positional argument of `Args...` follows a remainder, which would never be reached
+ * since a remainder collects every token that gets to it; this also limits a declaration to one
+ * remainder. Unlike the same question for a list, this follows from the types alone.
+ */
+template<typename... Args>
+inline constexpr bool remainder_is_last = [] {
+  const std::array<bool, sizeof...(Args)> named{Args::is_named...};
+  const std::array<bool, sizeof...(Args)> remainders{(Args::kind == ArgumentKind::remainder)...};
+  bool ended = false;
+  for (std::size_t i = 0; i < sizeof...(Args); ++i) {
+    if (named[i]) {
+      continue;
+    }
+    if (ended) {
+      return false;
+    }
+    ended = remainders[i];
   }
   return true;
 }();
@@ -87,7 +132,7 @@ namespace detail {
  * The arguments `src` contributes to a flattened declaration: `src` itself if it is an argument,
  * and the arguments in it if it declares several, as a group and a parser do.
  */
-template<typename Src>
+template<AnyArgumentSource Src>
 constexpr auto argument_tuple(const Src& src) {
   if constexpr (AnyArgument<Src>) {
     return Tuple<Src>{src};
@@ -97,7 +142,7 @@ constexpr auto argument_tuple(const Src& src) {
 }
 
 /** The arguments of `args`, which are arguments and groups thereof, in one flat tuple. */
-template<typename... ArgsOrGroups>
+template<AnyArgumentSource... ArgsOrGroups>
 constexpr auto flatten_arguments(const ArgsOrGroups&... args) {
   if constexpr (sizeof...(ArgsOrGroups) == 0) {
     return Tuple<>{};
@@ -107,7 +152,7 @@ constexpr auto flatten_arguments(const ArgsOrGroups&... args) {
 }
 
 /** The tuple the declaration `ArgsOrGroups` flattens to. */
-template<typename... ArgsOrGroups>
+template<AnyArgumentSource... ArgsOrGroups>
 using FlattenedArguments = decltype(flatten_arguments(std::declval<const ArgsOrGroups&>()...));
 } // namespace detail
 
@@ -116,7 +161,7 @@ struct ArgumentGroup<Tuple<Args...>> {
   using Arguments = Tuple<Args...>;
   static constexpr std::size_t argument_num = sizeof...(Args);
 
-  template<typename... ArgsOrGroups>
+  template<AnyArgumentSource... ArgsOrGroups>
   explicit constexpr ArgumentGroup(const ArgsOrGroups&... args)
       : arguments_{detail::flatten_arguments(args...)} {
     assert(detail::flags_are_unique(arguments_));
@@ -133,7 +178,7 @@ struct ArgumentGroup<Tuple<Args...>> {
   }
 
   /** The group with the arguments of `groups` appended, in the order they are given in. */
-  template<typename... Groups>
+  template<AnyArgumentSource... Groups>
   [[nodiscard]] constexpr auto merge(const Groups&... groups) const {
     return appended(groups...);
   }
@@ -158,9 +203,11 @@ struct ArgumentGroup<Tuple<Args...>> {
 
 private:
   static_assert(detail::names_are_unique<Args...>, "The argument names must be unique!");
+  static_assert(detail::remainder_is_last<Args...>,
+                "No positional argument may follow a remainder!");
 
   /** The group with the arguments of `args`, which may be arguments or groups, appended. */
-  template<typename... ArgsOrGroups>
+  template<AnyArgumentSource... ArgsOrGroups>
   [[nodiscard]] constexpr auto appended(const ArgsOrGroups&... args) const {
     using Result = ArgumentGroup<detail::FlattenedArguments<ArgumentGroup, ArgsOrGroups...>>;
     return Result{*this, args...};
@@ -169,7 +216,7 @@ private:
   Arguments arguments_;
 };
 
-template<typename... ArgsOrGroups>
+template<AnyArgumentSource... ArgsOrGroups>
 ArgumentGroup(ArgsOrGroups...) -> ArgumentGroup<detail::FlattenedArguments<ArgsOrGroups...>>;
 } // namespace thes::argparse
 

@@ -121,7 +121,7 @@ struct ArgumentParser<Tuple<Args...>> {
   /** The index standing for “no such argument”. */
   static constexpr std::size_t no_index = argument_num;
 
-  template<typename... ArgsOrGroups>
+  template<AnyArgumentSource... ArgsOrGroups>
   explicit constexpr ArgumentParser(ProgramInfo program_info, const ArgsOrGroups&... args)
       : info_{program_info}, arguments_{detail::flatten_arguments(args...)} {
     assert(detail::flags_are_unique(arguments_));
@@ -178,7 +178,7 @@ struct ArgumentParser<Tuple<Args...>> {
    * A parser with the arguments of `groups` appended, in the order they are given in, which is how
    * the contributions of several functions are put together.
    */
-  template<typename... Groups>
+  template<AnyArgumentSource... Groups>
   [[nodiscard]] constexpr auto merge(const Groups&... groups) const {
     return appended(groups...);
   }
@@ -192,7 +192,7 @@ struct ArgumentParser<Tuple<Args...>> {
     Values values{};
     std::array<bool, argument_num> seen{};
     std::size_t positional_index = 0;
-    Collected collected{};
+    CollectedRanges collected{};
     bool named_ended = false;
 
     for (std::size_t i = 0; i < tokens.size(); ++i) {
@@ -387,9 +387,11 @@ private:
   }();
 
   static_assert(detail::names_are_unique<Args...>, "The argument names must be unique!");
+  static_assert(detail::remainder_is_last<Args...>,
+                "No positional argument may follow a remainder!");
 
   /** The parser with the arguments of `args`, which may be arguments or groups, appended. */
-  template<typename... ArgsOrGroups>
+  template<AnyArgumentSource... ArgsOrGroups>
   [[nodiscard]] constexpr auto appended(const ArgsOrGroups&... args) const {
     using Result = ArgumentParser<detail::FlattenedArguments<ArgumentParser, ArgsOrGroups...>>;
     return Result{info_, *this, args...}.styled(style_);
@@ -417,6 +419,8 @@ private:
     std::size_t begin{};
     std::size_t end{};
   };
+  /** The range every list has collected so far, by the index of the argument that collects it. */
+  using CollectedRanges = std::array<Collected, argument_num>;
 
   /** Invokes `op` with the argument whose compile-time index matches the run-time index `index`. */
   template<typename Op>
@@ -644,12 +648,12 @@ private:
   constexpr std::optional<ParseError> parse_positional(std::string_view token, TokenSpan tokens,
                                                        std::size_t& token_index,
                                                        std::size_t& positional_index,
-                                                       Collected& collected, Values& values,
+                                                       CollectedRanges& collected, Values& values,
                                                        std::array<bool, argument_num>& seen) const {
     if (positional_index < positional_num) {
       const std::size_t current = positional_indices[positional_index];
-      if (list_mask[current] && seen[current] &&
-          collected.end - collected.begin >= most_num_at(current)) {
+      const Collected& range = collected[current];
+      if (list_mask[current] && seen[current] && range.end - range.begin >= most_num_at(current)) {
         ++positional_index;
       }
     }
@@ -672,16 +676,17 @@ private:
         slot = tokens.subspan(first);
         return std::optional<ParseError>{};
       } else if constexpr (Arg::kind == ArgumentKind::list) {
+        Collected& range = collected[I];
         if (!seen[I]) {
-          collected.begin = first;
-        } else if (first != collected.end) {
+          range.begin = first;
+        } else if (first != range.end) {
           // The run has already been closed by a named argument in between, and a sub-span
           // cannot leave that one out again.
           return std::optional{ParseError{ParseErrorKind::split_values, arg.display_name(), token}};
         }
-        collected.end = first + 1;
+        range.end = first + 1;
         seen[I] = true;
-        slot = tokens.subspan(collected.begin, collected.end - collected.begin);
+        slot = tokens.subspan(range.begin, range.end - range.begin);
         return std::optional<ParseError>{};
       } else if constexpr (Arg::kind == ArgumentKind::positional) {
         seen[I] = true;
@@ -707,7 +712,7 @@ private:
   }
 
   /** Fills in the defaults of the arguments that were not given and reports the missing ones. */
-  constexpr std::optional<ParseError> complete(const Collected& collected, Values& values,
+  constexpr std::optional<ParseError> complete(const CollectedRanges& collected, Values& values,
                                                const std::array<bool, argument_num>& seen) const {
     const auto finish = [&]<std::size_t I>(IndexTag<I> /*tag*/) {
       using Arg = std::decay_t<decltype(star::get_at<I>(arguments_))>;
@@ -716,7 +721,7 @@ private:
       if constexpr (Arg::kind == ArgumentKind::list) {
         // Being required is the same as having to collect at least one value, so the two bounds
         // are one and the same question.
-        const std::size_t got = seen[I] ? collected.end - collected.begin : 0;
+        const std::size_t got = seen[I] ? collected[I].end - collected[I].begin : 0;
         const std::size_t least =
           std::max(arg.least_num, std::size_t{Arg::presence == Presence::required ? 1 : 0});
         if (got < least) {
@@ -748,8 +753,9 @@ private:
   HelpStyle style_{};
 };
 
-template<typename... Args>
-ArgumentParser(ProgramInfo, Args...) -> ArgumentParser<detail::FlattenedArguments<Args...>>;
+template<AnyArgumentSource... ArgsOrGroups>
+ArgumentParser(ProgramInfo, ArgsOrGroups...)
+  -> ArgumentParser<detail::FlattenedArguments<ArgsOrGroups...>>;
 } // namespace thes::argparse
 
 #endif // INCLUDE_THESAUROS_ARGPARSE_PARSER_HPP
