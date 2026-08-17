@@ -284,6 +284,8 @@ inline std::vector<PerfLevel> read_perflevels() {
       level.eff_class = perf_class;
     } else if (level.name == "Efficiency") {
       level.eff_class = EfficiencyClass::efficiency;
+    } else if (level.name == "Standard") {
+      level.eff_class = EfficiencyClass::any;
     } else {
       throw std::runtime_error{"Unsupported efficiency class " + level.name};
     }
