@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <limits>
 #include <new>
+#include <type_traits>
 
 #include "thesauros/macropolis/platform.hpp"
 
@@ -22,7 +23,13 @@ namespace thes {
 template<typename T>
 struct HugePagesAllocator {
   static constexpr std::size_t huge_page_size = 1U << 21U; // 2 MiB
+
   using value_type = T;
+  /**
+   * The equivalent of `std::allocator_traits<HugePagesAllocator>::size_type` without this
+   * definition. Required for DUNE compatibility.
+   */
+  using size_type = std::make_unsigned_t<std::ptrdiff_t>;
 
   HugePagesAllocator() = default;
 
