@@ -16,6 +16,7 @@
 
 #include "thesauros/types/type-sequence/operations.hpp"
 #include "thesauros/types/type-sequence/type-sequence.hpp"
+#include "thesauros/types/type-tag.hpp"
 #include "thesauros/utility/unwrap.hpp"
 
 namespace thes {
@@ -160,7 +161,7 @@ struct FancyVisitor {
       [&]<typename... Args>(Args&&... args) -> Return {
         if constexpr (RemoveIgnored && ignore<Maker, Args...>) {
           call(maker, std::forward<Visitor>(visitor), std::forward<Args>(args)...);
-          throw std::invalid_argument("The visitor failed!");
+          throw std::invalid_argument{"The visitor failed!"};
         } else {
           return call(maker, std::forward<Visitor>(visitor), std::forward<Args>(args)...);
         }

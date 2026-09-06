@@ -29,7 +29,7 @@ struct InfoResult {
   }
   [[nodiscard]] constexpr V valid_value() const {
     if (!is_valid()) {
-      throw std::runtime_error("The value is invalid!");
+      throw std::runtime_error{"The value is invalid!"};
     }
     return value_;
   }

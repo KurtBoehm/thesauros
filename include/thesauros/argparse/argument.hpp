@@ -207,7 +207,7 @@ struct Argument {
   }
 
   //------------------------------------------------------------------------------------------------
-  // Public member variables so `Argument` remains structural
+  // Public member variables
   //------------------------------------------------------------------------------------------------
 
   std::string_view short_name{};

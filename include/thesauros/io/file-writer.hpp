@@ -27,7 +27,7 @@ struct FileWriter {
   explicit FileWriter(std::filesystem::path path)
       : path_(std::move(path)), handle_(std::fopen(path_string(path_).c_str(), "wb+")) {
     if (handle_ == nullptr) {
-      throw FileException(cat("fopen failed: ", errno));
+      throw FileException{cat("fopen failed: ", errno)};
     }
   }
   ~FileWriter() {
@@ -45,7 +45,7 @@ struct FileWriter {
   void write(std::span<T> span) {
     const auto written = std::fwrite(span.data(), sizeof(T), span.size(), handle_);
     if (written != span.size()) {
-      throw FileException(cat("fwrite failed: ", written, " != ", span.size()));
+      throw FileException{cat("fwrite failed: ", written, " != ", span.size())};
     }
   }
   template<typename T>
@@ -56,14 +56,14 @@ struct FileWriter {
   void seek(long offset, Seek whence) {
     const auto ret = std::fseek(handle_, offset, static_cast<int>(whence));
     if (ret != 0) {
-      throw FileException(cat("fseek failed: ", ret));
+      throw FileException{cat("fseek failed: ", ret)};
     }
   }
 
   [[nodiscard]] long tell() {
     const auto ret = std::ftell(handle_);
     if (ret == -1) {
-      throw FileException(cat("ftell failed: ", errno));
+      throw FileException{cat("ftell failed: ", errno)};
     }
     return ret;
   }

@@ -48,7 +48,7 @@ struct SerialValueTrait<T> {
       if constexpr (sizeof...(tail) > 0) {
         return rec(rec, tail...);
       } else {
-        throw std::invalid_argument("Unsupported value!");
+        throw std::invalid_argument{"Unsupported value!"};
       }
     };
     return EnumInfo<T>::values |

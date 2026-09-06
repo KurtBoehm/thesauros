@@ -8,12 +8,10 @@
 #define INCLUDE_THESAUROS_CONTAINERS_ARRAY_CONSTRUCTION_HPP
 
 namespace thes {
-struct CopyConstruct {};
-struct MoveConstruct {};
+/** A tag marking an operation that does not initialize the underlying memory. */
 struct UninitializedConstruct {};
 
-inline constexpr CopyConstruct copy_construct{};
-inline constexpr MoveConstruct move_construct{};
+/** A `constexpr` instance of `UninitializedConstruct`. */
 inline constexpr UninitializedConstruct uninitialized_construct{};
 } // namespace thes
 

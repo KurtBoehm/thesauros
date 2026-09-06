@@ -69,7 +69,7 @@ inline auto escape_string(std::basic_string_view<C> in, auto out_it) {
         break;
       }
       case rejected: {
-        throw std::invalid_argument("Found an invalid UTF-8 codepoint!");
+        throw std::invalid_argument{"Found an invalid UTF-8 codepoint!"};
       }
       default: {
         extend(c);
@@ -79,7 +79,7 @@ inline auto escape_string(std::basic_string_view<C> in, auto out_it) {
   }
 
   if (decoder.state() != accepted) {
-    throw std::invalid_argument("The string ends with an incomplete codepoint!");
+    throw std::invalid_argument{"The string ends with an incomplete codepoint!"};
   }
 
   return out_it;
