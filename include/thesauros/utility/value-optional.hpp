@@ -100,7 +100,7 @@ struct ValueOptional {
   }
 
   /** Return whether a value is present; equivalent to `has_value`, matching `std::optional`. */
-  [[nodiscard]] constexpr explicit operator bool() const {
+  [[nodiscard]] explicit constexpr operator bool() const {
     return has_value();
   }
 

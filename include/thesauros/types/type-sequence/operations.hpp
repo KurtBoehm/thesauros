@@ -8,11 +8,13 @@
 #define INCLUDE_THESAUROS_TYPES_TYPE_SEQUENCE_OPERATIONS_HPP
 
 #include <cstddef>
+#include <optional>
 #include <type_traits>
 #include <utility>
 
 #include "thesauros/static-ranges/definitions/size.hpp"
 #include "thesauros/types/type-sequence/type-sequence.hpp"
+#include "thesauros/types/type-tag.hpp"
 
 namespace thes {
 //==================================================================================================
@@ -404,6 +406,24 @@ struct UniqueTypeSeqTrait<TypeSeq<T, Ts...>> {
 
 template<AnyTypeSeq Seq>
 using UniqueTypeSeq = UniqueTypeSeqTrait<Seq>::Type;
+
+//==================================================================================================
+// Index of first match
+//==================================================================================================
+
+template<typename... T>
+constexpr std::optional<std::size_t> find_if(thes::TypeSeq<T...> /*seq*/, auto predicate) {
+  std::optional<std::size_t> ret{};
+  auto f = [predicate, &ret]<typename C>(std::size_t i, thes::TypeTag<C> /*type*/) {
+    if (predicate.template operator()<C>() && !ret.has_value()) {
+      ret = i;
+    }
+  };
+  [f]<std::size_t... I>(std::index_sequence<I...> /*seq*/) {
+    (..., f(I, thes::type_tag<T>));
+  }(std::index_sequence_for<T...>{});
+  return ret;
+}
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_TYPES_TYPE_SEQUENCE_OPERATIONS_HPP
