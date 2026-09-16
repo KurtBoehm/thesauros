@@ -111,7 +111,7 @@ constexpr auto dims_to_divs(std::array<T, N> dims) {
   return dims | star::transform([](auto dim) { return Divisor<T>{dim}; }) | star::to_array;
 }
 
-template<typename Derived, typename IdxMan, std::size_t DimN>
+template<typename IdxMan, std::size_t DimN>
 struct BasePosIndexWrapper {
   static constexpr std::size_t dimension_num = DimN;
   using IndexManager = IdxMan;
@@ -127,64 +127,73 @@ struct BasePosIndexWrapper {
   constexpr BasePosIndexWrapper(IndexManager idx_man, SizeArr pos, SizeArr dims, DivArr divs)
       : dims_(dims), divs_(divs), pos_(pos), idx_man_(idx_man) {}
 
-  constexpr Derived& operator++() {
-    idx_man_.incr();
+  template<typename Self>
+  constexpr Self&& operator++(this Self&& self) {
+    self.idx_man_.incr();
 
-    ++std::get<dimension_num - 1>(pos_);
+    ++std::get<dimension_num - 1>(self.pos_);
     star::tagged_iota<1, dimension_num> | star::reversed | star::for_each([&](auto idx) {
-      const auto pos_idx = std::get<idx>(pos_);
+      const auto pos_idx = std::get<idx>(self.pos_);
 
-      const bool over = pos_idx == std::get<idx>(dims_);
-      std::get<idx>(pos_) = over ? 0 : pos_idx;
-      std::get<idx - 1>(pos_) += PosSize{over};
+      const bool over = pos_idx == std::get<idx>(self.dims_);
+      std::get<idx>(self.pos_) = over ? 0 : pos_idx;
+      std::get<idx - 1>(self.pos_) += PosSize{over};
     });
-    assert(idx_man_.pos_index() <= (dims_ | star::left_reduce(std::multiplies{})));
-    assert(star::index_to_position(idx_man_.pos_index(), divs_) == pos_);
+    assert(self.idx_man_.pos_index() <= (self.dims_ | star::left_reduce(std::multiplies{})));
+    assert(star::index_to_position(self.idx_man_.pos_index(), self.divs_) == self.pos_);
 
-    return der();
+    return std::forward<Self>(self);
   }
-  constexpr Derived& operator--() {
-    idx_man_.decr();
+  template<typename Self>
+  constexpr Self&& operator--(this Self&& self) {
+    self.idx_man_.decr();
 
-    --std::get<dimension_num - 1>(pos_);
+    --std::get<dimension_num - 1>(self.pos_);
     star::tagged_iota<1, dimension_num> | star::reversed | star::for_each([&](auto idx) {
-      const auto pos_idx = std::get<idx>(pos_);
-      const auto dim_idx = std::get<idx>(dims_);
+      const auto pos_idx = std::get<idx>(self.pos_);
+      const auto dim_idx = std::get<idx>(self.dims_);
 
       const bool under = pos_idx == PosSize(-1);
-      std::get<idx>(pos_) = under ? (dim_idx - 1) : pos_idx;
-      std::get<idx - 1>(pos_) -= PosSize{under};
+      std::get<idx>(self.pos_) = under ? (dim_idx - 1) : pos_idx;
+      std::get<idx - 1>(self.pos_) -= PosSize{under};
     });
-    assert(std::get<0>(pos_) < std::get<0>(dims_));
-    assert(star::index_to_position(idx_man_.pos_index(), divs_) == pos_);
+    assert(std::get<0>(self.pos_) < std::get<0>(self.dims_));
+    assert(star::index_to_position(self.idx_man_.pos_index(), self.divs_) == self.pos_);
 
-    return der();
+    return std::forward<Self>(self);
   }
 
-  constexpr Derived& operator+=(IdxSize off) {
-    idx_man_.add(off);
-    pos_ = star::index_to_position(idx_man_.pos_index(), divs_);
-    return der();
+  template<typename Self>
+  constexpr Self&& operator+=(this Self&& self, IdxSize off) {
+    self.idx_man_.add(off);
+    self.pos_ = star::index_to_position(self.idx_man_.pos_index(), self.divs_);
+    return std::forward<Self>(self);
   }
-  friend constexpr Derived operator+(Derived w, IdxSize off) {
+  template<std::derived_from<BasePosIndexWrapper> Self>
+  friend constexpr Self operator+(Self w, IdxSize off) {
     return w += off;
   }
-  friend constexpr Derived operator+(IdxSize off, Derived w) {
+  template<std::derived_from<BasePosIndexWrapper> Self>
+  friend constexpr Self operator+(IdxSize off, Self w) {
     return w += off;
   }
-  constexpr Derived& operator-=(IdxSize off) {
-    idx_man_.sub(off);
-    pos_ = star::index_to_position(idx_man_.pos_index(), divs_);
-    return der();
+  template<typename Self>
+  constexpr Self&& operator-=(this Self&& self, IdxSize off) {
+    self.idx_man_.sub(off);
+    self.pos_ = star::index_to_position(self.idx_man_.pos_index(), self.divs_);
+    return std::forward<Self>(self);
   }
-  friend constexpr Derived operator-(Derived w, IdxSize off) {
+  template<std::derived_from<BasePosIndexWrapper> Self>
+  friend constexpr Self operator-(Self w, IdxSize off) {
     return w -= off;
   }
-  friend constexpr Derived operator-(IdxSize off, Derived w) {
+  template<std::derived_from<BasePosIndexWrapper> Self>
+  friend constexpr Self operator-(IdxSize off, Self w) {
     return w -= off;
   }
 
-  friend constexpr Diff operator-(const Derived& w1, const Derived& w2) {
+  template<std::derived_from<BasePosIndexWrapper> Self>
+  friend constexpr Diff operator-(const Self& w1, const Self& w2) {
     assert(w1.dims_ == w2.dims_);
     assert((w1.idx_man_ == w2.idx_man_) == (w1.pos_ == w2.pos_));
     return *safe_cast<Diff>(w1.index()) - *safe_cast<Diff>(w2.index());
@@ -197,29 +206,29 @@ struct BasePosIndexWrapper {
     return pos_;
   }
 
-  constexpr friend bool operator==(const Derived& w1, const Derived& w2) {
+  template<std::derived_from<BasePosIndexWrapper> Self>
+  constexpr friend bool operator==(const Self& w1, const Self& w2) {
     assert(w1.dims_ == w2.dims_);
     assert((w1.idx_man_ == w2.idx_man_) == (w1.pos_ == w2.pos_));
     return w1.index() == w2.index();
   }
-  constexpr friend bool operator==(const Derived& w, IdxSize s) {
+  template<std::derived_from<BasePosIndexWrapper> Self>
+  constexpr friend bool operator==(const Self& w, IdxSize s) {
     return w.index() == s;
   }
-  constexpr friend bool operator==(IdxSize s, const Derived& w) {
+  template<std::derived_from<BasePosIndexWrapper> Self>
+  constexpr friend bool operator==(IdxSize s, const Self& w) {
     return w.index() == s;
   }
 
-  constexpr friend std::strong_ordering operator<=>(const Derived& w1, const Derived& w2) {
+  template<std::derived_from<BasePosIndexWrapper> Self>
+  constexpr friend std::strong_ordering operator<=>(const Self& w1, const Self& w2) {
     assert(w1.dims_ == w2.dims_);
     assert((w1.idx_man_ == w2.idx_man_) == (w1.pos_ == w2.pos_));
     return w1.index() <=> w2.index();
   }
 
 private:
-  constexpr Derived& der() {
-    return static_cast<Derived&>(*this);
-  }
-
   SizeArr dims_;
   DivArr divs_ = dims_to_divs(dims_);
   SizeArr pos_;
@@ -228,10 +237,9 @@ private:
 } // namespace detail
 
 template<std::unsigned_integral S, std::size_t DimN>
-struct PosIndexWrapper : public detail::BasePosIndexWrapper<PosIndexWrapper<S, DimN>,
-                                                            detail::SingleIndexManager<S>, DimN> {
+struct PosIndexWrapper : public detail::BasePosIndexWrapper<detail::SingleIndexManager<S>, DimN> {
   using IdxMan = detail::SingleIndexManager<S>;
-  using Base = detail::BasePosIndexWrapper<PosIndexWrapper, IdxMan, DimN>;
+  using Base = detail::BasePosIndexWrapper<IdxMan, DimN>;
   using SizeArr = std::array<S, DimN>;
 
   constexpr PosIndexWrapper(S idx, SizeArr pos, SizeArr dims) : Base(IdxMan{idx}, pos, dims) {}
@@ -248,10 +256,9 @@ private:
 
 template<std::unsigned_integral IdxS, std::unsigned_integral PosS, std::size_t DimN>
 struct DualPosIndexWrapper
-    : public detail::BasePosIndexWrapper<DualPosIndexWrapper<IdxS, PosS, DimN>,
-                                         detail::DualIndexManager<IdxS, PosS>, DimN> {
+    : public detail::BasePosIndexWrapper<detail::DualIndexManager<IdxS, PosS>, DimN> {
   using IdxMan = detail::DualIndexManager<IdxS, PosS>;
-  using Base = detail::BasePosIndexWrapper<DualPosIndexWrapper, IdxMan, DimN>;
+  using Base = detail::BasePosIndexWrapper<IdxMan, DimN>;
   using SizeArr = std::array<PosS, DimN>;
 
   constexpr DualPosIndexWrapper(IdxS idx, PosS pos_idx, SizeArr pos, SizeArr dims)

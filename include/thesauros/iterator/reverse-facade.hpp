@@ -14,11 +14,12 @@
 
 namespace thes {
 /**
- * A CRTP mixin that reverses a `Base` iterator. `Derived` exposes the wrapped `Base` instance via
- * `base()`/`base() const`, and `ReverseFacade` derives the reversed primitives from `Base`’s own
- * primitives by swapping `incr`/`decr`, negating `iadd`/`isub` and flipping the comparisons.
+ * A CRTP-style base class that reverses an underlying iterator. The derived class exposes the
+ * wrapped iterator via `base()`, and `ReverseFacade` derives the reversed primitives from the
+ * underlying iterator’s primitives by swapping `incr`/`decr`, negating `iadd`/`isub`, and flipping
+ * the comparisons via deducing `this`.
  *
- * `Base` may provide `rev_deref()` as a cheaper alternative to decrementing a copy before
+ * The derived type may provide `rev_deref()` as a cheaper alternative to decrementing a copy before
  * dereferencing, mirroring `std::reverse_iterator`’s behavior.
  */
 template<typename IterTypes>
@@ -76,14 +77,14 @@ private:
   {
     return self.base() == other.base();
   }
-  template<typename Derived>
-  constexpr std::strong_ordering three_way(this const Derived& self, const Derived& other)
+  template<typename Self>
+  constexpr std::strong_ordering three_way(this const Self& self, const Self& other)
   requires(requires { other.base() <=> self.base(); })
   {
     return other.base() <=> self.base();
   }
-  template<typename Derived>
-  constexpr Diff sub(this const Derived& self, const Derived& other)
+  template<typename Self>
+  constexpr Diff sub(this const Self& self, const Self& other)
   requires(requires { other.base() - self.base(); })
   {
     return other.base() - self.base();

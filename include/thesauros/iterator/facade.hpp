@@ -74,8 +74,8 @@ struct VoidTypes {
 //==================================================================================================
 
 /**
- * A CRTP base that implements iterator operators in terms of primitive operations supplied by the
- * inheriting type using deduced `this`.
+ * A CRTP-style base that implements iterator operators in terms of primitive operations supplied by
+ * the inheriting type using deduced `this`.
  *
  * The inheriting type must be at least a forward iterator, i.e. it must provide:
  * - `deref() const -> convertible_to<reference>`
@@ -92,9 +92,6 @@ struct VoidTypes {
  * The following may optionally be provided to replace default implementations:
  * - `isub(difference_type)`, used for `operator-=`/`operator-`; defaults to `iadd(-n)`.
  * - `get_item(difference_type) const`, used for `operator[]`; defaults to `iadd` and `deref`.
- *
- * If the primitive operations above are not public, the inheriting type should declare
- * `IteratorFacade<IterTypes>` as a friend so the facade can call them.
  */
 template<typename IterTypes>
 struct IteratorFacade {
@@ -120,23 +117,23 @@ struct IteratorFacade {
   }
 
   /** Advances the iterator by one element. */
-  template<typename Derived>
-  constexpr Derived& operator++(this Derived& self) {
+  template<typename Self>
+  constexpr Self& operator++(this Self& self) {
     self.incr();
     return self;
   }
 
   /** Advances the iterator by one element and returns a copy of the original iterator. */
-  template<typename Derived>
-  constexpr Derived operator++(this Derived& self, int) {
-    Derived tmp{self};
+  template<typename Self>
+  constexpr Self operator++(this Self& self, int) {
+    Self tmp{self};
     self.incr();
     return tmp;
   }
 
   /** Compares two iterators for equality. */
-  template<typename Derived>
-  constexpr bool operator==(this const Derived& d1, const Derived& d2) {
+  template<typename Self>
+  constexpr bool operator==(this const Self& d1, const Self& d2) {
     return d1.eq(d2);
   }
 
@@ -152,8 +149,8 @@ struct IteratorFacade {
   //------------------------------------------------------------------------------------------------
 
   /** Moves the iterator back by one element. */
-  template<typename Derived>
-  constexpr Derived& operator--(this Derived& self)
+  template<typename Self>
+  constexpr Self& operator--(this Self& self)
   requires(requires { self.decr(); })
   {
     self.decr();
@@ -161,11 +158,11 @@ struct IteratorFacade {
   }
 
   /** Moves the iterator back by one element and returns a copy of the original iterator. */
-  template<typename Derived>
-  constexpr Derived operator--(this Derived& self, int)
+  template<typename Self>
+  constexpr Self operator--(this Self& self, int)
   requires(requires { self.decr(); })
   {
-    Derived tmp{self};
+    Self tmp{self};
     self.decr();
     return tmp;
   }
@@ -175,8 +172,8 @@ struct IteratorFacade {
   //------------------------------------------------------------------------------------------------
 
   /** Advances the iterator by `n` elements. */
-  template<typename Derived>
-  constexpr Derived& operator+=(this Derived& self, difference_type n)
+  template<typename Self>
+  constexpr Self& operator+=(this Self& self, difference_type n)
   requires(requires { self.iadd(n); })
   {
     self.iadd(n);
@@ -184,26 +181,26 @@ struct IteratorFacade {
   }
 
   /** Returns an iterator advanced by `n` elements. */
-  template<std::derived_from<IteratorFacade> Derived>
-  friend constexpr Derived operator+(const Derived& self, difference_type n)
-  requires(requires(Derived tmp) { tmp.iadd(n); })
+  template<std::derived_from<IteratorFacade> Self>
+  friend constexpr Self operator+(const Self& self, difference_type n)
+  requires(requires(Self tmp) { tmp.iadd(n); })
   {
-    Derived tmp{self};
+    Self tmp{self};
     tmp.iadd(n);
     return tmp;
   }
 
   /** Returns an iterator advanced by `n` elements. */
-  template<std::derived_from<IteratorFacade> Derived>
-  friend constexpr Derived operator+(difference_type n, const Derived& self)
-  requires(requires(Derived tmp) { tmp.iadd(n); })
+  template<std::derived_from<IteratorFacade> Self>
+  friend constexpr Self operator+(difference_type n, const Self& self)
+  requires(requires(Self tmp) { tmp.iadd(n); })
   {
     return self + n;
   }
 
   /** Moves the iterator back by `n` elements. */
-  template<typename Derived>
-  constexpr Derived& operator-=(this Derived& self, difference_type n)
+  template<typename Self>
+  constexpr Self& operator-=(this Self& self, difference_type n)
   requires(requires { self.iadd(-n); })
   {
     if constexpr (requires { self.isub(n); }) {
@@ -215,11 +212,11 @@ struct IteratorFacade {
   }
 
   /** Returns an iterator moved back by `n` elements. */
-  template<typename Derived>
-  constexpr Derived operator-(this const Derived& self, difference_type n)
-  requires(requires(Derived tmp) { tmp.iadd(-n); })
+  template<typename Self>
+  constexpr Self operator-(this const Self& self, difference_type n)
+  requires(requires(Self tmp) { tmp.iadd(-n); })
   {
-    Derived tmp{self};
+    Self tmp{self};
     if constexpr (requires { tmp.isub(n); }) {
       tmp.isub(n);
     } else {
@@ -229,23 +226,23 @@ struct IteratorFacade {
   }
 
   /** Accesses the element `n` positions away from the iterator. */
-  template<typename Derived>
-  constexpr decltype(auto) operator[](this const Derived& self, difference_type n)
+  template<typename Self>
+  constexpr decltype(auto) operator[](this const Self& self, difference_type n)
   requires(
-    requires { self.get_item(n); } || requires(Derived tmp) { tmp.iadd(n); })
+    requires { self.get_item(n); } || requires(Self tmp) { tmp.iadd(n); })
   {
     if constexpr (requires { self.get_item(n); }) {
       return self.get_item(n);
     } else {
-      Derived tmp{self};
+      Self tmp{self};
       tmp.iadd(n);
       return *tmp;
     }
   }
 
   /** Computes the distance between two iterators. */
-  template<typename Derived>
-  constexpr difference_type operator-(this const Derived& d1, const Derived& d2)
+  template<typename Self>
+  constexpr difference_type operator-(this const Self& d1, const Self& d2)
   requires(requires {
     { d1.sub(d2) } -> std::convertible_to<difference_type>;
   })
@@ -254,8 +251,8 @@ struct IteratorFacade {
   }
 
   /** Establishes a strict total order between two iterators. */
-  template<typename Derived>
-  constexpr std::strong_ordering operator<=>(this const Derived& d1, const Derived& d2)
+  template<typename Self>
+  constexpr std::strong_ordering operator<=>(this const Self& d1, const Self& d2)
   requires(requires {
     { d1.three_way(d2) } -> std::convertible_to<std::strong_ordering>;
   })

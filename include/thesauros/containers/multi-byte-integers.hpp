@@ -115,11 +115,9 @@ struct MultiByteSubRange;
 /**
  * The CRTP base shared by `MultiByteSubRange` and `MultiByteIntegerArray`, implementing the shared
  * container interface, i.e. iteration, element access, sub-ranging and serialization, in terms of a
- * `Storage` type that owns or views the underlying packed byte buffer. `Derived` must be either a
- * `MultiByteSubRange` or a `MultiByteIntegerArray` instantiation.
+ * `Storage` type that owns or views the underlying packed byte buffer.
  */
-template<typename Derived, typename ByteInt, std::size_t PaddingBytes, bool IsOptional,
-         typename Storage>
+template<typename ByteInt, std::size_t PaddingBytes, bool IsOptional, typename Storage>
 struct MultiByteIntegersBase {
   static_assert(std::endian::native == std::endian::little ||
                   std::endian::native == std::endian::big,
@@ -371,8 +369,7 @@ struct MultiByteIntegersBase {
 
   /** A random-access iterator over the packed integers, const if `IsConst` is `true`. */
   template<bool IsConst>
-  struct BaseIterator : public IteratorFacade<IterTypes<IsConst>> {
-    using Container = Derived;
+  struct BaseIterator : IteratorFacade<IterTypes<IsConst>> {
     using Ref = IterTypes<IsConst>::IterRef;
     using Diff = IterTypes<IsConst>::IterDiff;
     using Ptr = std::conditional_t<IsConst, const std::byte, std::byte>*;
@@ -446,9 +443,8 @@ struct MultiByteIntegersBase {
    * `ReverseIteratorFacade`.
    */
   template<bool IsConst>
-  struct BaseReverseIterator : public ReverseIteratorFacade<IterTypes<IsConst>> {
+  struct BaseReverseIterator : ReverseIteratorFacade<IterTypes<IsConst>> {
     using ForwardIter = BaseIterator<IsConst>;
-    using Container = Derived;
     using Ptr = std::conditional_t<IsConst, const std::byte, std::byte>*;
 
     friend ReverseIteratorFacade<IterTypes<IsConst>>;
@@ -659,11 +655,10 @@ private:
  */
 template<bool IsConst, typename ByteInt, std::size_t PaddingBytes, bool IsOptional>
 struct MultiByteSubRange
-    : public MultiByteIntegersBase<MultiByteSubRange<IsConst, ByteInt, PaddingBytes, IsOptional>,
-                                   ByteInt, PaddingBytes, IsOptional,
-                                   detail::multi_byte::ViewStorage<IsConst, ByteInt>> {
+    : MultiByteIntegersBase<ByteInt, PaddingBytes, IsOptional,
+                            detail::multi_byte::ViewStorage<IsConst, ByteInt>> {
   using Storage = detail::multi_byte::ViewStorage<IsConst, ByteInt>;
-  using Base = MultiByteIntegersBase<MultiByteSubRange, ByteInt, PaddingBytes, IsOptional, Storage>;
+  using Base = MultiByteIntegersBase<ByteInt, PaddingBytes, IsOptional, Storage>;
 
   using Size = Base::Size;
   using CByte = Storage::CByte;
@@ -679,12 +674,10 @@ struct MultiByteSubRange
  */
 template<typename ByteInt, std::size_t PaddingBytes, bool IsOptional, typename ByteAlloc>
 struct MultiByteIntegerArray
-    : public MultiByteIntegersBase<
-        MultiByteIntegerArray<ByteInt, PaddingBytes, IsOptional, ByteAlloc>, ByteInt, PaddingBytes,
-        IsOptional, detail::multi_byte::ArrayStorage<ByteInt, PaddingBytes, ByteAlloc>> {
+    : MultiByteIntegersBase<ByteInt, PaddingBytes, IsOptional,
+                            detail::multi_byte::ArrayStorage<ByteInt, PaddingBytes, ByteAlloc>> {
   using Storage = detail::multi_byte::ArrayStorage<ByteInt, PaddingBytes, ByteAlloc>;
-  using Base =
-    MultiByteIntegersBase<MultiByteIntegerArray, ByteInt, PaddingBytes, IsOptional, Storage>;
+  using Base = MultiByteIntegersBase<ByteInt, PaddingBytes, IsOptional, Storage>;
   friend Base;
 
   using Size = Base::Size;
@@ -729,11 +722,15 @@ struct MultiByteIntegerArray
   //------------------------------------------------------------------------------------------------
 
   /** Creates an empty array. */
-  MultiByteIntegerArray() : Base(Storage{}) {}
+  MultiByteIntegerArray() : Base{Storage{}} {}
   /** Creates an array of `size` default-initialized elements. */
-  explicit MultiByteIntegerArray(std::size_t size) : Base(Storage{size}) {}
+  explicit MultiByteIntegerArray(std::size_t size) : Base{Storage{size}} {}
+  /** Creates an array of `size` elements with `value`. */
+  explicit MultiByteIntegerArray(std::size_t size, Value value) : Base{Storage{size}} {
+    fill_prealloc(span(), value);
+  }
   /** Creates an array containing the elements of `init`, in order. */
-  MultiByteIntegerArray(std::initializer_list<Value> init) : Base(Storage{init.size()}) {
+  MultiByteIntegerArray(std::initializer_list<Value> init) : Base{Storage{init.size()}} {
     std::copy(init.begin(), init.end(), this->begin());
   }
 
@@ -793,10 +790,9 @@ struct MultiByteIntegerArray
     } else if (new_size > old_size) {
       array().expand(Storage::effective_allocation(new_size));
       storage().size() = new_size;
-      std::byte* dst = span().data() + byte_size(old_size);
-      for (Size i = old_size; i < new_size; ++i, dst += element_bytes) {
-        this->store_full(dst, value);
-      }
+      const Size byte_old = byte_size(old_size);
+      std::byte* dst = span().data() + byte_old;
+      fill_prealloc(std::span{dst, byte_size(new_size) - byte_old}, value);
     }
   }
 
@@ -959,6 +955,14 @@ private:
   /** Returns the byte span of the stored elements, excluding padding. */
   [[nodiscard]] decltype(auto) span(this auto&& self) {
     return self.storage().span();
+  }
+
+  /** Fill `dst` with `value`, using `store_full` for added efficiency. */
+  static void fill_prealloc(std::span<std::byte> dst, Value value) {
+    const auto* end = dst.data() + dst.size();
+    for (std::byte* it = dst.data(); it != end; it += element_bytes) {
+      Base::store_full(it, value);
+    }
   }
 };
 

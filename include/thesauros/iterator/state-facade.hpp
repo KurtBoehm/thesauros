@@ -17,13 +17,14 @@
 
 namespace thes {
 /**
- * A CRTP mixin that implements an iterator entirely in terms of a single, comparable “state”
- * value exposed by the inheriting type via `state()`/`state() const`. The inheriting type must
- * additionally provide `value()`.
+ * A CRTP-style base class that implements an iterator entirely in terms of a single, comparable
+ * “state” value exposed by the inheriting type via `state()`, which is accessed via deducing
+ * `this`. The inheriting type must additionally provide `value()`.
  *
- * The iterator category is derived automatically from the operations `State` supports: incrementing
- * enables the forward operators; decrementing enables the bidirectional operators; in-place
- * addition together with subtraction and three-way comparison enable the random-access operators.
+ * The iterator category is derived automatically from the operations which the state supports:
+ * incrementing enables the forward operators; decrementing enables the bidirectional operators;
+ * in-place addition together with subtraction and three-way comparison enable the random-access
+ * operators.
  *
  * The inheriting type may optionally provide `test_if_cmp(const Self&) const`, called before
  * every comparison, e.g. to assert that both iterators refer to the same range.
@@ -102,8 +103,8 @@ private:
     }
   }
 
-  template<typename Derived>
-  constexpr Diff sub(this const Derived& self, const Derived& other)
+  template<typename Self>
+  constexpr Diff sub(this const Self& self, const Self& other)
   requires(requires { self.state() - other.state(); })
   {
     using State = std::remove_cvref_t<decltype(self.state())>;
@@ -114,17 +115,17 @@ private:
       return self.state() - other.state();
     }
   }
-  template<typename Derived>
-  constexpr std::strong_ordering three_way(this const Derived& self, const Derived& other)
+  template<typename Self>
+  constexpr std::strong_ordering three_way(this const Self& self, const Self& other)
   requires(requires { self.state() <=> other.state(); })
   {
     self.check_cmp(other);
     return self.state() <=> other.state();
   }
 
-  /** Calls `Derived::test_if_cmp`, if provided. */
-  template<typename Derived>
-  constexpr void check_cmp(this const Derived& self, const Derived& other) {
+  /** Calls `Self::test_if_cmp`, if provided. */
+  template<typename Self>
+  constexpr void check_cmp(this const Self& self, const Self& other) {
     if constexpr (requires { self.test_if_cmp(other); }) {
       self.test_if_cmp(other);
     }

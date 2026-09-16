@@ -74,10 +74,9 @@ inline NestedDynamicArray<T, S, A> from_file(FileReader& reader,
 //--------------------------------------------------------------------------------------------------
 
 /** Writes `array` as its element count followed by its packed byte content. */
-template<typename D, typename ByteInt, std::size_t PaddingBytes, bool IsOptional, typename Storage>
-inline void
-to_file(const MultiByteIntegersBase<D, ByteInt, PaddingBytes, IsOptional, Storage>& array,
-        FileWriter& writer) {
+template<typename ByteInt, std::size_t PaddingBytes, bool IsOptional, typename Storage>
+inline void to_file(const MultiByteIntegersBase<ByteInt, PaddingBytes, IsOptional, Storage>& array,
+                    FileWriter& writer) {
   const std::size_t stored_size = array.size();
   writer.write(std::span{&stored_size, 1});
   writer.write(array.byte_span());

@@ -181,6 +181,11 @@ void test_construction() {
   THES_ALWAYS_ASSERT(sized.size() == 5);
   THES_ALWAYS_ASSERT(!sized.empty());
 
+  const Mbi filled(3, 5);
+  THES_ALWAYS_ASSERT(filled.size() == 3);
+  THES_ALWAYS_ASSERT(!filled.empty());
+  THES_ALWAYS_ASSERT(filled[0] == 5 && filled[1] == 5 && filled[2] == 5);
+
   const Mbi listed{UInt{1}, UInt{2}, UInt{3}};
   THES_ALWAYS_ASSERT(listed.size() == 3);
   THES_ALWAYS_ASSERT(listed[0] == 1 && listed[1] == 2 && listed[2] == 3);
