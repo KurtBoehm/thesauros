@@ -11,7 +11,6 @@
 #include <cassert>
 #include <cstddef>
 #include <ranges>
-#include <type_traits>
 
 #include "thesauros/functional/no-op.hpp"
 #include "thesauros/macropolis/inlining.hpp"
@@ -67,16 +66,14 @@ struct IndexPosition {
   Position position{};
 };
 
-/** `true` for any `IndexPosition<Idx, Pos>` specialization. */
+/** Whether T is any instantiation of `IndexPosition`. */
 template<typename>
-struct AnyIndexPositionTrait : public std::false_type {};
-
+inline constexpr bool is_index_position = false;
 template<typename S, typename Pos>
-struct AnyIndexPositionTrait<IndexPosition<S, Pos>> : public std::true_type {};
-
-/** Concept matching any `IndexPosition` specialization. */
+inline constexpr bool is_index_position<IndexPosition<S, Pos>> = true;
+/** Any instantiation of `IndexPosition`. */
 template<typename T>
-concept AnyIndexPosition = AnyIndexPositionTrait<T>::value;
+concept AnyIndexPosition = is_index_position<T>;
 
 /**
  * Common nested value type of a tuple-like of ranges.

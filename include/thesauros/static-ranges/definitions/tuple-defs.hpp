@@ -16,7 +16,7 @@ namespace thes::star {
 struct TupleDefsMarker {};
 template<typename T>
 concept HasTupleDefsMarker = requires {
-  { T::tuple_defs_marker } -> DecayedSameAs<TupleDefsMarker>;
+  { T::tuple_defs_marker } -> BareSameAs<TupleDefsMarker>;
 };
 } // namespace thes::star
 

@@ -22,17 +22,14 @@
 #include "thesauros/types/tuple.hpp"
 
 namespace thes::argparse {
-namespace detail {
-/** A trait that detects the tuple of arguments a declaration flattens to. */
-template<typename T>
-struct IsArgumentTupleTrait : std::false_type {};
-template<AnyArgument... Args>
-struct IsArgumentTupleTrait<Tuple<Args...>> : std::true_type {};
-} // namespace detail
-
 /** Whether `T` is a `Tuple` of arguments, which is what a declaration flattens to. */
 template<typename T>
-concept AnyArgumentTuple = detail::IsArgumentTupleTrait<std::remove_cvref_t<T>>::value;
+inline constexpr bool is_argument_tuple = false;
+template<AnyArgument... Args>
+inline constexpr bool is_argument_tuple<Tuple<Args...>> = true;
+/** A `Tuple` of arguments, which is what a declaration flattens to. */
+template<typename T>
+concept AnyArgumentTuple = is_argument_tuple<std::remove_cvref_t<T>>;
 
 /**
  * Whether `T` may appear in a declaration: an argument, or anything declaring a sequence of them,

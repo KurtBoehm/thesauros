@@ -14,7 +14,7 @@
 
 namespace thes {
 template<std::size_t ByteN>
-struct FixedIntTrait : public FixedIntTrait<std::bit_ceil(ByteN)> {};
+struct FixedIntTrait : FixedIntTrait<std::bit_ceil(ByteN)> {};
 
 template<>
 struct FixedIntTrait<1> {

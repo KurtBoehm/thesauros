@@ -26,12 +26,11 @@ template<typename T>
 inline constexpr TypeTag<T> type_tag{};
 
 template<typename T>
-struct IsTypeTagTrait : public std::false_type {};
+inline constexpr bool is_type_tag = false;
 template<typename T>
-struct IsTypeTagTrait<TypeTag<T>> : public std::true_type {};
-
+inline constexpr bool is_type_tag<TypeTag<T>> = true;
 template<typename T>
-concept AnyTypeTag = IsTypeTagTrait<T>::value;
+concept AnyTypeTag = is_type_tag<T>;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_TYPES_TYPE_TAG_HPP

@@ -26,19 +26,19 @@ constexpr auto write_bitset(const auto& bs, auto it) {
 } // namespace thes::detail
 
 template<std::unsigned_integral Chunk>
-struct fmt::formatter<thes::DynamicBitset<Chunk>> : public thes::SimpleFormatter<> {
+struct fmt::formatter<thes::DynamicBitset<Chunk>> : thes::SimpleFormatter<> {
   auto format(const thes::DynamicBitset<Chunk>& bs, format_context& ctx) const {
     return this->write_padded(ctx, [&](auto it) { return thes::detail::write_bitset(bs, it); });
   }
 };
 template<std::size_t ChunkByteNum>
-struct fmt::formatter<thes::FixedBitset<ChunkByteNum>> : public thes::SimpleFormatter<> {
+struct fmt::formatter<thes::FixedBitset<ChunkByteNum>> : thes::SimpleFormatter<> {
   auto format(const thes::FixedBitset<ChunkByteNum>& bs, format_context& ctx) const {
     return this->write_padded(ctx, [&](auto it) { return thes::detail::write_bitset(bs, it); });
   }
 };
 template<std::size_t Size, std::size_t ChunkByteNum>
-struct fmt::formatter<thes::StaticBitset<Size, ChunkByteNum>> : public thes::SimpleFormatter<> {
+struct fmt::formatter<thes::StaticBitset<Size, ChunkByteNum>> : thes::SimpleFormatter<> {
   auto format(const thes::StaticBitset<Size, ChunkByteNum>& bs, format_context& ctx) const {
     return this->write_padded(ctx, [&](auto it) { return thes::detail::write_bitset(bs, it); });
   }

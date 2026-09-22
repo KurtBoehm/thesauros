@@ -9,7 +9,6 @@
 
 #include <concepts>
 #include <cstddef>
-#include <type_traits>
 #include <variant>
 
 #include "thesauros/types/tuple.hpp"
@@ -35,7 +34,7 @@ struct TypeSeqBase<Head, Tail...> {
 
 /** A compile-time sequence of types. */
 template<typename... Ts>
-struct TypeSeq : public TypeSeqBase<Ts...> {
+struct TypeSeq : TypeSeqBase<Ts...> {
   /** `Ts...`, as a `Tuple`. */
   using AsTuple = Tuple<Ts...>;
   /** The number of types in the sequence. */
@@ -62,12 +61,12 @@ struct TypeSeq : public TypeSeqBase<Ts...> {
 
 /** Whether `T` is a `TypeSeq` specialization. */
 template<typename T>
-struct IsTypeSeqTrait : public std::false_type {};
+inline constexpr bool is_type_seq = false;
 template<typename... Ts>
-struct IsTypeSeqTrait<TypeSeq<Ts...>> : public std::true_type {};
+inline constexpr bool is_type_seq<TypeSeq<Ts...>> = true;
 /** Matches any `TypeSeq` specialization. */
 template<typename T>
-concept AnyTypeSeq = IsTypeSeqTrait<T>::value;
+concept AnyTypeSeq = is_type_seq<T>;
 
 /** Whether `seq1` and `seq2` consist of the same types in the same order. */
 consteval bool operator==(AnyTypeSeq auto seq1, AnyTypeSeq auto seq2) {

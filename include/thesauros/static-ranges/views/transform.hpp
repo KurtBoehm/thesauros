@@ -44,7 +44,7 @@ struct ValueBase<Fun, Ret, ArgRanges...> {
 
 template<typename Fun, typename Ret, typename... ArgRanges>
 requires(sizeof...(ArgRanges) > 0 && star::has_unique_value(std::array{size<ArgRanges>...}))
-struct TransformView : public detail::transform::ValueBase<Fun, Ret, ArgRanges...> {
+struct TransformView : detail::transform::ValueBase<Fun, Ret, ArgRanges...> {
   static constexpr std::size_t size =
     star::unique_value(std::array{star::size<ArgRanges>...}).value();
   static constexpr TupleDefsMarker tuple_defs_marker{};
@@ -64,7 +64,7 @@ struct TransformView : public detail::transform::ValueBase<Fun, Ret, ArgRanges..
 };
 
 template<typename Fun, typename Ret = void>
-struct TransformGenerator : public RangeGeneratorBase {
+struct TransformGenerator : RangeGeneratorBase {
   Fun fun;
 
   explicit constexpr TransformGenerator(Fun&& f) : fun(std::forward<Fun>(f)) {}

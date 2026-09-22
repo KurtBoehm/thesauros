@@ -82,7 +82,7 @@ struct UnionTrait<T1, T2> {
 };
 template<std::signed_integral T1, std::unsigned_integral T2>
 requires(!std::same_as<T1, T2>)
-struct UnionTrait<T1, T2> : public UnionTrait<T2, T1> {};
+struct UnionTrait<T1, T2> : UnionTrait<T2, T1> {};
 template<std::floating_point T1, std::floating_point T2>
 requires(!std::same_as<T1, T2> && std::numeric_limits<T1>::is_iec559 &&
          std::numeric_limits<T2>::is_iec559)

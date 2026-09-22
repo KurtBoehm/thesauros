@@ -19,7 +19,7 @@
 
 namespace {
 template<typename T>
-struct Filter : public std::is_integral<T> {};
+struct Filter : std::is_integral<T> {};
 template<typename T>
 using AddPointer = T*;
 } // namespace

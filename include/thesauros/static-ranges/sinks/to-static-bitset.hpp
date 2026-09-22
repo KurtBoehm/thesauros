@@ -18,7 +18,7 @@
 #include "thesauros/static-ranges/sinks/to-container.hpp"
 
 namespace thes::star {
-struct ToStaticBitsetGenerator : public ConsumerGeneratorBase {
+struct ToStaticBitsetGenerator : ConsumerGeneratorBase {
   template<typename Range>
   constexpr auto operator()(Range&& range) const {
     static_assert(std::same_as<Value<Range>, bool>);

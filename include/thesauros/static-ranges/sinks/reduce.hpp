@@ -19,7 +19,7 @@
 
 namespace thes::star {
 template<typename BinOp, typename Init, bool Right>
-struct InitReduceGenerator : public ConsumerGeneratorBase {
+struct InitReduceGenerator : ConsumerGeneratorBase {
   BinOp binary_op;
   Init initial;
 
@@ -52,7 +52,7 @@ struct InitReduceGenerator : public ConsumerGeneratorBase {
 };
 
 template<typename BinOp, bool Right>
-struct ReduceGenerator : public ConsumerGeneratorBase {
+struct ReduceGenerator : ConsumerGeneratorBase {
   BinOp binary_op;
 
   explicit constexpr ReduceGenerator(BinOp&& op) : binary_op(std::forward<BinOp>(op)) {}

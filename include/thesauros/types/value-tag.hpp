@@ -47,11 +47,12 @@ using FalseTag = BoolTag<false>;
 inline constexpr FalseTag false_tag{};
 
 template<typename VTag>
-struct AnyValueTagTrait : public std::false_type {};
+inline constexpr bool is_value_tag = false;
 template<typename T, T V>
-struct AnyValueTagTrait<ValueTag<T, V>> : public std::true_type {};
+inline constexpr bool is_value_tag<ValueTag<T, V>> = true;
 template<typename VTag>
-concept AnyValueTag = AnyValueTagTrait<VTag>::value;
+concept AnyValueTag = is_value_tag<VTag>;
+
 template<typename VTag>
 concept DerivedValueTag = !AnyValueTag<VTag> && requires {
   typename VTag::Value;

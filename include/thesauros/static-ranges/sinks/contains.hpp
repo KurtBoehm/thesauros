@@ -16,7 +16,7 @@
 
 namespace thes::star {
 template<typename V>
-struct ContainsGenerator : public ConsumerGeneratorBase {
+struct ContainsGenerator : ConsumerGeneratorBase {
   using Value = std::decay_t<V>;
 
   V value;

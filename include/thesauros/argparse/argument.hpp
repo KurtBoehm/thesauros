@@ -225,12 +225,6 @@ struct Argument {
 };
 
 namespace detail {
-/** A trait that detects any argument. */
-template<typename T>
-struct IsArgumentTrait : std::false_type {};
-template<StaticString Name, typename T, ArgumentKind Kind, Presence Pres, std::size_t ChoiceNum>
-struct IsArgumentTrait<Argument<Name, T, Kind, Pres, ChoiceNum>> : std::true_type {};
-
 /**
  * Builds a named argument in whose names are specified by `name1` and `name2` if either is
  * non-empty; by default (i.e. both are empty), the long name is `--` followed by `Name` and there
@@ -261,7 +255,12 @@ constexpr Argument<Name, T, Kind, Pres, 0> named_argument(std::string_view name1
 
 /** Whether `T` is any instantiation of `Argument`. */
 template<typename T>
-concept AnyArgument = detail::IsArgumentTrait<T>::value;
+inline constexpr bool is_argument = false;
+template<StaticString Name, typename T, ArgumentKind Kind, Presence Pres, std::size_t ChoiceNum>
+inline constexpr bool is_argument<Argument<Name, T, Kind, Pres, ChoiceNum>> = true;
+/** Any instantiation of `Argument`. */
+template<typename T>
+concept AnyArgument = is_argument<T>;
 
 /**
  * A positional argument named `Name` holding a `T`, required unless followed by an `optional` or

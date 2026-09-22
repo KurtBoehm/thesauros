@@ -25,16 +25,14 @@ template<typename T>
 concept ConstAccess = std::is_const_v<std::remove_reference_t<T>>;
 
 template<typename T, std::size_t Size = 1>
-struct IsCompleteTrait : public std::false_type {};
-
+inline constexpr bool is_complete = false;
 template<typename T>
-struct IsCompleteTrait<T, sizeof(T) / sizeof(T)> : public std::true_type {}; // NOLINT
-
+inline constexpr bool is_complete<T, sizeof(T) / sizeof(T)> = true; // NOLINT
 template<typename T>
-concept CompleteType = IsCompleteTrait<T>::value;
+concept CompleteType = is_complete<T>;
 
 template<typename T1, typename T2>
-concept DecayedSameAs = std::same_as<std::decay_t<T1>, std::decay_t<T2>>;
+concept BareSameAs = std::same_as<std::remove_cvref_t<T1>, std::remove_cvref_t<T2>>;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_CONCEPTS_TYPE_TRAITS_HPP

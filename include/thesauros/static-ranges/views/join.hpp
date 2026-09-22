@@ -67,7 +67,7 @@ THES_ALWAYS_INLINE inline constexpr auto flattened(NestedRange&& ranges) {
   return JoinView{std::forward<NestedRange>(ranges)};
 }
 
-struct JoinGenerator : public RangeGeneratorBase {
+struct JoinGenerator : RangeGeneratorBase {
   template<typename Ranges>
   THES_ALWAYS_INLINE constexpr JoinView<Ranges> operator()(Ranges&& range) const {
     return {std::forward<Ranges>(range)};

@@ -15,7 +15,7 @@
 #include "thesauros/static-ranges/sinks/for-each.hpp"
 
 template<thes::reflect::HasTypeInfo T>
-struct fmt::formatter<T> : public thes::SimpleFormatter<> {
+struct fmt::formatter<T> : thes::SimpleFormatter<> {
   using Info = thes::reflect::TypeInfo<T>;
 
   auto format(const T& obj, format_context& ctx) const {

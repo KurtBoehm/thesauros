@@ -138,13 +138,13 @@ struct JsonWriter<std::basic_string_view<Char>> {
   }
 };
 template<CharacterType Char, std::size_t Size>
-struct JsonWriter<Char[Size]> : public JsonWriter<std::basic_string_view<Char>> {};
+struct JsonWriter<Char[Size]> : JsonWriter<std::basic_string_view<Char>> {};
 template<CharacterType Char>
-struct JsonWriter<Char*> : public JsonWriter<std::basic_string_view<Char>> {};
+struct JsonWriter<Char*> : JsonWriter<std::basic_string_view<Char>> {};
 template<CharacterType Char>
-struct JsonWriter<const Char*> : public JsonWriter<std::basic_string_view<Char>> {};
+struct JsonWriter<const Char*> : JsonWriter<std::basic_string_view<Char>> {};
 template<CharacterType Char>
-struct JsonWriter<std::basic_string<Char>> : public JsonWriter<std::basic_string_view<Char>> {};
+struct JsonWriter<std::basic_string<Char>> : JsonWriter<std::basic_string_view<Char>> {};
 
 template<typename T>
 struct JsonWriter<std::optional<T>> {

@@ -22,7 +22,7 @@ namespace thes::detail {
  */
 template<typename Bitset, bool IsConst>
 struct BitsetIterator
-    : public StateIteratorFacade<iter::ValueTypes<
+    : StateIteratorFacade<iter::ValueTypes<
         std::conditional_t<IsConst, bool, typename Bitset::MutBitRef>, std::ptrdiff_t>> {
   using Facade = StateIteratorFacade<iter::ValueTypes<
     std::conditional_t<IsConst, bool, typename Bitset::MutBitRef>, std::ptrdiff_t>>;

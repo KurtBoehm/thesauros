@@ -32,7 +32,7 @@ struct EnumerateView {
 };
 
 template<typename S>
-struct EnumerateGenerator : public RangeGeneratorBase {
+struct EnumerateGenerator : RangeGeneratorBase {
   template<typename Range>
   THES_ALWAYS_INLINE constexpr EnumerateView<S, Range> operator()(Range&& range) const {
     return {std::forward<Range>(range)};

@@ -38,7 +38,7 @@ concept BufferLike = requires(T& mbuf, const T& cbuf, std::size_t size) {
   { mbuf.size() } -> std::convertible_to<std::size_t>;
 };
 
-struct FileException : public std::exception {
+struct FileException : std::exception {
   explicit FileException(std::string msg) : message_(std::move(msg)) {}
 
   [[nodiscard]] const char* what() const noexcept override {
@@ -49,7 +49,7 @@ private:
   std::string message_;
 };
 
-enum struct Seek : int { set = SEEK_SET, cur = SEEK_CUR, end = SEEK_END };
+enum struct Seek : int { set = SEEK_SET, cur = SEEK_CUR, end = SEEK_END }; // NOLINT
 
 inline decltype(auto) path_string(const std::filesystem::path& path) {
 #if THES_WINDOWS

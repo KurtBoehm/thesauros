@@ -20,12 +20,11 @@
 namespace thes {
 namespace detail {
 template<typename T>
-struct IsEqualityComparableTrait : public std::bool_constant<std::equality_comparable<T>> {};
+inline constexpr bool is_equality_comparable = std::equality_comparable<T>;
 template<typename T, std::size_t S>
-struct IsEqualityComparableTrait<std::array<T, S>>
-    : public std::bool_constant<std::equality_comparable<T>> {};
+inline constexpr bool is_equality_comparable<std::array<T, S>> = std::equality_comparable<T>;
 template<typename T>
-concept EqualityComparable = IsEqualityComparableTrait<std::decay_t<T>>::value;
+concept EqualityComparable = is_equality_comparable<std::remove_cvref_t<T>>;
 
 template<std::size_t I, typename T>
 struct TupleLeaf {
@@ -74,7 +73,7 @@ static constexpr T& get_tuple_at(TupleLeaf<I, T>& t) {
 } // namespace detail
 
 template<typename... Ts>
-struct Tuple : public detail::Tuple<std::index_sequence_for<Ts...>, Ts...> {
+struct Tuple : detail::Tuple<std::index_sequence_for<Ts...>, Ts...> {
   using Parent = detail::Tuple<std::index_sequence_for<Ts...>, Ts...>;
   using Parent::Parent;
   static constexpr std::size_t size = sizeof...(Ts);
@@ -127,8 +126,7 @@ using SizedTuple = SizedTupleTrait<T, std::make_index_sequence<S>>::Type;
 // Add support for structured bindings
 namespace std {
 template<typename... Ts>
-struct tuple_size<::thes::Tuple<Ts...>>
-    : public std::integral_constant<std::size_t, sizeof...(Ts)> {};
+struct tuple_size<::thes::Tuple<Ts...>> : std::integral_constant<std::size_t, sizeof...(Ts)> {};
 
 template<std::size_t I, typename... Ts>
 struct tuple_element<I, ::thes::Tuple<Ts...>> {

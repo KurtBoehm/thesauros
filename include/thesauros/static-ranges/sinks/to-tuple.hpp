@@ -15,7 +15,7 @@
 #include "thesauros/types/tuple.hpp"
 
 namespace thes::star {
-struct ToTupleGenerator : public ConsumerGeneratorBase {
+struct ToTupleGenerator : ConsumerGeneratorBase {
   template<typename R>
   constexpr auto operator()(R&& range) const {
     return [&]<std::size_t... I>(std::index_sequence<I...> /*idxd*/) {

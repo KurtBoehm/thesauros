@@ -16,7 +16,7 @@
 #include "thesauros/static-ranges/definitions/type-traits.hpp"
 
 namespace thes::star {
-struct HasUniqueValueGenerator : public ConsumerGeneratorBase {
+struct HasUniqueValueGenerator : ConsumerGeneratorBase {
   template<typename R>
   constexpr bool operator()(R&& range) const {
     constexpr std::size_t size = star::size<R>;
@@ -32,7 +32,7 @@ struct HasUniqueValueGenerator : public ConsumerGeneratorBase {
 
 inline constexpr HasUniqueValueGenerator has_unique_value{};
 
-struct UniqueValueGenerator : public ConsumerGeneratorBase {
+struct UniqueValueGenerator : ConsumerGeneratorBase {
   template<HasValue R>
   constexpr std::optional<Value<R>> operator()(R&& range) const {
     if (has_unique_value(range)) {

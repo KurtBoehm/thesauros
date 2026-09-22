@@ -37,16 +37,16 @@ concept TypedSizedStaticRange = TypedStaticRange<Range, T> && SizedStaticRange<R
 
 struct RangeGeneratorBase {};
 template<typename Gen>
-struct RangeGeneratorTrait : std::is_base_of<RangeGeneratorBase, Gen> {};
+inline constexpr bool is_range_generator = std::derived_from<Gen, RangeGeneratorBase>;
 
 struct ConsumerGeneratorBase {};
 template<typename Gen>
-struct ConsumerGeneratorTrait : std::is_base_of<ConsumerGeneratorBase, Gen> {};
+inline constexpr bool is_consumer_generator = std::derived_from<Gen, ConsumerGeneratorBase>;
 
 template<typename Gen>
-concept IsRangeGenerator = RangeGeneratorTrait<std::remove_cvref_t<Gen>>::value;
+concept IsRangeGenerator = is_range_generator<std::remove_cvref_t<Gen>>;
 template<typename Gen>
-concept IsConsumerGenerator = ConsumerGeneratorTrait<std::remove_cvref_t<Gen>>::value;
+concept IsConsumerGenerator = is_consumer_generator<std::remove_cvref_t<Gen>>;
 template<typename Gen>
 concept IsPipeSink = IsRangeGenerator<Gen> || IsConsumerGenerator<Gen>;
 } // namespace thes::star

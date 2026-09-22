@@ -17,7 +17,7 @@
 #include "thesauros/static-ranges/definitions/type-traits.hpp"
 
 namespace thes::star {
-struct FirstValueGenerator : public ConsumerGeneratorBase {
+struct FirstValueGenerator : ConsumerGeneratorBase {
   template<typename Range>
   THES_ALWAYS_INLINE constexpr auto operator()(Range&& range) const {
     constexpr std::size_t size = star::size<Range>;

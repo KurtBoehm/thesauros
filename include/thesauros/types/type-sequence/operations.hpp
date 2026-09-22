@@ -35,7 +35,7 @@ struct JoinedTypeSeqTrait<TypeSeq<Ts1...>, TypeSeq<Ts2...>> {
 };
 template<typename... Ts, AnyTypeSeq... Seqs>
 struct JoinedTypeSeqTrait<TypeSeq<Ts...>, Seqs...>
-    : public JoinedTypeSeqTrait<TypeSeq<Ts...>, typename JoinedTypeSeqTrait<Seqs...>::Type> {};
+    : JoinedTypeSeqTrait<TypeSeq<Ts...>, typename JoinedTypeSeqTrait<Seqs...>::Type> {};
 
 template<AnyTypeSeq... Seqs>
 using JoinedTypeSeq = JoinedTypeSeqTrait<Seqs...>::Type;

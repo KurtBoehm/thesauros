@@ -11,7 +11,7 @@
 #include <cassert>
 #include <concepts>
 #include <cstddef>
-#include <type_traits>
+#include <iterator>
 #include <utility>
 
 #include "thesauros/iterator/facade.hpp"
@@ -21,7 +21,7 @@
 namespace thes::ranges {
 namespace detail::iota {
 template<typename T>
-struct ConstIterator : public StateIteratorFacade<iter::ValueTypes<T, std::ptrdiff_t>> {
+struct ConstIterator : StateIteratorFacade<iter::ValueTypes<T, std::ptrdiff_t>> {
   friend StateIteratorFacade<iter::ValueTypes<T, std::ptrdiff_t>>;
 
   constexpr ConstIterator() = default;
@@ -40,7 +40,7 @@ private:
 };
 
 template<typename T>
-struct ConstReverseIterator : public std::reverse_iterator<ConstIterator<T>> {
+struct ConstReverseIterator : std::reverse_iterator<ConstIterator<T>> {
   using ForwardIter = ConstIterator<T>;
   using Base = std::reverse_iterator<ConstIterator<T>>;
 
@@ -129,11 +129,11 @@ template<typename T>
 IotaRange(T, T) -> IotaRange<T>;
 
 template<typename T>
-struct IsIotaRange : public std::false_type {};
+inline constexpr bool is_iota_range = false;
 template<typename T>
-struct IsIotaRange<IotaRange<T>> : public std::true_type {};
+inline constexpr bool is_iota_range<IotaRange<T>> = true;
 template<typename T>
-concept AnyIotaRange = IsIotaRange<T>::value;
+concept AnyIotaRange = is_iota_range<T>;
 
 template<typename T>
 struct ExtendedIotaRange {

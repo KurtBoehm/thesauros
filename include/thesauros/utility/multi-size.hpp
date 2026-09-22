@@ -83,7 +83,7 @@ private:
 };
 
 template<typename S, std::size_t N>
-struct MultiSize : public BasicMultiSize<S, N> {
+struct MultiSize : BasicMultiSize<S, N> {
   using Size = S;
   static constexpr std::size_t dimension_num = N;
   using AxisSize = std::array<Size, dimension_num>;

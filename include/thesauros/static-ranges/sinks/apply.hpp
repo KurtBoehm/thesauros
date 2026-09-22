@@ -16,7 +16,7 @@
 
 namespace thes::star {
 template<typename F>
-struct ApplyGenerator : public ConsumerGeneratorBase {
+struct ApplyGenerator : ConsumerGeneratorBase {
   F fun;
 
   explicit constexpr ApplyGenerator(F&& f) : fun(std::forward<F>(f)) {}

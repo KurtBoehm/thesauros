@@ -136,11 +136,11 @@ private:
 };
 
 template<typename T>
-struct IsQuantityTrait : std::false_type {};
+inline constexpr bool is_quantity = false;
 template<typename R, typename U>
-struct IsQuantityTrait<Quantity<R, U>> : std::true_type {};
+inline constexpr bool is_quantity<Quantity<R, U>> = true;
 template<typename T>
-concept AnyQuantity = IsQuantityTrait<std::decay_t<T>>::value;
+concept AnyQuantity = is_quantity<std::decay_t<T>>;
 
 template<typename U1, typename U2>
 struct UnitRatioTrait;
@@ -152,12 +152,12 @@ template<typename U1, typename U2>
 using UnitRatio = UnitRatioTrait<U1, U2>::Type;
 
 template<typename R, typename U>
-struct IsBaseUnitQuantityTrait : std::false_type {};
+inline constexpr bool is_base_unit_quantity = false;
 template<typename R, typename Mul, typename BUnit>
-struct IsBaseUnitQuantityTrait<Quantity<R, Unit<Mul, BUnit>>, BUnit> : std::true_type {};
+inline constexpr bool is_base_unit_quantity<Quantity<R, Unit<Mul, BUnit>>, BUnit> = true;
 
 template<typename OutQuant, typename R, typename Mul, typename BUnit>
-requires IsBaseUnitQuantityTrait<OutQuant, BUnit>::value
+requires(is_base_unit_quantity<OutQuant, BUnit>)
 constexpr OutQuant quantity_cast(const Quantity<R, Unit<Mul, BUnit>>& sc) {
   using ToMultiple = OutQuant::Unit::Multiple;
   using ToRep = OutQuant::Rep;

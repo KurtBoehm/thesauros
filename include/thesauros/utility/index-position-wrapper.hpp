@@ -237,7 +237,7 @@ private:
 } // namespace detail
 
 template<std::unsigned_integral S, std::size_t DimN>
-struct PosIndexWrapper : public detail::BasePosIndexWrapper<detail::SingleIndexManager<S>, DimN> {
+struct PosIndexWrapper : detail::BasePosIndexWrapper<detail::SingleIndexManager<S>, DimN> {
   using IdxMan = detail::SingleIndexManager<S>;
   using Base = detail::BasePosIndexWrapper<IdxMan, DimN>;
   using SizeArr = std::array<S, DimN>;
@@ -256,7 +256,7 @@ private:
 
 template<std::unsigned_integral IdxS, std::unsigned_integral PosS, std::size_t DimN>
 struct DualPosIndexWrapper
-    : public detail::BasePosIndexWrapper<detail::DualIndexManager<IdxS, PosS>, DimN> {
+    : detail::BasePosIndexWrapper<detail::DualIndexManager<IdxS, PosS>, DimN> {
   using IdxMan = detail::DualIndexManager<IdxS, PosS>;
   using Base = detail::BasePosIndexWrapper<IdxMan, DimN>;
   using SizeArr = std::array<PosS, DimN>;

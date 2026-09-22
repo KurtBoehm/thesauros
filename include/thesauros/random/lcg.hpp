@@ -18,7 +18,7 @@ struct Lcg {
   explicit constexpr Lcg(T seed, T increment, T size)
       : seed_(seed), increment_(increment), size_(size) {}
 
-  struct ConstIterator : public IteratorFacade<iter::ValueTypes<T, std::ptrdiff_t>> {
+  struct ConstIterator : IteratorFacade<iter::ValueTypes<T, std::ptrdiff_t>> {
     using Diff = std::ptrdiff_t;
 
     friend IteratorFacade<iter::ValueTypes<T, Diff>>;

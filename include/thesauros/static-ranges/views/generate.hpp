@@ -28,7 +28,7 @@ struct ValueBase<Ret, Fun> {
 } // namespace detail::generate
 
 template<std::size_t Size, typename Ret, std::invocable<> Gen>
-struct Generate : public detail::generate::ValueBase<Ret, Gen> {
+struct Generate : detail::generate::ValueBase<Ret, Gen> {
   static constexpr std::size_t size = Size;
   static constexpr TupleDefsMarker tuple_defs_marker{};
 

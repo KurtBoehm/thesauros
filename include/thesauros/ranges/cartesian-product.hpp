@@ -35,8 +35,7 @@ namespace ranges {
 // C++23 26.7.32.2
 template<std::ranges::input_range First, std::ranges::forward_range... V>
 requires(std::ranges::view<First> && ... && std::ranges::view<V>)
-struct CartesianProductView
-    : public std::ranges::view_interface<CartesianProductView<First, V...>> {
+struct CartesianProductView : std::ranges::view_interface<CartesianProductView<First, V...>> {
   template<bool Const>
   struct Iterator {
     using iterator_category = std::input_iterator_tag;

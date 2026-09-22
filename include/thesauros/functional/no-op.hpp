@@ -31,11 +31,11 @@ struct NoOp<void> {
 NoOp() -> NoOp<void>;
 
 template<typename F>
-struct AnyNoOpTrait : public std::false_type {};
+inline constexpr bool is_no_op = false;
 template<typename Ret>
-struct AnyNoOpTrait<NoOp<Ret>> : public std::true_type {};
+inline constexpr bool is_no_op<NoOp<Ret>> = true;
 template<typename F>
-concept AnyNoOp = AnyNoOpTrait<F>::value;
+concept AnyNoOp = is_no_op<F>;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_FUNCTIONAL_NO_OP_HPP

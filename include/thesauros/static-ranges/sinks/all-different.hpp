@@ -17,7 +17,7 @@
 #include "thesauros/static-ranges/views/transform.hpp"
 
 namespace thes::star {
-struct AllDifferentGenerator : public ConsumerGeneratorBase {
+struct AllDifferentGenerator : ConsumerGeneratorBase {
   template<typename Range>
   constexpr bool operator()(Range&& range) const { // NOLINT(*-missing-std-forward)
     constexpr std::size_t size = star::size<Range>;

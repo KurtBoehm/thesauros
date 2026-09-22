@@ -49,7 +49,7 @@ struct S {
   bool operator==(const S&) const = default;
 };
 template<>
-struct fmt::formatter<S> : public fmt::nested_formatter<int> {
+struct fmt::formatter<S> : fmt::nested_formatter<int> {
   auto format(const S& s, format_context& ctx) const {
     return this->write_padded(
       ctx, [&](auto out) { return fmt::format_to(out, "S{{{}}}", nested(s.i)); });

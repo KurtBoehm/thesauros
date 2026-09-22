@@ -16,7 +16,7 @@
 
 namespace thes::star {
 template<typename Container>
-struct ToContainerGenerator : public ConsumerGeneratorBase {
+struct ToContainerGenerator : ConsumerGeneratorBase {
   template<typename R>
   THES_ALWAYS_INLINE constexpr auto operator()(R&& range) const {
     return [&]<std::size_t... I>(std::index_sequence<I...> /*idxd*/) THES_ALWAYS_INLINE {

@@ -7,7 +7,6 @@
 #ifndef INCLUDE_THESAUROS_STATIC_RANGES_GENERATORS_COMBINED_HPP
 #define INCLUDE_THESAUROS_STATIC_RANGES_GENERATORS_COMBINED_HPP
 
-#include <type_traits>
 #include <utility>
 
 #include "thesauros/static-ranges/definitions/concepts.hpp"
@@ -29,12 +28,10 @@ struct CombinedGenerator {
 };
 
 template<typename R1, typename R2>
-struct RangeGeneratorTrait<CombinedGenerator<R1, R2>>
-    : public std::bool_constant<IsRangeGenerator<R2>> {};
+inline constexpr bool is_range_generator<CombinedGenerator<R1, R2>> = IsRangeGenerator<R2>;
 
 template<typename R1, typename R2>
-struct ConsumerGeneratorTrait<CombinedGenerator<R1, R2>>
-    : public std::bool_constant<IsConsumerGenerator<R2>> {};
+inline constexpr bool is_consumer_generator<CombinedGenerator<R1, R2>> = IsConsumerGenerator<R2>;
 } // namespace thes::star
 
 #endif // INCLUDE_THESAUROS_STATIC_RANGES_GENERATORS_COMBINED_HPP

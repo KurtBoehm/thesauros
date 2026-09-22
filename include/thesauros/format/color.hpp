@@ -9,7 +9,6 @@
 
 #include <array>
 #include <cstddef>
-#include <type_traits>
 
 #include "thesauros/format/fmtlib.hpp"
 #include "thesauros/types/value-tag.hpp"
@@ -83,15 +82,15 @@ inline constexpr fmt::text_style conceal{fmt::emphasis::conceal};
 inline constexpr fmt::text_style strikethrough{fmt::emphasis::strikethrough};
 
 template<bool Format>
-struct FormattingTag : public BoolTag<Format> {};
+struct FormattingTag : BoolTag<Format> {};
 inline constexpr FormattingTag<true> format_tag{};
 inline constexpr FormattingTag<false> unformat_tag{};
 template<typename T>
-struct IsFormatTagTrait : public std::false_type {};
+inline constexpr bool is_format_tag = false;
 template<bool IsFormat>
-struct IsFormatTagTrait<FormattingTag<IsFormat>> : public std::true_type {};
+inline constexpr bool is_format_tag<FormattingTag<IsFormat>> = true;
 template<typename T>
-concept AnyFormatTag = IsFormatTagTrait<T>::value;
+concept AnyFormatTag = is_format_tag<T>;
 
 template<typename... Args>
 inline void tsprint(FormattingTag<true> /*tag*/, const fmt::text_style& ts,

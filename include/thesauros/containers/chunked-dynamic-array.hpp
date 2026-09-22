@@ -138,7 +138,7 @@ struct ChunkedDynamicArrayBase {
 
   template<bool IsConst>
   struct BaseIterator
-      : public StateIteratorFacade<
+      : StateIteratorFacade<
           iter::ValueTypes<std::conditional_t<IsConst, ConstBlock, Block>, std::ptrdiff_t>> {
     using CBlock = std::conditional_t<IsConst, ConstBlock, Block>;
     using CSize = ConditionalConst<IsConst, Size>;

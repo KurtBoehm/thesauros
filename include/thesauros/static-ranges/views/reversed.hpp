@@ -30,7 +30,7 @@ struct ReversedView {
   }
 };
 
-struct ReversedGenerator : public RangeGeneratorBase {
+struct ReversedGenerator : RangeGeneratorBase {
   template<typename Range>
   THES_ALWAYS_INLINE constexpr ReversedView<Range> operator()(Range&& range) const {
     return {std::forward<Range>(range)};

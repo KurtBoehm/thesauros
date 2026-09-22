@@ -38,7 +38,7 @@ struct FilterView {
 };
 
 template<auto IdxRange>
-struct OnlyIndicesGenerator : public RangeGeneratorBase {
+struct OnlyIndicesGenerator : RangeGeneratorBase {
   template<typename Range>
   THES_ALWAYS_INLINE constexpr FilterView<Range, IdxRange> operator()(Range&& range) const {
     return {std::forward<Range>(range)};
@@ -46,7 +46,7 @@ struct OnlyIndicesGenerator : public RangeGeneratorBase {
 };
 
 template<auto IdxRange>
-struct AllExceptIndicesGenerator : public RangeGeneratorBase {
+struct AllExceptIndicesGenerator : RangeGeneratorBase {
   template<typename Range>
   THES_ALWAYS_INLINE constexpr auto operator()(Range&& range) const {
     constexpr std::size_t range_size = star::size<Range>;
@@ -74,7 +74,7 @@ struct AllExceptIndicesGenerator : public RangeGeneratorBase {
 };
 
 template<auto F>
-struct FilterGenerator : public RangeGeneratorBase {
+struct FilterGenerator : RangeGeneratorBase {
   template<typename Range>
   THES_ALWAYS_INLINE constexpr auto operator()(Range&& range) const {
     auto idx_num = []() THES_ALWAYS_INLINE {

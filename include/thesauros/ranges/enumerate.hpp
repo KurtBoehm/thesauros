@@ -19,7 +19,7 @@ template<typename S, typename It>
 struct EnumerateRange {
   using Value = std::pair<S, decltype(*std::declval<It>())>;
 
-  struct ConstIterator : public StateIteratorFacade<iter::ValueTypes<Value, std::ptrdiff_t>> {
+  struct ConstIterator : StateIteratorFacade<iter::ValueTypes<Value, std::ptrdiff_t>> {
     friend StateIteratorFacade<iter::ValueTypes<Value, std::ptrdiff_t>>;
 
     constexpr ConstIterator() = default;

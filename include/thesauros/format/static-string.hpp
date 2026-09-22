@@ -14,6 +14,6 @@
 #include "thesauros/string/static-string.hpp"
 
 template<std::size_t N, typename Char>
-struct fmt::is_tuple_formattable<thes::StaticString<N>, Char> : public std::false_type {};
+struct fmt::is_tuple_formattable<thes::StaticString<N>, Char> : std::false_type {};
 
 #endif // INCLUDE_THESAUROS_FORMAT_STATIC_STRING_HPP

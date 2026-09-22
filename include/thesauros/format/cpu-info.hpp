@@ -19,7 +19,7 @@
 #endif
 
 template<>
-struct fmt::formatter<thes::EfficiencyClass> : public thes::SimpleFormatter<> {
+struct fmt::formatter<thes::EfficiencyClass> : thes::SimpleFormatter<> {
   auto format(const thes::EfficiencyClass& eff, fmt::format_context& ctx) const {
     return this->write_padded(ctx, [&](auto it) {
       switch (eff) {
@@ -34,7 +34,7 @@ struct fmt::formatter<thes::EfficiencyClass> : public thes::SimpleFormatter<> {
 
 #if THES_LINUX
 template<>
-struct fmt::formatter<thes::CpuInfo> : public fmt::nested_formatter<std::size_t> {
+struct fmt::formatter<thes::CpuInfo> : fmt::nested_formatter<std::size_t> {
   auto format(const thes::CpuInfo& info, fmt::format_context& ctx) const {
     return this->write_padded(
       ctx, [&](auto it) { return fmt::format_to(it, "cpu{}", this->nested(info.id)); });
@@ -42,7 +42,7 @@ struct fmt::formatter<thes::CpuInfo> : public fmt::nested_formatter<std::size_t>
 };
 #elif THES_APPLE
 template<>
-struct fmt::formatter<thes::CpuInfo> : public fmt::nested_formatter<std::size_t> {
+struct fmt::formatter<thes::CpuInfo> : fmt::nested_formatter<std::size_t> {
   auto format(const thes::CpuInfo& info, fmt::format_context& ctx) const {
     return this->write_padded(ctx, [&](auto it) {
       return fmt::format_to(it, "CPU{}{}", this->nested(info.id), info.efficiency_class);
@@ -51,7 +51,7 @@ struct fmt::formatter<thes::CpuInfo> : public fmt::nested_formatter<std::size_t>
 };
 #else
 template<>
-struct fmt::formatter<thes::CpuInfo> : public thes::SimpleFormatter<> {
+struct fmt::formatter<thes::CpuInfo> : thes::SimpleFormatter<> {
   auto format(const thes::CpuInfo& info, fmt::format_context& ctx) const {
     return this->write_padded(ctx, [&](auto it) {
       return fmt::format_to(it,

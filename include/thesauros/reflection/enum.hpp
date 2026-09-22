@@ -45,7 +45,7 @@ struct EnumInfo;
 
 template<typename Enum>
 requires(requires(Enum value) { enum_info_adl(value); })
-struct EnumInfo<Enum> : public decltype(enum_info_adl(std::declval<Enum>())){};
+struct EnumInfo<Enum> : decltype(enum_info_adl(std::declval<Enum>())){};
 
 template<typename T>
 concept HasEnumInfo = CompleteType<EnumInfo<T>>;

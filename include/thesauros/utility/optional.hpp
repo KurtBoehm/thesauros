@@ -21,15 +21,15 @@ struct Optional;
 
 namespace detail {
 template<typename T>
-struct IsOptionalTrait : public std::false_type {};
+inline constexpr bool is_optional = false;
 template<typename T>
-struct IsOptionalTrait<Optional<T>> : public std::true_type {};
+inline constexpr bool is_optional<Optional<T>> = true;
 template<typename F, typename T>
-concept ReturnsOptional = IsOptionalTrait<std::remove_cvref_t<std::invoke_result_t<F, T>>>::value;
+concept ReturnsOptional = is_optional<std::remove_cvref_t<std::invoke_result_t<F, T>>>;
 } // namespace detail
 
 template<typename T>
-struct Optional : public std::optional<T> {
+struct Optional : std::optional<T> {
   using std::optional<T>::optional;
 
   Optional(const std::optional<T>& opt) : std::optional<T>(opt) {}

@@ -106,7 +106,7 @@ private:
 
 /** Uniform segmenter over [offset, offset + size). */
 template<typename S, typename Seg>
-struct OffsetUniformIndexSegmenter : public UniformIndexSegmenter<S, Seg> {
+struct OffsetUniformIndexSegmenter : UniformIndexSegmenter<S, Seg> {
   using Uniform = UniformIndexSegmenter<S, Seg>;
   using Size = S;
   using Segment = Seg;
@@ -143,7 +143,7 @@ private:
 
 /** Uniform segmenter composed with affine transformation index ↦ factor * i + offset. */
 template<typename S, typename Seg>
-struct AffineUniformIndexSegmenter : public UniformIndexSegmenter<S, Seg> {
+struct AffineUniformIndexSegmenter : UniformIndexSegmenter<S, Seg> {
   using Uniform = UniformIndexSegmenter<S, Seg>;
   using Size = S;
   using Segment = Seg;

@@ -36,7 +36,7 @@ struct NestedDynamicArrayBase {
 
   template<bool IsConst>
   struct Iterator
-      : public StateIteratorFacade<
+      : StateIteratorFacade<
           iter::ValueTypes<std::span<ConditionalConst<IsConst, Value>>, std::ptrdiff_t>> {
     using DValue = std::span<ConditionalConst<IsConst, Value>>;
     using CValue = ConditionalConst<IsConst, Value>;
@@ -246,9 +246,9 @@ private:
 };
 
 template<typename T, typename S, typename Alloc = std::allocator<T>>
-struct NestedDynamicArray : public NestedDynamicArrayBase<
-                              NestedDynamicArray<T, S, Alloc>, T, S, Alloc,
-                              typename std::allocator_traits<Alloc>::template rebind_alloc<S>> {
+struct NestedDynamicArray
+    : NestedDynamicArrayBase<NestedDynamicArray<T, S, Alloc>, T, S, Alloc,
+                             typename std::allocator_traits<Alloc>::template rebind_alloc<S>> {
   using Parent =
     NestedDynamicArrayBase<NestedDynamicArray, T, S, Alloc,
                            typename std::allocator_traits<Alloc>::template rebind_alloc<S>>;
