@@ -81,7 +81,7 @@ jobs:
             msystem: UCRT64
             cc: gcc
             cxx: g++
-            pacboy: gcc:p meson:p ninja:p pkgconf:p
+            pacboy: gcc:p libgomp:p meson:p ninja:p pkgconf:p
 
     steps:
       - uses: actions/checkout@v4
