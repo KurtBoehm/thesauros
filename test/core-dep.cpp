@@ -13,21 +13,21 @@
 // `macropolis`, `reflection`, `io`, `static-ranges`, `utility`, `execution`, `resources`,
 // `format` and `test`.
 
-#include "thesauros/algorithms.hpp"
-#include "thesauros/charconv.hpp"
-#include "thesauros/concepts.hpp"
-#include "thesauros/containers.hpp"
-#include "thesauros/filesystem.hpp"
-#include "thesauros/functional.hpp"
-#include "thesauros/iterator.hpp"
-#include "thesauros/literals.hpp"
-#include "thesauros/math.hpp"
-#include "thesauros/memory.hpp"
-#include "thesauros/quantity.hpp"
-#include "thesauros/random.hpp"
-#include "thesauros/ranges.hpp"
-#include "thesauros/string.hpp"
-#include "thesauros/types.hpp"
+#include "thesauros/algorithms.hpp" // IWYU pragma: keep
+#include "thesauros/charconv.hpp" // IWYU pragma: keep
+#include "thesauros/concepts.hpp" // IWYU pragma: keep
+#include "thesauros/containers.hpp" // IWYU pragma: keep
+#include "thesauros/filesystem.hpp" // IWYU pragma: keep
+#include "thesauros/functional.hpp" // IWYU pragma: keep
+#include "thesauros/iterator.hpp" // IWYU pragma: keep
+#include "thesauros/literals.hpp" // IWYU pragma: keep
+#include "thesauros/math.hpp" // IWYU pragma: keep
+#include "thesauros/memory.hpp" // IWYU pragma: keep
+#include "thesauros/quantity.hpp" // IWYU pragma: keep
+#include "thesauros/random.hpp" // IWYU pragma: keep
+#include "thesauros/ranges.hpp" // IWYU pragma: keep
+#include "thesauros/string.hpp" // IWYU pragma: keep
+#include "thesauros/types.hpp" // IWYU pragma: keep
 
 int main() {
   // Touch one entity per sub-library so the includes cannot be optimized into nothing.

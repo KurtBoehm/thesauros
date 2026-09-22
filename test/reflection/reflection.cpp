@@ -19,19 +19,17 @@
 
 using namespace thes::literals;
 
-#if false
-struct Test1 {
-  THES_DEFINE_TYPE(SNAKE_CASE(Test1), CONSTEXPR_CONSTRUCTOR,
+// NOLINTBEGIN(*-use-internal-linkage)
+struct Test1d { // NOLINT(*-special-member-functions)
+  THES_DEFINE_TYPE(SNAKE_CASE(Test1d), CONSTEXPR_CONSTRUCTOR,
                    MEMBERS((SNAKE_CASE(CapitalName), int), (KEEP(test), float, 2.F)))
 
-  Test1(Test1&&) noexcept = default;
-  Test1(const Test1&) = delete;
+  Test1d(Test1d&&) noexcept = default;
+  Test1d(const Test1d&) = delete;
 };
-#else
 THES_CREATE_TYPE(SNAKE_CASE(Test1), CONSTEXPR_CONSTRUCTOR,
                  MEMBERS((SNAKE_CASE(CapitalName), int), (KEEP(test), float, 2.F)),
                  BODY(Test1(Test1&&) noexcept = default; Test1(const Test1&) = delete;))
-#endif
 
 inline constexpr Test1 test1{2};
 
@@ -56,8 +54,9 @@ static_assert(Test1b::pointer == &Test1::test);
 ////////////////////////////////////////////////////////////////
 
 namespace inner {
+// NOLINTNEXTLINE(*-enum-size)
 THES_DEFINE_ENUM(SNAKE_CASE(Test2), int, LOWERCASE(A), LOWERCASE(B))
-}
+} // namespace inner
 
 using Test2Info = thes::reflect::EnumInfo<inner::Test2>;
 
@@ -123,7 +122,7 @@ static_assert(Test6Info::serial_name == thes::StaticString<3>::filled('t'));
 ////////////////////////////////////////////////////////////////
 
 template<inner::Test2 V, typename T>
-struct Test7 {
+struct Test7 { // NOLINT(*-special-member-functions)
   THES_DEFINE_TYPE(SNAKE_CASE(Test7), CONSTEXPR_CONSTRUCTOR,
                    TEMPLATE_PARAMS((inner::Test2)V, (typename)T),
                    MEMBERS((SNAKE_CASE(a), T), (SNAKE_CASE(b), int)),
@@ -200,6 +199,7 @@ using Type9 = n1::n2::Test9<11, double>;
 static_assert((thes::reflect::memory_layout_info<Type9> |
                thes::star::transform([](auto info) { return info.offset; }) |
                thes::star::to_array) == std::array{0_uz, 8_uz, 12_uz});
+// NOLINTEND(*-use-internal-linkage)
 
 int main() {
   thes::reflect::memory_layout_info<Type9> |

@@ -7,6 +7,7 @@
 #ifndef INCLUDE_THESAUROS_CONTAINERS_DYNAMIC_BUFFER_HPP
 #define INCLUDE_THESAUROS_CONTAINERS_DYNAMIC_BUFFER_HPP
 
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
@@ -31,6 +32,10 @@ struct DynamicBuffer {
     std::free(begin_);
   }
 
+  void truncate(std::size_t new_size) noexcept {
+    assert(new_size <= size_);
+    size_ = new_size;
+  }
   void resize(std::size_t new_size) {
     if (new_size == size_) {
       return;

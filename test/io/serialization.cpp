@@ -46,6 +46,7 @@ std::vector<int> to_vector(const Chunk& chunk) {
 THES_TEST_CASE("TypedChunk round-trips through a file", "[io][serialization]") {
   const thes::fs::TemporaryDirectory dir{};
 
+  // NOLINTNEXTLINE(*-const-correctness)
   Chunk chunk{4};
   const std::array<int, 4> expected{3, 1, 4, 1};
   std::ranges::copy(expected, chunk.span().begin());

@@ -59,7 +59,7 @@ private:
   constexpr bool eq(this const Self& self, const Other& other)
   requires(requires { self.state() == self.state(); })
   {
-    decltype(auto) self_other = [&]() -> decltype(auto) {
+    decltype(auto) self_other = [&] -> decltype(auto) {
       if constexpr (std::same_as<Self, Other>) {
         return other;
       } else {

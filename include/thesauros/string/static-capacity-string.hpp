@@ -39,7 +39,8 @@ struct StaticCapacityString {
   /** Constructs a string containing the characters of `text`, excluding the null terminator. */
   template<std::size_t Size>
   requires(Size - 1 <= Capacity)
-  constexpr StaticCapacityString(const char (&text)[Size]) noexcept : size_{Size - 1} { // NOLINT
+  constexpr StaticCapacityString(const char (&text)[Size]) noexcept // NOLINT(*-explicit-*)
+      : size_{Size - 1} {
     std::copy(text, text + (Size - 1), data_.data());
   }
 
@@ -63,7 +64,7 @@ struct StaticCapacityString {
   //------------------------------------------------------------------------------------------------
 
   /** Implicitly converts to a view of the string’s current contents. */
-  [[nodiscard]] constexpr operator std::string_view() const noexcept { // NOLINT
+  [[nodiscard]] constexpr operator std::string_view() const noexcept { // NOLINT(*-explicit-*)
     return {data_.data(), size_};
   }
   [[nodiscard]] constexpr std::string_view view() const noexcept {

@@ -51,7 +51,7 @@ struct AllExceptIndicesGenerator : RangeGeneratorBase {
   THES_ALWAYS_INLINE constexpr auto operator()(Range&& range) const {
     constexpr std::size_t range_size = star::size<Range>;
 
-    constexpr auto pair = [&]() THES_ALWAYS_INLINE {
+    constexpr auto pair = [&] THES_ALWAYS_INLINE {
       std::array<std::size_t, range_size> buffer{};
       std::size_t count = 0;
 
@@ -77,7 +77,7 @@ template<auto F>
 struct FilterGenerator : RangeGeneratorBase {
   template<typename Range>
   THES_ALWAYS_INLINE constexpr auto operator()(Range&& range) const {
-    auto idx_num = []() THES_ALWAYS_INLINE {
+    auto idx_num = [] THES_ALWAYS_INLINE {
       constexpr std::size_t size = star::size<Range>;
       std::size_t ctr = 0;
       tagged_iota<0, size> | for_each([&](auto idx) THES_ALWAYS_INLINE {
@@ -87,7 +87,7 @@ struct FilterGenerator : RangeGeneratorBase {
       });
       return ctr;
     };
-    auto gen_idxs = [&]() THES_ALWAYS_INLINE {
+    const auto gen_idxs = [&] THES_ALWAYS_INLINE {
       constexpr std::size_t size = star::size<Range>;
       std::array<std::size_t, idx_num()> idxs{};
       std::size_t ctr = 0;

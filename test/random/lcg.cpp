@@ -19,7 +19,7 @@ using Lcg = thes::Lcg<thes::u32>;
 /** Collects the values an `LCG` produces, in order. */
 [[nodiscard]] std::vector<thes::u32> collect(const Lcg& lcg) {
   std::vector<thes::u32> values{};
-  for (auto value : lcg) {
+  for (const auto value : lcg) {
     values.push_back(value);
   }
   return values;

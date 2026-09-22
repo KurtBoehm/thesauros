@@ -154,7 +154,7 @@ THES_ALWAYS_INLINE inline constexpr void for_each_tile(const Ranges& ranges, con
   if constexpr (dim_num == 0) {
     return;
   } else {
-    auto impl = [&](auto dim, auto rec, auto... args) THES_ALWAYS_INLINE {
+    [&](this auto&& rec, auto dim, auto... args) THES_ALWAYS_INLINE {
       static_assert(dim < dim_num && sizeof...(args) == dim);
 
       const auto dim_range = star::get_at<dim>(ranges);
@@ -170,14 +170,12 @@ THES_ALWAYS_INLINE inline constexpr void for_each_tile(const Ranges& ranges, con
           [&](auto r) { part_fun(args..., r); });
       } else if constexpr (FixedAxes::contains(dim)) {
         const auto idx = fixed_axes.get(dim);
-        rec(index_tag<dim + 1>, rec, args..., views::indices_n(idx, value_tag<Size, 1>));
+        rec(index_tag<dim + 1>, args..., views::indices_n(idx, value_tag<Size, 1>));
       } else {
-        auto op = [&](auto r) { rec(index_tag<dim + 1>, rec, args..., r); };
+        const auto op = [&](auto r) { rec(index_tag<dim + 1>, args..., r); };
         for_each_tile_unroll<Dir>(begin, end, tile_size, op, op);
       }
-    };
-
-    impl(index_tag<0>, impl);
+    }(index_tag<0>);
   }
 }
 } // namespace detail
@@ -253,7 +251,7 @@ THES_ALWAYS_INLINE inline constexpr void tile_for_each(const auto& multi_size, c
   constexpr std::size_t dim_num = star::size<Ranges>;
   using IndexPos = IndexPosition<Idx, std::array<Size, dim_num>>;
 
-  auto impl = [&](auto dim, auto&& rec, auto index, auto... coords) THES_ALWAYS_INLINE {
+  [&](this auto&& rec, auto dim, auto index, auto... coords) THES_ALWAYS_INLINE {
     const auto range = star::get_at<dim>(ranges);
     const auto begin = range.begin_value();
     const auto end = range.end_value();
@@ -262,7 +260,7 @@ THES_ALWAYS_INLINE inline constexpr void tile_for_each(const auto& multi_size, c
       for (Size i = begin; i < end; ++i) {
         if constexpr (dim + 1 < dim_num) {
           const auto factor = multi_size.after_size(dim);
-          rec(index_tag<dim + 1>, rec, index + i * factor, coords..., i);
+          rec(index_tag<dim + 1>, index + i * factor, coords..., i);
         } else {
           fun(IndexPos{Idx{index + i}, {coords..., i}});
         }
@@ -271,15 +269,13 @@ THES_ALWAYS_INLINE inline constexpr void tile_for_each(const auto& multi_size, c
       for (Size i = end; i > begin; --i) {
         if constexpr (dim + 1 < dim_num) {
           const auto factor = multi_size.after_size(dim);
-          rec(index_tag<dim + 1>, rec, index + (i - 1) * factor, coords..., i - 1);
+          rec(index_tag<dim + 1>, index + (i - 1) * factor, coords..., i - 1);
         } else {
           fun(IndexPos{Idx{index + (i - 1)}, {coords..., i - 1}});
         }
       }
     }
-  };
-
-  impl(index_tag<0>, impl, Size{0});
+  }(index_tag<0>, Size{0});
 }
 
 /**
@@ -308,14 +304,14 @@ tile_for_each(const auto& multi_size, const Ranges& ranges, auto&& full_fun, aut
   using IndexPos = IndexPosition<Idx, std::array<Size, dim_num>>;
   constexpr Size vsize = static_cast<Size>(vec_size);
 
-  auto impl = [&](auto dim, auto&& rec, auto index, auto... coords) THES_ALWAYS_INLINE {
+  [&](this auto&& rec, auto dim, auto index, auto... coords) THES_ALWAYS_INLINE {
     const auto range = star::get_at<dim>(ranges);
 
     if constexpr (Dir == IterDirection::forward) {
       if constexpr (dim + 1 < dim_num) {
         for (const Size i : range) {
           const auto factor = multi_size.after_size(dim);
-          rec(index_tag<dim + 1>, rec, index + i * factor, coords..., i);
+          rec(index_tag<dim + 1>, index + i * factor, coords..., i);
         }
       } else {
         const auto begin = range.begin_value();
@@ -340,7 +336,7 @@ tile_for_each(const auto& multi_size, const Ranges& ranges, auto&& full_fun, aut
       if constexpr (dim + 1 < dim_num) {
         for (const Size i : std::views::reverse(range)) {
           const auto factor = multi_size.after_size(dim);
-          rec(index_tag<dim + 1>, rec, index + i * factor, coords..., i);
+          rec(index_tag<dim + 1>, index + i * factor, coords..., i);
         }
       } else {
         const auto begin = range.begin_value();
@@ -365,9 +361,7 @@ tile_for_each(const auto& multi_size, const Ranges& ranges, auto&& full_fun, aut
         }
       }
     }
-  };
-
-  impl(index_tag<0>, impl, Size{0});
+  }(index_tag<0>, Size{0});
 }
 
 /**
@@ -429,8 +423,8 @@ tiled_for_each(const auto& multi_size, const Ranges& ranges, const auto& tile_si
     },
     // partial tiles
     [&](auto... tile_ranges) THES_ALWAYS_INLINE {
-      tile_for_each<Dir>(multi_size, Tuple{std::move(tile_ranges)...}, full_fun, part_fun,
-                         /*has_part=*/vec_size, true_tag, tag);
+      tile_for_each<Dir>(multi_size, Tuple{std::move(tile_ranges)...}, full_fun, part_fun, vec_size,
+                         /*has_part=*/true_tag, tag);
     },
     vec_size);
 }

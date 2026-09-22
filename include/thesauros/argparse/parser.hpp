@@ -246,14 +246,14 @@ struct ArgumentParser<Tuple<Args...>> {
     const ParseError error = result.error();
     if (error.kind == ParseErrorKind::help_requested) {
       print_help(stdout, program);
-      std::exit(EXIT_SUCCESS); // NOLINT
+      std::exit(EXIT_SUCCESS); // NOLINT(*-mt-unsafe)
     }
     if (error.kind == ParseErrorKind::version_requested) {
       fmt::print(stdout, "{}\n", info_.version);
-      std::exit(EXIT_SUCCESS); // NOLINT
+      std::exit(EXIT_SUCCESS); // NOLINT(*-mt-unsafe)
     }
     print_error(error, stderr, program);
-    std::exit(EXIT_FAILURE); // NOLINT
+    std::exit(EXIT_FAILURE); // NOLINT(*-mt-unsafe)
   }
 
   //------------------------------------------------------------------------------------------------
@@ -407,9 +407,9 @@ private:
   /** The most values the argument at `index` may collect. */
   [[nodiscard]] constexpr std::size_t most_num_at(std::size_t index) const {
     std::size_t most = unbounded;
-    star::static_apply<argument_num>([&]<std::size_t... Is>() {
+    star::static_apply<argument_num>([&]<std::size_t... I> {
       static_cast<void>(
-        ((Is == index ? (most = star::get_at<Is>(arguments_).most_num, true) : false) || ...));
+        ((I == index ? (most = star::get_at<I>(arguments_).most_num, true) : false) || ...));
     });
     return most;
   }
@@ -426,8 +426,8 @@ private:
   template<typename Op>
   static constexpr std::optional<ParseError> visit_argument(std::size_t index, Op op) {
     std::optional<ParseError> error{};
-    star::static_apply<argument_num>([&]<std::size_t... Is>() {
-      static_cast<void>(((Is == index && (error = op(index_tag<Is>), true)) || ...));
+    star::static_apply<argument_num>([&]<std::size_t... I> {
+      static_cast<void>(((I == index && (error = op(index_tag<I>), true)) || ...));
     });
     return error;
   }
@@ -436,15 +436,15 @@ private:
   template<typename Op>
   constexpr void for_each_argument(Op op) const {
     star::static_apply<argument_num>(
-      [&]<std::size_t... Is>() { (op(star::get_at<Is>(arguments_)), ...); });
+      [&]<std::size_t... I> { (op(star::get_at<I>(arguments_)), ...); });
   }
 
   /** The index of the first argument satisfying `pred`, or `no_index`. */
   template<typename Pred>
   [[nodiscard]] constexpr std::size_t find_argument(Pred pred) const {
     std::size_t found = no_index;
-    star::static_apply<argument_num>([&]<std::size_t... Is>() {
-      static_cast<void>(((pred(star::get_at<Is>(arguments_)) ? (found = Is, true) : false) || ...));
+    star::static_apply<argument_num>([&]<std::size_t... I> {
+      static_cast<void>(((pred(star::get_at<I>(arguments_)) ? (found = I, true) : false) || ...));
     });
     return found;
   }
@@ -534,7 +534,7 @@ private:
         return ParseError{ParseErrorKind::invalid_choice, arg.display_name(), text};
       }
     }
-    slot = *value;
+    slot = *value; // NOLINT(*-optional-value-conversion)
     return std::nullopt;
   }
 
@@ -550,7 +550,7 @@ private:
     return visit_argument(index, [&]<std::size_t I>(IndexTag<I> /*tag*/) {
       using Arg = std::remove_cvref_t<decltype(star::get_at<I>(arguments_))>;
       const Arg& arg = star::get_at<I>(arguments_);
-      auto& slot = star::get_at<I>(values.storage);
+      auto& slot = star::get_at<I>(values.storage); // NOLINT(*-const-correctness)
       seen[I] = true;
 
       if constexpr (Arg::kind == ArgumentKind::flag || Arg::kind == ArgumentKind::counter) {
@@ -667,7 +667,7 @@ private:
                                                                     IndexTag<I> /*tag*/) {
       using Arg = std::remove_cvref_t<decltype(star::get_at<I>(arguments_))>;
       const Arg& arg = star::get_at<I>(arguments_);
-      auto& slot = star::get_at<I>(values.storage);
+      auto& slot = star::get_at<I>(values.storage); // NOLINT(*-const-correctness)
 
       if constexpr (Arg::kind == ArgumentKind::remainder) {
         // Reaching a remainder ends the interpretation of the command line: the rest of it is
@@ -742,8 +742,8 @@ private:
     };
 
     std::optional<ParseError> error{};
-    star::static_apply<argument_num>([&]<std::size_t... Is>() {
-      static_cast<void>(((error = finish(index_tag<Is>), error.has_value()) || ...));
+    star::static_apply<argument_num>([&]<std::size_t... I> {
+      static_cast<void>(((error = finish(index_tag<I>), error.has_value()) || ...));
     });
     return error;
   }

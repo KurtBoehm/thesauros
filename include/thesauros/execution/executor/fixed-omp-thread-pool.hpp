@@ -72,11 +72,11 @@ struct FixedOpenMpThreadPool {
         cat("The thread pool needs ", thread_num_, " threads, but the max is ", max_threads)};
     }
 
-#pragma omp parallel for num_threads(thread_num_)
+#pragma omp parallel for num_threads(thread_num_) default(none) shared(task) firstprivate(tnum)
     for (std::size_t t = 0; t < tnum; ++t) {
-      auto thread = pthread_self();
+      auto thread = pthread_self(); // NOLINT(*-qualified-auto)
       if (cpu_sets_.has_value()) {
-        (void)set_affinity(thread, (*cpu_sets_)[t]);
+        (void)set_affinity(thread, (*cpu_sets_)[t]); // NOLINT(*-unused-return-value)
       }
       std::invoke(task, t);
     }

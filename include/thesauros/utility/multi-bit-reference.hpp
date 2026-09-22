@@ -38,7 +38,8 @@ struct MutableBitReference {
     }
     return *this;
   }
-  constexpr const MutableBitReference& store(const bool value, std::memory_order order) const {
+  constexpr const MutableBitReference& // NOLINT(*-use-nodiscard)
+  store(const bool value, std::memory_order order) const {
     if (value) {
       std::atomic_ref{*chunk_}.fetch_or(mask(), order);
     } else {

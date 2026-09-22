@@ -27,7 +27,7 @@ struct ToArrayGenerator : ConsumerGeneratorBase {
     constexpr std::size_t size = star::size<Range>;
 
     if constexpr (size > 0) {
-      return star::static_apply<size>([range = std::forward<R>(range)]<std::size_t... I>() {
+      return star::static_apply<size>([range = std::forward<R>(range)]<std::size_t... I> {
         using std::get;
         return std::array{get<I>(range)...};
       });
@@ -62,10 +62,9 @@ constexpr auto generate_array(auto op) {
   };
   if constexpr (std::is_void_v<V>) {
     static_assert(N > 0, "The value type cannot be derived if the array is empty!");
-    return static_apply<N>([&]<std::size_t... I>() { return std::array{f(index_tag<I>)...}; });
+    return static_apply<N>([&]<std::size_t... I> { return std::array{f(index_tag<I>)...}; });
   } else {
-    return static_apply<N>(
-      [&]<std::size_t... I>() { return std::array<V, N>{f(index_tag<I>)...}; });
+    return static_apply<N>([&]<std::size_t... I> { return std::array<V, N>{f(index_tag<I>)...}; });
   }
 }
 } // namespace thes::star

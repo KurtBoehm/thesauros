@@ -26,7 +26,7 @@ constexpr DebugPrinter<T> debug_view(T&& value) {
 template<typename T>
 struct fmt::formatter<thes::DebugPrinter<T>> {
   constexpr formatter() {
-    detail::maybe_set_debug_format(formatter_, true);
+    detail::maybe_set_debug_format(formatter_, true); // NOLINT(*-vararg)
   }
 
   constexpr const char* parse(fmt::format_parse_context& ctx) {

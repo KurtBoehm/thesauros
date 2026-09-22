@@ -75,13 +75,13 @@ struct LimitedArray {
     return self.data_.data();
   }
 
-  [[nodiscard]] constexpr decltype(auto) front(this auto&& self) {
+  [[nodiscard]] constexpr auto& front(this auto&& self) {
     assert(!self.empty());
-    return (self.data_.front());
+    return self.data_.front();
   }
-  [[nodiscard]] constexpr decltype(auto) back(this auto&& self) {
+  [[nodiscard]] constexpr auto& back(this auto&& self) {
     assert(!self.empty());
-    return (self.data_[self.size_ - 1]);
+    return self.data_[self.size_ - 1];
   }
 
   constexpr void push_back(const Value& value) {

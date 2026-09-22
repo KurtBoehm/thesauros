@@ -282,7 +282,7 @@ struct DynamicArray {
   constexpr iterator erase(iterator first, iterator last) {
     assert(first <= last);
     assert(last <= data_end_);
-    iterator new_end = std::move(last, data_end_, first);
+    iterator new_end = std::move(last, data_end_, first); // NOLINT(*-suspicious-call-argument)
     std::destroy(new_end, data_end_);
     data_end_ = new_end;
     return first;

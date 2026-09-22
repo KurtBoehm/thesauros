@@ -29,6 +29,10 @@ struct MapFactorization {
     Map& factorization;
 
     IterativeEmplacer(T factor, Map& factors) : k{factor}, factorization(factors) {}
+    IterativeEmplacer(const IterativeEmplacer&) = delete;
+    IterativeEmplacer(IterativeEmplacer&&) = delete;
+    IterativeEmplacer& operator=(const IterativeEmplacer&) = delete;
+    IterativeEmplacer& operator=(IterativeEmplacer&&) = delete;
     ~IterativeEmplacer() {
       if (cnt > 0) {
         factorization.emplace(k, cnt);

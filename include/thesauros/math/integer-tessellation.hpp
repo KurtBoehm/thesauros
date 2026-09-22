@@ -31,7 +31,7 @@ inline std::array<Int, Dims> box_tesselate(Int tile_num, std::array<Int, Dims> b
   }
 
   Sol best{};
-  auto op = [&](auto rec, Sol& sol, Int remaining, AnyIndexTag auto dim) {
+  const auto op = [&](auto rec, Sol& sol, Int remaining, AnyIndexTag auto dim) {
     if constexpr (dim + 1 == Dims) {
       std::get<dim>(sol.sol) = remaining;
       const auto [min, max] =

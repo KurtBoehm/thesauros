@@ -10,8 +10,10 @@
 namespace thes {
 template<class T>
 constexpr T& as_reference(T& t) noexcept {
-  return t;
+  return t; // NOLINT(*-return-const-ref-from-parameter)
 }
+template<class T>
+void as_reference(const T&&) = delete;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_UTILITY_KIND_CONVERT_HPP

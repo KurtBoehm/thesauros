@@ -45,7 +45,8 @@ struct TupleLeaf {
 template<typename IdxSeq, typename... Ts>
 struct Tuple;
 template<std::size_t... Is, typename... Ts>
-struct Tuple<std::index_sequence<Is...>, Ts...> : detail::TupleLeaf<Is, Ts>... {
+struct Tuple<std::index_sequence<Is...>, Ts...> // NOLINT(*-multiple-inheritance)
+    : detail::TupleLeaf<Is, Ts>... {
   explicit constexpr Tuple(Ts&&... args) : detail::TupleLeaf<Is, Ts>{std::forward<Ts>(args)}... {}
 
   template<typename... Vs>

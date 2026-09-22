@@ -27,7 +27,7 @@ concept ConstAccess = std::is_const_v<std::remove_reference_t<T>>;
 template<typename T, std::size_t Size = 1>
 inline constexpr bool is_complete = false;
 template<typename T>
-inline constexpr bool is_complete<T, sizeof(T) / sizeof(T)> = true; // NOLINT
+inline constexpr bool is_complete<T, sizeof(T) / sizeof(T)> = true; // NOLINT(*-redundant-*)
 template<typename T>
 concept CompleteType = is_complete<T>;
 

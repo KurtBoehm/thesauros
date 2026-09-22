@@ -18,8 +18,10 @@
 // Declared outside the anonymous namespace so that the reflection hook `THES_DEFINE_ENUM` defines
 // keeps external linkage, as it would in the program the enumeration belongs to.
 namespace inner {
+// NOLINTBEGIN(*-use-internal-linkage)
 THES_DEFINE_ENUM(SNAKE_CASE(Compression), thes::u8, LOWERCASE(None), LOWERCASE(Fast),
                  SNAKE_CASE(HighRatio))
+// NOLINTEND(*-use-internal-linkage)
 } // namespace inner
 
 namespace {

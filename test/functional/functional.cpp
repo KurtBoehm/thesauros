@@ -90,7 +90,7 @@ THES_TEST_CASE("NoOp<T> returns its stored value", "[functional][no-op]") {
 
 /** Checks that `AnyNoOp` is what callers use to compile out optional work. */
 THES_TEST_CASE("AnyNoOp distinguishes the no-op types", "[functional][no-op]") {
-  const auto is_no_op = []<typename T>() { return thes::AnyNoOp<T>; };
+  const auto is_no_op = []<typename T> { return thes::AnyNoOp<T>; };
 
   THES_CHECK(is_no_op.operator()<thes::NoOp<void>>());
   THES_CHECK(is_no_op.operator()<thes::NoOp<double>>());

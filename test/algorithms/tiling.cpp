@@ -116,7 +116,7 @@ void test_scalar() {
     static_assert(index_pos.position == std::array{5_uz, 4_uz, 0_uz});
   }
 
-  auto lambda = [](auto tag, auto ranges, auto map) {
+  const auto lambda = [](auto tag, auto ranges, auto map) {
     std::vector<std::size_t> idxs{};
     thes::tiled_for_each<tag>(
       thes::MultiSize{sizes}, ranges, tile_sizes, map,
@@ -136,11 +136,11 @@ void test_vectorized() {
   static constexpr auto tile_sizes = thes::star::constant<3>(4_uz);
 
 #if COMPILE_TIME
-  auto tiled_consteval = [&](auto tag, auto ranges, auto map) consteval {
+  const auto tiled_consteval = [&](auto tag, auto ranges, auto map) consteval {
     tiled_base(tag, sizes, ranges, tile_sizes, map);
   };
 #endif
-  auto tiled = [&](auto tag, auto ranges, auto map) {
+  const auto tiled = [&](auto tag, auto ranges, auto map) {
     tiled_base(tag, sizes, ranges.value, tile_sizes, map.value);
 #if COMPILE_TIME
     tiled_consteval(tag, ranges.value, map.value);
@@ -196,7 +196,7 @@ int main() {
   test_vectorized();
 
 #if COMPILE_TIME
-  []() consteval { test_small(); }();
+  [] consteval { test_small(); }();
 #endif
   test_small();
 }

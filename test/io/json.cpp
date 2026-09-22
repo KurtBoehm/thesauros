@@ -22,6 +22,7 @@
 
 namespace test = thes::test;
 
+// NOLINTBEGIN(*-use-internal-linkage)
 struct Test1 {
   THES_DEFINE_TYPE(SNAKE_CASE(Test1), CONSTEXPR_CONSTRUCTOR,
                    MEMBERS((KEEP(a), std::optional<double>), (KEEP(b), int)))
@@ -36,7 +37,9 @@ THES_CREATE_TYPE(SNAKE_CASE(Test4), NORMAL_CONSTRUCTOR,
 THES_CREATE_TYPE(SNAKE_CASE(Test4b), NORMAL_CONSTRUCTOR, LAYOUT_INFO(false),
                  MEMBERS((KEEP(a), int), (KEEP(b), (std::map<std::string, double>))))
 
+// NOLINTNEXTLINE(*-enum-size)
 THES_DEFINE_ENUM(SNAKE_CASE(Test5), int, LOWERCASE(None), SNAKE_CASE(HighRatio))
+// NOLINTEND(*-use-internal-linkage)
 
 int main() {
   using namespace thes::primitives;

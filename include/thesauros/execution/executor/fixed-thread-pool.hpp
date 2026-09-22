@@ -249,13 +249,14 @@ private:
     }
   }
 
+  // Written by the calling thread before the release store to `state_` and read by the workers
+  // that the store makes participants, which the calling thread waits for before writing again.
+  alignas(cache_line_bytes) mutable std::atomic<std::size_t> state_{0};
+
   std::size_t thread_num_;
   std::size_t spin_count_;
   std::thread::id owner_{std::this_thread::get_id()};
 
-  // Written by the calling thread before the release store to `state_` and read by the workers
-  // that the store makes participants, which the calling thread waits for before writing again.
-  alignas(cache_line_bytes) mutable std::atomic<std::size_t> state_{0};
   mutable std::atomic<bool> stop_{false};
   mutable void (*task_fun_)(const void*, std::size_t){nullptr};
   mutable const void* task_data_{nullptr};

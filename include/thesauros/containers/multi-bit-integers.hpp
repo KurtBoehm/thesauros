@@ -8,22 +8,23 @@
 #define INCLUDE_THESAUROS_CONTAINERS_MULTI_BIT_INTEGERS_HPP
 
 #include <atomic>
-#include <bit>
 #include <cassert>
 #include <concepts>
 #include <cstddef>
 #include <limits>
 #include <memory>
-#include <utility>
 
+#include "thesauros/concepts/numeric.hpp"
 #include "thesauros/containers/array/dynamic.hpp"
 #include "thesauros/containers/array/growth-policy.hpp"
 #include "thesauros/containers/array/initialization-policy.hpp"
 #include "thesauros/math/arithmetic.hpp"
+#include "thesauros/math/safe-integer.hpp"
+#include "thesauros/static-ranges/definitions/static-apply.hpp"
 
 namespace thes {
 template<std::unsigned_integral C, std::size_t BitN, typename A = std::allocator<C>>
-requires(std::has_single_bit(BitN))
+requires(PowerOfTwo<BitN>)
 struct MultiBitIntegers {
   using Chunk = C;
   using Allocator = A;
@@ -65,13 +66,14 @@ struct MultiBitIntegers {
       return thes::get_bit<Chunk>(chunk, index + offset);
     }
 
-    [[nodiscard]] constexpr operator Chunk() const { // NOLINT
-      return (chunk >> offset) & mask;
+    [[nodiscard]] constexpr operator Chunk() const { // NOLINT(*-explicit-*)
+      return ((SafeInt<Chunk>{chunk} >> offset) & mask).unsafe();
     }
 
   private:
     static constexpr Chunk update_chunk(Chunk chunk, std::size_t offset, Chunk value) {
-      return static_cast<Chunk>((chunk & ~(mask << offset)) | (value << offset));
+      using S = SafeInt<Chunk>;
+      return ((S{chunk} & ~(S{mask} << offset)) | (S{value} << offset)).unsafe();
     }
   };
 
@@ -80,17 +82,16 @@ struct MultiBitIntegers {
 
   explicit constexpr MultiBitIntegers(std::size_t size, Chunk value)
       : data_(div_ceil(size, per_chunk)), size_(size) {
-    const auto fill = [value]<std::size_t... I>(std::index_sequence<I...> /*idxs*/) {
-      return (... | (value << (BitN * I)));
-    }(std::make_index_sequence<per_chunk>{});
-    std::fill(data_.begin(), data_.end(), fill);
+    const auto fill = star::static_apply<per_chunk>(
+      [value]<std::size_t... I> { return (... | (SafeInt<Chunk>{value} << (BitN * I))); });
+    std::fill(data_.begin(), data_.end(), fill.unsafe());
   }
 
   [[nodiscard]] constexpr Chunk operator[](std::size_t index) const {
     assert(index < size_);
-    const Chunk out = data_[index / per_chunk];
+    const SafeInt<Chunk> out{data_[index / per_chunk]};
     const auto offset = BitN * (index % per_chunk);
-    return (out >> offset) & mask;
+    return ((out >> offset) & mask).unsafe();
   }
 
   [[nodiscard]] constexpr SetProxy operator[](std::size_t index) {

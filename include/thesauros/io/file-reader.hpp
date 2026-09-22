@@ -54,9 +54,14 @@ struct FileReader {
   template<typename T>
   requires(std::is_trivial_v<T>)
   THES_ALWAYS_INLINE void read(std::span<T> span) {
-    const auto ret = std::fread(span.data(), sizeof(T), span.size(), handle_);
-    if (ret != span.size()) {
-      throw FileException{cat("fread failed: ", ret, " != ", span.size())};
+    const std::size_t count = span.size();
+    if (count == 0) {
+      // Avoid an empty read.
+      return;
+    }
+    const auto ret = std::fread(span.data(), sizeof(T), count, handle_);
+    if (ret != count || std::ferror(handle_) != 0) {
+      throw FileException{cat("fread failed: ", ret, " != ", count)};
     }
   }
   THES_ALWAYS_INLINE void read(DynamicBuffer& buf, std::size_t size) {
@@ -81,7 +86,13 @@ struct FileReader {
       throw FileException{cat("read_full has to start at the beginning, not at ", off, "!")};
     }
     buf.resize(size());
-    buf.resize(try_read(std::span{buf.data(), buf.size()}));
+
+    const std::size_t n = try_read(std::span{buf.data(), buf.size()});
+    if constexpr (requires { buf.truncate(n); }) {
+      buf.truncate(n);
+    } else {
+      buf.resize(n);
+    }
   }
   template<BufferLike Buf>
   Buf read_full(TypeTag<Buf> /*tag*/ = {}) {
@@ -117,7 +128,7 @@ struct FileReader {
   std::size_t try_pread(DynamicBuffer& buf, std::size_t size, long offset) {
     buf.resize(size);
     const auto ret = try_pread(buf.span(), offset);
-    buf.resize(ret);
+    buf.truncate(ret);
     return ret;
   }
 

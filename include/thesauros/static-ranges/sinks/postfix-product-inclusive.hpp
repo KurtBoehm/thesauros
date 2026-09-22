@@ -23,7 +23,7 @@ THES_ALWAYS_INLINE inline constexpr auto postfix_product_inclusive(const Range& 
 
   return index_transform<size + 1>([&range](auto idx) THES_ALWAYS_INLINE {
     return static_apply<size - idx>(
-      [idx, &range]<std::size_t... I>() { return (Value{1} * ... * range[idx + I]); });
+      [idx, &range]<std::size_t... I> { return (Value{1} * ... * range[idx + I]); });
   });
 }
 } // namespace thes::star

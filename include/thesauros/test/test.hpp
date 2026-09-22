@@ -464,15 +464,14 @@ bool does_not_throw(Fn&& fn) {
 #define THES_CHECK_THROWS_AS(expr, exception_type) \
   ::thes::test::record( \
     ::thes::test::DecomposedExpression{ \
-      .passed = \
-        ::thes::test::throws_as<exception_type>([&]() -> decltype(auto) { return (expr); }), \
+      .passed = ::thes::test::throws_as<exception_type>([&] -> decltype(auto) { return (expr); }), \
     }, \
     #expr " throws " #exception_type)
 
 #define THES_CHECK_NOTHROW(expr) \
   ::thes::test::record( \
     ::thes::test::DecomposedExpression{ \
-      .passed = ::thes::test::does_not_throw([&]() -> decltype(auto) { return (expr); }), \
+      .passed = ::thes::test::does_not_throw([&] -> decltype(auto) { return (expr); }), \
     }, \
     #expr " does not throw")
 

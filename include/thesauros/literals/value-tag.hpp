@@ -15,6 +15,7 @@
 namespace thes {
 /** Carries the digits of an `_it` literal as a non-type template parameter. */
 struct IndexTagLiteral {
+  // NOLINTNEXTLINE(*-explicit-constructor)
   constexpr IndexTagLiteral(const char* charray)
       : value(parse_integer<std::size_t>(charray).value()) {}
 

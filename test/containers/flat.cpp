@@ -23,10 +23,10 @@ int main() {
     THES_ALWAYS_ASSERT(test::range_eq(map, ref));
   };
 
-  auto insert = [&](int key, int value) {
+  const auto insert = [&](int key, int value) {
     const auto res1 = map.insert(key, value);
 
-    auto it = std::ranges::find_if(ref, [&](auto e) { return e.first == key; });
+    const auto it = std::ranges::find_if(ref, [&](auto e) { return e.first == key; });
     const auto res2 = it == ref.end();
     if (res2) {
       ref.emplace_back(key, value);
@@ -38,10 +38,10 @@ int main() {
     assert_eq();
   };
 
-  auto erase = [&](int key) {
+  const auto erase = [&](int key) {
     const auto res1 = map.erase(key);
 
-    auto it = std::ranges::find_if(ref, [&](auto e) { return e.first == key; });
+    const auto it = std::ranges::find_if(ref, [&](auto e) { return e.first == key; });
     const auto res2 = it != ref.end();
     if (res2) {
       ref.erase(it);

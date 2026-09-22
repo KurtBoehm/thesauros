@@ -18,6 +18,7 @@
 #include <utility>
 
 #include "thesauros/ranges/exposition.hpp"
+#include "thesauros/static-ranges/definitions/static-apply.hpp"
 #include "thesauros/types/signedness.hpp"
 #endif
 
@@ -62,6 +63,7 @@ struct CartesianProductView : std::ranges::view_interface<CartesianProductView<F
     Iterator() = default;
 
     // C++23 26.7.32.3 §11
+    // NOLINTNEXTLINE(*-explicit-*)
     constexpr Iterator(Iterator<!Const> i)
     requires(Const &&
              (std::convertible_to<std::ranges::iterator_t<First>,
@@ -145,10 +147,10 @@ struct CartesianProductView : std::ranges::view_interface<CartesianProductView<F
 
     // C++23 26.7.32.3 §26
     friend constexpr bool operator==(const Iterator& x, std::default_sentinel_t /*sentinel*/) {
-      return [&]<std::size_t... I>(std::index_sequence<I...>) {
+      return star::static_apply<1 + sizeof...(V)>([&]<std::size_t... I> {
         return ((std::get<I>(x.current_) == std::ranges::end(std::get<I>(x.parent_->bases_))) ||
                 ...);
-      }(std::make_index_sequence<1 + sizeof...(V)>{});
+      });
     }
 
     // C++23 26.7.32.3 §27
@@ -190,10 +192,10 @@ struct CartesianProductView : std::ranges::view_interface<CartesianProductView<F
     friend constexpr difference_type operator-(const Iterator& i, std::default_sentinel_t /*s*/)
     requires(exposition::cartesian_is_sized_sentinel<Const, std::ranges::sentinel_t, First, V...>)
     {
-      std::tuple end_tuple = [&]<std::size_t... I>(std::index_sequence<I...>) {
+      const std::tuple end_tuple = star::static_apply<sizeof...(V)>([&]<std::size_t... I> {
         return std::tuple{std::ranges::end(std::get<0>(i.parent_->bases_)),
                           std::ranges::begin(std::get<1 + I>(i.parent_->bases_))...};
-      }(std::make_index_sequence<sizeof...(V)>{});
+      });
       return i.distance_from(end_tuple);
     }
 
@@ -212,17 +214,17 @@ struct CartesianProductView : std::ranges::view_interface<CartesianProductView<F
     // C++23 26.7.32.3 §37
     friend constexpr void
     iter_swap(const Iterator& l,
-              const Iterator& r) noexcept([&]<std::size_t... I>(std::index_sequence<I...> /*seq*/) {
+              const Iterator& r) noexcept(star::static_apply<sizeof...(V)>([&]<std::size_t... I> {
       return (... &&
               noexcept(std::ranges::iter_swap(std::get<I>(l.current_), std::get<I>(r.current_))));
-    }(std::index_sequence_for<V...>{}))
+    }))
     requires(
       std::indirectly_swappable<std::ranges::iterator_t<exposition::MaybeConst<Const, First>>> &&
       ... && std::indirectly_swappable<std::ranges::iterator_t<exposition::MaybeConst<Const, V>>>)
     {
-      [&]<std::size_t... I>(std::index_sequence<I...>) {
+      star::static_apply<1 + sizeof...(V)>([&]<std::size_t... I> {
         (std::ranges::iter_swap(std::get<I>(l.current_), std::get<I>(r.current_)), ...);
-      }(std::make_index_sequence<1 + sizeof...(V)>{});
+      });
     }
 
   private:
@@ -317,9 +319,8 @@ struct CartesianProductView : std::ranges::view_interface<CartesianProductView<F
     // C++23 26.7.32.3 §7-9
     template<typename Tuple>
     [[nodiscard]] constexpr difference_type distance_from(const Tuple& t) const {
-      return [&]<std::size_t... I>(std::index_sequence<I...>) {
-        return (scaled_distance<I>(t) + ...);
-      }(std::make_index_sequence<1 + sizeof...(V)>{});
+      return star::static_apply<1 + sizeof...(V)>(
+        [&]<std::size_t... I> { return (scaled_distance<I>(t) + ...); });
     }
 
     Parent* parent_ = nullptr;
@@ -351,14 +352,14 @@ struct CartesianProductView : std::ranges::view_interface<CartesianProductView<F
   requires((!exposition::simple_view<First> || ... || !exposition::simple_view<V>) &&
            exposition::cartesian_product_is_common<First, V...>)
   {
-    auto its = [this]<std::size_t... I>(std::index_sequence<I...>) {
+    auto its = star::static_apply<sizeof...(V)>([this]<std::size_t... I> {
       using Ret = std::tuple<std::ranges::iterator_t<First>, std::ranges::iterator_t<V>...>;
       bool is_empty = (std::ranges::empty(std::get<1 + I>(bases_)) || ...);
       auto& first = std::get<0>(bases_);
       return Ret{
         (is_empty ? std::ranges::begin(first) : exposition::cartesian_common_arg_end(first)),
         std::ranges::begin(std::get<1 + I>(bases_))...};
-    }(std::make_index_sequence<sizeof...(V)>{});
+    });
 
     return Iterator<false>{*this, std::move(its)};
   }
@@ -367,7 +368,7 @@ struct CartesianProductView : std::ranges::view_interface<CartesianProductView<F
   [[nodiscard]] constexpr Iterator<true> end() const
   requires(exposition::cartesian_product_is_common<const First, const V...>)
   {
-    auto its = [this]<std::size_t... I>(std::index_sequence<I...>) {
+    auto its = star::static_apply<sizeof...(V)>([this]<std::size_t... I> {
       using Ret =
         std::tuple<std::ranges::iterator_t<const First>, std::ranges::iterator_t<const V>...>;
       const bool is_empty = (std::ranges::empty(std::get<1 + I>(bases_)) || ...);
@@ -375,7 +376,7 @@ struct CartesianProductView : std::ranges::view_interface<CartesianProductView<F
       return Ret{
         (is_empty ? std::ranges::begin(first) : exposition::cartesian_common_arg_end(first)),
         std::ranges::begin(std::get<1 + I>(bases_))...};
-    }(std::make_index_sequence<sizeof...(V)>{});
+    });
 
     return Iterator<true>{*this, std::move(its)};
   }
@@ -390,9 +391,9 @@ struct CartesianProductView : std::ranges::view_interface<CartesianProductView<F
   requires(exposition::cartesian_product_is_sized<First, V...>)
   {
     using UnsignedDiff = MakeUnsigned<difference_type>;
-    return [&]<std::size_t... I>(std::index_sequence<I...>) {
+    return star::static_apply<1 + sizeof...(V)>([&]<std::size_t... I> {
       return (static_cast<UnsignedDiff>(std::ranges::size(std::get<I>(bases_))) * ...);
-    }(std::make_index_sequence<1 + sizeof...(V)>{});
+    });
   }
 
   // C++23 26.7.32.2 §7-11
@@ -400,9 +401,9 @@ struct CartesianProductView : std::ranges::view_interface<CartesianProductView<F
   requires(exposition::cartesian_product_is_sized<const First, const V...>)
   {
     using UnsignedDiff = MakeUnsigned<difference_type>;
-    return [&]<std::size_t... I>(std::index_sequence<I...>) {
+    return star::static_apply<1 + sizeof...(V)>([&]<std::size_t... I> {
       return (static_cast<UnsignedDiff>(std::ranges::size(std::get<I>(bases_))) * ...);
-    }(std::make_index_sequence<1 + sizeof...(V)>{});
+    });
   }
 
 private:

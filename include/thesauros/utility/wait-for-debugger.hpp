@@ -63,12 +63,12 @@ inline bool env_flag_enabled(const char* name) {
     return false;
   }
 
-  auto trimmed = trim(*env);
+  const auto trimmed = trim(*env);
   if (trimmed.empty()) {
     return false;
   }
 
-  auto lower = to_lower(trimmed);
+  const auto lower = to_lower(trimmed);
   return lower == "1" || lower == "true" || lower == "on";
 }
 

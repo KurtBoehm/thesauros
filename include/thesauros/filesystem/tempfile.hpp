@@ -36,7 +36,7 @@ inline std::filesystem::path mkdtemp(Rng& rng) {
   static constexpr std::size_t name_len = prefix_len + random_len;
   static constexpr std::string_view tmp_chars = "abcdefghijklmnopqrstuvwxyz0123456789_";
 
-  std::uniform_int_distribution<std::size_t> dist{0, tmp_chars.size() - 1};
+  std::uniform_int_distribution<std::size_t> dist{0, tmp_chars.size() - 1}; // NOLINT(*-const-*)
 
   const auto tmp_dir = std::filesystem::temp_directory_path();
   std::array<char, name_len> name{'t', 'm', 'p'};

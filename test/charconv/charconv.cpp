@@ -92,7 +92,7 @@ THES_TEMPLATE_TEST_CASE("numeric_string round-trips integral values", "[charconv
 }
 
 THES_TEST_CASE("numeric_string round-trips floating-point values", "[charconv][numeric_string]") {
-  auto round_trips = [](auto value) {
+  const auto round_trips = [](auto value) {
     using T = decltype(value);
     const auto text = thes::numeric_string(value);
     if (!text.has_value()) {

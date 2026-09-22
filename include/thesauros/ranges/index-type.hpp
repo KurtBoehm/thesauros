@@ -24,13 +24,13 @@ namespace thes::ranges {
 struct SignedIndexProbe {
   template<typename T>
   requires(std::signed_integral<T>)
-  constexpr operator T() const; // NOLINT(*-explicit-conversions)
+  constexpr operator T() const; // NOLINT(*-explicit-*)
 };
 /** The unsigned counterpart of `SignedIndexProbe`. */
 struct UnsignedIndexProbe {
   template<typename T>
   requires(std::unsigned_integral<T>)
-  constexpr operator T() const; // NOLINT(*-explicit-conversions)
+  constexpr operator T() const; // NOLINT(*-explicit-*)
 };
 
 template<typename Range>

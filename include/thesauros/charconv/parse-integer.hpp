@@ -33,11 +33,11 @@ template<typename T,
          TypedValueTag<IntegerParseMode> ParseMode = AutoTag<IntegerParseMode::extended>>
 [[nodiscard]] constexpr std::optional<T> parse_integer(std::string_view src,
                                                        ParseMode parse_mode = {}) {
-  auto parse_impl = [&](std::string_view number, auto op) -> std::optional<T> {
-    auto parse_base = [&]<std::size_t Base>(std::string_view sv, IndexTag<Base>) {
-      auto parse_char = [](char c) -> std::optional<T> {
+  const auto parse_impl = [&](std::string_view number, auto op) -> std::optional<T> {
+    const auto parse_base = [&]<std::size_t Base>(std::string_view sv, IndexTag<Base>) {
+      const auto parse_char = [](char c) -> std::optional<T> {
         // This slightly convoluted implementation optimizes better.
-        const auto digit = [c]() -> std::optional<T> {
+        const auto digit = [c] -> std::optional<T> {
           switch (c) {
             case '0': return T{0};
             case '1': return T{1};

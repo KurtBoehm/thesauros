@@ -15,6 +15,8 @@
 #include <limits>
 #include <utility>
 
+#include "thesauros/math/safe-integer.hpp"
+
 namespace thes {
 template<std::unsigned_integral T>
 constexpr T add_max(T a, T b, T max) {
@@ -47,16 +49,15 @@ template<std::size_t Exponent, typename T>
 constexpr T pow(const T& value) {
   if constexpr (Exponent == 0) {
     return T{1};
-  }
-  if constexpr (Exponent == 1) {
+  } else if constexpr (Exponent == 1) {
     return value;
-  }
-
-  const T half_exp{pow<Exponent / 2>(value)};
-  if constexpr (Exponent % 2 == 0) {
-    return half_exp * half_exp;
   } else {
-    return half_exp * half_exp * value;
+    const T half_exp = pow<Exponent / 2>(value);
+    if constexpr (Exponent % 2 == 0) {
+      return half_exp * half_exp;
+    } else {
+      return half_exp * half_exp * value;
+    }
   }
 }
 
@@ -71,7 +72,7 @@ constexpr unsigned log2_ceil(const auto n) {
 
 template<typename T>
 constexpr T bit_mask(T a) {
-  const auto w = std::countl_zero(a);
+  const auto w = static_cast<unsigned>(std::countl_zero(a));
   return (w == std::numeric_limits<T>::digits) ? 0 : (std::numeric_limits<T>::max() >> w);
 }
 
@@ -91,7 +92,8 @@ consteval unsigned abs_log_ceil(T base, T num) {
 
 template<std::unsigned_integral T>
 constexpr T set_bit(T value, auto bit_index, bool bit_value) {
-  return static_cast<T>((value & T(~(T{1} << bit_index))) + (T{bit_value} << bit_index));
+  using S = SafeInt<T>;
+  return ((S{value} & ~(S{1} << bit_index)) + (S{bit_value} << bit_index)).unsafe();
 }
 template<std::unsigned_integral T>
 constexpr bool get_bit(T value, auto bit_index) {
@@ -113,14 +115,14 @@ constexpr T isqrt_floor(T x) {
   if (x < 2) {
     return x;
   }
-  const unsigned bit_num = log2_floor(x) >> 1;
+  const unsigned bit_num = log2_floor(x) >> 1U;
   T root = T{1} << bit_num;
-  T bit = root >> 1;
+  T bit = root >> 1U;
   for (T i = 0; i < std::numeric_limits<T>::digits; ++i) {
     const T part = root | bit;
     const T sq = part * part;
     root = (x >= sq) ? part : root;
-    bit >>= 1;
+    bit >>= 1U;
     if (bit == 0) {
       break;
     }

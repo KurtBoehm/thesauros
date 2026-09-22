@@ -93,7 +93,7 @@ int main() {
   fmt::print("\n");
 
   {
-    auto impl = []<typename T>(thes::TypeTag<T>) {
+    const auto impl = []<typename T>(thes::TypeTag<T>) {
       for (const auto num : thes::views::indices<T>(512)) {
         fmt::print("UniformIndexSegmenter<T={}>, num: {}\n", thes::type_name<T>(), num);
         for (const auto blocks : thes::views::indices<T>(1, 256)) {
@@ -266,7 +266,7 @@ int main() {
     using Size = std::uint32_t;
     using Segment = std::uint16_t;
 
-    auto test_case = [](Size size, Segment seg_num, Size n0, Size n1) {
+    const auto test_case = [](Size size, Segment seg_num, Size n0, Size n1) {
       const thes::UniformIndexSegmenter<Size, Segment> base{size, seg_num};
       const thes::PaddedIndexSegmenter padded{base, n0, n1};
 

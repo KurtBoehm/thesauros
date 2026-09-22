@@ -44,7 +44,7 @@ int main() try {
   fmt::print("ARM64\n\n");
 #endif
 
-  auto run_scan = [&](auto pool) {
+  const auto run_scan = [&](auto pool) {
     const thes::LinearExecutionPolicy expo{pool};
 
     thes::transform_inclusive_scan(

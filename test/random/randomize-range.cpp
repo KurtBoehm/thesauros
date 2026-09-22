@@ -15,7 +15,7 @@ using Size = unsigned int;
 namespace {
 void run(const Size size) {
   fmt::print("test {}\n", size);
-  auto arr = std::views::iota(Size{0}, size);
+  const auto arr = std::views::iota(Size{0}, size);
   thes::DynamicArray<Size> perm(size);
   thes::RangeRandomizer rand{size, std::mt19937_64{size}};
   std::ranges::transform(arr, perm.begin(), [&](Size i) { return rand.transform(i); });

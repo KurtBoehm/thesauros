@@ -45,9 +45,11 @@ constexpr const std::remove_reference_t<R>& from_stored(const StoreType<R>& s) n
   if constexpr (std::is_lvalue_reference_v<R>) {
     return *s;
   } else {
-    return s;
+    return s; // NOLINT(*-return-const-ref-from-parameter)
   }
 }
+template<class T>
+void from_stored(const T&&) = delete;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_UTILITY_STORE_TYPE_HPP

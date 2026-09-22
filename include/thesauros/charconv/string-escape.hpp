@@ -41,7 +41,7 @@ template<typename C>
 requires(std::same_as<C, char> || std::same_as<C, char8_t>)
 inline auto escape_string(std::basic_string_view<C> in, auto out_it) {
   using enum UnicodeDecoder::State;
-  auto extend = [&out_it]<typename... Ts>(Ts... chars) { ((*out_it++ = chars), ...); };
+  const auto extend = [&out_it]<typename... Ts>(Ts... chars) { ((*out_it++ = chars), ...); };
 
   UnicodeDecoder decoder{};
 

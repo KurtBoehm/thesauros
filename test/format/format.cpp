@@ -11,6 +11,7 @@
 #include "thesauros/format.hpp"
 #include "thesauros/reflection/type.hpp"
 
+// NOLINTBEGIN(*-use-internal-linkage)
 struct S {
   int i;
 };
@@ -26,6 +27,7 @@ struct fmt::formatter<S> : thes::SimpleFormatter<> {
 THES_CREATE_TYPE(SNAKE_CASE(Test), NORMAL_CONSTRUCTOR, LAYOUT_INFO(false),
                  MEMBERS((KEEP(a), std::filesystem::path), (KEEP(c), std::string),
                          (KEEP(d), double)))
+// NOLINTEND(*-use-internal-linkage)
 
 int main() {
   fmt::print("{}\n", Test{std::filesystem::current_path(), "abc", 3.14});

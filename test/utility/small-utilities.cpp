@@ -120,7 +120,7 @@ static_assert(std::same_as<thes::StoreType<const int&>, const int*>);
 /** Checks that a value is stored by copy and comes back as a reference to that copy. */
 THES_TEST_CASE("values are stored by copy", "[utility][store-type]") {
   const int original = 3;
-  auto stored = thes::to_stored(std::move(original));
+  auto stored = thes::to_stored(std::move(original)); // NOLINT(*-move-const-arg)
   static_assert(std::same_as<decltype(stored), int>);
 
   THES_CHECK(stored == 3);

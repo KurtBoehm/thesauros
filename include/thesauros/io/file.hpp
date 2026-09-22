@@ -49,7 +49,7 @@ private:
   std::string message_;
 };
 
-enum struct Seek : int { set = SEEK_SET, cur = SEEK_CUR, end = SEEK_END }; // NOLINT
+enum struct Seek : int { set = SEEK_SET, cur = SEEK_CUR, end = SEEK_END }; // NOLINT(*-enum-size)
 
 inline decltype(auto) path_string(const std::filesystem::path& path) {
 #if THES_WINDOWS

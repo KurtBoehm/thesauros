@@ -64,16 +64,15 @@ struct StaticMap<Pairs...> {
   using DecayedTuple = thes::Tuple<std::remove_cvref_t<Pairs>...>;
 
   static constexpr bool contains(AnyValueTag auto key) {
-    auto impl = [key](auto idx, auto rec) {
+    return [key](this auto&& rec, auto idx) {
       if constexpr (idx == sizeof...(Pairs)) {
         return false;
       } else if constexpr (TupleElement<idx, DecayedTuple>::key == key.value) {
         return true;
       } else {
-        return rec(index_tag<idx + 1>, rec);
+        return rec(index_tag<idx + 1>);
       }
-    };
-    return impl(index_tag<0>, impl);
+    }(index_tag<0>);
   }
 
   template<auto... K>
@@ -85,17 +84,17 @@ struct StaticMap<Pairs...> {
   explicit constexpr StaticMap(Pairs&&... pairs) : _pairs{std::forward<Pairs>(pairs)...} {}
 
   [[nodiscard]] constexpr const auto& get(AnyValueTag auto key) const {
-    return get_impl<key.value>(*this);
+    return get_impl<key.value>();
   }
   [[nodiscard]] constexpr auto& get(AnyValueTag auto key) {
-    return get_impl<key.value>(*this);
+    return get_impl<key.value>();
   }
 
   [[nodiscard]] constexpr const auto& get(AnyValueTag auto key, const auto& def) const {
-    return get_impl<key.value>(*this, def);
+    return get_impl<key.value>(def);
   }
   [[nodiscard]] constexpr auto& get(AnyValueTag auto key, auto& def) {
-    return get_impl<key.value>(*this, def);
+    return get_impl<key.value>(def);
   }
 
   // _pairs must be public for StaticMap to be a structural type!
@@ -103,30 +102,28 @@ struct StaticMap<Pairs...> {
 
 private:
   template<auto K>
-  static constexpr auto& get_impl(auto& self) {
-    auto impl = [&self](auto idx, auto rec) -> const auto& {
+  constexpr auto& get_impl(this auto& self) {
+    return [&self](this auto&& rec, auto idx) -> const auto& {
       static_assert(idx < sizeof...(Pairs), "The key is not known!");
       if constexpr (TupleElement<idx, DecayedTuple>::key == K) {
         return star::get_at<idx>(self._pairs).value;
       } else {
-        return rec(index_tag<idx + 1>, rec);
+        return rec(index_tag<idx + 1>);
       }
-    };
-    return impl(index_tag<0>, impl);
+    }(index_tag<0>);
   }
 
   template<auto K>
-  static constexpr auto& get_impl(auto& self, auto& def) {
-    auto impl = [&](auto idx, auto rec) -> const auto& {
+  constexpr auto& get_impl(this auto& self, auto& def) {
+    return [&](this auto&& rec, auto idx) -> const auto& {
       if constexpr (idx == sizeof...(Pairs)) {
         return def;
       } else if constexpr (TupleElement<idx, DecayedTuple>::key == K) {
         return star::get_at<idx>(self._pairs).value;
       } else {
-        return rec(index_tag<idx + 1>, rec);
+        return rec(index_tag<idx + 1>);
       }
-    };
-    return impl(index_tag<0>, impl);
+    }(index_tag<0>);
   }
 };
 

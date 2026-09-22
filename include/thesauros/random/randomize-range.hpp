@@ -15,9 +15,9 @@
 namespace thes {
 template<std::unsigned_integral T>
 struct RangeRandomizer {
-  static constexpr auto mul = static_cast<T>(12605985483714917081ULL);
-  static constexpr auto digits = std::numeric_limits<T>::digits;
-  static constexpr T b1 = T{1} << (digits / 2);
+  static constexpr T mul = static_cast<T>(12605985483714917081ULL);
+  static constexpr int digits = std::numeric_limits<T>::digits;
+  static constexpr T b1 = T{1} << (unsigned{digits} / 2);
 
   template<typename Gen>
   explicit RangeRandomizer(T size, Gen gen)
@@ -28,10 +28,11 @@ struct RangeRandomizer {
   }
 
   [[nodiscard]] constexpr T transform(T x) const {
-    auto part = [this](const T y) {
+    const auto part = [this](const T y) {
       const T splits = size_ & ~y;
       // y < size_ => split != 0
-      const T m = (std::numeric_limits<T>::max() >> std::countl_zero(splits)) >> 1;
+      const auto cnt = static_cast<unsigned>(std::countl_zero(splits));
+      const T m = static_cast<T>(std::numeric_limits<T>::max() >> cnt) >> 1U;
 
       const T z = (y ^ (y >> T{1})) * mul;
       return (y & ~m) | (z & m);

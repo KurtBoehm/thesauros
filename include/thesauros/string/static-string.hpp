@@ -34,9 +34,11 @@ struct StaticString {
 
   Data data;
 
+  // NOLINTNEXTLINE(*-explicit-*)
   constexpr StaticString(const char* str)
       : data{star::static_apply<size + 1>(
-          [str]<std::size_t... I>() { return std::array{str[I]...}; })} {}
+          [str]<std::size_t... I> { return std::array{str[I]...}; })} {}
+  // NOLINTNEXTLINE(*-explicit-*)
   constexpr StaticString(Data&& d) : data{std::move(d)} {}
 
   static constexpr StaticString filled(char fill) {
@@ -75,13 +77,13 @@ struct StaticString {
 
     // number of characters before string i and an array of these
     constexpr auto prefix_size = [=](auto i) {
-      return star::static_apply<i>([]<std::size_t... I>() {
+      return star::static_apply<i>([]<std::size_t... I> {
         return (std::size_t{0} + ... +
                 (std::tuple_element_t<I, Tuple>::size + ((I + 1 < str_num) ? size : 0)));
       });
     };
     constexpr std::array<std::size_t, str_num + 1> prefix_sizes = star::static_apply<str_num + 1>(
-      [=]<std::size_t... I>() { return std::array{prefix_size(index_tag<I>)...}; });
+      [=]<std::size_t... I> { return std::array{prefix_size(index_tag<I>)...}; });
     // find the string (including the following copy of *this) which output index i falls into
     constexpr auto find_str = [=](auto i) {
       for (std::size_t j = 0; j < str_num; ++j) {
@@ -104,7 +106,7 @@ struct StaticString {
     };
 
     return StaticString<full_size>{star::static_apply<full_size>(
-      [=]<std::size_t... I>() { return std::array{get_char(index_tag<I>)..., '\0'}; })};
+      [=]<std::size_t... I> { return std::array{get_char(index_tag<I>)..., '\0'}; })};
   }
 
   constexpr StaticString<0> join() {

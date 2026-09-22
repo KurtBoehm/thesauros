@@ -196,6 +196,7 @@ struct NestedDynamicArrayBase {
     Storage values_{};
   };
 
+  // NOLINTNEXTLINE(*-crtp-constructor-accessibility)
   NestedDynamicArrayBase(SizeStorage&& offsets, Storage&& values)
       : offsets_(std::forward<SizeStorage>(offsets)), values_(std::forward<Storage>(values)) {
     assert(!offsets_.empty());

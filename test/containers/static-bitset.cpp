@@ -59,7 +59,7 @@ constexpr void test_range_behavior() {
   std::array<bool, Size> ref{};
   Bitset bitset{false};
 
-  auto assert_eq = [&] {
+  const auto assert_eq = [&] {
     if (!std::is_constant_evaluated()) {
       fmt::print("{}\n", bitset);
     }
@@ -82,7 +82,7 @@ constexpr void test_range_behavior() {
 
   // Mutation through the writable range interface.
   std::size_t idx = 0;
-  for (auto bit : bitset) {
+  for (const auto bit : bitset) {
     const bool value = idx % 3 == 0;
     bit = value;
     ref[idx] = value;
@@ -182,24 +182,24 @@ constexpr void test_pattern() {
     false, true,  false, true,  false, true,  false, true,  false, true,  false, true,  true,
   };
 
-  auto assert_eq = [&] {
+  const auto assert_eq = [&] {
     if (!std::is_constant_evaluated()) {
       fmt::print("{}\n", bitset);
     }
     THES_ALWAYS_ASSERT(test::range_eq(bitset, ref));
   };
 
-  auto set = [&](std::size_t idx) {
+  const auto set = [&](std::size_t idx) {
     bitset.set(idx);
     ref[idx] = true;
     assert_eq();
   };
-  auto unset = [&](std::size_t idx) {
+  const auto unset = [&](std::size_t idx) {
     bitset.unset(idx);
     ref[idx] = false;
     assert_eq();
   };
-  auto get = [&](std::size_t idx) {
+  const auto get = [&](std::size_t idx) {
     const bool v1 = bitset.get(idx);
     const bool v2 = ref[idx];
     THES_ALWAYS_ASSERT(v1 == v2);
@@ -207,7 +207,7 @@ constexpr void test_pattern() {
       fmt::print("@{}: {}\n", idx, v1);
     }
   };
-  auto countr_one = [&] {
+  const auto countr_one = [&] {
     const auto v1 = bitset.countr_one();
     const auto v2 = [&] {
       std::size_t count = 0;
@@ -221,7 +221,7 @@ constexpr void test_pattern() {
     }();
     THES_ALWAYS_ASSERT(v1 == v2);
   };
-  auto countr_zero = [&] {
+  const auto countr_zero = [&] {
     const auto v1 = bitset.countr_zero();
     const auto v2 = [&] {
       std::size_t count = 0;

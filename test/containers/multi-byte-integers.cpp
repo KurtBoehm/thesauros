@@ -54,31 +54,31 @@ void test_round_trip(auto... values) {
   Mbi integers{values...};
   std::vector<UInt> vec{values...};
 
-  auto elem_assert = [&integers, &vec] { THES_ALWAYS_ASSERT(test::range_eq(integers, vec)); };
-  auto push_back = [&integers, &vec](UInt v) {
+  const auto elem_assert = [&integers, &vec] { THES_ALWAYS_ASSERT(test::range_eq(integers, vec)); };
+  const auto push_back = [&integers, &vec](UInt v) {
     integers.push_back(v);
     vec.push_back(v);
   };
-  auto assign = [&integers, &vec](std::size_t i, UInt v) {
+  const auto assign = [&integers, &vec](std::size_t i, UInt v) {
     integers[i] = v;
     vec[i] = v;
   };
-  auto pop_back = [&integers, &vec] {
+  const auto pop_back = [&integers, &vec] {
     integers.pop_back();
     vec.pop_back();
   };
-  auto prepend = [&integers, &vec](auto range) {
+  const auto prepend = [&integers, &vec](auto range) {
     integers.insert(integers.begin(), range.begin(), range.end());
     vec.insert(vec.begin(), range.begin(), range.end());
   };
-  auto append = [&integers, &vec](auto range) {
+  const auto append = [&integers, &vec](auto range) {
     integers.insert(integers.end(), range.begin(), range.end());
     vec.insert(vec.end(), range.begin(), range.end());
   };
 
   elem_assert();
 
-  for (auto raw : std::initializer_list<thes::u64>{1, 2, 3, modulus / 5, modulus / 3}) {
+  for (const auto raw : std::initializer_list<thes::u64>{1, 2, 3, modulus / 5, modulus / 3}) {
     push_back(wrap<ByteInt>(raw));
     elem_assert();
   }
@@ -134,7 +134,7 @@ void test_round_trip(auto... values) {
     elem_assert();
   }
 
-  auto sub = integers.sub_range(2, 4);
+  auto sub = integers.sub_range(2, 4); // NOLINT(*-const-correctness)
   static_assert(std::ranges::random_access_range<decltype(sub)>);
 
   std::sort(sub.begin(), sub.end());
@@ -174,7 +174,7 @@ void test_construction() {
 
   const Mbi empty{};
   THES_ALWAYS_ASSERT(empty.empty());
-  THES_ALWAYS_ASSERT(empty.size() == 0);
+  THES_ALWAYS_ASSERT(empty.size() == 0); // NOLINT(*-container-size-empty)
   THES_ALWAYS_ASSERT(empty.begin() == empty.end());
 
   const Mbi sized(5);
@@ -287,7 +287,7 @@ void test_clear() {
 
   mbi.clear();
   THES_ALWAYS_ASSERT(mbi.empty());
-  THES_ALWAYS_ASSERT(mbi.size() == 0);
+  THES_ALWAYS_ASSERT(mbi.size() == 0); // NOLINT(*-container-size-empty)
   THES_ALWAYS_ASSERT(mbi.capacity() == cap);
 
   // Clearing an already empty array must be a no-op.
@@ -509,9 +509,9 @@ void test_int_ref_arithmetic() {
   THES_ALWAYS_ASSERT(mbi[1] == wrap<ByteInt>(0b1011));
   mbi[1] ^= wrap<ByteInt>(0b1111);
   THES_ALWAYS_ASSERT(mbi[1] == wrap<ByteInt>(0b0100));
-  mbi[1] <<= 2;
+  mbi[1] <<= 2U;
   THES_ALWAYS_ASSERT(mbi[1] == wrap<ByteInt>(0b10000));
-  mbi[1] >>= 3;
+  mbi[1] >>= 3U;
   THES_ALWAYS_ASSERT(mbi[1] == wrap<ByteInt>(0b00010));
 
   // The compound-assignment operators return a reference usable for chaining and conversion.
@@ -622,7 +622,7 @@ void test_reverse_iterator_arithmetic() {
   THES_ALWAYS_ASSERT(rit + 1 > rit);
   THES_ALWAYS_ASSERT(rit <= rit);
   THES_ALWAYS_ASSERT(rit >= rit);
-  THES_ALWAYS_ASSERT(rit != rit + 1);
+  THES_ALWAYS_ASSERT(rit != rit + 1); // NOLINT(*-redundant-expression)
 }
 
 /** Checks that a mutable reverse iterator converts to a const reverse iterator. */
@@ -648,7 +648,7 @@ void test_sub_range_reverse_iteration() {
 
   Mbi mbi{wrap<ByteInt>(1), wrap<ByteInt>(2), wrap<ByteInt>(3), wrap<ByteInt>(4), wrap<ByteInt>(5)};
 
-  auto sub = mbi.sub_range(1, 4);
+  auto sub = mbi.sub_range(1, 4); // NOLINT(*-const-correctness)
   const std::vector<UInt> backward{wrap<ByteInt>(4), wrap<ByteInt>(3), wrap<ByteInt>(2)};
   THES_ALWAYS_ASSERT(
     std::ranges::equal(sub.rbegin(), sub.rend(), backward.begin(), backward.end()));
@@ -657,7 +657,7 @@ void test_sub_range_reverse_iteration() {
   THES_ALWAYS_ASSERT(mbi[3] == wrap<ByteInt>(40));
 
   const Mbi& cmbi = mbi;
-  auto csub = cmbi.sub_range(1, 4);
+  const auto csub = cmbi.sub_range(1, 4);
   const std::vector<UInt> backward2{wrap<ByteInt>(40), wrap<ByteInt>(3), wrap<ByteInt>(2)};
   THES_ALWAYS_ASSERT(
     std::ranges::equal(csub.rbegin(), csub.rend(), backward2.begin(), backward2.end()));
@@ -706,14 +706,14 @@ void test_sub_range() {
 
   Mbi mbi{UInt{5}, UInt{3}, UInt{1}, UInt{4}, UInt{2}};
 
-  auto sub = mbi.sub_range(1, 4);
+  auto sub = mbi.sub_range(1, 4); // NOLINT(*-const-correctness)
   static_assert(std::ranges::random_access_range<decltype(sub)>);
   THES_ALWAYS_ASSERT(sub.size() == 3);
   std::sort(sub.begin(), sub.end());
   THES_ALWAYS_ASSERT(test::range_eq(mbi, std::vector<UInt>{5, 1, 3, 4, 2}));
 
   const Mbi& cmbi = mbi;
-  auto full = cmbi.full_sub_range();
+  const auto full = cmbi.full_sub_range();
   static_assert(std::ranges::random_access_range<decltype(full)>);
   THES_ALWAYS_ASSERT(full.size() == cmbi.size());
   THES_ALWAYS_ASSERT(std::ranges::equal(full, cmbi));
@@ -857,7 +857,7 @@ void test_insert_any_direct() {
   // elements originally before or after the insertion point.
   {
     Mbi mbi{wrap<ByteInt>(1), wrap<ByteInt>(2), wrap<ByteInt>(3), wrap<ByteInt>(4)};
-    auto it = mbi.insert_any(mbi.begin() + 2, 2, 3);
+    const auto it = mbi.insert_any(mbi.begin() + 2, 2, 3);
     THES_ALWAYS_ASSERT(mbi.size() == 4 + 2 + 3);
     const std::vector<UInt> mid{wrap<ByteInt>(50), wrap<ByteInt>(51)};
     mbi.copy_uninit(it, mid.begin(), mid.end());
@@ -879,7 +879,7 @@ void test_insert_any_direct() {
     }
     std::vector<UInt> big{};
     for (std::size_t i = 0; i < 100; ++i) {
-      big.push_back(wrap<ByteInt>(1000 + i));
+      big.push_back(wrap<ByteInt>(1000 + i)); // NOLINT(*-inefficient-vector-operation)
     }
     mbi.insert(mbi.begin() + 2, big.begin(), big.end());
     THES_ALWAYS_ASSERT(mbi.size() == 104);
@@ -914,7 +914,7 @@ void test_insert_all_positions() {
     for (std::size_t pos = 0; pos <= initial_size; ++pos) {
       std::vector<UInt> chunk;
       for (std::size_t i = 0; i < 3; ++i) {
-        chunk.push_back(wrap<ByteInt>(counter++));
+        chunk.push_back(wrap<ByteInt>(counter++)); // NOLINT(*-inefficient-vector-operation)
       }
       mbi.insert(mbi.begin() + static_cast<std::ptrdiff_t>(pos), chunk.begin(), chunk.end());
       vec.insert(vec.begin() + static_cast<std::ptrdiff_t>(pos), chunk.begin(), chunk.end());

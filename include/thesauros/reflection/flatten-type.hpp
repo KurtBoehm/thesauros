@@ -33,16 +33,15 @@ template<typename TypeInfo, auto Ptr>
 constexpr auto member_info_of() {
   constexpr auto members = TypeInfo::members;
 
-  auto impl = [&]<std::size_t Head, std::size_t... Tail>(auto rec,
-                                                         std::index_sequence<Head, Tail...>) {
+  return [&]<std::size_t Head, std::size_t... Tail>(this auto&& rec,
+                                                    std::index_sequence<Head, Tail...>) {
     constexpr auto member = star::get_at<Head>(members);
     if constexpr (member_ptrs_eq(member.pointer, Ptr)) {
       return member;
     } else {
-      return rec(rec, std::index_sequence<Tail...>{});
+      return rec(std::index_sequence<Tail...>{});
     }
-  };
-  return impl(impl, std::make_index_sequence<std::tuple_size_v<decltype(members)>>{});
+  }(std::make_index_sequence<std::tuple_size_v<decltype(members)>>{});
 }
 template<typename TypeInfo, auto Ptr>
 using MemberInfoTypeOf = decltype(member_info_of<TypeInfo, Ptr>());

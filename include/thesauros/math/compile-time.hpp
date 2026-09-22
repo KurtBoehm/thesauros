@@ -28,7 +28,7 @@ constexpr T abs(T value) {
 
 template<std::floating_point T>
 constexpr bool is_nan(const T x) noexcept {
-  return x != x;
+  return x != x; // NOLINT(*-redundant-*)
 }
 template<std::floating_point T>
 constexpr bool is_posinf(const T x) noexcept {

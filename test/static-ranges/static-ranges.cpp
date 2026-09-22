@@ -480,26 +480,26 @@ int main() {
                     .value() == 6);
     static_assert([&] {
       int idx = 0;
-      auto rng = std::array{0, 1, 0, 1} | star::transform([&](int v) -> std::optional<int> {
-                   ++idx;
-                   if (v == 0) {
-                     return v;
-                   }
-                   return std::nullopt;
-                 }) |
-                 star::first_value;
+      const auto rng = std::array{0, 1, 0, 1} | star::transform([&](int v) -> std::optional<int> {
+                         ++idx;
+                         if (v == 0) {
+                           return v;
+                         }
+                         return std::nullopt;
+                       }) |
+                       star::first_value;
       return std::make_pair(rng, idx);
     }() == std::make_pair(std::make_optional(0), 1));
     static_assert([&] {
       int idx = 0;
-      auto rng = std::array{0, 1, 0, 1} | star::transform([&](int v) -> std::optional<int> {
-                   ++idx;
-                   if (v == 1) {
-                     return v;
-                   }
-                   return std::nullopt;
-                 }) |
-                 star::first_value;
+      const auto rng = std::array{0, 1, 0, 1} | star::transform([&](int v) -> std::optional<int> {
+                         ++idx;
+                         if (v == 1) {
+                           return v;
+                         }
+                         return std::nullopt;
+                       }) |
+                       star::first_value;
       return std::make_pair(rng, idx);
     }() == std::make_pair(std::make_optional(1), 2));
     static_assert([&] {

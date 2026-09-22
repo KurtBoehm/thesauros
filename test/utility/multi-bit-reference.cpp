@@ -31,7 +31,7 @@ THES_TEST_CASE("a bit reference reads its own bit", "[utility][multi-bit-referen
   thes::u8 chunk{0b1010'0101};
 
   for (std::size_t i = 0; i < 8; ++i) {
-    const bool expected = ((chunk >> i) & 1U) != 0;
+    const bool expected = (static_cast<thes::u8>(chunk >> i) & 1U) != 0;
     THES_CHECK(bool(Ref<1>{chunk, i}) == expected);
   }
 }

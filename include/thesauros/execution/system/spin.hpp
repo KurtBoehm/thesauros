@@ -28,7 +28,7 @@ THES_ALWAYS_INLINE inline void spin_pause() {
 #elif THES_ARM64
   // `isb` is what standard library and other spin-wait implementations use on AArch64, since
   // `yield` is a no-op on most cores.
-  __asm__ __volatile__("isb" ::: "memory"); // NOLINT
+  __asm__ __volatile__("isb" ::: "memory"); // NOLINT(*-no-assembler)
 #else
   std::this_thread::yield();
 #endif

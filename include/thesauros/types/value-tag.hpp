@@ -18,7 +18,7 @@ struct ValueTag {
   using Self = ValueTag;
   static constexpr Value value = V;
 
-  constexpr operator Value() const noexcept {
+  constexpr operator Value() const noexcept { // NOLINT
     return value;
   }
   constexpr Value operator()() const noexcept {
@@ -35,7 +35,7 @@ using BoolTag = AutoTag<V>;
 template<typename T, T V>
 inline constexpr ValueTag<T, V> value_tag{};
 template<auto V>
-inline constexpr AutoTag<V> auto_tag{};
+inline constexpr AutoTag<V> auto_tag{}; // NOLINT(*-avoid-c-style-cast)
 template<std::size_t V>
 inline constexpr IndexTag<V> index_tag{};
 template<bool V>

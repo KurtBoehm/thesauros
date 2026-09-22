@@ -250,7 +250,7 @@ void test_mutable_iteration() {
   thes::DynamicBitset<std::uint32_t> b{16, false};
 
   std::size_t idx = 0;
-  for (auto bit : b) {
+  for (const auto bit : b) {
     bit = (idx % 3 == 0);
     ++idx;
   }
@@ -362,7 +362,7 @@ void test_concurrent_set_if_unset_disjoint() {
 
   std::array<std::atomic<std::size_t>, 2> claimed{};
 
-  auto worker = [&](std::size_t start, std::size_t stop, std::atomic<std::size_t>& counter) {
+  const auto worker = [&](std::size_t start, std::size_t stop, std::atomic<std::size_t>& counter) {
     for (std::size_t i = start; i < stop; ++i) {
       if (b.set_if_unset(i)) {
         ++counter;
@@ -389,7 +389,7 @@ void test_concurrent_set_if_unset_overlapping() {
 
   std::array<std::atomic<std::size_t>, 2> claimed{};
 
-  auto worker = [&](std::atomic<std::size_t>& counter) {
+  const auto worker = [&](std::atomic<std::size_t>& counter) {
     for (std::size_t i = 0; i < total; ++i) {
       if (b.set_if_unset(i)) {
         ++counter;

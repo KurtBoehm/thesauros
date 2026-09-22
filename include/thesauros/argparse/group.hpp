@@ -83,8 +83,8 @@ template<typename... Args>
 constexpr bool flags_are_unique(const Tuple<Args...>& arguments) {
   constexpr std::size_t argument_num = sizeof...(Args);
   const auto gather = [&](auto pick) {
-    return star::static_apply<argument_num>([&]<std::size_t... Is>() {
-      return std::array<std::string_view, argument_num>{pick(star::get_at<Is>(arguments))...};
+    return star::static_apply<argument_num>([&]<std::size_t... I> {
+      return std::array<std::string_view, argument_num>{pick(star::get_at<I>(arguments))...};
     });
   };
   const auto is_unique = [](const std::array<std::string_view, argument_num>& names) {
@@ -187,13 +187,13 @@ struct ArgumentGroup<Tuple<Args...>> {
    */
   [[nodiscard]] constexpr ArgumentGroup titled(std::string_view title) const {
     ArgumentGroup copy = *this;
-    star::static_apply<argument_num>([&]<std::size_t... Is>() {
+    star::static_apply<argument_num>([&]<std::size_t... I> {
       const auto fill = [title](auto& arg) {
         if (arg.section_name.empty()) {
           arg.section_name = title;
         }
       };
-      (fill(star::get_at<Is>(copy.arguments_)), ...);
+      (fill(star::get_at<I>(copy.arguments_)), ...);
     });
     return copy;
   }

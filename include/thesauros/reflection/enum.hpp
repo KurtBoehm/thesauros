@@ -86,18 +86,19 @@ concept HasEnumInfo = CompleteType<EnumInfo<T>>;
 template<auto Value>
 requires(HasEnumInfo<decltype(Value)>)
 inline constexpr auto enum_value_info = [] {
+  // NOLINTNEXTLINE(*-avoid-c-style-cast)
   using Info = EnumInfo<decltype(Value)>;
   constexpr auto values = Info::values;
 
-  auto impl = [&](auto self, auto idx) {
-    auto info = star::get_at<idx>(values);
+  return [&](this auto&& self, auto idx) {
+    const auto info = star::get_at<idx>(values);
+    // NOLINTNEXTLINE(*-avoid-c-style-cast)
     if constexpr (info.value == Value) {
       return info;
     } else {
-      return self(self, index_tag<idx + 1>);
+      return self(index_tag<idx + 1>);
     }
-  };
-  return impl(impl, index_tag<0>);
+  }(index_tag<0>);
 }();
 
 template<HasEnumInfo T>
@@ -120,18 +121,17 @@ template<HasEnumInfo Enum>
 constexpr std::optional<std::string_view> serial_name_of(Enum value) {
   constexpr auto values = EnumInfo<Enum>::values;
   constexpr std::size_t value_num = star::size<decltype(values)>;
-  auto op = [&](auto rec, AnyIndexTag auto depth) -> std::optional<std::string_view> {
+  return [&](this auto&& rec, AnyIndexTag auto depth) -> std::optional<std::string_view> {
     constexpr auto value_info = star::get_at<depth>(values);
     if (value_info.value == value) {
       return value_info.serial_name.view();
     }
     if constexpr (depth + 1 < value_num) {
-      return rec(rec, index_tag<depth + 1>);
+      return rec(index_tag<depth + 1>);
     } else {
       return std::nullopt;
     }
-  };
-  return op(op, index_tag<0>);
+  }(index_tag<0>);
 }
 
 // In contrast to magic_enum, this uses the serial names, which seems more appropriate
@@ -139,18 +139,17 @@ template<HasEnumInfo T>
 constexpr std::optional<T> enum_cast(std::string_view serial_name) {
   constexpr auto values = EnumInfo<T>::values;
   constexpr std::size_t value_num = star::size<decltype(values)>;
-  auto op = [&](auto rec, AnyIndexTag auto depth) -> std::optional<T> {
+  return [&](this auto&& rec, AnyIndexTag auto depth) -> std::optional<T> {
     constexpr auto value_info = star::get_at<depth>(values);
     if (value_info.serial_name.view() == serial_name) {
       return value_info.value;
     }
     if constexpr (depth + 1 < value_num) {
-      return rec(rec, index_tag<depth + 1>);
+      return rec(index_tag<depth + 1>);
     } else {
       return std::nullopt;
     }
-  };
-  return op(op, index_tag<0>);
+  }(index_tag<0>);
 }
 
 /** The serial names of the enumerators of `Enum`, in declaration order. */
@@ -158,9 +157,9 @@ template<HasEnumInfo Enum>
 inline constexpr auto serial_names = [] {
   using Info = EnumInfo<Enum>;
   constexpr std::size_t value_num = star::size<decltype(Info::values)>;
-  return star::static_apply<value_num>([]<std::size_t... Is>() {
+  return star::static_apply<value_num>([]<std::size_t... I> {
     return std::array<std::string_view, value_num>{
-      star::get_at<Is>(Info::values).serial_name.view()...};
+      star::get_at<I>(Info::values).serial_name.view()...};
   });
 }();
 } // namespace thes::reflect

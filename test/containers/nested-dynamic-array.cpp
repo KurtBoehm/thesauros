@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <initializer_list>
 #include <iterator>
 #include <ranges>
 #include <span>
@@ -19,7 +20,7 @@ namespace test = thes::test;
 
 namespace {
 using Nested = thes::NestedDynamicArray<int, std::size_t>;
-using Groups = std::vector<std::vector<int>>;
+using Groups = std::initializer_list<std::initializer_list<int>>;
 
 static_assert(std::ranges::random_access_range<Nested>);
 static_assert(std::ranges::random_access_range<const Nested>);
@@ -68,16 +69,18 @@ static_assert(std::ranges::random_access_range<const Nested>);
 
 /** Checks that `nested` has exactly the groups of `groups`, both by index and by iteration. */
 [[nodiscard]] bool matches(const Nested& nested, const Groups& groups) {
-  if (nested.size() != groups.size() || nested.group_num() != groups.size()) {
+  const std::span group_span{groups};
+
+  if (nested.size() != group_span.size() || nested.group_num() != group_span.size()) {
     return false;
   }
 
   std::size_t element_num = 0;
-  for (std::size_t i = 0; i < groups.size(); ++i) {
-    if (!test::range_eq(nested[i], groups[i])) {
+  for (std::size_t i = 0; i < group_span.size(); ++i) {
+    if (!test::range_eq(nested[i], group_span[i])) {
       return false;
     }
-    element_num += groups[i].size();
+    element_num += group_span[i].size();
   }
   if (nested.element_num() != element_num || nested.flat_size() != element_num) {
     return false;
@@ -85,15 +88,15 @@ static_assert(std::ranges::random_access_range<const Nested>);
 
   std::size_t index = 0;
   for (const std::span<const int> group : nested) {
-    if (index >= groups.size() || !test::range_eq(group, groups[index])) {
+    if (index >= group_span.size() || !test::range_eq(group, group_span[index])) {
       return false;
     }
     ++index;
   }
-  return index == groups.size();
+  return index == group_span.size();
 }
 
-const Groups sample{{1, 2, 3}, {}, {4}, {5, 6}};
+inline constexpr Groups sample{{1, 2, 3}, {}, {4}, {5, 6}};
 
 //==================================================================================================
 // Builders
@@ -160,14 +163,15 @@ THES_TEST_CASE("groups may all be empty", "[containers][nested-dynamic-array]") 
 
 /** Checks `front`, `back` and mutation through the non-const `operator[]`. */
 THES_TEST_CASE("front, back and mutable access", "[containers][nested-dynamic-array]") {
+  const std::span sample_span{sample};
   Nested nested = build_flat(sample);
 
-  THES_CHECK(test::range_eq(nested.front(), sample.front()));
-  THES_CHECK(test::range_eq(nested.back(), sample.back()));
+  THES_CHECK(test::range_eq(nested.front(), sample_span.front()));
+  THES_CHECK(test::range_eq(nested.back(), sample_span.back()));
 
   const Nested& cnested = nested;
-  THES_CHECK(test::range_eq(cnested.front(), sample.front()));
-  THES_CHECK(test::range_eq(cnested.back(), sample.back()));
+  THES_CHECK(test::range_eq(cnested.front(), sample_span.front()));
+  THES_CHECK(test::range_eq(cnested.back(), sample_span.back()));
 
   // The spans alias the container’s storage, so writing through one is visible afterwards.
   nested[0][1] = 20;
@@ -184,6 +188,7 @@ THES_TEST_CASE("front, back and mutable access", "[containers][nested-dynamic-ar
 
 /** Checks that iteration visits each group once, in order, for both iterator constnesses. */
 THES_TEST_CASE("iteration visits every group", "[containers][nested-dynamic-array]") {
+  const std::span sample_span{sample};
   Nested nested = build_flat(sample);
   const Nested& cnested = nested;
 
@@ -191,13 +196,13 @@ THES_TEST_CASE("iteration visits every group", "[containers][nested-dynamic-arra
   THES_CHECK(std::distance(cnested.begin(), cnested.end()) == 4);
 
   auto it = cnested.begin();
-  THES_CHECK(test::range_eq(*it, sample[0]));
+  THES_CHECK(test::range_eq(*it, sample_span[0]));
   ++it;
   THES_CHECK((*it).empty());
   ++it;
-  THES_CHECK(test::range_eq(*it, sample[2]));
+  THES_CHECK(test::range_eq(*it, sample_span[2]));
   ++it;
-  THES_CHECK(test::range_eq(*it, sample[3]));
+  THES_CHECK(test::range_eq(*it, sample_span[3]));
   ++it;
   THES_CHECK(it == cnested.end());
 

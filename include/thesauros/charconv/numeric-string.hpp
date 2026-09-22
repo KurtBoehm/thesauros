@@ -49,7 +49,7 @@ template<Numeric T>
 [[nodiscard]] constexpr std::expected<StaticCapacityString<max_char_num<T>>, std::errc>
 numeric_string(const T& value) {
   StaticCapacityString<max_char_num<T>> out{};
-  auto res = std::to_chars(out.data(), out.data() + max_char_num<T>, value);
+  const auto res = std::to_chars(out.data(), out.data() + max_char_num<T>, value);
   if (res.ec == std::errc{}) {
     out.set_size(safe_cast<std::size_t>(res.ptr - out.data()).valid_value());
     return out;

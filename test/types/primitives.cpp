@@ -5,7 +5,9 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <concepts>
+#include <cstddef>
 #include <cstdint>
+#include <type_traits>
 
 #include "thesauros/literals.hpp"
 #include "thesauros/types.hpp"
@@ -36,9 +38,9 @@ int main() {
 
   static_assert("-0b1'000'000"_iz == -0b1'000'000);
   static_assert(-"0b1000000"_iz == -0b1'000'000);
-  static_assert(
-    "-0b1000000000000000000000000000000000000000000000000000000000000000"_iz ==
-    static_cast<long long>(-0b1000000000000000000000000000000000000000000000000000000000000000));
+  static_assert("-0b1000000000000000000000000000000000000000000000000000000000000000"_iz ==
+                static_cast<std::make_signed_t<std::size_t>>(
+                  -0b1000000000000000000000000000000000000000000000000000000000000000));
   static_assert(-"0b1000000000000000000000000000000000000000000000000000000000000000"_uz ==
                 -0b1000000000000000000000000000000000000000000000000000000000000000UL);
   static_assert("128"_u8 == 128);

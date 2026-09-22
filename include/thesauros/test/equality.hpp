@@ -48,15 +48,15 @@ constexpr bool range_eq(Range1&& r1, Range2&& r2, // NOLINT(*-missing-std-forwar
 
   if constexpr (detail::AreIterRanges<Range1, Range2>) {
     auto it1 = std::ranges::begin(r1);
-    auto end1 = std::ranges::end(r1);
+    const auto end1 = std::ranges::end(r1);
     auto it2 = std::ranges::begin(r2);
-    auto end2 = std::ranges::end(r2);
+    const auto end2 = std::ranges::end(r2);
 
     constexpr bool print = !AnyNoOp<Print>;
     if constexpr (print) {
       printer("range_eq: ");
     }
-    std::size_t counter = 0;
+    std::size_t counter = 0; // NOLINT(*-const-*)
     for (const Delimiter delim{", "}; it1 != end1 && it2 != end2; ++it1, ++it2) {
       if constexpr (print) {
         printer("{}", delim);

@@ -118,9 +118,9 @@ int main() try {
   for (const std::size_t size : sizes) {
     fmt::print("{} threads\n", size);
 
-    auto bench = [size](std::string_view name, const auto& pool) {
+    const auto bench = [size](std::string_view name, const auto& pool) {
       std::vector<std::size_t> sink(size * stride, 0);
-      auto region = [&sink](std::size_t index) { sink[index * stride] += 1; };
+      const auto region = [&sink](std::size_t index) { sink[index * stride] += 1; };
 
       for ([[maybe_unused]] const std::size_t r : thes::views::indices(bench_warmup)) {
         pool.execute(region);

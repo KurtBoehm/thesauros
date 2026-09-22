@@ -3,6 +3,7 @@
 
 // IWYU pragma: begin_exports
 #include "concepts/fundamental.hpp"
+#include "concepts/numeric.hpp"
 #include "concepts/type-traits.hpp"
 // IWYU pragma: end_exports
 

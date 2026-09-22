@@ -64,8 +64,11 @@ using UnVoidStorage = std::conditional_t<std::same_as<std::remove_cvref_t<T>, Em
 
 template<typename T>
 constexpr VoidStorageConstLvalRef<UnVoidStorage<T>> void_storage_cref(const T& value) {
-  return value;
+  return value; // NOLINT(*-return-const-ref-from-parameter)
 }
+template<typename T>
+constexpr auto void_storage_cref(const T&& value) = delete;
+
 template<typename T>
 constexpr VoidStorageConstPtr<UnVoidStorage<T>> void_storage_cptr(const T& value) {
   if constexpr (std::is_void_v<UnVoidStorage<T>>) {

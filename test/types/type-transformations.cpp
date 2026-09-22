@@ -136,7 +136,7 @@ THES_TEST_CASE("AddConst on a reference protects the referee", "[types][type-tra
   thes::AddConst<int&> ref = value;
   THES_CHECK(ref == 3);
 
-  value = 4;
+  value = 4; // NOLINT(*-deadcode*)
   THES_CHECK(ref == 4);
   static_assert(!std::assignable_from<decltype(ref), int>);
 }

@@ -1,5 +1,5 @@
 ---
-Checks: "
+Checks: >
   bugprone-*,
   clang-analyzer-*,
   concurrency-*,
@@ -18,6 +18,7 @@ Checks: "
   -cppcoreguidelines-avoid-c-arrays,
   -cppcoreguidelines-avoid-const-or-ref-data-members,
   -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-explicit-constructor,
   -cppcoreguidelines-macro-usage,
   -cppcoreguidelines-missing-std-forward,
   -cppcoreguidelines-no-malloc,
@@ -37,32 +38,23 @@ Checks: "
   -readability-math-missing-parentheses,
   -readability-redundant-member-init,
   -readability-static-accessed-through-instance,
-  "
+  -readability-trailing-comma,
 WarningsAsErrors: ""
 HeaderFilterRegex: ""
 CheckOptions:
+  readability-redundant-parentheses.AllowedDecls: "IsOptional;PowerOfTwo"
   # Types
-  - { key: readability-identifier-naming.ClassCase, value: CamelCase }
-  - { key: readability-identifier-naming.StructCase, value: CamelCase }
-  - { key: readability-identifier-naming.EnumCase, value: CamelCase }
-  - { key: readability-identifier-naming.TypeAliasCase, value: CamelCase }
-  - {
-      key: readability-identifier-naming.TypeAliasIgnoredRegexp,
-      value: "^(const_)?(iterator|reverse_iterator|reference|pointer)$|^(value|size|difference|key|mapped|allocator|char|traits|hasher|key_equal)_type$|^type$|^[fiu][0-9]+",
-    }
-  - {
-      key: readability-identifier-naming.TemplateParameterCase,
-      value: CamelCase,
-    }
-  - {
-      key: readability-identifier-naming.ValueTemplateParameterCase,
-      value: CamelCase,
-    }
-
+  readability-identifier-naming.ClassCase: CamelCase
+  readability-identifier-naming.StructCase: CamelCase
+  readability-identifier-naming.EnumCase: CamelCase
+  readability-identifier-naming.TypeAliasCase: CamelCase
+  readability-identifier-naming.TypeAliasIgnoredRegexp: "^(const_)?(iterator|reverse_iterator|reference|pointer)$|^(value|size|difference|key|mapped|allocator|char|traits|hasher|key_equal)_type$|iterator_category|iterator_concept|^type$|^[fiu][0-9]+"
+  readability-identifier-naming.TemplateParameterCase: CamelCase
+  readability-identifier-naming.ValueTemplateParameterCase: CamelCase
   # Non-type identifiers
-  - { key: readability-identifier-naming.FunctionCase, value: lower_case }
-  - { key: readability-identifier-naming.VariableCase, value: lower_case }
-  - { key: readability-identifier-naming.NamespaceCase, value: lower_case }
-  - { key: readability-identifier-naming.ParameterCase, value: lower_case }
-  - { key: readability-identifier-naming.PrivateMemberCase, value: lower_case }
-  - { key: readability-identifier-naming.PrivateMemberSuffix, value: _ }
+  readability-identifier-naming.FunctionCase: lower_case
+  readability-identifier-naming.VariableCase: lower_case
+  readability-identifier-naming.NamespaceCase: lower_case
+  readability-identifier-naming.ParameterCase: lower_case
+  readability-identifier-naming.PrivateMemberCase: lower_case
+  readability-identifier-naming.PrivateMemberSuffix: _

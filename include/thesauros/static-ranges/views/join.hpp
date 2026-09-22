@@ -35,7 +35,7 @@ struct JoinView {
   template<std::size_t I>
   requires(I < size)
   THES_ALWAYS_INLINE friend constexpr auto get(const JoinView& self) {
-    constexpr auto pair = []() THES_ALWAYS_INLINE {
+    constexpr auto pair = [] THES_ALWAYS_INLINE {
       std::size_t sum = 0;
       std::optional<std::pair<std::size_t, std::size_t>> out{};
       star::for_each([&](auto idx) THES_ALWAYS_INLINE {

@@ -42,7 +42,7 @@ void test_set_unset_get(std::size_t size) {
   thes::FixedBitset<ChunkByteNum> bitset{size, false};
   std::vector<bool> ref(size, false);
 
-  auto assert_eq = [&] {
+  const auto assert_eq = [&] {
     THES_ALWAYS_ASSERT(bitset.size() == ref.size());
     THES_ALWAYS_ASSERT(test::range_eq(bitset, ref));
   };
@@ -105,7 +105,7 @@ void test_mutable_range(std::size_t size) {
   thes::FixedBitset<ChunkByteNum> bitset{size, false};
 
   std::size_t idx = 0;
-  for (auto bit : bitset) {
+  for (const auto bit : bitset) {
     bit = (idx % 2 == 0);
     ++idx;
   }
@@ -181,22 +181,22 @@ int main() {
     false, true,  false, true,  false, true,  false, true,  false, true,  false, true,  true,
   };
 
-  auto assert_eq = [&] {
+  const auto assert_eq = [&] {
     fmt::print("{}\n", bitset);
     THES_ALWAYS_ASSERT(test::range_eq(bitset, ref));
   };
 
-  auto set = [&](std::size_t idx) {
+  const auto set = [&](std::size_t idx) {
     bitset.set(idx);
     ref[idx] = true;
     assert_eq();
   };
-  auto unset = [&](std::size_t idx) {
+  const auto unset = [&](std::size_t idx) {
     bitset.unset(idx);
     ref[idx] = false;
     assert_eq();
   };
-  auto get = [&](std::size_t idx) {
+  const auto get = [&](std::size_t idx) {
     const bool v1 = bitset.get(idx);
     const bool v2 = ref[idx];
     THES_ALWAYS_ASSERT(v1 == v2);

@@ -181,7 +181,7 @@ struct SubMultiSize {
 
   [[nodiscard]] std::array<ranges::IotaRange<Size>, dimension_num> axis_ranges() const {
     return star::static_apply<dimension_num>(
-      [&]<std::size_t... I>() { return std::array{axis_range<I>()...}; });
+      [&]<std::size_t... I> { return std::array{axis_range<I>()...}; });
   }
   template<std::size_t Dim>
   [[nodiscard]] ranges::IotaRange<Size> axis_range(IndexTag<Dim> dim = {}) const {
@@ -193,11 +193,11 @@ struct SubMultiSize {
 
   [[nodiscard]] AxisSize local_to_global_pos(AxisSize pos) const {
     return star::static_apply<dimension_num>(
-      [&]<std::size_t... I>() { return std::array{(get<I>(pos) + axis_begin<I>())...}; });
+      [&]<std::size_t... I> { return std::array{(get<I>(pos) + axis_begin<I>())...}; });
   }
   [[nodiscard]] AxisSize global_to_local_pos(AxisSize pos) const {
     return star::static_apply<dimension_num>(
-      [&]<std::size_t... I>() { return std::array{(get<I>(pos) - axis_begin<I>())...}; });
+      [&]<std::size_t... I> { return std::array{(get<I>(pos) - axis_begin<I>())...}; });
   }
 
   [[nodiscard]] Size local_pos_to_index(AxisSize pos) const {
@@ -216,10 +216,10 @@ struct SubMultiSize {
 
   [[nodiscard]] SubMultiSize expand(Size amount,
                                     const MultiSize<Size, dimension_num>& world) const {
-    const auto offsets = star::static_apply<dimension_num>([&]<std::size_t... I>() {
+    const auto offsets = star::static_apply<dimension_num>([&]<std::size_t... I> {
       return AxisSize{sub_min(std::get<I>(offsets_), amount, Size{})...};
     });
-    const auto sizes = star::static_apply<dimension_num>([&]<std::size_t... I>() {
+    const auto sizes = star::static_apply<dimension_num>([&]<std::size_t... I> {
       return AxisSize{
         (add_max(axis_end<I>(), amount, world.axis_size(index_tag<I>)) - std::get<I>(offsets))...};
     });
@@ -240,7 +240,7 @@ struct SubMultiSize {
       return coord;
     };
     return star::static_apply<dimension_num>(
-      [&]<std::size_t... I>() { return std::array{f(index_tag<I>)...}; });
+      [&]<std::size_t... I> { return std::array{f(index_tag<I>)...}; });
   }
   // reflects the axes selected, where contains(pos) is assumed to be true
   [[nodiscard]] AxisSize reflect(AxisSize pos, std::array<bool, dimension_num> selectors) const {
@@ -252,12 +252,12 @@ struct SubMultiSize {
       return b ? (i1 - (coord - i0 + 1)) : coord;
     };
     return star::static_apply<dimension_num>(
-      [&]<std::size_t... I>() { return std::array{f(index_tag<I>)...}; });
+      [&]<std::size_t... I> { return std::array{f(index_tag<I>)...}; });
   }
 
   [[nodiscard]] bool contains(AxisSize pos) const {
     return star::static_apply<dimension_num>(
-      [&]<std::size_t... I>() { return (... && axis_range<I>().contains(std::get<I>(pos))); });
+      [&]<std::size_t... I> { return (... && axis_range<I>().contains(std::get<I>(pos))); });
   }
 
 private:

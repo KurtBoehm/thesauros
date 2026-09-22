@@ -150,7 +150,8 @@ template<std::floating_point T>
 [[nodiscard]] inline std::optional<T> parse_floating_value(std::string_view text) {
   T value{};
   const char* const end = text.data() + text.size();
-  const std::from_chars_result res = std::from_chars(text.data(), end, value);
+  const std::from_chars_result res =
+    std::from_chars(text.data(), end, value); // NOLINT(*-suspicious-stringview-data-usage)
   if (res.ec == std::errc{} && res.ptr == end) {
     return value;
   }

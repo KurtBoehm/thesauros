@@ -21,6 +21,7 @@
 
 namespace test = thes::test;
 
+namespace {
 struct S {
   S() {
     fmt::print("S{{}}\n");
@@ -48,6 +49,8 @@ struct S {
 
   bool operator==(const S&) const = default;
 };
+} // namespace
+
 template<>
 struct fmt::formatter<S> : fmt::nested_formatter<int> {
   auto format(const S& s, format_context& ctx) const {

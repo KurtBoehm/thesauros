@@ -17,6 +17,7 @@
 
 namespace test = thes::test;
 
+namespace {
 struct S {
   S() = default;
   explicit S(int j) : i(j) {}
@@ -39,6 +40,7 @@ struct S {
 
   bool operator==(const S&) const = default;
 };
+} // namespace
 
 template<>
 struct fmt::formatter<S> : fmt::nested_formatter<int> {
@@ -239,7 +241,7 @@ THES_TEST_CASE("block indexing and span", "[chunked][block]") {
   THES_REQUIRE(sp[2] == 30);
 
   const auto& carr = arr;
-  auto cblock = carr[0];
+  const auto cblock = carr[0];
   THES_CHECK(test::range_eq(cblock, std::array{10, 20, 30}));
 }
 

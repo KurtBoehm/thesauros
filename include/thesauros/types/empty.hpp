@@ -21,7 +21,9 @@ struct Empty {
 
 template<typename Fun, typename ArgTuple>
 constexpr auto apply_empty(Fun&& fun, ArgTuple&& args) {
-  auto impl = [&] { return std::apply(std::forward<Fun>(fun), std::forward<ArgTuple>(args)); };
+  const auto impl = [&] {
+    return std::apply(std::forward<Fun>(fun), std::forward<ArgTuple>(args));
+  };
   using Type = decltype(impl());
 
   if constexpr (std::is_void_v<Type>) {

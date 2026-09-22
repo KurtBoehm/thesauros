@@ -18,7 +18,7 @@
 namespace thes::star {
 template<AnyStaticRange auto Range>
 inline constexpr auto as_index_sequence = static_apply<size<decltype(Range)>>(
-  []<std::size_t... I>() { return std::index_sequence<get<I>(Range)...>{}; });
+  []<std::size_t... I> { return std::index_sequence<get<I>(Range)...>{}; });
 
 template<AnyStaticRange auto Range>
 using AsIndexSequence = std::remove_cvref_t<decltype(as_index_sequence<Range>)>;

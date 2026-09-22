@@ -64,8 +64,8 @@ struct ArrayStorage {
   }
 
   /** Returns the number of stored elements, as a mutable reference if `self` is mutable. */
-  [[nodiscard]] decltype(auto) size(this auto&& self) {
-    return (self.size_);
+  [[nodiscard]] auto& size(this auto&& self) {
+    return self.size_;
   }
 
   /** Computes the byte allocation, padding included, needed to store `allocation` elements. */
@@ -165,14 +165,14 @@ struct MultiByteIntegersBase {
 
     // These are required to be const for iterators to support std::indirectly_writable,
     // which is required for C++20 ranges, e.g. `std::ranges::sort`.
-    const IntRef& operator=(const IntRef& ref) const { // NOLINT
+    const IntRef& operator=(const IntRef& ref) const { // NOLINT(*assig*)
       return *this = Value{ref};
     }
-    const IntRef& operator=(IntRef&& ref) const noexcept { // NOLINT
+    const IntRef& operator=(IntRef&& ref) const noexcept { // NOLINT(*assig*)
       return *this = Value{ref};
     }
     /** Stores `value` at the referenced location. */
-    const IntRef& operator=(Value value) const { // NOLINT
+    const IntRef& operator=(Value value) const { // NOLINT(*assig*)
       if constexpr (!IsOptional) {
         assert(value == (value & mask));
       }
@@ -181,7 +181,7 @@ struct MultiByteIntegersBase {
     }
 
     /** Loads the referenced value. */
-    operator Value() const { // NOLINT
+    operator Value() const { // NOLINT(*-explicit-*)
       return load(ptr_);
     }
 
@@ -263,13 +263,13 @@ struct MultiByteIntegersBase {
       return *this = *safe_cast<Value>(Value{*this} ^ rhs);
     }
     /** Left-shifts the referenced value by `shift` bits. */
-    const IntRef& operator<<=(int shift) const
+    const IntRef& operator<<=(std::unsigned_integral auto shift) const
     requires(!IsOptional)
     {
       return *this = *safe_cast<Value>(Value{*this} << shift);
     }
     /** Right-shifts the referenced value by `shift` bits. */
-    const IntRef& operator>>=(int shift) const
+    const IntRef& operator>>=(std::unsigned_integral auto shift) const
     requires(!IsOptional)
     {
       return *this = *safe_cast<Value>(Value{*this} >> shift);
@@ -385,7 +385,7 @@ struct MultiByteIntegersBase {
       return ptr_;
     }
     /** Converts a mutable iterator to a const iterator. */
-    operator BaseIterator<true>() const { // NOLINT
+    operator BaseIterator<true>() const { // NOLINT(*-explicit-*)
       return BaseIterator<true>{ptr_};
     }
 
@@ -457,7 +457,7 @@ struct MultiByteIntegersBase {
     explicit BaseReverseIterator(Ptr ptr) : base_{ForwardIter{ptr}} {}
 
     /** Converts a mutable reverse iterator to a const reverse iterator. */
-    operator BaseReverseIterator<true>() const { // NOLINT
+    operator BaseReverseIterator<true>() const { // NOLINT(*-explicit-*)
       return BaseReverseIterator<true>{this->base().raw()};
     }
 

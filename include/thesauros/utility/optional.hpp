@@ -32,7 +32,9 @@ template<typename T>
 struct Optional : std::optional<T> {
   using std::optional<T>::optional;
 
+  // NOLINTNEXTLINE(*-explicit-constructor)
   Optional(const std::optional<T>& opt) : std::optional<T>(opt) {}
+  // NOLINTNEXTLINE(*-explicit-constructor)
   Optional(std::optional<T>&& opt) : std::optional<T>(std::move(opt)) {}
 
   template<detail::ReturnsOptional<T&> F>
