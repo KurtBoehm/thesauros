@@ -90,7 +90,7 @@ static constexpr auto flatten_variant(T&& value) {
         []<typename T2>(auto maker2, T2&& inner2) {
           return maker2(std::in_place_type<T2>, std::forward<T2>(inner2));
         },
-        FlattenType<std::decay_t<T1>>::flatten(std::forward<T1>(inner1)));
+        FlattenType<std::remove_cvref_t<T1>>::flatten(std::forward<T1>(inner1)));
     },
     std::forward<T>(value));
 }
@@ -112,7 +112,7 @@ struct FlattenType<T> {
 
 template<typename T>
 constexpr decltype(auto) flatten_type(T&& value) {
-  return FlattenType<std::decay_t<T>>::flatten(std::forward<T>(value));
+  return FlattenType<std::remove_cvref_t<T>>::flatten(std::forward<T>(value));
 }
 
 #define THES_POLIS_FLATTEN_TYPE_VAR_MEMS_IMPL(TYPE, NAME) &Self::NAME
@@ -169,7 +169,7 @@ constexpr decltype(auto) flatten_type(T&& value) {
       BOOST_PP_LIST_FOR_EACH_I(THES_POLIS_FLATTEN_TYPE_VAR_MEMS, TYPENAME, VARIANT_MEMBERS)}; \
 \
     constexpr auto make_index_sequence = [](const auto& tuple) { \
-      return std::make_index_sequence<std::tuple_size_v<std::decay_t<decltype(tuple)>>>{}; \
+      return std::make_index_sequence<std::tuple_size_v<std::remove_cvref_t<decltype(tuple)>>>{}; \
     }; \
 \
     constexpr auto variant_index_of = [=]<std::size_t I>(std::index_sequence<I>) { \

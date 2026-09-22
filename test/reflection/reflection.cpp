@@ -167,12 +167,12 @@ using Type7c = Test7<inner::Test2::B, std::optional<std::variant<int, Type7b>>>;
 
 constexpr auto test7fv = thes::reflect::flatten_type(Type7b{4, 4});
 static_assert(
-  std::same_as<std::decay_t<decltype(test7fv)>,
+  std::same_as<std::remove_cvref_t<decltype(test7fv)>,
                std::variant<Test7<inner::Test2::A, int>, Test7<inner::Test2::A, double>>>);
 
 constexpr auto test7fv2 = thes::reflect::flatten_type(std::variant<Type7b, Type7c>{Type7b{4, 4}});
 static_assert(
-  std::same_as<std::decay_t<decltype(test7fv2)>,
+  std::same_as<std::remove_cvref_t<decltype(test7fv2)>,
                std::variant<Test7<inner::Test2::A, int>, Test7<inner::Test2::A, double>,
                             Test7<inner::Test2::B, std::nullopt_t>, Test7<inner::Test2::B, int>,
                             Test7<inner::Test2::B, Test7<inner::Test2::A, int>>,

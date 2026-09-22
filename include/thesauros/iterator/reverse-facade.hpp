@@ -31,7 +31,7 @@ private:
   constexpr decltype(auto) deref(this const auto& self)
   requires(
     requires { self.rev_deref(); } ||
-    requires(std::decay_t<decltype(self)> tmp) {
+    requires(std::remove_cvref_t<decltype(self)> tmp) {
       *self.base();
       --tmp.base();
     })

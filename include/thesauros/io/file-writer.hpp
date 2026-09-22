@@ -41,7 +41,7 @@ struct FileWriter {
   }
 
   template<typename T>
-  requires std::is_trivial_v<std::decay_t<T>>
+  requires(std::is_trivial_v<std::remove_cvref_t<T>>)
   void write(std::span<T> span) {
     const auto written = std::fwrite(span.data(), sizeof(T), span.size(), handle_);
     if (written != span.size()) {

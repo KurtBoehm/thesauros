@@ -35,10 +35,10 @@ struct ValueBase<Fun, Ret, ArgRanges...> {
 };
 
 template<typename Fun, typename Ret, typename... ArgRanges>
-requires(std::is_void_v<Ret> && (... && HasValue<std::decay_t<ArgRanges>>))
+requires(std::is_void_v<Ret> && (... && HasValue<std::remove_cvref_t<ArgRanges>>))
 struct ValueBase<Fun, Ret, ArgRanges...> {
   using Value = decltype(std::declval<const Fun&>()(
-    std::declval<star::RawValue<std::decay_t<ArgRanges>>>()...));
+    std::declval<star::RawValue<std::remove_cvref_t<ArgRanges>>>()...));
 };
 } // namespace detail::transform
 

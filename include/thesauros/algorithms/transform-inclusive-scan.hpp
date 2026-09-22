@@ -25,11 +25,11 @@ inline void transform_inclusive_scan(ExecutionPolicy&& policy, ForwardIt1 first,
                                      UnaryOperation unary_op, T neutral) {
   const auto raw_size = std::distance(first, last);
   const auto size = [raw_size] {
-    using ExPo = std::decay_t<ExecutionPolicy>;
+    using ExPo = std::remove_cvref_t<ExecutionPolicy>;
     if constexpr (requires { typename ExPo::Size; }) {
       return *safe_cast<typename ExPo::Size>(raw_size);
     } else {
-      using Size = std::make_unsigned_t<std::decay_t<decltype(raw_size)>>;
+      using Size = std::make_unsigned_t<std::remove_cvref_t<decltype(raw_size)>>;
       return *safe_cast<Size>(raw_size);
     }
   }();

@@ -84,7 +84,7 @@ concept HasEnumInfo = CompleteType<EnumInfo<T>>;
   THES_DEFINE_ENUM_IMPL(NAME, UNDERLYING, BOOST_PP_VARIADIC_TO_LIST(__VA_ARGS__))
 
 template<auto Value>
-requires HasEnumInfo<decltype(Value)>
+requires(HasEnumInfo<decltype(Value)>)
 inline constexpr auto enum_value_info = [] {
   using Info = EnumInfo<decltype(Value)>;
   constexpr auto values = Info::values;
@@ -105,7 +105,7 @@ constexpr auto serial_name_of() {
   return EnumInfo<T>::serial_name;
 }
 template<auto Value>
-requires HasEnumInfo<decltype(Value)>
+requires(HasEnumInfo<decltype(Value)>)
 constexpr auto serial_name_of() {
   return enum_value_info<Value>.serial_name;
 }

@@ -16,7 +16,7 @@
 
 namespace thes::star {
 template<std::size_t I, typename Range>
-using Element = std::tuple_element_t<I, std::decay_t<Range>>;
+using Element = std::tuple_element_t<I, std::remove_cvref_t<Range>>;
 
 template<typename Range>
 struct ValueSeqTrait {
@@ -28,7 +28,7 @@ struct ValueSeqTrait {
     using Type = TypeSeq<Element<I, Range>...>;
   };
 
-  using Type = Impl<std::make_index_sequence<std::tuple_size_v<std::decay_t<Range>>>>::Type;
+  using Type = Impl<std::make_index_sequence<std::tuple_size_v<std::remove_cvref_t<Range>>>>::Type;
 };
 
 template<typename Range>
@@ -47,7 +47,7 @@ template<typename Range>
 struct ValueTrait;
 
 template<typename Range>
-requires detail::HasValue<Range>
+requires(detail::HasValue<Range>)
 struct ValueTrait<Range> {
   using Type = Range::Value;
 };
@@ -66,7 +66,7 @@ template<typename Range>
 requires(detail::HasValue<Range> || detail::HasTypeValue<Range> || detail::HasElemType<Range>)
 using RawValue = ValueTrait<Range>::Type;
 template<typename Range>
-using Value = std::decay_t<RawValue<Range>>;
+using Value = std::remove_cvref_t<RawValue<Range>>;
 
 template<typename Range>
 concept HasValue = requires { typename Value<Range>; };

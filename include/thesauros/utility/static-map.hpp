@@ -57,11 +57,11 @@ template<typename... Pairs>
 struct StaticMap;
 
 template<typename... Pairs>
-requires(Tuple<typename std::decay_t<Pairs>::Key...>{std::decay_t<Pairs>::key...} |
+requires(Tuple<typename std::remove_cvref_t<Pairs>::Key...>{std::remove_cvref_t<Pairs>::key...} |
          star::all_different)
 struct StaticMap<Pairs...> {
   using Tuple = thes::Tuple<Pairs...>;
-  using DecayedTuple = thes::Tuple<std::decay_t<Pairs>...>;
+  using DecayedTuple = thes::Tuple<std::remove_cvref_t<Pairs>...>;
 
   static constexpr bool contains(AnyValueTag auto key) {
     auto impl = [key](auto idx, auto rec) {
@@ -153,7 +153,7 @@ StaticMap(Pairs&&... pairs) -> StaticMap<Pairs...>;
 
 template<auto... Pairs>
 inline constexpr auto static_map_tag =
-  auto_tag<StaticMap((std::decay_t<decltype(Pairs)>(Pairs))...)>;
+  auto_tag<StaticMap((std::remove_cvref_t<decltype(Pairs)>(Pairs))...)>;
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_UTILITY_STATIC_MAP_HPP

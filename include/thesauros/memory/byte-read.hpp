@@ -13,7 +13,7 @@
 
 namespace thes {
 template<typename T>
-requires std::is_trivial_v<T>
+requires(std::is_trivial_v<T>)
 inline T byte_read(std::byte* ptr) {
   T v{};
   std::memcpy(&v, ptr, sizeof(T));

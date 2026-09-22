@@ -26,7 +26,7 @@ struct ValueTag {
   }
 };
 template<auto V>
-using AutoTag = ValueTag<std::decay_t<decltype(V)>, V>;
+using AutoTag = ValueTag<std::remove_cvref_t<decltype(V)>, V>;
 template<std::size_t V>
 using IndexTag = AutoTag<V>;
 template<bool V>
@@ -56,7 +56,7 @@ concept AnyValueTag = is_value_tag<VTag>;
 template<typename VTag>
 concept DerivedValueTag = !AnyValueTag<VTag> && requires {
   typename VTag::Value;
-  requires std::same_as<std::decay_t<decltype(VTag::value)>, typename VTag::Value>;
+  requires std::same_as<std::remove_cvref_t<decltype(VTag::value)>, typename VTag::Value>;
 } && std::derived_from<VTag, ValueTag<typename VTag::Value, VTag::value>>;
 template<typename VTag, typename T>
 concept TypedValueTag = AnyValueTag<VTag> && std::same_as<typename VTag::Value, T>;
@@ -66,12 +66,12 @@ template<typename VTag>
 concept AnyBoolTag = TypedValueTag<VTag, bool>;
 
 template<AnyValueTag Tag1, AnyValueTag Tag2>
-requires std::same_as<typename Tag1::Value, typename Tag2::Value>
+requires(std::same_as<typename Tag1::Value, typename Tag2::Value>)
 constexpr bool operator==(Tag1 tag1, Tag2 tag2) {
   return tag1.value == tag2.value;
 }
 template<DerivedValueTag Tag1, DerivedValueTag Tag2>
-requires std::same_as<typename Tag1::Value, typename Tag2::Value>
+requires(std::same_as<typename Tag1::Value, typename Tag2::Value>)
 constexpr bool operator==(Tag1 tag1, Tag2 tag2) = delete;
 } // namespace thes
 

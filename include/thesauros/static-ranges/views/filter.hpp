@@ -25,7 +25,7 @@
 namespace thes::star {
 template<typename Inner, auto IdxRange>
 struct FilterView {
-  using IndexRange = std::decay_t<decltype(IdxRange)>;
+  using IndexRange = std::remove_cvref_t<decltype(IdxRange)>;
   static constexpr std::size_t size = star::size<IndexRange>;
   static constexpr TupleDefsMarker tuple_defs_marker{};
 

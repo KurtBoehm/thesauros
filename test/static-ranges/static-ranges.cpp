@@ -445,7 +445,7 @@ int main() {
     static constexpr thes::Tuple idxs{thes::index_tag<0>, thes::index_tag<2>};
     static constexpr auto idxs_seq = star::as_index_sequence<idxs>;
     using IdxsSeq = star::AsIndexSequence<idxs>;
-    static_assert(std::same_as<std::decay_t<decltype(idxs_seq)>, std::index_sequence<0, 2>>);
+    static_assert(std::same_as<std::remove_cvref_t<decltype(idxs_seq)>, std::index_sequence<0, 2>>);
     static_assert(std::same_as<IdxsSeq, std::index_sequence<0, 2>>);
   }
 

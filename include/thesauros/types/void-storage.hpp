@@ -60,7 +60,7 @@ template<typename T>
 using VoidStorageConstPtr = VoidTypeTrait<T, std::add_const, std::add_pointer>::Storage;
 
 template<typename T>
-using UnVoidStorage = std::conditional_t<std::same_as<std::decay_t<T>, Empty>, void, T>;
+using UnVoidStorage = std::conditional_t<std::same_as<std::remove_cvref_t<T>, Empty>, void, T>;
 
 template<typename T>
 constexpr VoidStorageConstLvalRef<UnVoidStorage<T>> void_storage_cref(const T& value) {

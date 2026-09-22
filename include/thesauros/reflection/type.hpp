@@ -21,7 +21,7 @@
 namespace thes::reflect {
 template<auto Name, auto SerialName, auto Value>
 struct StaticMemberInfo {
-  using Type = std::decay_t<decltype(Value)>;
+  using Type = std::remove_cvref_t<decltype(Value)>;
   static constexpr auto name = Name;
   static constexpr auto serial_name = SerialName;
   static constexpr auto value = Value;

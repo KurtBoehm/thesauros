@@ -35,7 +35,7 @@ struct SerialValueTrait {
 
 template<typename T>
 constexpr decltype(auto) serial_value(T&& value) {
-  return SerialValueTrait<std::decay_t<T>>::make(std::forward<T>(value));
+  return SerialValueTrait<std::remove_cvref_t<T>>::make(std::forward<T>(value));
 }
 
 template<HasEnumInfo T>

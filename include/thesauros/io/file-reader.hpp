@@ -41,7 +41,7 @@ struct FileReader {
   }
 
   template<typename T>
-  requires std::is_trivial_v<T>
+  requires(std::is_trivial_v<T>)
   THES_ALWAYS_INLINE std::size_t try_read(std::span<T> span) {
     const auto ret = std::fread(span.data(), sizeof(T), span.size(), handle_);
     const auto err = std::ferror(handle_);
@@ -52,7 +52,7 @@ struct FileReader {
   }
 
   template<typename T>
-  requires std::is_trivial_v<T>
+  requires(std::is_trivial_v<T>)
   THES_ALWAYS_INLINE void read(std::span<T> span) {
     const auto ret = std::fread(span.data(), sizeof(T), span.size(), handle_);
     if (ret != span.size()) {
@@ -64,12 +64,12 @@ struct FileReader {
     read(buf.span());
   }
   template<typename T, std::size_t N>
-  requires std::is_trivial_v<T>
+  requires(std::is_trivial_v<T>)
   THES_ALWAYS_INLINE void read(std::array<T, N>& array) {
     read(std::span{array.data(), array.size()});
   }
   template<typename T>
-  requires std::is_trivial_v<T>
+  requires(std::is_trivial_v<T>)
   THES_ALWAYS_INLINE T read(TypeTag<T> /*tag*/) {
     T value{};
     read(std::span{&value, 1});
@@ -106,7 +106,7 @@ struct FileReader {
   }
 
   template<typename T>
-  requires std::is_trivial_v<T>
+  requires(std::is_trivial_v<T>)
   std::size_t try_pread(std::span<T> span, long offset) {
     const auto pre = tell();
     seek(offset, Seek::set);
@@ -122,7 +122,7 @@ struct FileReader {
   }
 
   template<typename T>
-  requires std::is_trivial_v<T>
+  requires(std::is_trivial_v<T>)
   void pread(std::span<T> span, long offset) {
     const auto ret = try_pread(span, offset);
     if (ret != span.size()) {
@@ -130,7 +130,7 @@ struct FileReader {
     }
   }
   template<typename T>
-  requires std::is_trivial_v<T>
+  requires(std::is_trivial_v<T>)
   T pread(long offset, TypeTag<T> /*tag*/) {
     T value{};
     pread(std::span{&value, 1}, offset);

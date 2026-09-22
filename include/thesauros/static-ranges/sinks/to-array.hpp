@@ -23,7 +23,7 @@ namespace thes::star {
 struct ToArrayGenerator : ConsumerGeneratorBase {
   template<typename R>
   THES_ALWAYS_INLINE constexpr auto operator()(R&& range) const {
-    using Range = std::decay_t<R>;
+    using Range = std::remove_cvref_t<R>;
     constexpr std::size_t size = star::size<Range>;
 
     if constexpr (size > 0) {

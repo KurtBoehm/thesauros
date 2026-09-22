@@ -9,6 +9,7 @@
 
 #include <concepts>
 #include <ranges>
+#include <type_traits>
 
 namespace thes::ranges {
 //--------------------------------------------------------------------------------------------------
@@ -45,7 +46,7 @@ concept IsUnsignedIndexed = requires(Range& r) { r[UnsignedIndexProbe{}]; };
 template<typename Range>
 using RangeIndex = decltype([] {
   using Bare = std::remove_reference_t<Range>;
-  using Size = std::decay_t<decltype(std::declval<Bare&>().size())>;
+  using Size = std::remove_cvref_t<decltype(std::declval<Bare&>().size())>;
 
   if constexpr (IsSignedIndexed<Bare> && !IsUnsignedIndexed<Bare>) {
     if constexpr (std::ranges::range<Bare>) {

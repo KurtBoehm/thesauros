@@ -8,6 +8,7 @@
 #define INCLUDE_THESAUROS_STATIC_RANGES_SINKS_AS_INDEX_SEQUENCE_HPP
 
 #include <cstddef>
+#include <type_traits>
 #include <utility>
 
 #include "thesauros/static-ranges/definitions/concepts.hpp"
@@ -20,7 +21,7 @@ inline constexpr auto as_index_sequence = static_apply<size<decltype(Range)>>(
   []<std::size_t... I>() { return std::index_sequence<get<I>(Range)...>{}; });
 
 template<AnyStaticRange auto Range>
-using AsIndexSequence = std::decay_t<decltype(as_index_sequence<Range>)>;
+using AsIndexSequence = std::remove_cvref_t<decltype(as_index_sequence<Range>)>;
 } // namespace thes::star
 
 #endif // INCLUDE_THESAUROS_STATIC_RANGES_SINKS_AS_INDEX_SEQUENCE_HPP

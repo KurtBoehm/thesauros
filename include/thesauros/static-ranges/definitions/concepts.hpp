@@ -12,9 +12,9 @@
 #include <type_traits>
 #include <utility>
 
-#include "get-at.hpp"
-#include "size.hpp"
-#include "type-traits.hpp"
+#include "thesauros/static-ranges/definitions/get-at.hpp"
+#include "thesauros/static-ranges/definitions/size.hpp"
+#include "thesauros/static-ranges/definitions/type-traits.hpp"
 
 namespace thes::star {
 template<typename Range, std::size_t I>

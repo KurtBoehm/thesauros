@@ -84,7 +84,7 @@ constexpr bool range_eq(Range1&& r1, Range2&& r2, // NOLINT(*-missing-std-forwar
     using Index1 = ranges::RangeIndex<Range1>;
     using Index2 = ranges::RangeIndex<Range2>;
 
-    for (std::decay_t<decltype(size1)> i = 0; i < size1; ++i) {
+    for (std::remove_cvref_t<decltype(size1)> i = 0; i < size1; ++i) {
       if (!equal(r1[*safe_cast<Index1>(i)], r2[*safe_cast<Index2>(i)])) {
         return false;
       }

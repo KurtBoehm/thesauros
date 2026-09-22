@@ -17,7 +17,7 @@
 namespace thes::star {
 template<typename V>
 struct ContainsGenerator : ConsumerGeneratorBase {
-  using Value = std::decay_t<V>;
+  using Value = std::remove_cvref_t<V>;
 
   V value;
 
@@ -27,7 +27,7 @@ struct ContainsGenerator : ConsumerGeneratorBase {
   constexpr bool operator()(Range&& range) const {
     return apply([&](const auto&... values) {
       return (... || [&]<typename T>(const T& v) {
-        if constexpr (std::same_as<Value, std::decay_t<T>>) {
+        if constexpr (std::same_as<Value, std::remove_cvref_t<T>>) {
           return value == v;
         } else {
           return false;

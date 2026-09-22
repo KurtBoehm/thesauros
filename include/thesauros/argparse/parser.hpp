@@ -274,13 +274,13 @@ struct ArgumentParser<Tuple<Args...>> {
       sink(" [--version]");
     }
     for_each_argument([&](const auto& arg) {
-      if constexpr (std::decay_t<decltype(arg)>::is_named) {
+      if constexpr (std::remove_cvref_t<decltype(arg)>::is_named) {
         sink(" ");
         detail::usage_parts(arg, sink, style);
       }
     });
     for_each_argument([&](const auto& arg) {
-      if constexpr (!std::decay_t<decltype(arg)>::is_named) {
+      if constexpr (!std::remove_cvref_t<decltype(arg)>::is_named) {
         sink(" ");
         detail::usage_parts(arg, sink, style);
       }
@@ -304,7 +304,7 @@ struct ArgumentParser<Tuple<Args...>> {
       sink(style.heading, "Positional arguments:");
       sink("\n");
       for_each_argument([&](const auto& arg) {
-        if constexpr (!std::decay_t<decltype(arg)>::is_named) {
+        if constexpr (!std::remove_cvref_t<decltype(arg)>::is_named) {
           detail::write_row(out, arg, width, style);
         }
       });
@@ -312,7 +312,7 @@ struct ArgumentParser<Tuple<Args...>> {
 
     const auto write_section = [&](std::string_view title) {
       for_each_argument([&](const auto& arg) {
-        if constexpr (std::decay_t<decltype(arg)>::is_named) {
+        if constexpr (std::remove_cvref_t<decltype(arg)>::is_named) {
           if (arg.section_name == title) {
             detail::write_row(out, arg, width, style);
           }
@@ -476,7 +476,7 @@ private:
   [[nodiscard]] constexpr std::size_t named_num_in(std::string_view title) const {
     std::size_t found = 0;
     for_each_argument([&](const auto& arg) {
-      if constexpr (std::decay_t<decltype(arg)>::is_named) {
+      if constexpr (std::remove_cvref_t<decltype(arg)>::is_named) {
         if (arg.section_name == title) {
           ++found;
         }
@@ -492,7 +492,7 @@ private:
     std::array<std::string_view, argument_num> titles{};
     std::size_t title_num = 0;
     for_each_argument([&](const auto& arg) {
-      if constexpr (std::decay_t<decltype(arg)>::is_named) {
+      if constexpr (std::remove_cvref_t<decltype(arg)>::is_named) {
         if (arg.section_name.empty()) {
           return;
         }
@@ -548,7 +548,7 @@ private:
                                                   Values& values,
                                                   std::array<bool, argument_num>& seen) const {
     return visit_argument(index, [&]<std::size_t I>(IndexTag<I> /*tag*/) {
-      using Arg = std::decay_t<decltype(star::get_at<I>(arguments_))>;
+      using Arg = std::remove_cvref_t<decltype(star::get_at<I>(arguments_))>;
       const Arg& arg = star::get_at<I>(arguments_);
       auto& slot = star::get_at<I>(values.storage);
       seen[I] = true;
@@ -665,7 +665,7 @@ private:
 
     const std::optional<ParseError> error = visit_argument(index, [&]<std::size_t I>(
                                                                     IndexTag<I> /*tag*/) {
-      using Arg = std::decay_t<decltype(star::get_at<I>(arguments_))>;
+      using Arg = std::remove_cvref_t<decltype(star::get_at<I>(arguments_))>;
       const Arg& arg = star::get_at<I>(arguments_);
       auto& slot = star::get_at<I>(values.storage);
 
@@ -715,7 +715,7 @@ private:
   constexpr std::optional<ParseError> complete(const CollectedRanges& collected, Values& values,
                                                const std::array<bool, argument_num>& seen) const {
     const auto finish = [&]<std::size_t I>(IndexTag<I> /*tag*/) {
-      using Arg = std::decay_t<decltype(star::get_at<I>(arguments_))>;
+      using Arg = std::remove_cvref_t<decltype(star::get_at<I>(arguments_))>;
       [[maybe_unused]] const Arg& arg = star::get_at<I>(arguments_);
 
       if constexpr (Arg::kind == ArgumentKind::list) {

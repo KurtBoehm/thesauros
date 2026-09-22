@@ -15,9 +15,9 @@
 
 namespace thes::star {
 template<typename Range>
-concept HasSize = CompleteType<std::tuple_size<std::decay_t<Range>>>;
+concept HasSize = CompleteType<std::tuple_size<std::remove_cvref_t<Range>>>;
 template<HasSize Range>
-inline constexpr std::size_t size = std::tuple_size_v<std::decay_t<Range>>;
+inline constexpr std::size_t size = std::tuple_size_v<std::remove_cvref_t<Range>>;
 template<HasSize Range>
 inline constexpr bool is_empty = size<Range> == 0;
 } // namespace thes::star

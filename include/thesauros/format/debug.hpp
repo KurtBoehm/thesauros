@@ -38,7 +38,7 @@ struct fmt::formatter<thes::DebugPrinter<T>> {
   }
 
 private:
-  fmt::formatter<std::decay_t<T>> formatter_{};
+  fmt::formatter<std::remove_cvref_t<T>> formatter_{};
 };
 
 #endif // INCLUDE_THESAUROS_FORMAT_DEBUG_HPP

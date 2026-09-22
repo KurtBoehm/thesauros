@@ -55,7 +55,7 @@ struct IndexPosition {
    * @return `index + rhs`
    */
   friend constexpr decltype(auto) operator+(IndexPosition lhs, auto rhs)
-  requires requires(Index lhs_index) { lhs_index + rhs; }
+  requires(requires(Index lhs_index) { lhs_index + rhs; })
   {
     return lhs.index + rhs;
   }

@@ -26,7 +26,7 @@ namespace thes::star {
 template<typename Ranges>
 struct JoinView {
   static constexpr std::size_t size = []<std::size_t... I>(std::index_sequence<I...>) {
-    return (0UZ + ... + star::size<std::decay_t<Element<I, Ranges>>>);
+    return (0UZ + ... + star::size<std::remove_cvref_t<Element<I, Ranges>>>);
   }(std::make_index_sequence<star::size<Ranges>>{});
   static constexpr TupleDefsMarker tuple_defs_marker{};
 
@@ -39,7 +39,7 @@ struct JoinView {
       std::size_t sum = 0;
       std::optional<std::pair<std::size_t, std::size_t>> out{};
       star::for_each([&](auto idx) THES_ALWAYS_INLINE {
-        constexpr std::size_t idx_size = star::size<std::decay_t<Element<idx, Ranges>>>;
+        constexpr std::size_t idx_size = star::size<std::remove_cvref_t<Element<idx, Ranges>>>;
         if (sum <= I && I < sum + idx_size) {
           if (out.has_value()) {
             std::abort();

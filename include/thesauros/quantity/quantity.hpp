@@ -140,7 +140,7 @@ inline constexpr bool is_quantity = false;
 template<typename R, typename U>
 inline constexpr bool is_quantity<Quantity<R, U>> = true;
 template<typename T>
-concept AnyQuantity = is_quantity<std::decay_t<T>>;
+concept AnyQuantity = is_quantity<std::remove_cvref_t<T>>;
 
 template<typename U1, typename U2>
 struct UnitRatioTrait;
