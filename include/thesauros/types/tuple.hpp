@@ -18,6 +18,13 @@
 #include "thesauros/types/value-tag.hpp"
 
 namespace thes {
+/**
+ * A tag which distinguishes the `Tuple` constructor that constructs each element in place from a
+ * generator.
+ */
+struct GenerateTag {};
+inline constexpr GenerateTag generate_tag{};
+
 namespace detail {
 template<typename T>
 inline constexpr bool is_equality_comparable = std::equality_comparable<T>;
@@ -44,20 +51,25 @@ struct TupleLeaf {
 
 template<typename IdxSeq, typename... Ts>
 struct Tuple;
-template<std::size_t... Is, typename... Ts>
-struct Tuple<std::index_sequence<Is...>, Ts...> // NOLINT(*-multiple-inheritance)
-    : detail::TupleLeaf<Is, Ts>... {
-  explicit constexpr Tuple(Ts&&... args) : detail::TupleLeaf<Is, Ts>{std::forward<Ts>(args)}... {}
+template<std::size_t... I, typename... Ts>
+struct Tuple<std::index_sequence<I...>, Ts...> // NOLINT(*-multiple-inheritance)
+    : detail::TupleLeaf<I, Ts>... {
+  explicit constexpr Tuple(Ts&&... args) : detail::TupleLeaf<I, Ts>{std::forward<Ts>(args)}... {}
 
   template<typename... Vs>
   requires(sizeof...(Vs) > 0 && sizeof...(Vs) == sizeof...(Ts) &&
            (... && std::is_constructible_v<Ts, Vs>))
   explicit constexpr Tuple(Vs&&... args)
-      : detail::TupleLeaf<Is, Ts>{Ts{std::forward<Vs>(args)}}... {}
+      : detail::TupleLeaf<I, Ts>{Ts{std::forward<Vs>(args)}}... {}
+
+  /** Constructs element `I` from `gen(index_tag<I>)`. */
+  template<typename Gen>
+  constexpr Tuple(GenerateTag /*tag*/, Gen&& gen)
+      : detail::TupleLeaf<I, Ts>{gen(index_tag<I>)}... {}
 
   constexpr Tuple()
   requires(... && std::is_default_constructible_v<Ts>)
-      : detail::TupleLeaf<Is, Ts>{Ts{}}... {}
+      : detail::TupleLeaf<I, Ts>{Ts{}}... {}
 
   constexpr bool operator==(const Tuple& other) const = default;
   constexpr auto operator<=>(const Tuple& other) const = default;
