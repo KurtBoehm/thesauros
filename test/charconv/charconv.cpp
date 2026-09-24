@@ -33,11 +33,11 @@ using namespace std::string_view_literals;
 /** Confirms `numeric_string` round-trips integral values at compile time. */
 consteval bool numeric_string_works_at_compile_time() {
   const auto integral = thes::numeric_string(42);
-  if (!integral.has_value() || std::string_view(integral->data(), integral->size()) != "42") {
+  if (!integral.has_value() || std::string_view{integral->data(), integral->size()} != "42") {
     return false;
   }
   const auto negative = thes::numeric_string(-7);
-  return negative.has_value() && std::string_view(negative->data(), negative->size()) == "-7";
+  return negative.has_value() && std::string_view{negative->data(), negative->size()} == "-7";
 }
 static_assert(numeric_string_works_at_compile_time());
 

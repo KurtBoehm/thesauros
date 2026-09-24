@@ -140,7 +140,7 @@ struct NestedDynamicArrayBase {
     [[nodiscard]] Derived build() {
       assert(offsets_current_ + 1 == offsets_.end());
       assert(values_current_ == values_.end());
-      return Derived(std::move(offsets_), std::move(values_));
+      return Derived{std::move(offsets_), std::move(values_)};
     }
 
   private:
@@ -183,12 +183,12 @@ struct NestedDynamicArrayBase {
     }
 
     NestedBuilderInner part_builder(Size nested_from, Size full_from) {
-      return NestedBuilderInner(offsets_.begin() + nested_from, values_.begin(),
-                                values_.begin() + full_from);
+      return NestedBuilderInner{offsets_.begin() + nested_from, values_.begin(),
+                                values_.begin() + full_from};
     }
 
     Derived build() {
-      return Derived(std::move(offsets_), std::move(values_));
+      return Derived{std::move(offsets_), std::move(values_)};
     }
 
   private:

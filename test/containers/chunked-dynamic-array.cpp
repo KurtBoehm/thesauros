@@ -20,7 +20,7 @@ namespace test = thes::test;
 namespace {
 struct S {
   S() = default;
-  explicit S(int j) : i(j) {}
+  explicit S(int j) : i{j} {}
 
   S(const S&) = default;
   S(S&&) = default;

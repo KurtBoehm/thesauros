@@ -35,7 +35,7 @@ struct ResourceUsage {
   using Memory = Quantity<long, unit::kibibyte>;
 #endif
 
-  ResourceUsage() : ResourceUsage(get_rusage()) {}
+  ResourceUsage() : ResourceUsage{get_rusage()} {}
 
   [[nodiscard]] Memory max_memory() const {
     return max_memory_;
@@ -55,14 +55,14 @@ private:
   }
 
   static Duration convert_time(const timeval time) {
-    const auto sec = Quantity<long, unit::second>(time.tv_sec);
-    const auto usec = Quantity<long, unit::microsecond>(time.tv_usec);
+    const auto sec = Quantity<long, unit::second>{time.tv_sec};
+    const auto usec = Quantity<long, unit::microsecond>{time.tv_usec};
     return sec + usec;
   }
 
   explicit ResourceUsage(rusage usage)
-      : max_memory_(usage.ru_maxrss), user_time_(convert_time(usage.ru_utime)),
-        system_time_(convert_time(usage.ru_stime)) {}
+      : max_memory_{usage.ru_maxrss}, user_time_{convert_time(usage.ru_utime)},
+        system_time_{convert_time(usage.ru_stime)} {}
 
   Memory max_memory_;
   Duration user_time_;

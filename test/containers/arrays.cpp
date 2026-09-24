@@ -26,7 +26,7 @@ struct S {
   S() {
     fmt::print("S{{}}\n");
   }
-  explicit S(int j) : i(j) {
+  explicit S(int j) : i{j} {
     fmt::print("S{{{}}}\n", i);
   }
 

@@ -14,11 +14,11 @@ template<std::integral T>
 struct SafeInt {
   explicit constexpr SafeInt(T value) : value_{value} {}
 
-  [[nodiscard]] T unsafe() const {
+  [[nodiscard]] constexpr T unsafe() const {
     return value_;
   }
 
-  SafeInt operator~() {
+  constexpr SafeInt operator~() const {
     return SafeInt{static_cast<T>(~value_)};
   }
 

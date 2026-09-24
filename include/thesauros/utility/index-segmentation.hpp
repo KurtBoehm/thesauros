@@ -204,7 +204,7 @@ struct BlockedIndexSegmenter {
    * @param block_size  Size of a block in indices.
    */
   constexpr BlockedIndexSegmenter(Size size, Segment segment_num, Size block_size) noexcept
-      : size_(size), block_size_(block_size), block_seg_(div_ceil(size, block_size), segment_num) {}
+      : size_{size}, block_size_{block_size}, block_seg_{div_ceil(size, block_size), segment_num} {}
 
   /** First index of a segment. */
   [[nodiscard]] constexpr Size segment_start(const Segment segment) const noexcept {

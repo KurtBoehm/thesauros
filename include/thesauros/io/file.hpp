@@ -39,7 +39,7 @@ concept BufferLike = requires(T& mbuf, const T& cbuf, std::size_t size) {
 };
 
 struct FileException : std::exception {
-  explicit FileException(std::string msg) : message_(std::move(msg)) {}
+  explicit FileException(std::string msg) : message_{std::move(msg)} {}
 
   [[nodiscard]] const char* what() const noexcept override {
     return message_.c_str();

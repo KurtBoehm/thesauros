@@ -79,7 +79,7 @@ THES_TEST_CASE("indices compose with transform", "[ranges][indices]") {
 
 /** Checks that a subrange over a transformed `indices` behaves like the transformed range. */
 THES_TEST_CASE("a subrange preserves the transformed range", "[ranges][indices]") {
-  constexpr auto sub = std::ranges::subrange(doubled.begin(), doubled.end());
+  constexpr auto sub = std::ranges::subrange{doubled.begin(), doubled.end()};
 
   THES_CHECK(test::range_eq(sub, std::array{0, 2, 4, 6, 8, 10, 12, 14, 16, 18}));
   THES_CHECK(sub.begin()[1] == 2);

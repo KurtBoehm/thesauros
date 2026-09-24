@@ -54,11 +54,11 @@ struct MultiBitIntegers {
     }
     constexpr void set_bit(Chunk index, bool value, std::memory_order mem_order) {
       const std::atomic_ref ref{chunk};
-      const auto bmask = Chunk(Chunk{1} << (index + offset));
+      const auto bmask = SafeInt<Chunk>{1} << (index + offset);
       if (value) {
-        ref.fetch_or(bmask, mem_order);
+        ref.fetch_or(bmask.unsafe(), mem_order);
       } else {
-        ref.fetch_and(Chunk(~bmask), mem_order);
+        ref.fetch_and((~bmask).unsafe(), mem_order);
       }
     }
 

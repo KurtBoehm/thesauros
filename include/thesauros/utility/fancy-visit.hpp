@@ -34,7 +34,7 @@ struct FancyVisitor {
     requires(std::is_lvalue_reference_v<Raw>)
     {
       using RefWrap = std::reference_wrapper<Base>;
-      return std::variant<RefWrap>{RefWrap(value)};
+      return std::variant<RefWrap>{RefWrap{value}};
     }
 
     static constexpr auto pack(Raw&& value)

@@ -16,7 +16,7 @@ template<typename E>
 struct LinearExecutionPolicy {
   using Executor = E;
 
-  explicit LinearExecutionPolicy(const E& executor) : executor_(executor) {}
+  explicit LinearExecutionPolicy(const E& executor) : executor_{executor} {}
 
   template<typename S, typename F>
   void execute_segmented(S size, F&& f) const { // NOLINT(*-missing-std-forward)

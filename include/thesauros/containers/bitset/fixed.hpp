@@ -20,6 +20,7 @@
 #include "thesauros/containers/bitset/iterator.hpp"
 #include "thesauros/math/arithmetic.hpp"
 #include "thesauros/math/bit.hpp"
+#include "thesauros/math/safe-integer.hpp"
 #include "thesauros/ranges/indices.hpp"
 #include "thesauros/static-ranges/sinks/for-each.hpp"
 #include "thesauros/static-ranges/sinks/reduce.hpp"
@@ -151,7 +152,7 @@ struct FixedBitset {
 
 private:
   static constexpr Chunk mask(std::size_t i) {
-    return Chunk(Chunk{1} << i);
+    return (SafeInt<Chunk>{1} << i).unsafe();
   }
 
   template<typename Counter>

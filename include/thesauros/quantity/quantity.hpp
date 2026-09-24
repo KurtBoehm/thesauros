@@ -166,19 +166,19 @@ constexpr OutQuant quantity_cast(const Quantity<R, Unit<Mul, BUnit>>& sc) {
 
   if constexpr (CMul::num == 1) {
     if constexpr (CMul::den == 1) {
-      return OutQuant(static_cast<ToRep>(sc.count()));
+      return OutQuant{static_cast<ToRep>(sc.count())};
     } else {
-      return OutQuant(
-        static_cast<ToRep>(static_cast<CRep>(sc.count()) / static_cast<CRep>(CMul::den)));
+      return OutQuant{
+        static_cast<ToRep>(static_cast<CRep>(sc.count()) / static_cast<CRep>(CMul::den))};
     }
   } else {
     if constexpr (CMul::den == 1) {
-      return OutQuant(
-        static_cast<ToRep>(static_cast<CRep>(sc.count()) * static_cast<CRep>(CMul::num)));
+      return OutQuant{
+        static_cast<ToRep>(static_cast<CRep>(sc.count()) * static_cast<CRep>(CMul::num))};
     } else {
-      return OutQuant(
+      return OutQuant{
         static_cast<ToRep>(static_cast<CRep>(sc.count()) * static_cast<CRep>(CMul::num) /
-                           static_cast<CRep>(CMul::den)));
+                           static_cast<CRep>(CMul::den))};
     }
   }
 }
@@ -209,14 +209,14 @@ constexpr auto operator+(const Quantity<Rep1, Unit<Mul1, BUnit>>& lhs,
                          const Quantity<Rep2, Unit<Mul2, BUnit>>& rhs) {
   using Out =
     std::common_type_t<Quantity<Rep1, Unit<Mul1, BUnit>>, Quantity<Rep2, Unit<Mul2, BUnit>>>;
-  return Out(quantity_cast<Out>(lhs).count() + quantity_cast<Out>(rhs).count());
+  return Out{quantity_cast<Out>(lhs).count() + quantity_cast<Out>(rhs).count()};
 }
 template<typename Rep1, typename Mul1, typename Rep2, typename Mul2, typename BUnit>
 constexpr auto operator-(const Quantity<Rep1, Unit<Mul1, BUnit>>& lhs,
                          const Quantity<Rep2, Unit<Mul2, BUnit>>& rhs) {
   using Out =
     std::common_type_t<Quantity<Rep1, Unit<Mul1, BUnit>>, Quantity<Rep2, Unit<Mul2, BUnit>>>;
-  return Out(quantity_cast<Out>(lhs).count() - quantity_cast<Out>(rhs).count());
+  return Out{quantity_cast<Out>(lhs).count() - quantity_cast<Out>(rhs).count()};
 }
 
 template<typename Rep1, typename Mul, typename Rep2, typename BUnit>

@@ -27,7 +27,7 @@
 namespace thes {
 struct FixedOpenMpThreadPool {
   template<typename CpuSets = Empty>
-  explicit FixedOpenMpThreadPool(std::size_t size, CpuSets cpu_sets = {}) : thread_num_(size) {
+  explicit FixedOpenMpThreadPool(std::size_t size, CpuSets cpu_sets = {}) : thread_num_{size} {
     if constexpr (!std::same_as<CpuSets, Empty>) {
       if (size > std::size(cpu_sets)) {
         throw std::invalid_argument{cat(size, " threads have been requested, but there are only ",

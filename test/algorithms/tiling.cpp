@@ -25,7 +25,7 @@
 
 namespace {
 struct Idx {
-  constexpr explicit Idx(size_t pidx) : idx(pidx) {}
+  constexpr explicit Idx(size_t pidx) : idx{pidx} {}
   size_t idx;
 };
 

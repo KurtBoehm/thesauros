@@ -592,7 +592,7 @@ struct MultiByteIntegersBase {
   [[nodiscard]] auto sub_range(this auto&& self, Size begin, Size end) {
     using Result = std::conditional_t<const_access<decltype(self)>, ConstSubRange, MutableSubRange>;
     assert(end >= begin);
-    return Result(self.span().data() + byte_size(begin), end - begin);
+    return Result{self.span().data() + byte_size(begin), end - begin};
   }
 
   /** Returns a view of the entire range, mutable if `self` is. */

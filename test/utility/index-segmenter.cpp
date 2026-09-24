@@ -307,7 +307,7 @@ int main() {
       // Leading padding [0, n0) belongs entirely to segment 0 if seg_num > 0
       if (seg_num > 0 && n0 > 0) {
         for (const Size i : thes::views::indices<Size>(n0)) {
-          THES_ALWAYS_ASSERT(padded.segment_of(i) == Segment(0));
+          THES_ALWAYS_ASSERT(padded.segment_of(i) == Segment{0});
         }
       }
 

@@ -180,7 +180,7 @@ THES_TEST_CASE("single-bit elements behave like a bitset", "[containers][multi-b
     bits[i] = static_cast<thes::u8>(i % 2);
   }
   for (std::size_t i = 0; i < size; ++i) {
-    THES_CHECK(bits[i] == thes::u8(i % 2));
+    THES_CHECK(bits[i] == static_cast<thes::u8>(i % 2));
   }
 
   const Bits ones{size, 1};

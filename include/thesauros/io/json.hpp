@@ -92,7 +92,7 @@ inline auto write_json(auto it, T&& value, Indentation indent = {}) {
 template<typename T>
 struct JsonPrinter {
   explicit JsonPrinter(T&& value, Indentation indent = {})
-      : value_(std::forward<T>(value)), indent_{indent} {}
+      : value_{std::forward<T>(value)}, indent_{indent} {}
 
   [[nodiscard]] const T& value() const {
     return value_;

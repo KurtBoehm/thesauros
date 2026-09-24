@@ -22,6 +22,7 @@
 #include "thesauros/containers/array/initialization-policy.hpp"
 #include "thesauros/containers/bitset/iterator.hpp"
 #include "thesauros/math/arithmetic.hpp"
+#include "thesauros/math/safe-integer.hpp"
 #include "thesauros/ranges/indices.hpp"
 #include "thesauros/utility/multi-bit-reference.hpp"
 
@@ -168,7 +169,7 @@ private:
   }
 
   static constexpr Chunk mask(std::size_t i) {
-    return Chunk(Chunk{1} << i);
+    return (SafeInt<Chunk>{1} << i).unsafe();
   }
 
   DynamicArray<Chunk, DefaultInit, DoublingGrowth, Alloc> chunks_{};

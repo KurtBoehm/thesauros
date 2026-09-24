@@ -13,6 +13,7 @@
 #include <concepts>
 #include <cstddef>
 #include <functional>
+#include <limits>
 #include <type_traits>
 
 #include "thesauros/algorithms/static-ranges/index-to-position.hpp"
@@ -36,7 +37,7 @@ struct SingleIndexManager {
   using IdxSize = Size;
   using PosSize = Size;
 
-  explicit constexpr SingleIndexManager(Size idx) : idx_(idx) {}
+  explicit constexpr SingleIndexManager(Size idx) : idx_{idx} {}
 
   [[nodiscard]] constexpr Size index() const {
     return idx_;
@@ -70,7 +71,7 @@ struct DualIndexManager {
   using IdxSize = IdxS;
   using PosSize = PosS;
 
-  constexpr DualIndexManager(IdxSize idx, PosSize pos_idx) : idx_(idx), pos_idx_(pos_idx) {}
+  constexpr DualIndexManager(IdxSize idx, PosSize pos_idx) : idx_{idx}, pos_idx_{pos_idx} {}
 
   [[nodiscard]] constexpr IdxSize index() const {
     return idx_;
@@ -123,9 +124,9 @@ struct BasePosIndexWrapper {
   using Diff = std::make_signed_t<IdxSize>;
 
   constexpr BasePosIndexWrapper(IndexManager idx_man, SizeArr pos, SizeArr dims)
-      : dims_(dims), pos_(pos), idx_man_(idx_man) {}
+      : dims_{dims}, pos_{pos}, idx_man_{idx_man} {}
   constexpr BasePosIndexWrapper(IndexManager idx_man, SizeArr pos, SizeArr dims, DivArr divs)
-      : dims_(dims), divs_(divs), pos_(pos), idx_man_(idx_man) {}
+      : dims_{dims}, divs_{divs}, pos_{pos}, idx_man_{idx_man} {}
 
   template<typename Self>
   constexpr Self&& operator++(this Self&& self) {
@@ -153,7 +154,7 @@ struct BasePosIndexWrapper {
       const auto pos_idx = std::get<idx>(self.pos_);
       const auto dim_idx = std::get<idx>(self.dims_);
 
-      const bool under = pos_idx == PosSize(-1);
+      const bool under = pos_idx == std::numeric_limits<PosSize>::max();
       std::get<idx>(self.pos_) = under ? (dim_idx - 1) : pos_idx;
       std::get<idx - 1>(self.pos_) -= PosSize{under};
     });
@@ -242,16 +243,16 @@ struct PosIndexWrapper : detail::BasePosIndexWrapper<detail::SingleIndexManager<
   using Base = detail::BasePosIndexWrapper<IdxMan, DimN>;
   using SizeArr = std::array<S, DimN>;
 
-  constexpr PosIndexWrapper(S idx, SizeArr pos, SizeArr dims) : Base(IdxMan{idx}, pos, dims) {}
+  constexpr PosIndexWrapper(S idx, SizeArr pos, SizeArr dims) : Base{IdxMan{idx}, pos, dims} {}
   constexpr PosIndexWrapper(SizeArr pos, SizeArr dims)
-      : Base(IdxMan{star::position_to_index(pos, star::postfix_product_inclusive(dims))}, pos,
-             dims) {}
+      : Base{IdxMan{star::position_to_index(pos, star::postfix_product_inclusive(dims))}, pos,
+             dims} {}
   constexpr PosIndexWrapper(S idx, SizeArr dims)
-      : PosIndexWrapper(idx, dims, detail::dims_to_divs(dims)) {}
+      : PosIndexWrapper{idx, dims, detail::dims_to_divs(dims)} {}
 
 private:
   constexpr PosIndexWrapper(S idx, SizeArr dims, auto divs)
-      : Base(IdxMan{idx}, star::index_to_position(idx, divs), dims, divs) {}
+      : Base{IdxMan{idx}, star::index_to_position(idx, divs), dims, divs} {}
 };
 
 template<std::unsigned_integral IdxS, std::unsigned_integral PosS, std::size_t DimN>
@@ -262,16 +263,16 @@ struct DualPosIndexWrapper
   using SizeArr = std::array<PosS, DimN>;
 
   constexpr DualPosIndexWrapper(IdxS idx, PosS pos_idx, SizeArr pos, SizeArr dims)
-      : Base(IdxMan{idx, pos_idx}, pos, dims) {}
+      : Base{IdxMan{idx, pos_idx}, pos, dims} {}
   constexpr DualPosIndexWrapper(IdxS idx, SizeArr pos, SizeArr dims)
-      : Base(IdxMan{idx, star::position_to_index(pos, star::postfix_product_inclusive(dims))}, pos,
-             dims) {}
+      : Base{IdxMan{idx, star::position_to_index(pos, star::postfix_product_inclusive(dims))}, pos,
+             dims} {}
   constexpr DualPosIndexWrapper(IdxS idx, PosS pos_idx, SizeArr dims)
-      : DualPosIndexWrapper(idx, pos_idx, dims, detail::dims_to_divs(dims)) {}
+      : DualPosIndexWrapper{idx, pos_idx, dims, detail::dims_to_divs(dims)} {}
 
 private:
   constexpr DualPosIndexWrapper(IdxS idx, PosS pos_idx, SizeArr dims, auto divs)
-      : Base(IdxMan{idx, pos_idx}, star::index_to_position(pos_idx, divs), dims, divs) {}
+      : Base{IdxMan{idx, pos_idx}, star::index_to_position(pos_idx, divs), dims, divs} {}
 };
 } // namespace thes
 

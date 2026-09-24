@@ -133,7 +133,7 @@ int main() try {
       }
       const auto elapsed = std::chrono::steady_clock::now() - start;
 
-      const auto nanos = std::chrono::duration<double, std::nano>(elapsed).count();
+      const auto nanos = std::chrono::duration<double, std::nano>{elapsed}.count();
       fmt::print("  {:<22} {:9.1f} ns  ({} regions ran)\n", name,
                  nanos / static_cast<double>(bench_regions), sink[0]);
     };

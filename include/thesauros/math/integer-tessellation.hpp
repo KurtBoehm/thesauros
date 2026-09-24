@@ -34,10 +34,12 @@ inline std::array<Int, Dims> box_tesselate(Int tile_num, std::array<Int, Dims> b
   const auto op = [&](auto rec, Sol& sol, Int remaining, AnyIndexTag auto dim) {
     if constexpr (dim + 1 == Dims) {
       std::get<dim>(sol.sol) = remaining;
-      const auto [min, max] =
-        star::transform([](Int box_dim, Int cnum) { return Cost(box_dim) / Cost(cnum); }, box_dims,
-                        sol.sol) |
-        star::minmax;
+      const auto [min, max] = star::transform(
+                                [](Int box_dim, Int cnum) {
+                                  return static_cast<Cost>(box_dim) / static_cast<Cost>(cnum);
+                                },
+                                box_dims, sol.sol) |
+                              star::minmax;
       sol.cost = max / min;
       if (sol.cost < best.cost) {
         best = sol;

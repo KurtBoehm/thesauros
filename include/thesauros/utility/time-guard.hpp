@@ -19,7 +19,7 @@ struct TimeGuard {
   using TimePoint = Clock::time_point;
   using Duration = Dur;
 
-  explicit TimeGuard(Duration& dur) : dur_(dur) {}
+  explicit TimeGuard(Duration& dur) : dur_{dur} {}
   TimeGuard(const TimeGuard&) = delete;
   TimeGuard& operator=(const TimeGuard&) = delete;
   TimeGuard(TimeGuard&&) = delete;

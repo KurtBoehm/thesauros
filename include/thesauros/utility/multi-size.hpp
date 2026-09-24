@@ -30,7 +30,7 @@ struct BasicMultiSize {
   using ExAxisSize = std::array<Size, dimension_num + 1>;
 
   explicit constexpr BasicMultiSize(std::array<S, N> sizes)
-      : sizes_(sizes), postfix_prod_incl_(star::postfix_product_inclusive(sizes) | star::to_array) {
+      : sizes_{sizes}, postfix_prod_incl_{star::postfix_product_inclusive(sizes) | star::to_array} {
   }
 
   [[nodiscard]] constexpr const AxisSize& sizes() const {
@@ -93,10 +93,10 @@ struct MultiSize : BasicMultiSize<S, N> {
   using ExAxisDiv = std::array<Div, dimension_num + 1>;
 
   explicit constexpr MultiSize(std::array<S, N> sizes)
-      : BasicMultiSize<S, N>(sizes),
-        divs_(this->sizes() | star::transform([](Size a) { return Div(a); }) | star::to_array),
-        postfix_prod_incl_divs_(this->from_sizes() |
-                                star::transform([](Size a) { return Div(a); }) | star::to_array) {}
+      : BasicMultiSize<S, N>{sizes},
+        divs_{this->sizes() | star::transform([](Size a) { return Div(a); }) | star::to_array},
+        postfix_prod_incl_divs_{this->from_sizes() |
+                                star::transform([](Size a) { return Div(a); }) | star::to_array} {}
 
   [[nodiscard]] constexpr AxisSize index_to_pos(Size index) const {
     return star::index_to_position(index, divs_);
@@ -136,7 +136,7 @@ struct SubMultiSize {
   using ExAxisSize = std::array<Size, dimension_num + 1>;
 
   constexpr SubMultiSize(std::array<S, N> offsets, std::array<S, N> sizes)
-      : offsets_(offsets), ms_(sizes) {}
+      : offsets_{offsets}, ms_{sizes} {}
 
   [[nodiscard]] MultiSize<S, N> multisize() const {
     return ms_;

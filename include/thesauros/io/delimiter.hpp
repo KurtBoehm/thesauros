@@ -19,7 +19,7 @@ namespace thes {
 struct Delimiter {
   using Raw = std::string_view;
 
-  explicit constexpr Delimiter(Raw str) : str_(str) {}
+  explicit constexpr Delimiter(Raw str) : str_{str} {}
 
   /** Writes the separator, followed by `sep`, and returns the iterator past both. */
   template<typename It>
