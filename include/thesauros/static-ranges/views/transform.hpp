@@ -53,7 +53,7 @@ struct TransformView : detail::transform::ValueBase<Fun, Ret, ArgRanges...> {
   Tuple<ArgRanges...> range_tup;
 
   explicit constexpr TransformView(Fun&& f, ArgRanges&&... ranges)
-      : fun(std::forward<Fun>(f)), range_tup(std::forward<ArgRanges>(ranges)...) {}
+      : fun{std::forward<Fun>(f)}, range_tup{std::forward<ArgRanges>(ranges)...} {}
 
   template<std::size_t I>
   THES_ALWAYS_INLINE friend constexpr decltype(auto) get(const TransformView& self) {
@@ -67,7 +67,7 @@ template<typename Fun, typename Ret = void>
 struct TransformGenerator : RangeGeneratorBase {
   Fun fun;
 
-  explicit constexpr TransformGenerator(Fun&& f) : fun(std::forward<Fun>(f)) {}
+  explicit constexpr TransformGenerator(Fun&& f) : fun{std::forward<Fun>(f)} {}
 
   template<typename... ArgRanges>
   THES_ALWAYS_INLINE constexpr auto operator()(ArgRanges&&... ranges) const& {

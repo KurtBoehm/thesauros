@@ -9,6 +9,7 @@
 
 #include <compare>
 #include <cstddef>
+#include <memory>
 
 #include "thesauros/iterator/facade.hpp"
 
@@ -16,7 +17,7 @@ namespace thes {
 template<typename T>
 struct Lcg {
   explicit constexpr Lcg(T seed, T increment, T size)
-      : seed_(seed), increment_(increment), size_(size) {}
+      : seed_{seed}, increment_{increment}, size_{size} {}
 
   struct ConstIterator : IteratorFacade<iter::ValueTypes<T, std::ptrdiff_t>> {
     using Diff = std::ptrdiff_t;
@@ -27,7 +28,7 @@ struct Lcg {
     constexpr ConstIterator() = default;
 
     constexpr ConstIterator(const Lcg& lcg, T index, T value)
-        : lcg_(&lcg), index_(index), value_(value) {}
+        : lcg_{std::addressof(lcg)}, index_{index}, value_{value} {}
 
     [[nodiscard]] constexpr T index() const {
       return index_;

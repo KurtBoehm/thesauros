@@ -24,7 +24,7 @@ template<std::integral Dst>
 struct SafeCastWorker {
   using Ret = CastResult<Dst>;
 
-  THES_ALWAYS_INLINE explicit constexpr SafeCastWorker(Dst v) : value_(v) {}
+  THES_ALWAYS_INLINE explicit constexpr SafeCastWorker(Dst v) : value_{v} {}
 
   THES_ALWAYS_INLINE constexpr void too_small() {
     info_ = CastInfo::too_small;
@@ -44,7 +44,7 @@ template<std::integral Dst>
 struct SatCastWorker {
   using Ret = Dst;
 
-  THES_ALWAYS_INLINE explicit constexpr SatCastWorker(Dst v) : value_(v) {}
+  THES_ALWAYS_INLINE explicit constexpr SatCastWorker(Dst v) : value_{v} {}
 
   THES_ALWAYS_INLINE constexpr void too_small() {
     value_ = std::numeric_limits<Dst>::lowest();

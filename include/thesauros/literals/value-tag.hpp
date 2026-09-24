@@ -17,7 +17,7 @@ namespace thes {
 struct IndexTagLiteral {
   // NOLINTNEXTLINE(*-explicit-constructor)
   constexpr IndexTagLiteral(const char* charray)
-      : value(parse_integer<std::size_t>(charray).value()) {}
+      : value{parse_integer<std::size_t>(charray).value()} {}
 
   std::size_t value;
 };

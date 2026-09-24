@@ -12,7 +12,7 @@
 namespace thes {
 template<std::integral T>
 struct SafeInt {
-  explicit constexpr SafeInt(T value) : value_(value) {}
+  explicit constexpr SafeInt(T value) : value_{value} {}
 
   [[nodiscard]] T unsafe() const {
     return value_;

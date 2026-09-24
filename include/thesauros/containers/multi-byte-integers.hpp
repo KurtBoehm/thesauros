@@ -51,7 +51,7 @@ struct ArrayStorage {
   /** Creates an empty storage, allocating only the padding. */
   ArrayStorage() : data_(2 * padding_bytes) {}
   /** Creates a storage for `size` elements, allocating padding on both sides. */
-  explicit ArrayStorage(std::size_t size) : data_(effective_allocation(size)), size_(size) {}
+  explicit ArrayStorage(std::size_t size) : data_(effective_allocation(size)), size_{size} {}
 
   /** Returns the byte span of the stored elements, excluding padding, mutable if `self` is. */
   [[nodiscard]] auto span(this auto&& self) {
@@ -89,7 +89,7 @@ struct ViewStorage {
   static constexpr std::size_t element_bytes = ByteInt::byte_num;
 
   /** Creates a view of `size` elements starting at `data`. */
-  ViewStorage(CByte* data, Size size) : data_(data), size_(size) {}
+  ViewStorage(CByte* data, Size size) : data_{data}, size_{size} {}
 
   /** Returns the byte span of the viewed elements, const if `IsConst` or `self` is const. */
   [[nodiscard]] auto span(this auto&& self) {
@@ -158,7 +158,7 @@ struct MultiByteIntegersBase {
    * provided instead.
    */
   struct IntRef {
-    explicit IntRef(std::byte* ptr) : ptr_(ptr) {}
+    explicit IntRef(std::byte* ptr) : ptr_{ptr} {}
     IntRef(const IntRef&) = delete;
     IntRef(IntRef&&) noexcept = default;
     ~IntRef() = default;
@@ -478,7 +478,7 @@ struct MultiByteIntegersBase {
   using const_reverse_iterator = BaseReverseIterator<true>;
 
   /** Wraps `storage` without copying its contents. */
-  explicit MultiByteIntegersBase(Storage&& storage) : storage_(std::forward<Storage>(storage)) {}
+  explicit MultiByteIntegersBase(Storage&& storage) : storage_{std::forward<Storage>(storage)} {}
 
   //------------------------------------------------------------------------------------------------
   // Iteration
@@ -664,7 +664,7 @@ struct MultiByteSubRange
   using CByte = Storage::CByte;
 
   /** Creates a view of `size` elements starting at `data`. */
-  MultiByteSubRange(CByte* data, Size size) : Base(Storage{data, size}) {}
+  MultiByteSubRange(CByte* data, Size size) : Base{Storage{data, size}} {}
 };
 
 /**

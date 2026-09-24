@@ -78,10 +78,10 @@ struct MultiBitIntegers {
   };
 
   explicit constexpr MultiBitIntegers(std::size_t size)
-      : data_(div_ceil(size, per_chunk)), size_(size) {}
+      : data_(div_ceil(size, per_chunk)), size_{size} {}
 
   explicit constexpr MultiBitIntegers(std::size_t size, Chunk value)
-      : data_(div_ceil(size, per_chunk)), size_(size) {
+      : data_(div_ceil(size, per_chunk)), size_{size} {
     const auto fill = star::static_apply<per_chunk>(
       [value]<std::size_t... I> { return (... | (SafeInt<Chunk>{value} << (BitN * I))); });
     std::fill(data_.begin(), data_.end(), fill.unsafe());

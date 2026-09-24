@@ -116,14 +116,14 @@ struct SplitTimePrinter {
   static constexpr std::intmax_t sec_limit =
     detail::ratio_as_integer(UnitRatio<unit::second, Unit>{});
 
-  explicit SplitTimePrinter(Q&& q) : quantity(std::forward<Q>(q)) {}
+  explicit SplitTimePrinter(Q&& q) : quantity{std::forward<Q>(q)} {}
 
   Q quantity;
 };
 
 template<typename Q>
 constexpr auto split_time(Q&& q) {
-  return SplitTimePrinter<Q>(std::forward<Q>(q));
+  return SplitTimePrinter<Q>{std::forward<Q>(q)};
 }
 } // namespace thes
 

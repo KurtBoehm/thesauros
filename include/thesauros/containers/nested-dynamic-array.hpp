@@ -48,7 +48,7 @@ struct NestedDynamicArrayBase {
     Iterator() = default;
 
     Iterator(const Size* offset_begin, CValue* value_begin, Size index)
-        : index_(index), offset_begin_(offset_begin), value_begin_(value_begin) {}
+        : index_{index}, offset_begin_{offset_begin}, value_begin_{value_begin} {}
 
   private:
     [[nodiscard]] DValue value() const {
@@ -152,8 +152,8 @@ struct NestedDynamicArrayBase {
 
   struct NestedBuilderInner {
     NestedBuilderInner(Size* offsets_current, const Value* values_begin, Value* values_current)
-        : offsets_current_(offsets_current), values_begin_(values_begin),
-          values_current_(values_current) {}
+        : offsets_current_{offsets_current}, values_begin_{values_begin},
+          values_current_{values_current} {}
 
     template<typename... Args>
     void emplace(Args&&... args) {
@@ -198,7 +198,7 @@ struct NestedDynamicArrayBase {
 
   // NOLINTNEXTLINE(*-crtp-constructor-accessibility)
   NestedDynamicArrayBase(SizeStorage&& offsets, Storage&& values)
-      : offsets_(std::forward<SizeStorage>(offsets)), values_(std::forward<Storage>(values)) {
+      : offsets_{std::forward<SizeStorage>(offsets)}, values_{std::forward<Storage>(values)} {
     assert(!offsets_.empty());
   }
 

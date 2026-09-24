@@ -18,10 +18,10 @@ namespace thes {
 struct DynamicBuffer {
   DynamicBuffer() = default;
   explicit DynamicBuffer(std::size_t size)
-      : begin_(static_cast<std::byte*>(std::malloc(size))), alloc_(size), size_(size) {}
+      : begin_{static_cast<std::byte*>(std::malloc(size))}, alloc_{size}, size_{size} {}
   DynamicBuffer(const DynamicBuffer&) = delete;
   DynamicBuffer(DynamicBuffer&& other) noexcept
-      : begin_(other.begin_), alloc_(other.alloc_), size_(other.size_) {
+      : begin_{other.begin_}, alloc_{other.alloc_}, size_{other.size_} {
     other.begin_ = nullptr;
     other.alloc_ = 0;
     other.size_ = 0;

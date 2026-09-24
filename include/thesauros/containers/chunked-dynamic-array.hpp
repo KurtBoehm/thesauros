@@ -36,7 +36,7 @@ struct MutableBlock {
   using const_iterator = const Value*;
 
   MutableBlock(Value* begin, Value* end, Value* end_of_block, Size* size)
-      : begin_(begin), end_(end), end_of_block_(end_of_block), size_(size) {}
+      : begin_{begin}, end_{end}, end_of_block_{end_of_block}, size_{size} {}
 
   auto begin(this auto& self) {
     return SelfIterator<decltype(self)>{self.begin_};
@@ -118,13 +118,13 @@ struct ChunkedDynamicArrayBase {
   // Construction
   //------------------------------------------------------------------------------------------------
 
-  explicit ChunkedDynamicArrayBase(Size block_size) : block_size_(block_size) {}
+  explicit ChunkedDynamicArrayBase(Size block_size) : block_size_{block_size} {}
   ChunkedDynamicArrayBase(Size block_size, Allocator&& allocator, SizeAllocator&& size_allocator)
-      : block_size_(block_size), sizes_(std::forward<SizeAllocator>(size_allocator)),
+      : block_size_{block_size}, sizes_(std::forward<SizeAllocator>(size_allocator)),
         elements_(std::forward<Allocator>(allocator)) {}
   ChunkedDynamicArrayBase(Size block_size, const Allocator& allocator,
                           const SizeAllocator& size_allocator)
-      : block_size_(block_size), sizes_(size_allocator), elements_(allocator) {}
+      : block_size_{block_size}, sizes_(size_allocator), elements_(allocator) {}
 
   ChunkedDynamicArrayBase(ChunkedDynamicArrayBase&&) noexcept = default;
   ChunkedDynamicArrayBase(const ChunkedDynamicArrayBase&) = delete;
@@ -148,8 +148,8 @@ struct ChunkedDynamicArrayBase {
 
     BaseIterator() = default;
     BaseIterator(CSize* size_begin, CValue* value_begin, Size index, Size block_size)
-        : index_(index), block_size_(block_size), size_begin_(size_begin),
-          value_begin_(value_begin) {}
+        : index_{index}, block_size_{block_size}, size_begin_{size_begin},
+          value_begin_{value_begin} {}
 
   private:
     [[nodiscard]] CBlock value() const {

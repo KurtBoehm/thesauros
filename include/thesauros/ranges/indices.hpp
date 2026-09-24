@@ -25,8 +25,8 @@ struct ConstIterator : StateIteratorFacade<iter::ValueTypes<T, std::ptrdiff_t>> 
   friend StateIteratorFacade<iter::ValueTypes<T, std::ptrdiff_t>>;
 
   constexpr ConstIterator() = default;
-  explicit constexpr ConstIterator(T&& v) : value_(std::forward<T>(v)) {}
-  explicit constexpr ConstIterator(const T& v) : value_(v) {}
+  explicit constexpr ConstIterator(T&& v) : value_{std::forward<T>(v)} {}
+  explicit constexpr ConstIterator(const T& v) : value_{v} {}
 
 private:
   constexpr T value(this const auto& self) {

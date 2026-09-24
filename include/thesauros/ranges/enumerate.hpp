@@ -23,7 +23,7 @@ struct EnumerateRange {
     friend StateIteratorFacade<iter::ValueTypes<Value, std::ptrdiff_t>>;
 
     constexpr ConstIterator() = default;
-    explicit constexpr ConstIterator(It begin, It it) : begin_(begin), it_(std::move(it)) {}
+    explicit constexpr ConstIterator(It begin, It it) : begin_{begin}, it_{std::move(it)} {}
 
   private:
     [[nodiscard]] constexpr Value value() const {
@@ -39,13 +39,13 @@ struct EnumerateRange {
   };
   using const_iterator = ConstIterator;
 
-  constexpr EnumerateRange(It begin, It end) : begin_(std::move(begin)), end_(std::move(end)) {}
+  constexpr EnumerateRange(It begin, It end) : begin_{std::move(begin)}, end_{std::move(end)} {}
 
   [[nodiscard]] constexpr ConstIterator begin() const {
-    return ConstIterator(begin_, begin_);
+    return ConstIterator{begin_, begin_};
   }
   [[nodiscard]] constexpr ConstIterator end() const {
-    return ConstIterator(begin_, end_);
+    return ConstIterator{begin_, end_};
   }
 
 private:

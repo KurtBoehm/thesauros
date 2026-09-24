@@ -21,7 +21,7 @@ struct RangeRandomizer {
 
   template<typename Gen>
   explicit RangeRandomizer(T size, Gen gen)
-      : size_(size), offset_(std::uniform_int_distribution<T>{0, size}(gen)) {}
+      : size_{size}, offset_{std::uniform_int_distribution<T>{0, size}(gen)} {}
 
   [[nodiscard]] constexpr T size() const {
     return size_;

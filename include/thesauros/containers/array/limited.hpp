@@ -36,18 +36,18 @@ struct LimitedArray {
   using Array = std::array<Value, capacity>;
 
   constexpr LimitedArray() = default;
-  explicit constexpr LimitedArray(std::size_t size) : size_(size) {
+  explicit constexpr LimitedArray(std::size_t size) : size_{size} {
     assert(size_ <= capacity);
   }
   template<typename... Ts>
   requires(sizeof...(Ts) <= Capacity)
-  explicit constexpr LimitedArray(Ts... values) : size_(sizeof...(Ts)), data_{values...} {
+  explicit constexpr LimitedArray(Ts... values) : size_{sizeof...(Ts)}, data_{values...} {
     assert(size_ <= capacity);
   }
 
   template<std::input_iterator It>
   constexpr LimitedArray(It first, It last)
-      : size_(*safe_cast<std::size_t>(std::distance(first, last))) {
+      : size_{*safe_cast<std::size_t>(std::distance(first, last))} {
     assert(size_ <= capacity);
     std::ranges::copy(first, last, data_.begin());
   }

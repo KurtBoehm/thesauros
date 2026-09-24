@@ -32,7 +32,7 @@ struct BitsetIterator
 
   constexpr BitsetIterator() = default;
   constexpr BitsetIterator(std::size_t idx, Container& self)
-      : idx_(idx), self_(std::addressof(self)) {}
+      : idx_{idx}, self_{std::addressof(self)} {}
 
 private:
   [[nodiscard]] constexpr decltype(auto) value() const {

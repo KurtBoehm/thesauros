@@ -28,7 +28,7 @@ struct MapFactorization {
     T cnt{};
     Map& factorization;
 
-    IterativeEmplacer(T factor, Map& factors) : k{factor}, factorization(factors) {}
+    IterativeEmplacer(T factor, Map& factors) : k{factor}, factorization{factors} {}
     IterativeEmplacer(const IterativeEmplacer&) = delete;
     IterativeEmplacer(IterativeEmplacer&&) = delete;
     IterativeEmplacer& operator=(const IterativeEmplacer&) = delete;
@@ -60,7 +60,7 @@ struct FlatFactorization {
     T k;
     Arr& factorization;
 
-    IterativeEmplacer(T factor, Arr& factors) : k{factor}, factorization(factors) {}
+    IterativeEmplacer(T factor, Arr& factors) : k{factor}, factorization{factors} {}
 
     IterativeEmplacer& operator++() {
       factorization.push_back(k);

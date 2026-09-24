@@ -21,7 +21,7 @@ struct ContainsGenerator : ConsumerGeneratorBase {
 
   V value;
 
-  explicit constexpr ContainsGenerator(V&& v) : value(std::forward<V>(v)) {}
+  explicit constexpr ContainsGenerator(V&& v) : value{std::forward<V>(v)} {}
 
   template<typename Range>
   constexpr bool operator()(Range&& range) const {

@@ -70,7 +70,7 @@ struct CartesianProductView : std::ranges::view_interface<CartesianProductView<F
                                   std::ranges::iterator_t<const First>> &&
               ... &&
               std::convertible_to<std::ranges::iterator_t<V>, std::ranges::iterator_t<const V>>))
-        : parent_(std::addressof(i.parent_)), current_(std::move(i.current_)) {}
+        : parent_{std::addressof(i.parent_)}, current_{std::move(i.current_)} {}
 
     // C++23 26.7.32.3 §12
     constexpr auto operator*() const {
@@ -235,7 +235,7 @@ struct CartesianProductView : std::ranges::view_interface<CartesianProductView<F
 
     // C++23 26.7.32.3 §10
     constexpr Iterator(Parent& parent, Current current)
-        : parent_(std::addressof(parent)), current_(std::move(current)) {}
+        : parent_{std::addressof(parent)}, current_{std::move(current)} {}
 
     // C++23 26.7.32.3 §4-5
     template<std::size_t N = sizeof...(V)>
@@ -331,7 +331,7 @@ struct CartesianProductView : std::ranges::view_interface<CartesianProductView<F
 
   // C++23 26.7.32.2 §1
   explicit constexpr CartesianProductView(First first, V... rest)
-      : bases_(std::move(first), std::move(rest)...) {}
+      : bases_{std::move(first), std::move(rest)...} {}
 
   // C++23 26.7.32.2 §2
   [[nodiscard]] constexpr Iterator<false> begin()

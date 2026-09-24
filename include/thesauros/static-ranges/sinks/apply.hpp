@@ -19,7 +19,7 @@ template<typename F>
 struct ApplyGenerator : ConsumerGeneratorBase {
   F fun;
 
-  explicit constexpr ApplyGenerator(F&& f) : fun(std::forward<F>(f)) {}
+  explicit constexpr ApplyGenerator(F&& f) : fun{std::forward<F>(f)} {}
 
   template<typename Range>
   THES_ALWAYS_INLINE constexpr decltype(auto) operator()(Range&& range) const {

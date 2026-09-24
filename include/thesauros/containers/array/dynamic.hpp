@@ -91,13 +91,13 @@ struct DynamicArray {
   }
 
   constexpr DynamicArray(DynamicArray&& other) noexcept
-      : allocation_(std::move(other.allocation_)), data_end_(other.data_end_) {
+      : allocation_(std::move(other.allocation_)), data_end_{other.data_end_} {
     other.data_end_ = nullptr;
   }
   // Only valid if the data is fully initialized.
   constexpr DynamicArray(const DynamicArray& other)
       : allocation_(other.allocation_.size(), other.allocation_.allocator()),
-        data_end_(allocation_.begin() + other.size()) {
+        data_end_{allocation_.begin() + other.size()} {
     const Value* other_begin = other.allocation_.begin();
     const Value* other_end = other.data_end_;
     std::uninitialized_copy(other_begin, other_end, allocation_.begin());

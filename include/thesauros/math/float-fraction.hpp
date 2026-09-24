@@ -14,7 +14,7 @@ template<std::floating_point F>
 struct FloatFraction {
   using Float = F;
 
-  constexpr FloatFraction(Float num, Float denom) : numerator(num), denominator(denom) {}
+  constexpr FloatFraction(Float num, Float denom) : numerator{num}, denominator{denom} {}
 
   friend constexpr FloatFraction operator*(FloatFraction f1, Float f2) {
     return {f1.numerator * f2, f1.denominator};

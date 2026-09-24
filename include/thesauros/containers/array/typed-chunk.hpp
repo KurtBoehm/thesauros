@@ -38,18 +38,18 @@ struct TypedChunk {
   using const_iterator = const_pointer;
 
   constexpr TypedChunk() = default;
-  explicit constexpr TypedChunk(const Allocator& alloc) : alloc_(alloc) {}
-  explicit constexpr TypedChunk(Allocator&& alloc) : alloc_(std::forward<Allocator>(alloc)) {}
+  explicit constexpr TypedChunk(const Allocator& alloc) : alloc_{alloc} {}
+  explicit constexpr TypedChunk(Allocator&& alloc) : alloc_{std::forward<Allocator>(alloc)} {}
 
-  explicit constexpr TypedChunk(Size size) : begin_(allocate_memory(size)), end_(begin_ + size) {}
+  explicit constexpr TypedChunk(Size size) : begin_{allocate_memory(size)}, end_{begin_ + size} {}
   constexpr TypedChunk(Size size, Allocator&& alloc)
-      : alloc_(std::forward<Allocator>(alloc)), begin_(allocate_memory(size)), end_(begin_ + size) {
+      : alloc_{std::forward<Allocator>(alloc)}, begin_{allocate_memory(size)}, end_{begin_ + size} {
   }
   constexpr TypedChunk(Size size, const Allocator& alloc)
-      : alloc_(alloc), begin_(allocate_memory(size)), end_(begin_ + size) {}
+      : alloc_{alloc}, begin_{allocate_memory(size)}, end_{begin_ + size} {}
 
   constexpr TypedChunk(TypedChunk&& other) noexcept
-      : alloc_(std::move(other.alloc_)), begin_(other.begin_), end_(other.end_) {
+      : alloc_{std::move(other.alloc_)}, begin_{other.begin_}, end_{other.end_} {
     other.begin_ = nullptr;
     other.end_ = nullptr;
   }

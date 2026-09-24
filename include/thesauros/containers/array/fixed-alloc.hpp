@@ -48,17 +48,17 @@ struct FixedAllocArray {
       : allocation_(std::forward<Allocator>(alloc)) {}
 
   constexpr FixedAllocArray(std::initializer_list<Value> init)
-      : allocation_(init.size()), data_end_(allocation_.data() + init.size()) {
+      : allocation_(init.size()), data_end_{allocation_.data() + init.size()} {
     std::uninitialized_copy(init.begin(), init.end(), begin());
   }
 
   constexpr FixedAllocArray(FixedAllocArray&& other) noexcept
-      : allocation_(std::move(other.allocation_)), data_end_(other.data_end_) {
+      : allocation_(std::move(other.allocation_)), data_end_{other.data_end_} {
     other.data_end_ = nullptr;
   }
   constexpr FixedAllocArray(const FixedAllocArray& other)
       : allocation_(other.allocation_.size(), other.allocation_.allocator()),
-        data_end_(allocation_.data() + other.size()) {
+        data_end_{allocation_.data() + other.size()} {
     std::uninitialized_copy(other.allocation_.begin(), other.allocation_.end(),
                             allocation_.begin());
   }

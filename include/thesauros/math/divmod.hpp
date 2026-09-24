@@ -63,7 +63,7 @@ struct Divisor {
     return static_cast<WideValue>(std::numeric_limits<WideValue>::max() / d + 1);
   }
 
-  explicit constexpr Divisor(T d) : divisor_(d), inverse_(invert(d)) {}
+  explicit constexpr Divisor(T d) : divisor_{d}, inverse_{invert(d)} {}
 
   [[nodiscard]] constexpr friend Value operator%(const Value a, const Divisor& d) {
     const auto low_bits = static_cast<WideValue>(d.inverse_ * a);

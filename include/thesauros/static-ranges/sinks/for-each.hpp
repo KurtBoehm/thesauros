@@ -19,7 +19,7 @@ template<typename F>
 struct ForEachGenerator : ConsumerGeneratorBase {
   F fun;
 
-  explicit constexpr ForEachGenerator(F&& f) : fun(std::forward<F>(f)) {}
+  explicit constexpr ForEachGenerator(F&& f) : fun{std::forward<F>(f)} {}
 
   template<typename Range>
   THES_ALWAYS_INLINE constexpr void operator()(Range&& range) const {
