@@ -14,17 +14,11 @@
 #include <type_traits>
 #include <utility>
 
+#include "thesauros/types/generate-tag.hpp"
 #include "thesauros/types/type-tag.hpp"
 #include "thesauros/types/value-tag.hpp"
 
 namespace thes {
-/**
- * A tag which distinguishes the `Tuple` constructor that constructs each element in place from a
- * generator.
- */
-struct GenerateTag {};
-inline constexpr GenerateTag generate_tag{};
-
 namespace detail {
 template<typename T>
 inline constexpr bool is_equality_comparable = std::equality_comparable<T>;
@@ -62,7 +56,7 @@ struct Tuple<std::index_sequence<I...>, Ts...> // NOLINT(*-multiple-inheritance)
   explicit constexpr Tuple(Vs&&... args)
       : detail::TupleLeaf<I, Ts>{Ts{std::forward<Vs>(args)}}... {}
 
-  /** Constructs element `I` from `gen(index_tag<I>)`. */
+  /** Constructs element `I` from `gen(index_tag<I>)` to avoid move construction. */
   template<typename Gen>
   constexpr Tuple(GenerateTag /*tag*/, Gen&& gen)
       : detail::TupleLeaf<I, Ts>{gen(index_tag<I>)}... {}

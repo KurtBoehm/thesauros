@@ -4,6 +4,7 @@
 // IWYU pragma: begin_exports
 #include "types/empty.hpp"
 #include "types/fixed-size-integer.hpp"
+#include "types/generate-tag.hpp"
 #include "types/numeric-info.hpp"
 #include "types/primitives.hpp"
 #include "types/signedness.hpp"
