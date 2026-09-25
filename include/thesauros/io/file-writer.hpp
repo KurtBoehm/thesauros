@@ -68,7 +68,10 @@ struct FileWriter {
     return ret;
   }
 
-  [[nodiscard]] FILE* handle() const {
+  [[nodiscard]] const FILE* handle() const {
+    return handle_;
+  }
+  [[nodiscard]] FILE* handle() {
     return handle_;
   }
 

@@ -164,7 +164,10 @@ struct FileReader {
     return std::feof(handle_) != 0;
   }
 
-  [[nodiscard]] FILE* handle() const {
+  [[nodiscard]] const FILE* handle() const {
+    return handle_;
+  }
+  [[nodiscard]] FILE* handle() {
     return handle_;
   }
 
