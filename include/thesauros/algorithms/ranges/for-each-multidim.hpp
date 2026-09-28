@@ -19,11 +19,11 @@
 
 namespace thes {
 template<typename Ranges, typename FixedAxes>
-THES_ALWAYS_INLINE inline constexpr void multidim_for_each(const Ranges& ranges,
-                                                           const FixedAxes& fixed_axes, auto&& f) {
+[[THES_ALWAYS_INLINE]] constexpr void multidim_for_each(const Ranges& ranges,
+                                                        const FixedAxes& fixed_axes, auto&& f) {
   constexpr std::size_t size = star::size<Ranges>;
 
-  auto impl = [&](auto& self, auto&&... vals) THES_ALWAYS_INLINE {
+  auto impl = [&] [[THES_ALWAYS_INLINE]] (auto& self, auto&&... vals) {
     constexpr auto index = sizeof...(vals);
     static_assert(index <= size);
     if constexpr (index == size) {
@@ -40,18 +40,18 @@ THES_ALWAYS_INLINE inline constexpr void multidim_for_each(const Ranges& ranges,
 }
 
 template<typename Ranges, typename F>
-THES_ALWAYS_INLINE inline constexpr void multidim_for_each(const Ranges& ranges, F&& f) {
+[[THES_ALWAYS_INLINE]] constexpr void multidim_for_each(const Ranges& ranges, F&& f) {
   multidim_for_each(ranges, StaticMap{}, std::forward<F>(f));
 }
 
 template<typename Sizes, typename FixedAxes, typename F>
-THES_ALWAYS_INLINE inline constexpr void
-multidim_for_each_size(const Sizes& sizes, const FixedAxes& fixed_axes, F&& f) {
+[[THES_ALWAYS_INLINE]] constexpr void multidim_for_each_size(const Sizes& sizes,
+                                                             const FixedAxes& fixed_axes, F&& f) {
   multidim_for_each(star::transform([](auto size) { return views::indices(size); })(sizes),
                     fixed_axes, std::forward<F>(f));
 }
 template<typename Sizes, typename F>
-THES_ALWAYS_INLINE inline constexpr void multidim_for_each_size(const Sizes& sizes, F&& f) {
+[[THES_ALWAYS_INLINE]] constexpr void multidim_for_each_size(const Sizes& sizes, F&& f) {
   multidim_for_each_size(sizes, StaticMap{}, std::forward<F>(f));
 }
 } // namespace thes

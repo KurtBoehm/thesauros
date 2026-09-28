@@ -27,10 +27,10 @@ struct InitReduceGenerator : ConsumerGeneratorBase {
       : binary_op{std::forward<BinOp>(op)}, initial{std::forward<Init>(init)} {}
 
   template<typename Range>
-  THES_ALWAYS_INLINE constexpr auto operator()(Range&& range) const {
+  [[THES_ALWAYS_INLINE]] constexpr auto operator()(Range&& range) const {
     constexpr std::size_t size = star::size<Range>;
     if constexpr (!Right) {
-      auto impl = [&](auto& self, auto idx, auto value) THES_ALWAYS_INLINE {
+      auto impl = [&] [[THES_ALWAYS_INLINE]] (auto& self, auto idx, auto value) {
         if constexpr (idx < size) {
           return self(self, index_tag<idx + 1>, binary_op(value, get_at<idx>(range)));
         } else {
@@ -39,7 +39,7 @@ struct InitReduceGenerator : ConsumerGeneratorBase {
       };
       return impl(impl, index_tag<0>, initial);
     } else {
-      auto impl = [&](auto& self, auto idx) THES_ALWAYS_INLINE {
+      auto impl = [&] [[THES_ALWAYS_INLINE]] (auto& self, auto idx) {
         if constexpr (idx < size) {
           return binary_op(get_at<idx>(range), self(self, index_tag<idx + 1>));
         } else {
@@ -58,10 +58,10 @@ struct ReduceGenerator : ConsumerGeneratorBase {
   explicit constexpr ReduceGenerator(BinOp&& op) : binary_op{std::forward<BinOp>(op)} {}
 
   template<typename Range>
-  THES_ALWAYS_INLINE constexpr auto operator()(Range&& range) const {
+  [[THES_ALWAYS_INLINE]] constexpr auto operator()(Range&& range) const {
     constexpr std::size_t size = star::size<Range>;
     if constexpr (!Right) {
-      auto impl = [&](auto& self, auto idx, auto value) THES_ALWAYS_INLINE {
+      auto impl = [&] [[THES_ALWAYS_INLINE]] (auto& self, auto idx, auto value) {
         if constexpr (idx < size) {
           return self(self, index_tag<idx + 1>, binary_op(value, get_at<idx>(range)));
         } else {
@@ -70,7 +70,7 @@ struct ReduceGenerator : ConsumerGeneratorBase {
       };
       return impl(impl, index_tag<1>, get_at<0>(range));
     } else {
-      auto impl = [&](auto& self, auto idx) THES_ALWAYS_INLINE {
+      auto impl = [&] [[THES_ALWAYS_INLINE]] (auto& self, auto idx) {
         if constexpr (idx + 1 < size) {
           return binary_op(get_at<idx>(range), self(self, index_tag<idx + 1>));
         } else {

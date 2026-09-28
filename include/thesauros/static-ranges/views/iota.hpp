@@ -23,7 +23,7 @@ struct IotaView {
 
   template<std::size_t I>
   requires(Begin + I * Step < End)
-  THES_ALWAYS_INLINE friend constexpr decltype(auto) get(const IotaView& /*self*/) {
+  [[THES_ALWAYS_INLINE]] friend constexpr decltype(auto) get(const IotaView& /*self*/) {
     static constexpr S value = Begin + (S{I} * Step);
     if constexpr (TaggedValues) {
       return value_tag<S, value>;

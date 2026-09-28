@@ -18,7 +18,7 @@ namespace thes {
  * https://github.com/rust-lang/rust/blob/1.98.1/library/core/src/hint.rs#L270 and
  * https://github.com/facebook/folly/blob/v2026.09.21.00/folly/portability/Asm.h.
  */
-THES_ALWAYS_INLINE inline void spin_pause() {
+[[THES_ALWAYS_INLINE]] inline void spin_pause() {
   // NOLINTBEGIN(*-no-assembler)
 #if THES_X86_64 || THES_X86_32
   // An equivalent of `_mm_pause` that does not require SSE2.

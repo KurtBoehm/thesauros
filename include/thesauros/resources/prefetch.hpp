@@ -17,7 +17,7 @@ inline constexpr std::size_t cache_line_size = 64;
 
 template<std::size_t CacheLineN = 1>
 requires(CacheLineN >= 1)
-THES_ALWAYS_INLINE inline void prefetch(const void* addr) {
+[[THES_ALWAYS_INLINE]] inline void prefetch(const void* addr) {
   __builtin_prefetch(addr);
   if constexpr (CacheLineN > 1) {
     prefetch<CacheLineN - 1>(static_cast<const char*>(addr) + cache_line_size);

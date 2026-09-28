@@ -69,7 +69,7 @@ struct ArrayStorage {
   }
 
   /** Computes the byte allocation, padding included, needed to store `allocation` elements. */
-  static Size effective_allocation(Size allocation) THES_ALWAYS_INLINE {
+  [[THES_ALWAYS_INLINE]] static Size effective_allocation(Size allocation) {
     return (allocation * element_bytes) + (2 * padding_bytes);
   }
 
@@ -602,12 +602,12 @@ struct MultiByteIntegersBase {
 
 protected:
   /** Converts an element count to a byte count. */
-  [[nodiscard]] static Size byte_size(Size size) THES_ALWAYS_INLINE {
+  [[nodiscard, THES_ALWAYS_INLINE]] static Size byte_size(Size size) {
     return size * element_bytes;
   }
 
   /** Loads and unpacks the value stored at `ptr`. */
-  [[nodiscard]] static Value load(const std::byte* ptr) THES_ALWAYS_INLINE {
+  [[nodiscard, THES_ALWAYS_INLINE]] static Value load(const std::byte* ptr) {
     BaseValue output;
     std::memcpy(&output, ptr, int_bytes);
     if constexpr (std::endian::native == std::endian::little) {
@@ -620,18 +620,18 @@ protected:
   }
 
   /** Shifts `value` into position for a full-width store, in place. */
-  [[nodiscard]] static Value& store_transform(Value& value) noexcept THES_ALWAYS_INLINE {
+  [[nodiscard, THES_ALWAYS_INLINE]] static Value& store_transform(Value& value) noexcept {
     if constexpr (std::endian::native == std::endian::big) {
       value <<= overhead_bits;
     }
     return value;
   }
   /** Packs and stores `value` at `ptr`, writing exactly `element_bytes` bytes. */
-  static void store(std::byte* ptr, Value value) noexcept THES_ALWAYS_INLINE {
+  [[THES_ALWAYS_INLINE]] static void store(std::byte* ptr, Value value) noexcept {
     std::memcpy(ptr, &store_transform(value), element_bytes);
   }
   /** Packs and stores `value` at `ptr`, writing a full `int_bytes`-byte word. */
-  static void store_full(std::byte* ptr, Value value) THES_ALWAYS_INLINE {
+  [[THES_ALWAYS_INLINE]] static void store_full(std::byte* ptr, Value value) {
     std::memcpy(ptr, &store_transform(value), int_bytes);
   }
 

@@ -144,8 +144,8 @@ struct FixedThreadPool {
    * an appropriate index for accesses into a shared array, for example.
    */
   template<typename Task>
-  requires(NothrowInvocable<Task&, std::size_t>)
-  void execute(Task&& task, std::optional<std::size_t> used_thread_num = {}) const {
+  requires(NothrowInvocable<const Task&, std::size_t>)
+  void execute(const Task& task, std::optional<std::size_t> used_thread_num = {}) const {
     const std::size_t used = used_thread_num.value_or(thread_num_);
     assert(used <= thread_num_);
     assert(std::this_thread::get_id() == owner_);
@@ -159,7 +159,7 @@ struct FixedThreadPool {
     }
 
     task_fun_ = [](const void* data, std::size_t index) noexcept {
-      std::invoke(*static_cast<std::remove_reference_t<Task>*>(data), index);
+      std::invoke(*static_cast<std::remove_reference_t<const Task>*>(data), index);
     };
     task_data_ = std::addressof(task);
     // Ordering is enforced by later calls.

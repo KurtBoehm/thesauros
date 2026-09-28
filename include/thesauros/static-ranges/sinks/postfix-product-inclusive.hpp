@@ -17,11 +17,11 @@
 
 namespace thes::star {
 template<typename Range>
-THES_ALWAYS_INLINE inline constexpr auto postfix_product_inclusive(const Range& range) {
+[[THES_ALWAYS_INLINE]] constexpr auto postfix_product_inclusive(const Range& range) {
   using Value = star::Value<Range>;
   constexpr std::size_t size = star::size<Range>;
 
-  return index_transform<size + 1>([&range](auto idx) THES_ALWAYS_INLINE {
+  return index_transform<size + 1>([&range] [[THES_ALWAYS_INLINE]] (auto idx) {
     return static_apply<size - idx>(
       [idx, &range]<std::size_t... I> { return (Value{1} * ... * range[idx + I]); });
   });

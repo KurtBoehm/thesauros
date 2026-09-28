@@ -28,15 +28,15 @@ struct ZipView {
   Tuple<Ranges...> ranges;
 
   template<std::size_t I>
-  THES_ALWAYS_INLINE friend constexpr auto get(const ZipView& self) {
-    return apply([](auto&... inner)
-                   THES_ALWAYS_INLINE { return Tuple{get_at<I>(inner)...}; })(self.ranges);
+  [[THES_ALWAYS_INLINE]] friend constexpr auto get(const ZipView& self) {
+    return apply([] [[THES_ALWAYS_INLINE]] (auto&... inner) { return Tuple{get_at<I>(inner)...}; })(
+      self.ranges);
   }
 };
 
 template<typename... Ranges>
 requires(sizeof...(Ranges) > 0)
-THES_ALWAYS_INLINE inline constexpr auto zip(Ranges&&... ranges) {
+[[THES_ALWAYS_INLINE]] constexpr auto zip(Ranges&&... ranges) {
   return ZipView<Ranges...>{Tuple{std::forward<Ranges>(ranges)...}};
 }
 } // namespace thes::star

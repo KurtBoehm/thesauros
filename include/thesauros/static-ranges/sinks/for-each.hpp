@@ -22,15 +22,16 @@ struct ForEachGenerator : ConsumerGeneratorBase {
   explicit constexpr ForEachGenerator(F&& f) : fun{std::forward<F>(f)} {}
 
   template<typename Range>
-  THES_ALWAYS_INLINE constexpr void operator()(Range&& range) const {
+  [[THES_ALWAYS_INLINE]] constexpr void operator()(Range&& range) const {
     constexpr std::size_t size = star::size<Range>;
-    return [&]<std::size_t... I>(std::index_sequence<I...> /*idxs*/)
-             THES_ALWAYS_INLINE { (fun(get_at<I>(range)), ...); }(std::make_index_sequence<size>{});
+    return [&]<std::size_t... I> [[THES_ALWAYS_INLINE]] (std::index_sequence<I...> /*idxs*/) {
+      (fun(get_at<I>(range)), ...);
+    }(std::make_index_sequence<size>{});
   }
 };
 
 template<typename F>
-THES_ALWAYS_INLINE inline constexpr auto for_each(F&& op) {
+[[THES_ALWAYS_INLINE]] constexpr auto for_each(F&& op) {
   return ForEachGenerator<F>{std::forward<F>(op)};
 }
 } // namespace thes::star

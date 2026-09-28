@@ -24,15 +24,15 @@ template<std::integral Dst>
 struct SafeCastWorker {
   using Ret = CastResult<Dst>;
 
-  THES_ALWAYS_INLINE explicit constexpr SafeCastWorker(Dst v) : value_{v} {}
+  [[THES_ALWAYS_INLINE]] explicit constexpr SafeCastWorker(Dst v) : value_{v} {}
 
-  THES_ALWAYS_INLINE constexpr void too_small() {
+  [[THES_ALWAYS_INLINE]] constexpr void too_small() {
     info_ = CastInfo::too_small;
   }
-  THES_ALWAYS_INLINE constexpr void too_large() {
+  [[THES_ALWAYS_INLINE]] constexpr void too_large() {
     info_ = CastInfo::too_large;
   }
-  THES_ALWAYS_INLINE constexpr Ret value() {
+  [[THES_ALWAYS_INLINE]] constexpr Ret value() {
     return Ret{value_, info_};
   }
 
@@ -44,15 +44,15 @@ template<std::integral Dst>
 struct SatCastWorker {
   using Ret = Dst;
 
-  THES_ALWAYS_INLINE explicit constexpr SatCastWorker(Dst v) : value_{v} {}
+  [[THES_ALWAYS_INLINE]] explicit constexpr SatCastWorker(Dst v) : value_{v} {}
 
-  THES_ALWAYS_INLINE constexpr void too_small() {
+  [[THES_ALWAYS_INLINE]] constexpr void too_small() {
     value_ = std::numeric_limits<Dst>::lowest();
   }
-  THES_ALWAYS_INLINE constexpr void too_large() {
+  [[THES_ALWAYS_INLINE]] constexpr void too_large() {
     value_ = std::numeric_limits<Dst>::max();
   }
-  THES_ALWAYS_INLINE constexpr Ret value() {
+  [[THES_ALWAYS_INLINE]] constexpr Ret value() {
     return value_;
   }
 

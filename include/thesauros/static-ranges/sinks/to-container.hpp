@@ -18,8 +18,8 @@ namespace thes::star {
 template<typename Container>
 struct ToContainerGenerator : ConsumerGeneratorBase {
   template<typename R>
-  THES_ALWAYS_INLINE constexpr auto operator()(R&& range) const {
-    return [&]<std::size_t... I>(std::index_sequence<I...> /*idxd*/) THES_ALWAYS_INLINE {
+  [[THES_ALWAYS_INLINE]] constexpr auto operator()(R&& range) const {
+    return [&]<std::size_t... I> [[THES_ALWAYS_INLINE]] (std::index_sequence<I...> /*idxd*/) {
       return Container{get_at<I>(range)...};
     }(std::make_index_sequence<size<R>>{});
   }

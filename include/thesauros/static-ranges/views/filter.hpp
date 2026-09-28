@@ -32,7 +32,7 @@ struct FilterView {
   Inner inner;
 
   template<std::size_t I>
-  THES_ALWAYS_INLINE friend constexpr decltype(auto) get(const FilterView& self) {
+  [[THES_ALWAYS_INLINE]] friend constexpr decltype(auto) get(const FilterView& self) {
     return get_at<get_at<I>(IdxRange)>(self.inner);
   }
 };
@@ -40,7 +40,7 @@ struct FilterView {
 template<auto IdxRange>
 struct OnlyIndicesGenerator : RangeGeneratorBase {
   template<typename Range>
-  THES_ALWAYS_INLINE constexpr FilterView<Range, IdxRange> operator()(Range&& range) const {
+  [[THES_ALWAYS_INLINE]] constexpr FilterView<Range, IdxRange> operator()(Range&& range) const {
     return {std::forward<Range>(range)};
   }
 };
@@ -48,14 +48,14 @@ struct OnlyIndicesGenerator : RangeGeneratorBase {
 template<auto IdxRange>
 struct AllExceptIndicesGenerator : RangeGeneratorBase {
   template<typename Range>
-  THES_ALWAYS_INLINE constexpr auto operator()(Range&& range) const {
+  [[THES_ALWAYS_INLINE]] constexpr auto operator()(Range&& range) const {
     constexpr std::size_t range_size = star::size<Range>;
 
-    constexpr auto pair = [&] THES_ALWAYS_INLINE {
+    constexpr auto pair = [&] [[THES_ALWAYS_INLINE]] {
       std::array<std::size_t, range_size> buffer{};
       std::size_t count = 0;
 
-      star::for_each([&](auto i) THES_ALWAYS_INLINE {
+      star::for_each([&] [[THES_ALWAYS_INLINE]] (auto i) {
         bool contains = false;
         star::for_each([&](auto j) { contains = contains || (i == j); })(IdxRange);
         if (!contains) {
@@ -67,7 +67,7 @@ struct AllExceptIndicesGenerator : RangeGeneratorBase {
       return std::make_pair(buffer, count);
     }();
     constexpr auto idxs = star::to_array(star::index_transform<pair.second>(
-      [&](auto idx) THES_ALWAYS_INLINE { return std::get<idx>(pair.first); }));
+      [&] [[THES_ALWAYS_INLINE]] (auto idx) { return std::get<idx>(pair.first); }));
 
     return FilterView<Range, idxs>{std::forward<Range>(range)};
   }
@@ -76,22 +76,22 @@ struct AllExceptIndicesGenerator : RangeGeneratorBase {
 template<auto F>
 struct FilterGenerator : RangeGeneratorBase {
   template<typename Range>
-  THES_ALWAYS_INLINE constexpr auto operator()(Range&& range) const {
-    auto idx_num = [] THES_ALWAYS_INLINE {
+  [[THES_ALWAYS_INLINE]] constexpr auto operator()(Range&& range) const {
+    auto idx_num = [] [[THES_ALWAYS_INLINE]] {
       constexpr std::size_t size = star::size<Range>;
       std::size_t ctr = 0;
-      tagged_iota<0, size> | for_each([&](auto idx) THES_ALWAYS_INLINE {
+      tagged_iota<0, size> | for_each([&] [[THES_ALWAYS_INLINE]] (auto idx) {
         if (F(idx, type_tag<decltype(get_at(std::declval<Range>(), idx))>)) {
           ++ctr;
         }
       });
       return ctr;
     };
-    const auto gen_idxs = [&] THES_ALWAYS_INLINE {
+    const auto gen_idxs = [&] [[THES_ALWAYS_INLINE]] {
       constexpr std::size_t size = star::size<Range>;
       std::array<std::size_t, idx_num()> idxs{};
       std::size_t ctr = 0;
-      tagged_iota<0, size> | for_each([&](auto idx) THES_ALWAYS_INLINE {
+      tagged_iota<0, size> | for_each([&] [[THES_ALWAYS_INLINE]] (auto idx) {
         if (F(idx, type_tag<decltype(get_at(std::declval<Range>(), idx))>)) {
           idxs[ctr++] = idx;
         }

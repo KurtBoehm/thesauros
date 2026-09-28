@@ -42,7 +42,7 @@ struct FileReader {
 
   template<typename T>
   requires(std::is_trivial_v<T>)
-  THES_ALWAYS_INLINE std::size_t try_read(std::span<T> span) {
+  [[THES_ALWAYS_INLINE]] std::size_t try_read(std::span<T> span) {
     const auto ret = std::fread(span.data(), sizeof(T), span.size(), handle_);
     const auto err = std::ferror(handle_);
     if (err) {
@@ -53,7 +53,7 @@ struct FileReader {
 
   template<typename T>
   requires(std::is_trivial_v<T>)
-  THES_ALWAYS_INLINE void read(std::span<T> span) {
+  [[THES_ALWAYS_INLINE]] void read(std::span<T> span) {
     const std::size_t count = span.size();
     if (count == 0) {
       // Avoid an empty read.
@@ -64,18 +64,18 @@ struct FileReader {
       throw FileException{cat("fread failed: ", ret, " != ", count)};
     }
   }
-  THES_ALWAYS_INLINE void read(DynamicBuffer& buf, std::size_t size) {
+  [[THES_ALWAYS_INLINE]] void read(DynamicBuffer& buf, std::size_t size) {
     buf.resize(size);
     read(buf.span());
   }
   template<typename T, std::size_t N>
   requires(std::is_trivial_v<T>)
-  THES_ALWAYS_INLINE void read(std::array<T, N>& array) {
+  [[THES_ALWAYS_INLINE]] void read(std::array<T, N>& array) {
     read(std::span{array.data(), array.size()});
   }
   template<typename T>
   requires(std::is_trivial_v<T>)
-  THES_ALWAYS_INLINE T read(TypeTag<T> /*tag*/) {
+  [[THES_ALWAYS_INLINE]] T read(TypeTag<T> /*tag*/) {
     T value{};
     read(std::span{&value, 1});
     return value;
@@ -101,14 +101,14 @@ struct FileReader {
     return buf;
   }
 
-  THES_ALWAYS_INLINE void seek(long offset, Seek whence) {
+  [[THES_ALWAYS_INLINE]] void seek(long offset, Seek whence) {
     const auto ret = std::fseek(handle_, offset, static_cast<int>(whence));
     if (ret != 0) {
       throw FileException{cat("fseek failed: ", ret)};
     }
   }
 
-  [[nodiscard]] THES_ALWAYS_INLINE long tell() {
+  [[nodiscard, THES_ALWAYS_INLINE]] long tell() {
     const auto ret = std::ftell(handle_);
     if (ret == -1) {
       throw FileException{cat("ftell failed: ", errno)};

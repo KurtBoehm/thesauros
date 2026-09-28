@@ -23,7 +23,7 @@ concept HasGet = requires(Range&& rng) { get<I>(std::forward<Range>(rng)); };
 
 template<std::size_t I, typename Range>
 requires(I < std::tuple_size_v<std::remove_cvref_t<Range>>)
-THES_ALWAYS_INLINE inline constexpr decltype(auto) get_at(Range&& r, IndexTag<I> /*tag*/ = {}) {
+[[THES_ALWAYS_INLINE]] constexpr decltype(auto) get_at(Range&& r, IndexTag<I> /*tag*/ = {}) {
   using std::get;
   return get<I>(std::forward<Range>(r));
 }

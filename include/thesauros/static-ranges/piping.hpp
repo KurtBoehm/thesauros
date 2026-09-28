@@ -15,12 +15,12 @@
 
 namespace thes::star {
 template<AnyStaticRange R, IsPipeSink RGen>
-THES_ALWAYS_INLINE inline constexpr decltype(auto) operator|(R&& range, RGen&& gen) {
+[[THES_ALWAYS_INLINE]] constexpr decltype(auto) operator|(R&& range, RGen&& gen) {
   return std::forward<RGen>(gen)(std::forward<R>(range));
 }
 
 template<IsRangeGenerator RGen1, IsPipeSink RGen2>
-THES_ALWAYS_INLINE inline constexpr decltype(auto) operator|(RGen1&& gen1, RGen2&& gen2) {
+[[THES_ALWAYS_INLINE]] constexpr decltype(auto) operator|(RGen1&& gen1, RGen2&& gen2) {
   return CombinedGenerator<RGen1, RGen2>{std::forward<RGen1>(gen1), std::forward<RGen2>(gen2)};
 }
 } // namespace thes::star

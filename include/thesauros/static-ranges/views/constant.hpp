@@ -24,13 +24,13 @@ struct Constant {
 
   template<std::size_t I>
   requires(I < N)
-  THES_ALWAYS_INLINE friend constexpr auto get(const Constant& self) {
+  [[THES_ALWAYS_INLINE]] friend constexpr auto get(const Constant& self) {
     return self.value;
   }
 };
 
 template<std::size_t N, typename T>
-THES_ALWAYS_INLINE inline constexpr auto constant(T&& value) {
+[[THES_ALWAYS_INLINE]] constexpr auto constant(T&& value) {
   return Constant<N, T>{std::forward<T>(value)};
 }
 } // namespace thes::star

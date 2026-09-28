@@ -103,8 +103,8 @@ namespace detail {
  * @param part_fun  callback for the partial tail tile
  */
 template<IterDirection Dir, typename S>
-THES_ALWAYS_INLINE inline constexpr void for_each_tile_unroll(S begin, S end, auto tile_size,
-                                                              auto&& full_fun, auto&& part_fun) {
+[[THES_ALWAYS_INLINE]] constexpr void for_each_tile_unroll(S begin, S end, auto tile_size,
+                                                           auto&& full_fun, auto&& part_fun) {
   if constexpr (Dir == IterDirection::forward) {
     S i = begin;
     for (; i + tile_size <= end; i += tile_size) {
@@ -145,16 +145,16 @@ THES_ALWAYS_INLINE inline constexpr void for_each_tile_unroll(S begin, S end, au
  * @param part_fun   callback for partial tiles
  */
 template<IterDirection Dir, typename Ranges, typename FixedAxes>
-THES_ALWAYS_INLINE inline constexpr void for_each_tile(const Ranges& ranges, const auto& tile_sizes,
-                                                       const FixedAxes& fixed_axes, auto&& full_fun,
-                                                       auto&& part_fun) {
+[[THES_ALWAYS_INLINE]] constexpr void for_each_tile(const Ranges& ranges, const auto& tile_sizes,
+                                                    const FixedAxes& fixed_axes, auto&& full_fun,
+                                                    auto&& part_fun) {
   using Size = NestedValueType<Ranges>;
   constexpr std::size_t dim_num = star::size<Ranges>;
 
   if constexpr (dim_num == 0) {
     return;
   } else {
-    [&](this auto&& rec, auto dim, auto... args) THES_ALWAYS_INLINE {
+    [&] [[THES_ALWAYS_INLINE]] (this auto&& rec, auto dim, auto... args) {
       static_assert(dim < dim_num && sizeof...(args) == dim);
 
       const auto dim_range = star::get_at<dim>(ranges);
@@ -197,8 +197,8 @@ THES_ALWAYS_INLINE inline constexpr void for_each_tile(const Ranges& ranges, con
  * @param fun         tile callback: `fun(range_dim0, range_dim1, ...)`
  */
 template<IterDirection Dir, typename Ranges, typename FixedAxes>
-THES_ALWAYS_INLINE inline constexpr void for_each_tile(const Ranges& ranges, const auto& tile_sizes,
-                                                       const FixedAxes& fixed_axes, auto&& fun) {
+[[THES_ALWAYS_INLINE]] constexpr void for_each_tile(const Ranges& ranges, const auto& tile_sizes,
+                                                    const FixedAxes& fixed_axes, auto&& fun) {
   detail::for_each_tile<Dir>(ranges, tile_sizes, fixed_axes, fun, fun);
 }
 
@@ -219,7 +219,7 @@ THES_ALWAYS_INLINE inline constexpr void for_each_tile(const Ranges& ranges, con
  * @param vec_size    vector width (index tag)
  */
 template<IterDirection Dir, typename Ranges, typename FixedAxes>
-THES_ALWAYS_INLINE inline constexpr void
+[[THES_ALWAYS_INLINE]] constexpr void
 for_each_tile(const Ranges& ranges, const auto& tile_sizes, const FixedAxes& fixed_axes,
               auto&& full_fun, auto&& part_fun, [[maybe_unused]] AnyIndexTag auto vec_size) {
   assert(star::static_apply<star::size<Ranges>>([&]<std::size_t... I>() {
@@ -245,13 +245,13 @@ for_each_tile(const Ranges& ranges, const auto& tile_sizes, const FixedAxes& fix
  * @param tag        flat index type tag
  */
 template<IterDirection Dir, typename Ranges, typename Idx = NestedValueType<Ranges>>
-THES_ALWAYS_INLINE inline constexpr void tile_for_each(const auto& multi_size, const Ranges& ranges,
-                                                       auto&& fun, TypeTag<Idx> /*tag*/ = {}) {
+[[THES_ALWAYS_INLINE]] constexpr void tile_for_each(const auto& multi_size, const Ranges& ranges,
+                                                    auto&& fun, TypeTag<Idx> /*tag*/ = {}) {
   using Size = NestedValueType<Ranges>;
   constexpr std::size_t dim_num = star::size<Ranges>;
   using IndexPos = IndexPosition<Idx, std::array<Size, dim_num>>;
 
-  [&](this auto&& rec, auto dim, auto index, auto... coords) THES_ALWAYS_INLINE {
+  [&] [[THES_ALWAYS_INLINE]] (this auto&& rec, auto dim, auto index, auto... coords) {
     const auto range = star::get_at<dim>(ranges);
     const auto begin = range.begin_value();
     const auto end = range.end_value();
@@ -296,7 +296,7 @@ THES_ALWAYS_INLINE inline constexpr void tile_for_each(const auto& multi_size, c
  * @param tag        flat index type tag
  */
 template<IterDirection Dir, typename Ranges, typename Idx = NestedValueType<Ranges>>
-THES_ALWAYS_INLINE inline constexpr void
+[[THES_ALWAYS_INLINE]] constexpr void
 tile_for_each(const auto& multi_size, const Ranges& ranges, auto&& full_fun, auto&& part_fun,
               AnyIndexTag auto vec_size, AnyBoolTag auto has_part, TypeTag<Idx> /*tag*/ = {}) {
   using Size = NestedValueType<Ranges>;
@@ -304,7 +304,7 @@ tile_for_each(const auto& multi_size, const Ranges& ranges, auto&& full_fun, aut
   using IndexPos = IndexPosition<Idx, std::array<Size, dim_num>>;
   constexpr Size vsize = static_cast<Size>(vec_size);
 
-  [&](this auto&& rec, auto dim, auto index, auto... coords) THES_ALWAYS_INLINE {
+  [&] [[THES_ALWAYS_INLINE]] (this auto&& rec, auto dim, auto index, auto... coords) {
     const auto range = star::get_at<dim>(ranges);
 
     if constexpr (Dir == IterDirection::forward) {
@@ -380,12 +380,13 @@ tile_for_each(const auto& multi_size, const Ranges& ranges, auto&& full_fun, aut
  * @param tag        flat index type tag
  */
 template<IterDirection Dir, typename Ranges, typename Idx = NestedValueType<Ranges>>
-THES_ALWAYS_INLINE inline constexpr void
-tiled_for_each(const auto& multi_size, const Ranges& ranges, const auto& tile_sizes,
-               const auto& fixed_axes, auto&& fun, TypeTag<Idx> tag = {}) {
-  for_each_tile<Dir>(ranges, tile_sizes, fixed_axes, [&](auto... tile_ranges) THES_ALWAYS_INLINE {
-    tile_for_each<Dir>(multi_size, Tuple{std::move(tile_ranges)...}, fun, tag);
-  });
+[[THES_ALWAYS_INLINE]] constexpr void tiled_for_each(const auto& multi_size, const Ranges& ranges,
+                                                     const auto& tile_sizes, const auto& fixed_axes,
+                                                     auto&& fun, TypeTag<Idx> tag = {}) {
+  for_each_tile<Dir>(ranges, tile_sizes, fixed_axes,
+                     [&] [[THES_ALWAYS_INLINE]] (auto... tile_ranges) {
+                       tile_for_each<Dir>(multi_size, Tuple{std::move(tile_ranges)...}, fun, tag);
+                     });
 }
 
 /**
@@ -410,19 +411,19 @@ tiled_for_each(const auto& multi_size, const Ranges& ranges, const auto& tile_si
  * @param tag        flat index type tag
  */
 template<IterDirection Dir, typename Ranges, typename Idx = NestedValueType<Ranges>>
-THES_ALWAYS_INLINE inline constexpr void
+[[THES_ALWAYS_INLINE]] constexpr void
 tiled_for_each(const auto& multi_size, const Ranges& ranges, const auto& tile_sizes,
                const auto& fixed_axes, auto&& full_fun, auto&& part_fun, AnyIndexTag auto vec_size,
                TypeTag<Idx> tag = {}) {
   for_each_tile<Dir>(
     ranges, tile_sizes, fixed_axes,
     // full tiles
-    [&](auto... tile_ranges) THES_ALWAYS_INLINE {
+    [&] [[THES_ALWAYS_INLINE]] (auto... tile_ranges) {
       tile_for_each<Dir>(multi_size, Tuple{std::move(tile_ranges)...}, full_fun, NoOp{}, vec_size,
                          /*has_part=*/false_tag, tag);
     },
     // partial tiles
-    [&](auto... tile_ranges) THES_ALWAYS_INLINE {
+    [&] [[THES_ALWAYS_INLINE]] (auto... tile_ranges) {
       tile_for_each<Dir>(multi_size, Tuple{std::move(tile_ranges)...}, full_fun, part_fun, vec_size,
                          /*has_part=*/true_tag, tag);
     },

@@ -23,9 +23,10 @@ struct SequentialExecutor {
   }
 
   template<typename Task>
-  requires(NothrowInvocable<Task&, std::size_t>)
-  THES_ALWAYS_INLINE constexpr void
-  execute(Task&& task, [[maybe_unused]] std::optional<std::size_t> used_thread_num = {}) const {
+  requires(NothrowInvocable<const Task&, std::size_t>)
+  [[THES_ALWAYS_INLINE]] constexpr void
+  execute(const Task& task,
+          [[maybe_unused]] std::optional<std::size_t> used_thread_num = {}) const {
     assert(!used_thread_num.has_value() || *used_thread_num == 1);
     task(std::size_t{0});
   }

@@ -56,8 +56,8 @@ struct TransformView : detail::transform::ValueBase<Fun, Ret, ArgRanges...> {
       : fun{std::forward<Fun>(f)}, range_tup{std::forward<ArgRanges>(ranges)...} {}
 
   template<std::size_t I>
-  THES_ALWAYS_INLINE friend constexpr decltype(auto) get(const TransformView& self) {
-    return apply([&self](const auto&... ranges) THES_ALWAYS_INLINE -> decltype(auto) {
+  [[THES_ALWAYS_INLINE]] friend constexpr decltype(auto) get(const TransformView& self) {
+    return apply([&self] [[THES_ALWAYS_INLINE]] (const auto&... ranges) -> decltype(auto) {
       return self.fun(get_at<I>(ranges)...);
     })(self.range_tup);
   }
@@ -70,55 +70,55 @@ struct TransformGenerator : RangeGeneratorBase {
   explicit constexpr TransformGenerator(Fun&& f) : fun{std::forward<Fun>(f)} {}
 
   template<typename... ArgRanges>
-  THES_ALWAYS_INLINE constexpr auto operator()(ArgRanges&&... ranges) const& {
+  [[THES_ALWAYS_INLINE]] constexpr auto operator()(ArgRanges&&... ranges) const& {
     return TransformView<const Fun&, Ret, ArgRanges...>{fun, std::forward<ArgRanges>(ranges)...};
   }
   template<typename... ArgRanges>
-  THES_ALWAYS_INLINE constexpr auto operator()(ArgRanges&&... ranges) && {
+  [[THES_ALWAYS_INLINE]] constexpr auto operator()(ArgRanges&&... ranges) && {
     return TransformView<Fun, Ret, ArgRanges...>{std::forward<Fun>(fun),
                                                  std::forward<ArgRanges>(ranges)...};
   }
 };
 
 template<typename Fun>
-THES_ALWAYS_INLINE inline constexpr auto transform(Fun&& f) {
+[[THES_ALWAYS_INLINE]] constexpr auto transform(Fun&& f) {
   return TransformGenerator<Fun>{std::forward<Fun>(f)};
 }
 template<typename Ret, typename Fun>
-THES_ALWAYS_INLINE inline constexpr auto transform(Fun&& f) {
+[[THES_ALWAYS_INLINE]] constexpr auto transform(Fun&& f) {
   return TransformGenerator<Fun, Ret>{std::forward<Fun>(f)};
 }
 
 template<typename Fun, typename... ArgRanges>
 requires(sizeof...(ArgRanges) > 0)
-THES_ALWAYS_INLINE inline constexpr auto transform(Fun&& f, ArgRanges&&... ranges) {
+[[THES_ALWAYS_INLINE]] constexpr auto transform(Fun&& f, ArgRanges&&... ranges) {
   return TransformView<Fun, void, ArgRanges...>{std::forward<Fun>(f),
                                                 std::forward<ArgRanges>(ranges)...};
 }
 template<typename Ret, typename Fun, typename... ArgRanges>
 requires(sizeof...(ArgRanges) > 0)
-THES_ALWAYS_INLINE inline constexpr auto transform(Fun&& f, ArgRanges&&... ranges) {
+[[THES_ALWAYS_INLINE]] constexpr auto transform(Fun&& f, ArgRanges&&... ranges) {
   return TransformView<Fun, Ret, ArgRanges...>{std::forward<Fun>(f),
                                                std::forward<ArgRanges>(ranges)...};
 }
 
 template<std::size_t End, typename Fun>
-THES_ALWAYS_INLINE inline constexpr auto index_transform(Fun&& f) {
+[[THES_ALWAYS_INLINE]] constexpr auto index_transform(Fun&& f) {
   using View = TransformView<Fun, void, IotaView<std::size_t, 0, End, 1, true>>;
   return View{std::forward<Fun>(f), {}};
 }
 template<std::size_t Begin, std::size_t End, typename Fun>
-THES_ALWAYS_INLINE inline constexpr auto index_transform(Fun&& f) {
+[[THES_ALWAYS_INLINE]] constexpr auto index_transform(Fun&& f) {
   using View = TransformView<Fun, void, IotaView<std::size_t, Begin, End, 1, true>>;
   return View{std::forward<Fun>(f), {}};
 }
 template<typename Size, Size End, typename Fun>
-THES_ALWAYS_INLINE inline constexpr auto index_transform(Fun&& f) {
+[[THES_ALWAYS_INLINE]] constexpr auto index_transform(Fun&& f) {
   using View = TransformView<Fun, void, IotaView<Size, 0, End, 1, true>>;
   return View{std::forward<Fun>(f), {}};
 }
 template<typename Size, Size Begin, Size End, typename Fun>
-THES_ALWAYS_INLINE inline constexpr auto index_transform(Fun&& f) {
+[[THES_ALWAYS_INLINE]] constexpr auto index_transform(Fun&& f) {
   using View = TransformView<Fun, void, IotaView<Size, Begin, End, 1, true>>;
   return View{std::forward<Fun>(f), {}};
 }

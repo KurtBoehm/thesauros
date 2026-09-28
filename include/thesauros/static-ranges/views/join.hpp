@@ -34,11 +34,11 @@ struct JoinView {
 
   template<std::size_t I>
   requires(I < size)
-  THES_ALWAYS_INLINE friend constexpr auto get(const JoinView& self) {
-    constexpr auto pair = [] THES_ALWAYS_INLINE {
+  [[THES_ALWAYS_INLINE]] friend constexpr auto get(const JoinView& self) {
+    constexpr auto pair = [] [[THES_ALWAYS_INLINE]] {
       std::size_t sum = 0;
       std::optional<std::pair<std::size_t, std::size_t>> out{};
-      star::for_each([&](auto idx) THES_ALWAYS_INLINE {
+      star::for_each([&] [[THES_ALWAYS_INLINE]] (auto idx) {
         constexpr std::size_t idx_size = star::size<std::remove_cvref_t<Element<idx, Ranges>>>;
         if (sum <= I && I < sum + idx_size) {
           if (out.has_value()) {
@@ -58,18 +58,18 @@ JoinView(Ranges&&...) -> JoinView<Ranges...>;
 
 template<typename... Ranges>
 requires(sizeof...(Ranges) > 0)
-THES_ALWAYS_INLINE inline constexpr auto joined(Ranges&&... ranges) {
+[[THES_ALWAYS_INLINE]] constexpr auto joined(Ranges&&... ranges) {
   return JoinView{thes::make_tuple(std::forward<Ranges>(ranges)...)};
 }
 
 template<typename NestedRange>
-THES_ALWAYS_INLINE inline constexpr auto flattened(NestedRange&& ranges) {
+[[THES_ALWAYS_INLINE]] constexpr auto flattened(NestedRange&& ranges) {
   return JoinView{std::forward<NestedRange>(ranges)};
 }
 
 struct JoinGenerator : RangeGeneratorBase {
   template<typename Ranges>
-  THES_ALWAYS_INLINE constexpr JoinView<Ranges> operator()(Ranges&& range) const {
+  [[THES_ALWAYS_INLINE]] constexpr JoinView<Ranges> operator()(Ranges&& range) const {
     return {std::forward<Ranges>(range)};
   }
 };

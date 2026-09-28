@@ -14,14 +14,14 @@ namespace thes {
 template<typename T>
 struct IntegralValueTrait {
   using Type = T;
-  static constexpr T value(const T value) THES_ALWAYS_INLINE {
+  [[THES_ALWAYS_INLINE]] static constexpr T value(const T value) {
     return value;
   }
 };
 template<typename T, T V>
 struct IntegralValueTrait<ValueTag<T, V>> {
   using Type = IntegralValueTrait<T>::Type;
-  static constexpr Type value(const ValueTag<T, V> tag) THES_ALWAYS_INLINE {
+  [[THES_ALWAYS_INLINE]] static constexpr Type value(const ValueTag<T, V> tag) {
     return IntegralValueTrait<T>::value(tag.value);
   }
 };

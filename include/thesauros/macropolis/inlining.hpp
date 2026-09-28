@@ -8,8 +8,8 @@
 #define INCLUDE_THESAUROS_MACROPOLIS_INLINING_HPP
 
 namespace thes {
-#define THES_ALWAYS_INLINE __attribute__((always_inline))
-#define THES_NEVER_INLINE __attribute__((noinline))
+#define THES_ALWAYS_INLINE gnu::always_inline
+#define THES_NEVER_INLINE gnu::noinline
 } // namespace thes
 
 #endif // INCLUDE_THESAUROS_MACROPOLIS_INLINING_HPP

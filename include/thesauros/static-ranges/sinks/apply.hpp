@@ -22,17 +22,17 @@ struct ApplyGenerator : ConsumerGeneratorBase {
   explicit constexpr ApplyGenerator(F&& f) : fun{std::forward<F>(f)} {}
 
   template<typename Range>
-  THES_ALWAYS_INLINE constexpr decltype(auto) operator()(Range&& range) const {
+  [[THES_ALWAYS_INLINE]] constexpr decltype(auto) operator()(Range&& range) const {
     constexpr std::size_t size = star::size<Range>;
-    return [&]<std::size_t... I>(std::index_sequence<I...> /*idxs*/)
-             THES_ALWAYS_INLINE -> decltype(auto) {
-               return fun(get_at<I>(range)...);
-             }(std::make_index_sequence<size>{});
+    return [&]<std::size_t... I> [[THES_ALWAYS_INLINE]] (
+             std::index_sequence<I...> /*idxs*/) -> decltype(auto) {
+      return fun(get_at<I>(range)...);
+    }(std::make_index_sequence<size>{});
   }
 };
 
 template<typename F>
-THES_ALWAYS_INLINE inline constexpr auto apply(F&& op) {
+[[THES_ALWAYS_INLINE]] constexpr auto apply(F&& op) {
   return ApplyGenerator<F>{std::forward<F>(op)};
 }
 } // namespace thes::star

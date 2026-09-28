@@ -36,7 +36,7 @@ struct Generate : detail::generate::ValueBase<Ret, Gen> {
 
   template<std::size_t I>
   requires(I < Size)
-  THES_ALWAYS_INLINE friend constexpr auto get(const Generate& self) {
+  [[THES_ALWAYS_INLINE]] friend constexpr auto get(const Generate& self) {
     return self.gen_();
   }
 
@@ -45,11 +45,11 @@ private:
 };
 
 template<std::size_t Size, std::invocable<> Gen>
-THES_ALWAYS_INLINE inline constexpr auto generate(Gen&& gen) {
+[[THES_ALWAYS_INLINE]] constexpr auto generate(Gen&& gen) {
   return Generate<Size, void, Gen>{std::forward<Gen>(gen)};
 }
 template<typename Ret, std::size_t Size, std::invocable<> Gen>
-THES_ALWAYS_INLINE inline constexpr auto generate(Gen&& gen) {
+[[THES_ALWAYS_INLINE]] constexpr auto generate(Gen&& gen) {
   return Generate<Size, Ret, Gen>{std::forward<Gen>(gen)};
 }
 } // namespace thes::star

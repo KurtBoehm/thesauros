@@ -25,7 +25,7 @@ struct EnumerateView {
   Inner inner;
 
   template<std::size_t I>
-  THES_ALWAYS_INLINE friend constexpr std::pair<ValueTag<S, I>, decltype(get_at<I>(inner))>
+  [[THES_ALWAYS_INLINE]] friend constexpr std::pair<ValueTag<S, I>, decltype(get_at<I>(inner))>
   get(const EnumerateView& self) {
     return {value_tag<S, I>, get_at<I>(self.inner)};
   }
@@ -34,7 +34,7 @@ struct EnumerateView {
 template<typename S>
 struct EnumerateGenerator : RangeGeneratorBase {
   template<typename Range>
-  THES_ALWAYS_INLINE constexpr EnumerateView<S, Range> operator()(Range&& range) const {
+  [[THES_ALWAYS_INLINE]] constexpr EnumerateView<S, Range> operator()(Range&& range) const {
     return {std::forward<Range>(range)};
   }
 };

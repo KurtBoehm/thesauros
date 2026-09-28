@@ -25,14 +25,14 @@ struct ReversedView {
   Inner inner;
 
   template<std::size_t I>
-  THES_ALWAYS_INLINE friend constexpr auto get(const ReversedView& self) {
+  [[THES_ALWAYS_INLINE]] friend constexpr auto get(const ReversedView& self) {
     return get_at<size - I - 1>(self.inner);
   }
 };
 
 struct ReversedGenerator : RangeGeneratorBase {
   template<typename Range>
-  THES_ALWAYS_INLINE constexpr ReversedView<Range> operator()(Range&& range) const {
+  [[THES_ALWAYS_INLINE]] constexpr ReversedView<Range> operator()(Range&& range) const {
     return {std::forward<Range>(range)};
   }
 };

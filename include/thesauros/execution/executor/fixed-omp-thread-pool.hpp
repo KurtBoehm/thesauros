@@ -63,8 +63,8 @@ struct FixedOpenMpThreadPool {
   }
 
   template<typename Task>
-  requires(NothrowInvocable<Task&, std::size_t>)
-  void execute(Task&& task, std::optional<std::size_t> used_thread_num = {}) const {
+  requires(NothrowInvocable<const Task&, std::size_t>)
+  void execute(const Task& task, std::optional<std::size_t> used_thread_num = {}) const {
     const auto tnum = used_thread_num.value_or(thread_num_);
     assert(tnum <= thread_num_);
 

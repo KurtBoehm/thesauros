@@ -96,14 +96,14 @@ struct Optional : std::optional<T> {
   template<typename F>
   requires(std::same_as<std::remove_cvref_t<std::invoke_result_t<F>>, T> &&
            std::copy_constructible<T>)
-  [[nodiscard]] THES_ALWAYS_INLINE constexpr T value_or_else(F&& f) const& {
+  [[nodiscard, THES_ALWAYS_INLINE]] constexpr T value_or_else(F&& f) const& {
     return this->has_value() ? **this : std::forward<F>(f)();
   }
 
   template<typename F>
   requires(std::same_as<std::remove_cvref_t<std::invoke_result_t<F>>, T> &&
            std::move_constructible<T>)
-  [[nodiscard]] THES_ALWAYS_INLINE constexpr T value_or_else(F&& f) && {
+  [[nodiscard, THES_ALWAYS_INLINE]] constexpr T value_or_else(F&& f) && {
     return this->has_value() ? std::move(**this) : std::forward<F>(f)();
   }
 };
