@@ -14,12 +14,14 @@
 #include <type_traits>
 #include <utility>
 
+#include "thesauros/concepts/nothrow.hpp"
 #include "thesauros/containers/array/fixed.hpp"
 #include "thesauros/math/integer-cast.hpp"
 
 namespace thes {
 template<typename T, typename ExecutionPolicy, typename ForwardIt1, typename ForwardIt2,
-         typename BinaryOperation, typename UnaryOperation>
+         NothrowInvocable<T, T> BinaryOperation,
+         NothrowInvocable<std::iter_reference_t<ForwardIt1>> UnaryOperation>
 inline void transform_inclusive_scan(ExecutionPolicy&& policy, ForwardIt1 first, ForwardIt1 last,
                                      ForwardIt2 d_first, BinaryOperation binary_op,
                                      UnaryOperation unary_op, T neutral) {
@@ -37,7 +39,7 @@ inline void transform_inclusive_scan(ExecutionPolicy&& policy, ForwardIt1 first,
   std::latch barrier{*safe_cast<std::ptrdiff_t>(policy.thread_num())};
   FixedArray<T> offsets(policy.thread_num());
   std::forward<ExecutionPolicy>(policy).execute_segmented(
-    size, [=, &barrier, &offsets](std::size_t thread_idx, auto begin, auto end) {
+    size, [=, &barrier, &offsets](std::size_t thread_idx, auto begin, auto end) noexcept {
       auto thread_first = first;
       std::advance(thread_first, begin);
 

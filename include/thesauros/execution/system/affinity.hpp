@@ -51,11 +51,10 @@ struct CpuSet {
   using Id = std::size_t;
   using Base = cpu_set_t;
 #elif THES_APPLE
-  // The best alternative to thread pinning on macOS is to assign each thread
-  // a different affinity tag.
-  // For this, we just store a single CPU, which will become the tag assigned to the thread.
+  // The best alternative to thread pinning on macOS is to assign each thread a different affinity
+  // tag. For this, we just store a single CPU, which will become the tag assigned to the thread.
   // This does not seem to work on M-series processors, as mentioned in
-  // https://github.com/RenderKit/embree/blob/master/common/sys/thread.cpp
+  // https://github.com/RenderKit/embree/blob/master/common/sys/thread.cpp.
   using Id = integer_t;
   using Base = Id;
 #elif THES_WINDOWS
@@ -98,8 +97,8 @@ struct CpuSet {
   }
 #elif THES_WINDOWS
   static CpuSet affinity(std::thread& thread) {
-    // Implementation based around CPU sets; if affinity was set via the older mask API,
-    // this is (probably) not reflected here.
+    // Implementation based around CPU sets; if affinity was set via the older mask API, this is
+    // (probably) not reflected here.
 
     auto* handle = pthread_gethandle(thread.native_handle());
 
@@ -181,7 +180,7 @@ inline std::expected<void, int> set_affinity(std::thread::native_handle_type han
 inline std::expected<void, kern_return_t> set_affinity(std::thread::native_handle_type handle,
                                                        const CpuSet& cpu_set) {
   // Based on https://www.hybridkernel.com/2015/01/18/binding_threads_to_cores_osx.html
-  // and https://developer.apple.com/library/archive/releasenotes/Performance/RN-AffinityAPI/
+  // and https://developer.apple.com/library/archive/releasenotes/Performance/RN-AffinityAPI/.
   const auto mach_thread = pthread_mach_thread_np(handle);
   thread_affinity_policy_data_t policy{cpu_set.base()};
   const kern_return_t ret = thread_policy_set(
@@ -193,12 +192,12 @@ inline std::expected<void, WINBOOL> set_affinity(std::thread::native_handle_type
                                                  const CpuSet& cpu_set) {
   // Windows has two APIs to change thread affinity, as discussed in
   // https://stackoverflow.com/q/76317127:
-  // - An older one using `SetThreadAffinityMask`/`SetThreadGroupAffinity`, which can only set
-  //   the affinity within the 64-core “group” that the thread is assigned to, as discussed on
+  // - An older one using `SetThreadAffinityMask`/`SetThreadGroupAffinity`, which can only set the
+  //   affinity within the 64-core “group” that the thread is assigned to, as discussed on
   //   https://learn.microsoft.com/en-us/windows/win32/procthread/processor-groups.
   //   The group assignment can be changed, but cross-group affinity is still not possible.
-  //   This is not particularly problematic in many cases, in which each thread is pinned
-  //   to a single core, but handling the general case would be very annoying and require some
+  //   This is not particularly problematic in most cases, in which each thread is pinned to a
+  //   single core, but handling the general case would be very annoying and require some
   //   compromises.
   // - A newer one using `SetThreadSelectedCpuSets`, which is apparently a softer way to specify
   //   thread affinity, as discussed on

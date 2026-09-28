@@ -18,10 +18,11 @@
 #include <vector>
 
 #include <omp.h>
-#include <pthread.h>
 
 #include "thesauros/charconv/concat.hpp"
+#include "thesauros/concepts/nothrow.hpp"
 #include "thesauros/execution/system/affinity.hpp"
+#include "thesauros/execution/system/this-thread.hpp"
 #include "thesauros/types/empty.hpp"
 
 namespace thes {
@@ -61,8 +62,9 @@ struct FixedOpenMpThreadPool {
     return thread_num_;
   }
 
-  void execute(std::invocable<std::size_t> auto task,
-               std::optional<std::size_t> used_thread_num = {}) const {
+  template<typename Task>
+  requires(NothrowInvocable<Task&, std::size_t>)
+  void execute(Task&& task, std::optional<std::size_t> used_thread_num = {}) const {
     const auto tnum = used_thread_num.value_or(thread_num_);
     assert(tnum <= thread_num_);
 
@@ -74,7 +76,7 @@ struct FixedOpenMpThreadPool {
 
 #pragma omp parallel for num_threads(thread_num_) default(none) shared(task) firstprivate(tnum)
     for (std::size_t t = 0; t < tnum; ++t) {
-      auto thread = pthread_self(); // NOLINT(*-qualified-auto)
+      auto thread = thes::this_thread_native_handle(); // NOLINT(*-qualified-auto)
       if (cpu_sets_.has_value()) {
         (void)set_affinity(thread, (*cpu_sets_)[t]); // NOLINT(*-unused-return-value)
       }

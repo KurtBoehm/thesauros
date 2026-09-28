@@ -20,6 +20,7 @@
 #include <utility>
 
 #include "thesauros/charconv/concat.hpp"
+#include "thesauros/concepts/nothrow.hpp"
 #include "thesauros/containers/array/fixed-alloc.hpp"
 #include "thesauros/execution/system/affinity.hpp"
 #include "thesauros/ranges/index-type.hpp"
@@ -109,12 +110,14 @@ struct FixedStdThreadPool {
     return threads_.size();
   }
 
-  void execute(Op task, std::optional<std::size_t> used_thread_num = {}) const {
+  template<typename Task>
+  requires(NothrowInvocable<Task&, std::size_t>)
+  void execute(Task&& task, std::optional<std::size_t> used_thread_num = {}) const {
     assert(!used_thread_num.has_value() || *used_thread_num <= threads_.size());
 
     {
       const std::scoped_lock lock{work_mutex_};
-      task_.emplace(std::move(task), used_thread_num);
+      task_.emplace(Op{std::forward<Task>(task)}, used_thread_num);
       unfinished_ = threads_.size();
       ++task_id_;
     }

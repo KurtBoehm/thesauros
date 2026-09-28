@@ -11,7 +11,6 @@
 #include <cassert>
 #include <concepts>
 #include <cstddef>
-#include <exception>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -21,59 +20,69 @@
 #include <type_traits>
 #include <utility>
 
-#include <pthread.h>
-
 #include "thesauros/charconv/concat.hpp"
+#include "thesauros/concepts/nothrow.hpp"
 #include "thesauros/containers/array/fixed-alloc.hpp"
 #include "thesauros/execution/system/affinity.hpp"
 #include "thesauros/execution/system/spin.hpp"
+#include "thesauros/execution/system/this-thread.hpp"
 #include "thesauros/math/integer-cast.hpp"
+#include "thesauros/ranges/countdown.hpp"
 #include "thesauros/ranges/index-type.hpp"
 #include "thesauros/ranges/indices.hpp"
 #include "thesauros/types/empty.hpp"
+#include "thesauros/types/primitives.hpp"
 
 namespace thes {
 /**
- * A thread pool of a fixed size which aims to make the dispatch of a parallel region as cheap as
- * an OpenMP one while relying on nothing but the standard library.
+ * A thread pool of a fixed size that aims to make the dispatch of parallel regions as cheap as
+ * possible to maximize the performance of short parallel sections. Its goal is to match OpenMP’s
+ * performance on platforms on which it performs well (Linux) while providing performance
+ * portability for platforms with limited support or unsatisfactory performance (macOS).
  *
- * The three properties that matter for small per-thread workloads are:
- * - The calling thread executes index 0 instead of blocking, which removes a pair of context
- *   switches per region and avoids oversubscribing the machine by one thread.
- * - The task is passed as a function pointer plus a pointer to the callable, which lives on the
- *   caller’s stack for the duration of the blocking `execute`, so nothing is allocated or copied.
- * - Threads spin for `spin_count` iterations before parking on `std::atomic::wait`, which maps to
- *   `futex` on Linux, `__ulock_wait` on macOS, and `WaitOnAddress` on Windows. Back-to-back regions
- *   therefore never enter the kernel, while a pool left idle stops consuming CPU time.
+ * To this end, this class has the following properties:
+ * - It uses the calling thread as thread `0` when executing to avoid over-subscribing the system.
+ * - The task is passed as a function pointer together with a pointer to the callable, which lives
+ *   on the caller’s stack for the duration of the blocking execution to avoid dynamic allocations.
+ * - Threads spin for `spin_count` iterations before parking on `std::atomic::wait`; back-to-back
+ *   parallel regions therefore never enter the kernel while a pool left idle stops consuming CPU
+ *   time.
  *
- * Unlike an OpenMP parallel region, an exception escaping a task is not fatal: the first one is
- * captured and rethrown from `execute` on the calling thread.
- *
- * `execute` must only be called from the thread that created the pool and never from within a
- * task, which is checked by an assertion.
+ * `execute` must only be called from the thread that created the pool; calling it from within a
+ * task is always forbidden. The task needs to be callable in a non-throwing fashion; the thread
+ * pool does not implement exception handling.
  */
 struct FixedThreadPool {
   /**
    * The number of iterations spent spinning before parking, which trades the latency of the next
-   * region against the CPU time burnt while waiting for it. The default corresponds to a few tens
-   * of microseconds, in the spirit of libgomp’s `GOMP_SPINCOUNT`; zero parks immediately.
+   * parallel region against the CPU time burnt while waiting for it, which is mitigated by
+   * `spin_pause()`. The default should correspond to well below one millisecond, although the exact
+   * duration depends on many factors.
    */
   static constexpr std::size_t default_spin_count = 1UZ << 14UZ;
-  /** The largest supported pool size, imposed by the packing of the dispatch state. */
-  static constexpr std::size_t max_thread_num = (1UZ << 16UZ) - 1;
+  /**
+   * The number of bits allocated to the number of participating threads in the dispatch state,
+   * trading the maximum number of threads against the number of epochs before wrap-around.
+   * 2¹⁶ - 1 = 65535 threads is sufficient even for the largest shared-memory systems while 2⁴⁸ is
+   * enough as the epoch counter even with very short parallel sections: at 1 µs per parallel
+   * section, this would only be exhausted after about 8.9 years.
+   */
+  static constexpr std::size_t used_thread_bits = 16UZ;
+  /** The largest supported thread count, constrained by the packing of the dispatch state. */
+  static constexpr std::size_t max_thread_num = (1UZ << used_thread_bits) - 1;
 
   using Threads = FixedAllocArray<std::jthread>;
 
   /**
-   * Create a pool of `size` threads, of which the calling thread is one.
+   * Create a pool of `size` threads, one of which is the calling thread.
    * @param cpu_sets The CPU sets to pin the threads to, with the first entry applying to the
-   *                 calling thread, or `Empty` to leave the affinities alone.
+   *                 calling thread. `Empty` keeps the affinities unchanged.
    */
   template<typename CpuSets = Empty>
   explicit FixedThreadPool(std::size_t size, const CpuSets& cpu_sets = {},
                            std::size_t spin_count = default_spin_count)
       : thread_num_{size}, spin_count_{spin_count},
-        threads_{Threads::create_with_capacity(worker_num(size))} {
+        workers_{Threads::create_with_capacity(worker_num(size))} {
     if constexpr (!std::same_as<CpuSets, Empty>) {
       if (size > cpu_sets.size()) {
         throw std::invalid_argument{cat(size, " threads have been requested, but there are only ",
@@ -83,16 +92,16 @@ struct FixedThreadPool {
 
     const std::size_t workers = worker_num(size);
     for (const std::size_t i : views::indices(workers)) {
-      threads_.emplace_back([this, index = i + 1] { work(index); });
+      workers_.emplace_back([this, index = i + 1] { work(index); });
     }
 
     if constexpr (!std::same_as<CpuSets, Empty>) {
       using Index = ranges::RangeIndex<CpuSets>;
       if (size > 0) {
-        (void)set_affinity(pthread_self(), cpu_sets[Index{0}]);
+        (void)set_affinity(this_thread_native_handle(), cpu_sets[Index{0}]);
       }
       for (const std::size_t i : views::indices(workers)) {
-        (void)set_affinity(threads_[i], cpu_sets[*safe_cast<Index>(i + 1)]);
+        (void)set_affinity(workers_[i], cpu_sets[*safe_cast<Index>(i + 1)]);
       }
     }
   }
@@ -108,7 +117,8 @@ struct FixedThreadPool {
         size,
         std::views::transform(std::forward<CpuInfos>(cpu_infos),
                               [](auto cpu) { return CpuSet::single_set(cpu.id); }),
-        spin_count};
+        spin_count,
+      };
     }
   }
 
@@ -128,12 +138,14 @@ struct FixedThreadPool {
   }
 
   /**
-   * Run `task` on the thread indices `[0, used_thread_num)`, blocking until all of them are done,
-   * and rethrow the first exception any of them produced.
+   * Run `task` on `used_thread_num` threads (which may be at most the thread count the pool has
+   * been created with, which is also used as the fallback), blocking until all participating
+   * threads are done. `task` is called with the index of the thread it is executed on, making this
+   * an appropriate index for accesses into a shared array, for example.
    */
   template<typename Task>
-  requires(std::invocable<const Task&, std::size_t>)
-  void execute(const Task& task, std::optional<std::size_t> used_thread_num = {}) const {
+  requires(NothrowInvocable<Task&, std::size_t>)
+  void execute(Task&& task, std::optional<std::size_t> used_thread_num = {}) const {
     const std::size_t used = used_thread_num.value_or(thread_num_);
     assert(used <= thread_num_);
     assert(std::this_thread::get_id() == owner_);
@@ -142,60 +154,77 @@ struct FixedThreadPool {
       return;
     }
     if (used == 1) {
-      std::invoke(task, std::size_t{0});
+      std::invoke(task, 0UZ);
       return;
     }
 
-    task_fun_ = [](const void* data, std::size_t index) {
-      std::invoke(*static_cast<const Task*>(data), index);
+    task_fun_ = [](const void* data, std::size_t index) noexcept {
+      std::invoke(*static_cast<std::remove_reference_t<Task>*>(data), index);
     };
     task_data_ = std::addressof(task);
+    // Ordering is enforced by later calls.
     unfinished_.store(used - 1, std::memory_order_relaxed);
 
     // The workers make their participation decision from this single load, so that those which are
     // not needed never touch the task, which the next region is free to overwrite.
-    const std::size_t state = state_.load(std::memory_order_relaxed) + epoch_step;
+    // The new state consists of the incremented epoch in the upper 48 bits and the current number
+    // of threads used in the lower 16 bits.
+    const u64 state = state_.load(std::memory_order_relaxed) + epoch_step;
     state_.store((state & ~used_mask) | used, std::memory_order_release);
     state_.notify_all();
 
     run(0);
     await_completion();
-
-    if (exception_stored_.exchange(false, std::memory_order_acquire)) {
-      std::rethrow_exception(std::exchange(exception_, {}));
-    }
   }
 
 private:
-  // The dispatch state packs the number of participating threads into the low bits and a counter
-  // of the regions dispatched so far into the high bits.
-  static constexpr std::size_t used_mask = max_thread_num;
-  static constexpr std::size_t epoch_step = max_thread_num + 1;
-  // Keeping the two hot atomics on separate cache lines prevents the completion counter, which
-  // every worker modifies, from invalidating the line the workers spin on.
+  /** The type of the function to be called on each thread. */
+  using ThreadFun = void (*)(const void*, std::size_t) noexcept;
+
+  /** The mask distinguishing the number of participating threads within the dispatch state. */
+  static constexpr u64 used_mask = (1UZ << used_thread_bits) - 1;
+  /** The number by which the dispatch state has to be increased to increment the epoch. */
+  static constexpr u64 epoch_step = 1UZ << used_thread_bits;
+
+  /**
+   * A stand-in for the cache line size, which is an upper bound for current x86-64 CPUs (which
+   * usually have 64-byte cache lines) and AArch64 CPUs (Apple Silicon has 128-byte cache lines).
+   * Intel’s spatial prefetcher may load a pair of 64-byte cache lines, effectively making the
+   * minimal unit for independent accesses 128 bytes there, too, as discussed here, for instance:
+   *
+   * github.com/crossbeam-rs/crossbeam/blob/main/crossbeam-utils/src/cache_padded.rs
+   *
+   * `std::hardware_destructive_interference_size` may not take this into account (it appears not to
+   * on GCC and Clang on x86-64).
+   */
   static constexpr std::size_t cache_line_bytes = 128;
 
   /**
-   * The number of threads to create, i.e. all but the calling one, validating `size` on the way.
+   * The number of worker threads to create, which is `size - 1` for a non-empty pool.
+   * Additionally, `size` is validated against `max_thread_num`.
    */
   static std::size_t worker_num(std::size_t size) {
     if (size > max_thread_num) {
       throw std::invalid_argument{
-        cat(size, " threads have been requested, but at most ", max_thread_num, " are supported!")};
+        cat(size, " threads have been requested, but at most ", max_thread_num, " are supported!"),
+      };
     }
     return (size > 0) ? size - 1 : 0;
   }
 
-  /** The loop run by every thread but the calling one. */
+  /** The loop run by every worker thread. */
   void work(std::size_t index) const {
-    std::size_t last_state = 0;
+    // Last iteration’s state to check whether new work has arrived.
+    u64 last_state = 0;
     while (true) {
       last_state = await_state(last_state);
       if (stop_.load(std::memory_order_relaxed)) {
         break;
       }
+      // Only run if the thread is used, which is encoded in the lower 16 bits of the state.
       if (index < (last_state & used_mask)) {
         run(index);
+        // Notify the main thread once all threads are done.
         if (unfinished_.fetch_sub(1, std::memory_order_acq_rel) == 1) {
           unfinished_.notify_one();
         }
@@ -204,9 +233,9 @@ private:
   }
 
   /** Wait for a dispatch state other than `last`, spinning before parking. */
-  std::size_t await_state(std::size_t last) const {
-    for (std::size_t i = spin_count_; i > 0; --i) {
-      const std::size_t state = state_.load(std::memory_order_acquire);
+  u64 await_state(u64 last) const {
+    for ([[maybe_unused]] const std::size_t i : views::countdown(spin_count_)) {
+      const u64 state = state_.load(std::memory_order_acquire);
       if (state != last) {
         return state;
       }
@@ -214,7 +243,7 @@ private:
     }
     while (true) {
       state_.wait(last, std::memory_order_acquire);
-      const std::size_t state = state_.load(std::memory_order_acquire);
+      const u64 state = state_.load(std::memory_order_acquire);
       if (state != last) {
         return state;
       }
@@ -223,7 +252,7 @@ private:
 
   /** Wait for all participating workers to report completion, spinning before parking. */
   void await_completion() const {
-    for (std::size_t i = spin_count_; i > 0; --i) {
+    for ([[maybe_unused]] const std::size_t i : views::countdown(spin_count_)) {
       if (unfinished_.load(std::memory_order_acquire) == 0) {
         return;
       }
@@ -238,35 +267,45 @@ private:
     }
   }
 
-  /** Run the current task, storing the exception it throws if it is the first one. */
-  void run(std::size_t index) const {
-    try {
-      task_fun_(task_data_, index);
-    } catch (...) {
-      if (!exception_stored_.exchange(true, std::memory_order_acq_rel)) {
-        exception_ = std::current_exception();
-      }
-    }
+  /** Run the current task. `task_fun_` is `noexcept`, which this function inherits. */
+  void run(std::size_t index) const noexcept {
+    task_fun_(task_data_, index);
   }
 
-  // Written by the calling thread before the release store to `state_` and read by the workers
-  // that the store makes participants, which the calling thread waits for before writing again.
-  alignas(cache_line_bytes) mutable std::atomic<std::size_t> state_{0};
+  /**
+   * The dispatch state that encodes the number of participating threads in its low 16 bits and the
+   * current epoch in the upper 48 bits. Beyond being clever, this merged state also makes accesses
+   * to both pieces of information, which are inherently tied together, one atomic operation,
+   * avoiding race conditions.
+   *
+   * This approach is quite similar to how `val_` is packed in Folly’s `EventCount`:
+   * github.com/facebook/folly/blob/v2026.09.21.00/folly/synchronization/EventCount.h
+   */
+  alignas(cache_line_bytes) mutable std::atomic<u64> state_{0};
 
+  /** The total number of threads **including** the main thread. */
   std::size_t thread_num_;
+  /** The number of spins before parking. */
   std::size_t spin_count_;
-  std::thread::id owner_{std::this_thread::get_id()};
+  /** The main thread that created this thread pool, to ensure that only it calls `execute`. */
+  std::thread::id owner_ = std::this_thread::get_id();
 
+  /** The atomic flag notifying threads when they should stop, i.e. when the pool is destroyed. */
   mutable std::atomic<bool> stop_{false};
-  mutable void (*task_fun_)(const void*, std::size_t){nullptr};
-  mutable const void* task_data_{nullptr};
+  /** The function to be executed on each thread, which re-interprets and calls `task_data_`. */
+  mutable ThreadFun task_fun_ = nullptr;
+  /** The data passed to `task_fun_`, which points to the actual callable. */
+  mutable const void* task_data_ = nullptr;
 
+  /**
+   * The number of threads that are still working on the current epoch.
+   * This is kept on a separate cache (and, on Intel, prefetch) line to avoid changes to it
+   * invalidating other members, which is especially relevant with very short parallel sections.
+   */
   alignas(cache_line_bytes) mutable std::atomic<std::size_t> unfinished_{0};
 
-  mutable std::atomic<bool> exception_stored_{false};
-  mutable std::exception_ptr exception_{};
-
-  Threads threads_;
+  /** The worker threads. */
+  Threads workers_;
 };
 } // namespace thes
 

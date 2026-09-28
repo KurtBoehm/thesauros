@@ -11,6 +11,7 @@
 #include <cstddef>
 #include <optional>
 
+#include "thesauros/concepts/nothrow.hpp"
 #include "thesauros/macropolis/inlining.hpp"
 
 namespace thes {
@@ -21,8 +22,10 @@ struct SequentialExecutor {
     return 1;
   }
 
+  template<typename Task>
+  requires(NothrowInvocable<Task&, std::size_t>)
   THES_ALWAYS_INLINE constexpr void
-  execute(auto task, [[maybe_unused]] std::optional<std::size_t> used_thread_num = {}) const {
+  execute(Task&& task, [[maybe_unused]] std::optional<std::size_t> used_thread_num = {}) const {
     assert(!used_thread_num.has_value() || *used_thread_num == 1);
     task(std::size_t{0});
   }

@@ -4,6 +4,7 @@
 // IWYU pragma: begin_exports
 #include "ranges/cartesian-product.hpp"
 #include "ranges/concepts.hpp"
+#include "ranges/countdown.hpp"
 #include "ranges/enumerate.hpp"
 #include "ranges/exposition.hpp"
 #include "ranges/index-type.hpp"

@@ -11,7 +11,6 @@
 #include <exception>
 #include <ranges>
 #include <ratio>
-#include <stdexcept>
 #include <string_view>
 #include <thread>
 #include <vector>
@@ -49,7 +48,7 @@ int main() try {
 
       std::vector<std::size_t> counts(size * stride, 0);
       for ([[maybe_unused]] const std::size_t r : thes::views::indices(regions)) {
-        pool.execute([&counts](std::size_t index) { counts[index * stride] += 1; });
+        pool.execute([&counts](std::size_t index) noexcept { counts[index * stride] += 1; });
       }
       for (const std::size_t index : thes::views::indices(size)) {
         THES_ALWAYS_ASSERT(counts[index * stride] == regions);
@@ -58,7 +57,8 @@ int main() try {
       // Only the requested prefix of the thread indices participates.
       for (const std::size_t used : thes::views::indices(size + 1)) {
         std::vector<std::size_t> partial(size * stride, 0);
-        pool.execute([&partial](std::size_t index) { partial[index * stride] += 1; }, used);
+        pool.execute([&partial](std::size_t index) noexcept { partial[index * stride] += 1; },
+                     used);
         for (const std::size_t index : thes::views::indices(size)) {
           THES_ALWAYS_ASSERT(partial[index * stride] == std::size_t{index < used});
         }
@@ -70,34 +70,11 @@ int main() try {
   {
     const thes::FixedThreadPool pool{max_threads};
     std::vector<std::thread::id> ids(max_threads * stride);
-    pool.execute([&ids](std::size_t index) { ids[index * stride] = std::this_thread::get_id(); });
+    pool.execute(
+      [&ids](std::size_t index) noexcept { ids[index * stride] = std::this_thread::get_id(); });
     THES_ALWAYS_ASSERT(ids[0] == std::this_thread::get_id());
     for (const std::size_t index : thes::views::indices(std::size_t{1}, max_threads)) {
       THES_ALWAYS_ASSERT(ids[index * stride] != std::this_thread::get_id());
-    }
-  }
-
-  // An exception thrown by any thread index escapes `execute` and leaves the pool usable.
-  {
-    const thes::FixedThreadPool pool{max_threads};
-    for (const std::size_t thrower : thes::views::indices(max_threads)) {
-      bool caught = false;
-      try {
-        pool.execute([thrower](std::size_t index) {
-          if (index == thrower) {
-            throw std::runtime_error{"task"};
-          }
-        });
-      } catch (const std::runtime_error& ex) {
-        caught = std::string_view{ex.what()} == "task";
-      }
-      THES_ALWAYS_ASSERT(caught);
-    }
-
-    std::vector<std::size_t> counts(max_threads * stride, 0);
-    pool.execute([&counts](std::size_t index) { counts[index * stride] += 1; });
-    for (const std::size_t index : thes::views::indices(max_threads)) {
-      THES_ALWAYS_ASSERT(counts[index * stride] == 1);
     }
   }
 
@@ -120,7 +97,7 @@ int main() try {
 
     const auto bench = [size](std::string_view name, const auto& pool) {
       std::vector<std::size_t> sink(size * stride, 0);
-      const auto region = [&sink](std::size_t index) { sink[index * stride] += 1; };
+      const auto region = [&sink](std::size_t index) noexcept { sink[index * stride] += 1; };
 
       for ([[maybe_unused]] const std::size_t r : thes::views::indices(bench_warmup)) {
         pool.execute(region);
@@ -159,7 +136,7 @@ int main() try {
     if (size > 0) {
       const auto pool = thes::FixedThreadPool::from_cpu_infos(size, cpus | std::views::take(size));
       std::vector<std::size_t> counts(size * stride, 0);
-      pool.execute([&counts](std::size_t index) { counts[index * stride] += 1; });
+      pool.execute([&counts](std::size_t index) noexcept { counts[index * stride] += 1; });
       for (const std::size_t index : thes::views::indices(size)) {
         THES_ALWAYS_ASSERT(counts[index * stride] == 1);
       }

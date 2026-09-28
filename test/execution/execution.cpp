@@ -48,8 +48,8 @@ int main() try {
     const thes::LinearExecutionPolicy expo{pool};
 
     thes::transform_inclusive_scan(
-      expo, values.begin(), values.end(), scanned.begin(), std::plus<>{}, [](Type v) { return v; },
-      Type{0});
+      expo, values.begin(), values.end(), scanned.begin(), std::plus<>{},
+      [](Type v) noexcept { return v; }, Type{0});
 
     THES_ALWAYS_ASSERT(scanned == scanned_ref);
   };
