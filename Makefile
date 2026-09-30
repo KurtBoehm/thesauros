@@ -1,6 +1,5 @@
-use_iokit=false
 build=build
-SETUP_BASE=meson setup -Dbuild_tests=true -Dbuild_bench=true -Duse_iokit=$(use_iokit) --wrap-mode=forcefallback
+SETUP_BASE=meson setup -Dbuild_tests=true -Dbuild_bench=true --wrap-mode=forcefallback
 
 clear:
 	rm -rf $(build)

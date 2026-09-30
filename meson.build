@@ -19,12 +19,10 @@ if not meson.is_subproject()
   endif
 endif
 
-use_iokit = get_option('use_iokit')
-
 fmt_sub = subproject('fmt', default_options: ['default_library=static'])
 fmt_dep = fmt_sub.get_variable('fmt_dep')
 
-cpp_args = [f'-DTHES_USE_IOKIT=@use_iokit@']
+cpp_args = []
 if host_machine.system() == 'windows'
   cpp_args += ['-DWINVER=0x0A00', '-D_WIN32_WINNT=0x0A00']
 endif
@@ -58,36 +56,10 @@ thesauros_argparse_dep = declare_dependency(
   dependencies: [thesauros_core_dep, fmt_dep],
 )
 
-if host_machine.system() == 'darwin' and use_iokit
-  applefw_dep = dependency(
-    'appleframeworks',
-    modules: ['CoreFoundation', 'IOKit'],
-    required: host_machine.system() == 'darwin',
-  )
-
-  thesauros_lib = library(
-    'thesauros',
-    ['src/resources/cpu-info-macos.cpp'],
-    include_directories: inc_dir,
-    dependencies: [thesauros_core_dep, applefw_dep],
-    cpp_args: cpp_args,
-  )
-  resources_deps = [thesauros_core_dep, applefw_dep]
-else
-  thesauros_lib = []
-  resources_deps = [thesauros_core_dep]
-endif
-
-# `resources` needs IOKit, and the small library built from it, only on macOS.
-thesauros_resources_dep = declare_dependency(
-  dependencies: resources_deps,
-  link_with: thesauros_lib,
-)
-
 # `format` and `test` are the only sub-libraries reaching {fmt}; `format` also
 # formats the reflection and resource types, so it inherits both of those.
 thesauros_format_dep = declare_dependency(
-  dependencies: [thesauros_macros_dep, thesauros_resources_dep, fmt_dep],
+  dependencies: [thesauros_macros_dep, fmt_dep],
 )
 
 # Everything, for consumers that would rather not track which sub-libraries they
@@ -97,7 +69,6 @@ thesauros_dep = declare_dependency(
     thesauros_core_dep,
     thesauros_argparse_dep,
     thesauros_macros_dep,
-    thesauros_resources_dep,
     thesauros_format_dep,
   ],
 )

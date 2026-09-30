@@ -9,7 +9,6 @@ project(thesauros LANGUAGES CXX)
 
 # Build options.
 option(THESAUROS_BUILD_TESTS "Build tests" OFF)
-option(THESAUROS_USE_IOKIT "Use macOS IOKit/CoreFoundation for CPU info" OFF)
 
 # On macOS, _Static_assert is used in system headers, which GCC does not support
 # in C++ mode.
@@ -51,11 +50,6 @@ add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_23)
 
-target_compile_definitions(
-  ${PROJECT_NAME}
-  INTERFACE "THES_USE_IOKIT=$<BOOL:${THESAUROS_USE_IOKIT}>"
-)
-
 # Set Windows WINVER/_WIN32_WINNT on Windows.
 if(WIN32)
   target_compile_definitions(
@@ -77,7 +71,8 @@ target_include_directories(
 
 # Everything that needs nothing beyond the standard library: algorithms,
 # charconv, concepts, containers, execution, filesystem, functional, iterator,
-# literals, math, memory, quantity, random, ranges, string, and types.
+# literals, math, memory, quantity, random, ranges, resources, string, and
+# types.
 add_library(${PROJECT_NAME}_core INTERFACE)
 add_library(${PROJECT_NAME}::core ALIAS ${PROJECT_NAME}_core)
 target_link_libraries(${PROJECT_NAME}_core INTERFACE ${PROJECT_NAME})
@@ -100,53 +95,17 @@ target_link_libraries(
   INTERFACE ${PROJECT_NAME}_core Boost::preprocessor
 )
 
-# resources needs IOKit, and the library built from it, only on macOS; the link
-# is added below.
-add_library(${PROJECT_NAME}_resources INTERFACE)
-add_library(${PROJECT_NAME}::resources ALIAS ${PROJECT_NAME}_resources)
-target_link_libraries(${PROJECT_NAME}_resources INTERFACE ${PROJECT_NAME}_core)
-
 # format and test are the only sub-libraries reaching {fmt}; format also formats
 # the reflection and resource types, so it inherits both of those.
 add_library(${PROJECT_NAME}_format INTERFACE)
 add_library(${PROJECT_NAME}::format ALIAS ${PROJECT_NAME}_format)
 target_link_libraries(
   ${PROJECT_NAME}_format
-  INTERFACE ${PROJECT_NAME}_macros ${PROJECT_NAME}_resources fmt::fmt
+  INTERFACE ${PROJECT_NAME}_macros fmt::fmt
 )
 
 # The umbrella target keeps its historical meaning: everything.
 target_link_libraries(${PROJECT_NAME} INTERFACE Boost::preprocessor fmt::fmt)
-
-# Optional library on macOS when THESAUROS_USE_IOKIT is true.
-if(APPLE AND THESAUROS_USE_IOKIT)
-  add_library(${PROJECT_NAME}_macos STATIC src/resources/cpu-info-macos.cpp)
-
-  target_compile_features(${PROJECT_NAME}_macos PRIVATE cxx_std_23)
-
-  target_include_directories(
-    ${PROJECT_NAME}_macos
-    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
-  )
-
-  target_compile_definitions(${PROJECT_NAME}_macos PRIVATE THES_USE_IOKIT=1)
-
-  find_library(COREFOUNDATION_FRAMEWORK CoreFoundation REQUIRED)
-  find_library(IOKIT_FRAMEWORK IOKit REQUIRED)
-
-  target_link_libraries(
-    ${PROJECT_NAME}_macos
-    PRIVATE
-      ${COREFOUNDATION_FRAMEWORK} ${IOKIT_FRAMEWORK} Boost::preprocessor
-      fmt::fmt
-  )
-
-  target_link_libraries(
-    ${PROJECT_NAME}_resources
-    INTERFACE ${PROJECT_NAME}_macos
-  )
-  target_link_libraries(${PROJECT_NAME} INTERFACE ${PROJECT_NAME}_macos)
-endif()
 
 if(THESAUROS_BUILD_TESTS)
   # Fetch cmop for the target-option functions.
@@ -247,10 +206,6 @@ if(THESAUROS_BUILD_TESTS)
   target_include_directories(
     ${PROJECT_NAME}_core_dep
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
-  )
-  target_compile_definitions(
-    ${PROJECT_NAME}_core_dep
-    PRIVATE "THES_USE_IOKIT=$<BOOL:${THESAUROS_USE_IOKIT}>"
   )
   cmop_add_warnings(${PROJECT_NAME}_core_dep)
   add_test(NAME ${PROJECT_NAME}.core_dep COMMAND ${PROJECT_NAME}_core_dep)

@@ -59,17 +59,15 @@ Its layout loosely mirrors the C++ standard library: functionality is grouped in
 
 ## Building
 
-Thesauros is header-only on all platforms except macOS when `use_iokit` is enabled, which builds a small library because IOKit headers introduce aliases (such as `Size`) that conflict with Thesauros naming.
-
-Meson and CMake are both fully supported: they build the same targets, fetch the same
-dependency versions, expose the same per-group dependencies, and run the same tests.
+Thesauros is header-only on all platforms.
+Meson and CMake are both fully supported: they build the same targets, fetch the same dependency versions, expose the same per-group dependencies, and run the same tests.
 CI exercises both.
 The tests are laid out with one directory per sub-library under `test/`, registered as one Meson suite (or one CTest name prefix) per sub-library.
 
 ### Meson
 
 ```bash
-meson setup <builddir> -Dbuild_tests=true
+meson setup <builddir> -Dbuild_tests=true -Dbuild_bench=true
 meson test -C <builddir>
 ```
 
@@ -91,8 +89,7 @@ cmake --build <builddir>
 ctest --test-dir <builddir>
 ```
 
-The options mirror the Meson ones: `THESAUROS_BUILD_TESTS` corresponds to `build_tests` and
-`THESAUROS_USE_IOKIT` to `use_iokit`.
+The option `THESAUROS_BUILD_TESTS` mirrors `build_tests` from the Meson version; `build_bench` is currently exclusive to Meson.
 Dependencies are fetched with `FetchContent` rather than provided as subprojects, pinned to the same versions as the Meson wraps.
 
 Consumers can fetch it:
@@ -118,13 +115,12 @@ Dependencies are provided as Meson subprojects (via [Tlaxcaltin](https://github.
 
 Most sub-libraries need none of these, so the dependency is declared per group rather than as a single monolith:
 
-| Meson                     | CMake                  | Adds                                  | Covers                                                                                                                                                                      |
-| ------------------------- | ---------------------- | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `thesauros_core_dep`      | `thesauros::core`      | nothing beyond the standard library   | `algorithms`, `charconv`, `concepts`, `containers`, `execution`, `filesystem`, `functional`, `iterator`, `literals`, `math`, `memory`, `quantity`, `random`, `ranges`, `string`, `types` |
-| `thesauros_macros_dep`    | `thesauros::macros`    | Boost.Preprocessor                    | `macropolis`, `reflection`, `io`, `static-ranges`, `utility`                                                                                                                |
-| `thesauros_resources_dep` | `thesauros::resources` | IOKit and the built library, on macOS | `resources`                                                                                                                                                                 |
-| `thesauros_format_dep`    | `thesauros::format`    | `{fmt}`                               | `format`, `test`                                                                                                                                                            |
-| `thesauros_dep`           | `thesauros::thesauros` | all of the above                      | everything                                                                                                                                                                  |
+| Meson                  | CMake                  | Adds                      | Covers                                                                                                                                                                                                |
+| ---------------------- | ---------------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `thesauros_core_dep`   | `thesauros::core`      | only the standard library | `algorithms`, `charconv`, `concepts`, `containers`, `execution`, `filesystem`, `functional`, `iterator`, `literals`, `math`, `memory`, `quantity`, `random`, `ranges`, `resources`, `string`, `types` |
+| `thesauros_macros_dep` | `thesauros::macros`    | Boost.Preprocessor        | `macropolis`, `reflection`, `io`, `static-ranges`, `utility`                                                                                                                                          |
+| `thesauros_format_dep` | `thesauros::format`    | `{fmt}`                   | `format`, `test`                                                                                                                                                                                      |
+| `thesauros_dep`        | `thesauros::thesauros` | all of the above          | everything                                                                                                                                                                                            |
 
 The `core dependency` test, present in both build systems, compiles every core sub-library with no external include directories at all to validate the first column.
 

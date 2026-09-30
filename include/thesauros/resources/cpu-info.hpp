@@ -185,9 +185,6 @@ struct CpuInfo {
   }
 };
 #elif THES_APPLE
-#ifndef THES_USE_IOKIT
-#define THES_USE_IOKIT false
-#endif
 
 namespace detail {
 //--------------------------------------------------------------------------------------------------
@@ -296,27 +293,6 @@ inline std::vector<PerfLevel> read_perflevels() {
 
   return levels;
 }
-
-#if THES_USE_IOKIT
-//--------------------------------------------------------------------------------------------------
-// macOS CPU topology discovery via IORegistry
-//--------------------------------------------------------------------------------------------------
-
-/** One logical CPU entry discovered via IOKit. */
-struct CpuEntry {
-  std::size_t logical_id;
-  EfficiencyClass efficiency_class;
-};
-
-/** Build the IOKit-based CPU topology. */
-std::vector<CpuEntry> compute_cpu_topology();
-
-/** A cached IOKit-based CPU topology. */
-inline const std::vector<CpuEntry>& apple_cpu_topology() {
-  static const std::vector<CpuEntry> cache = compute_cpu_topology();
-  return cache;
-}
-#endif
 } // namespace detail
 
 /** Describes a logical CPU on Apple platforms. */
@@ -326,13 +302,6 @@ struct CpuInfo {
 
   /** All logical CPUs. */
   static std::vector<CpuInfo> logical() {
-#if THES_USE_IOKIT
-    return std::ranges::to<std::vector<CpuInfo>>(
-      detail::apple_cpu_topology() | std::views::transform([](detail::CpuEntry entry) {
-        return CpuInfo{.id = entry.logical_id, .efficiency_class = entry.efficiency_class};
-      }));
-#endif
-
     const auto levels = detail::read_perflevels();
     const auto logicalcpu = *safe_cast<std::size_t>(detail::read_sysctl<int>("hw.logicalcpu"));
 
@@ -418,14 +387,6 @@ struct CpuInfo {
       return num_logical();
     }
 
-#if THES_USE_IOKIT
-    const auto& topo = detail::apple_cpu_topology();
-    const auto count =
-      std::ranges::count_if(topo, [efficiency_class](const detail::CpuEntry& entry) {
-        return entry.efficiency_class == efficiency_class;
-      });
-    return *safe_cast<std::size_t>(count);
-#else
     const auto levels = detail::read_perflevels();
     return std::ranges::fold_left(
       levels | std::views::filter([efficiency_class](const detail::PerfLevel& level) {
@@ -435,7 +396,6 @@ struct CpuInfo {
           return *safe_cast<std::size_t>(level.logical_cpus);
         }),
       0UZ, std::plus{});
-#endif
   }
 
   /** The number of physical CPUs. */
@@ -456,10 +416,6 @@ struct CpuInfo {
       return physicalcpu;
     }
 
-#if THES_USE_IOKIT
-    // IOKit topology carries no SMT information, so logical count per class is also physical.
-    return num_logical(efficiency_class);
-#else
     const auto levels = detail::read_perflevels();
     const auto total_physical =
       std::ranges::fold_left(levels | std::views::transform([](const detail::PerfLevel& level) {
@@ -478,7 +434,6 @@ struct CpuInfo {
           return *safe_cast<std::size_t>(level.physical_cpus);
         }),
       0UZ, std::plus{});
-#endif
   }
 };
 #elif THES_WINDOWS

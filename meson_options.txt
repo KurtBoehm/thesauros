@@ -6,4 +6,3 @@
 
 option('build_bench', type: 'boolean', value: false)
 option('build_tests', type: 'boolean', value: false)
-option('use_iokit', type: 'boolean', value: false)
