@@ -122,3 +122,7 @@ endif
 if get_option('build_tests')
   subdir('test')
 endif
+
+if get_option('build_bench')
+  subdir('bench')
+endif

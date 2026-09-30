@@ -174,7 +174,7 @@ inline Result run(F&& f, Clock::duration min_duration = std::chrono::millisecond
 
     // The last run is not meaningful yet. Determine the number of iterations for the next run and
     // continue.
-    const IterationCount last_iters = iters;
+    [[maybe_unused]] const IterationCount last_iters = iters;
     iters = next_iters(last_dur, iters, min_duration);
     assert(iters > last_iters);
   }

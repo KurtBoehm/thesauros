@@ -225,14 +225,19 @@ private:
       if (index < (last_state & used_mask)) {
         run(index);
         // Notify the main thread once all threads are done.
-        if (unfinished_.fetch_sub(1, std::memory_order_acq_rel) == 1) {
+        if (unfinished_.fetch_sub(1, std::memory_order_release) == 1) {
           unfinished_.notify_one();
         }
       }
     }
   }
 
-  /** Wait for a dispatch state other than `last`, spinning before parking. */
+  /**
+   * Wait for a dispatch state other than `last`, spinning before parking.
+   *
+   * Similar to
+   * https://github.com/gcc-mirror/gcc/blob/releases/gcc-15.2.0/libgomp/config/linux/wait.h#L48-L68.
+   */
   u64 await_state(u64 last) const {
     for ([[maybe_unused]] const std::size_t i : views::countdown(spin_count_)) {
       const u64 state = state_.load(std::memory_order_acquire);
@@ -278,7 +283,7 @@ private:
    * to both pieces of information, which are inherently tied together, one atomic operation,
    * avoiding race conditions.
    *
-   * This approach is quite similar to how `val_` is packed in Folly’s `EventCount`:
+   * This approach is somewhat similar to how `val_` is packed in Folly’s `EventCount`:
    * github.com/facebook/folly/blob/v2026.09.21.00/folly/synchronization/EventCount.h
    */
   alignas(cache_line_bytes) mutable std::atomic<u64> state_{0};
@@ -292,7 +297,11 @@ private:
 
   /** The atomic flag notifying threads when they should stop, i.e. when the pool is destroyed. */
   mutable std::atomic<bool> stop_{false};
-  /** The function to be executed on each thread, which re-interprets and calls `task_data_`. */
+  /**
+   * The function to be executed on each thread, which re-interprets and calls `task_data_`.
+   * Once the switch to C++26 is performed, `std::function_ref` can be used for equivalent
+   * functionality.
+   */
   mutable ThreadFun task_fun_ = nullptr;
   /** The data passed to `task_fun_`, which points to the actual callable. */
   mutable const void* task_data_ = nullptr;
