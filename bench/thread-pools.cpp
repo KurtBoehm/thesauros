@@ -1,3 +1,9 @@
+// This file is part of https://github.com/KurtBoehm/thesauros.
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 #include <chrono>
 #include <cstddef>
 #include <cstdlib>
@@ -16,6 +22,9 @@
 #include "thesauros/types/primitives.hpp"
 #include "thesauros/types/type-tag.hpp"
 #include "thesauros/utility/index-segmentation.hpp"
+
+#include "executors/fixed-omp-thread-pool.hpp"
+#include "executors/fixed-std-thread-pool.hpp"
 
 int main() {
   using namespace thes::primitives;

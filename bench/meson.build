@@ -5,13 +5,14 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 args = subproject('options').get_variable('all_args')
+openmp_dep = dependency('openmp')
 
 # One directory per sub-library, mirroring `include/thesauros`.
 foreach name : ['thread-pools']
   executable(
     f'bm-@name@',
     [f'@name@.cpp'],
-    dependencies: [thesauros_dep],
+    dependencies: [thesauros_dep, openmp_dep],
     cpp_args: args,
   )
 endforeach

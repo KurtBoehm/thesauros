@@ -1,31 +1,32 @@
 #!/usr/bin/env python3
-"""Enforces the library's structural invariants.
+"""
+Enforces Thesauros’s structural invariants.
 
 Umbrella includes
-  An "umbrella" is a header `P.hpp` next to a directory `P/`: it exists only to
+  An “umbrella” is a header `P.hpp` next to a directory `P/`: it exists only to
   re-export the headers below it. Including one from ordinary library code drags in a
   whole sub-library, inflates compile times, and hides the real dependency edges that
   the module layering is meant to keep visible. An umbrella `P.hpp` may only include
   headers at or below `P/`; any other header may not include an umbrella at all.
 
 {fmt} confinement
-  `{fmt}` is reachable only from the `argparse`, `format` and `test` modules, so that
+  `{fmt}` is reachable only from the `argparse`, `format`, and `test` modules, so that
   everything below them stays free of it and can be built without the dependency. Code
   outside those modules builds messages with `thes::cat` from `charconv/concat.hpp`.
 """
 
+import re
 import sys
 from pathlib import Path
-import re
 
-ROOT = Path(__file__).resolve().parent.parent / "include" / "thesauros"
+ROOT = Path(__file__).resolve().parents[1] / "include" / "thesauros"
 INCLUDE = re.compile(r'^\s*#\s*include\s+"thesauros/([^"]+)"', re.MULTILINE)
 
 # The test harness deliberately wants every formatter in scope: it probes
-# `fmt::formattable` to decide how to render values in test names and failure
-# messages, so a narrower include would silently degrade its output rather than
-# fail to compile. `test` is the topmost module and depends on nothing below it,
-# so the umbrella creates no cycle.
+# `fmt::formattable` to decide how to render values in test names and failure messages,
+# so a narrower include would silently degrade its output rather than fail to compile.
+# `test` is the topmost module and depends on nothing below it, so the umbrella creates
+# no cycle.
 EXEMPT = {"test/assert.hpp", "test/equality.hpp", "test/test.hpp"}
 
 # Modules allowed to reach {fmt}. `format` wraps it, `test` renders values with it, and
@@ -45,6 +46,7 @@ def check_umbrellas(headers: list[tuple[Path, str, str]]) -> list[str]:
             continue
         own_dir = rel[: -len(".hpp")] + "/" if is_umbrella(rel) else None
         for target in INCLUDE.findall(text):
+            assert isinstance(target, str)
             if not is_umbrella(target):
                 continue
             if own_dir is not None and target.startswith(own_dir):

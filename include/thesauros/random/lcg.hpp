@@ -95,10 +95,10 @@ struct Lcg {
     return increment_;
   }
 
-  [[nodiscard]] const_iterator begin() const {
+  [[nodiscard]] constexpr const_iterator begin() const {
     return {*this, 0, seed_};
   }
-  [[nodiscard]] const_iterator end() const {
+  [[nodiscard]] constexpr const_iterator end() const {
     return {*this, size_, seed_};
   }
 

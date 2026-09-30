@@ -10,29 +10,62 @@
 // the split dependencies in the top-level meson.build promise.
 //
 // The sub-libraries deliberately absent are the ones that do have external dependencies:
-// `macropolis`, `reflection`, `io`, `static-ranges`, `utility`, `execution`, `resources`,
-// `format` and `test`.
+// `macropolis`, `reflection`, `io`, `static-ranges`, `utility`, `resources`, `format`, and `test`.
 
-#include "thesauros/algorithms.hpp" // IWYU pragma: keep
-#include "thesauros/charconv.hpp" // IWYU pragma: keep
-#include "thesauros/concepts.hpp" // IWYU pragma: keep
-#include "thesauros/containers.hpp" // IWYU pragma: keep
-#include "thesauros/filesystem.hpp" // IWYU pragma: keep
-#include "thesauros/functional.hpp" // IWYU pragma: keep
+#include <array>
+#include <concepts>
+#include <cstddef>
+#include <iterator>
+#include <memory>
+#include <type_traits>
+
+#include "thesauros/algorithms.hpp"
+#include "thesauros/charconv.hpp"
+#include "thesauros/concepts.hpp"
+#include "thesauros/containers.hpp"
+#include "thesauros/execution.hpp"
+#include "thesauros/functional.hpp"
 #include "thesauros/iterator.hpp" // IWYU pragma: keep
-#include "thesauros/literals.hpp" // IWYU pragma: keep
-#include "thesauros/math.hpp" // IWYU pragma: keep
-#include "thesauros/memory.hpp" // IWYU pragma: keep
-#include "thesauros/quantity.hpp" // IWYU pragma: keep
-#include "thesauros/random.hpp" // IWYU pragma: keep
-#include "thesauros/ranges.hpp" // IWYU pragma: keep
-#include "thesauros/string.hpp" // IWYU pragma: keep
-#include "thesauros/types.hpp" // IWYU pragma: keep
+#include "thesauros/literals.hpp"
+#include "thesauros/math.hpp"
+#include "thesauros/memory.hpp"
+#include "thesauros/quantity.hpp"
+#include "thesauros/random.hpp"
+#include "thesauros/ranges.hpp"
+#include "thesauros/string.hpp"
+#include "thesauros/types.hpp"
+
+struct It : thes::StateIteratorFacade<thes::iter::ValueTypes<int, std::ptrdiff_t>> {
+  friend thes::StateIteratorFacade<thes::iter::ValueTypes<int, std::ptrdiff_t>>;
+
+  int v;
+
+private:
+  [[nodiscard]] int value() const {
+    return v;
+  }
+  [[nodiscard]] auto& state(this auto& self) {
+    return self.v;
+  }
+};
 
 int main() {
-  // Touch one entity per sub-library so the includes cannot be optimized into nothing.
+  using namespace thes::literals;
+
+  // Touch one entity per sub-library.
+  static_assert(thes::star::index_to_position(1UZ, std::array{2UZ, 2UZ}) == std::array{0UZ, 1UZ});
+  static_assert(thes::numeric_string(7).has_value());
+  static_assert(thes::CompleteType<thes::StaticCapacityString<3>>);
+  static_assert(thes::LimitedArray<int, 2>{1}.size() == 1);
+  static_assert(thes::FixedThreadPool::max_thread_num > 512);
+  static_assert(std::is_void_v<decltype(thes::NoOp<>{}())>);
+  static_assert(std::random_access_iterator<It>);
+  static_assert("1"_it == 1);
+  static_assert(!thes::safe_cast<thes::u8>(256).is_valid());
+  static_assert(std::same_as<std::allocator_traits<thes::HugePagesAllocator<int>>::pointer, int*>);
+  static_assert(thes::Quantity<int, thes::unit::byte>{1024}.count() == 1024);
+  static_assert(*thes::Lcg{1, 3, 7}.begin() == 1);
   static_assert(thes::views::indices(3).size() == 3);
   static_assert(thes::StaticString{"ab"}.size == 2);
-  static_assert(thes::numeric_string(7).has_value());
-  return 0;
+  static_assert(thes::auto_tag<1> == 1);
 }

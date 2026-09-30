@@ -4,8 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#ifndef INCLUDE_THESAUROS_EXECUTION_EXECUTOR_FIXED_OMP_THREAD_POOL_HPP
-#define INCLUDE_THESAUROS_EXECUTION_EXECUTOR_FIXED_OMP_THREAD_POOL_HPP
+#ifndef BENCH_EXECUTORS_FIXED_OMP_THREAD_POOL_HPP
+#define BENCH_EXECUTORS_FIXED_OMP_THREAD_POOL_HPP
 
 #include <cassert>
 #include <concepts>
@@ -92,4 +92,4 @@ private:
 };
 } // namespace thes
 
-#endif // INCLUDE_THESAUROS_EXECUTION_EXECUTOR_FIXED_OMP_THREAD_POOL_HPP
+#endif // BENCH_EXECUTORS_FIXED_OMP_THREAD_POOL_HPP

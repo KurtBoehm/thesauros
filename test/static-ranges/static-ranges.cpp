@@ -518,8 +518,11 @@ int main() {
 
   // multidim_for_each
   {
-    static constexpr std::array ranges{thes::views::indices(1, 3), thes::views::indices(1, 2),
-                                       thes::views::indices(1, 4)};
+    static constexpr std::array ranges{
+      thes::views::indices(1, 3),
+      thes::views::indices(1, 2),
+      thes::views::indices(1, 4),
+    };
     static_assert([] {
       int value = 0;
       thes::multidim_for_each(ranges,
@@ -528,8 +531,11 @@ int main() {
     }() == 18);
   }
   {
-    static constexpr std::array ranges{thes::views::indices(1, 3), thes::views::indices(1, 2),
-                                       thes::views::indices(1, 4)};
+    static constexpr std::array ranges{
+      thes::views::indices(1, 3),
+      thes::views::indices(1, 2),
+      thes::views::indices(1, 4),
+    };
     static_assert([] {
       int value = 0;
       thes::multidim_for_each(ranges, thes::StaticMap{thes::static_key<2> = 2},

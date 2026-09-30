@@ -40,7 +40,7 @@ constexpr auto tiled_base(auto tag, auto sizes, auto ranges, auto tile_sizes, au
   thes::tiled_for_each<tag>(
     thes::MultiSize{sizes}, ranges, tile_sizes, map,
     [&](auto pos) { idxs.insert(idxs.end(), {pos.index.idx, pos.index.idx + 1}); },
-    [&](auto pos, auto part) {
+    [&](auto pos, [[maybe_unused]] auto part) {
       assert(part == 1);
       idxs.push_back(pos.index.idx);
     },

@@ -6,7 +6,8 @@ Thesauros (from Ancient Greek _θησαυρός_, “treasury”) is a header-on
 Its layout loosely mirrors the C++ standard library: functionality is grouped into sub-libraries, each with its own umbrella header.
 
 - `algorithms`: Tiled iteration (ascending/descending), parallelizable inclusive prefix sum, arbitrary-dimensional iteration.
-- `argparse`: A command-line parser with the arguments declared up front and resolved at compile time: positional arguments, options, flags, counters, lists of a free or bounded multiplicity, and a trailing remainder that hands the rest of the command line on the way `sudo` does, with defaults, required arguments, permitted choices, `--help`/`--version` and a generated help text that `styled` can have written in colour with `{fmt}`’s text styles. Values are addressed by their compile-time names (`values.get<"count">()`) and typed by their declarations, and no step of a parse allocates. Arguments need not be declared in one place: a function can return an `ArgumentGroup` covering one concern, and `merge` puts several such contributions together, each with its own heading in the help text. Value types beyond strings, numbers and booleans are added by defining `parse_argument_value`; `reflection` does so for every enumeration defined with `THES_DEFINE_ENUM`, which is therefore parsed by its serial name and whose enumerators the help text lists.
+- `argparse`: A command-line parser with the arguments declared and resolved at compile time: positional arguments, options, flags, counters, lists of a free or bounded multiplicity, and a trailing remainder that hands the rest of the command line on the way `sudo` does, with defaults, required arguments, permitted choices, `--help`/`--version` and a generated help text that `styled` can have written in colour with `{fmt}`’s text styles. Values are addressed by their compile-time names (`values.get<"count">()`) and typed by their declarations, and no step of a parse allocates. Arguments need not be declared in one place: a function can return an `ArgumentGroup` covering one concern, and `merge` puts several such contributions together, each with its own heading in the help text. Value types beyond strings, numbers and booleans are added by defining `parse_argument_value`; `reflection` does so for every enumeration defined with `THES_DEFINE_ENUM`, which is therefore parsed by its serial name and whose enumerators the help text lists.
+- `benchmark`: A small benchmarking module modelled after a minimal subset of Google Benchmark without all the paraphernalia.
 - `charconv`: Character conversions: fixed-buffer number-to-string, string-to-integer parsing, `{fmt}`-friendly string escaping, Unicode decoding to code points, and `cat`, which builds strings without depending on `{fmt}`.
 - `concepts`: C++20 concepts, e.g. completeness checks, immutability-only access.
 - `containers`:
@@ -16,7 +17,7 @@ Its layout loosely mirrors the C++ standard library: functionality is grouped in
   - Flat maps and sets.
   - Chunked arrays with fixed-size or variable-size chunks (CSR-like layout without column indices).
   - Arbitrary-width integer containers: bit-packed into unsigned chunks or byte-based via `std::byte`.
-- `execution`: Multithreading utilities: thread pools based on `std::thread` or OpenMP `parallel for`, plus thread affinity and scheduler helpers.
+- `execution`: Multithreading utilities: an efficient thread pool as well as thread affinity and scheduler helpers.
 - `filesystem`: Temporary directories with RAII cleanup.
 - `format`: `{fmt}` helpers: formatters for Thesauros types and simplified colour output.
 - `functional`: Min/max function objects and a no-op function object.
@@ -113,21 +114,21 @@ Dependencies are provided as Meson subprojects (via [Tlaxcaltin](https://github.
 
 - [Boost.Preprocessor](https://github.com/boostorg/preprocessor): Macro utilities, foundational for Macropolis and Reflection.
 - [`{fmt}`](https://github.com/fmtlib/fmt): Formatting and printing, used only by `format` and `test`.
-- OpenMP: used only by the OpenMP thread pool in `execution`.
 - [`options`](https://github.com/KurtBoehm/tlaxcaltin/blob/main/options/meson.build): Compiler options for stricter warnings and tuning (Meson only).
 
 Most sub-libraries need none of these, so the dependency is declared per group rather than as a single monolith:
 
 | Meson                     | CMake                  | Adds                                  | Covers                                                                                                                                                                      |
 | ------------------------- | ---------------------- | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `thesauros_core_dep`      | `thesauros::core`      | nothing beyond the standard library   | `algorithms`, `charconv`, `concepts`, `containers`, `filesystem`, `functional`, `iterator`, `literals`, `math`, `memory`, `quantity`, `random`, `ranges`, `string`, `types` |
+| `thesauros_core_dep`      | `thesauros::core`      | nothing beyond the standard library   | `algorithms`, `charconv`, `concepts`, `containers`, `execution`, `filesystem`, `functional`, `iterator`, `literals`, `math`, `memory`, `quantity`, `random`, `ranges`, `string`, `types` |
 | `thesauros_macros_dep`    | `thesauros::macros`    | Boost.Preprocessor                    | `macropolis`, `reflection`, `io`, `static-ranges`, `utility`                                                                                                                |
-| `thesauros_execution_dep` | `thesauros::execution` | OpenMP                                | `execution`                                                                                                                                                                 |
 | `thesauros_resources_dep` | `thesauros::resources` | IOKit and the built library, on macOS | `resources`                                                                                                                                                                 |
 | `thesauros_format_dep`    | `thesauros::format`    | `{fmt}`                               | `format`, `test`                                                                                                                                                            |
 | `thesauros_dep`           | `thesauros::thesauros` | all of the above                      | everything                                                                                                                                                                  |
 
 The `core dependency` test, present in both build systems, compiles every core sub-library with no external include directories at all to validate the first column.
+
+The benchmarks additionally require OpenMP to compare the remaining thread pool against the two old ones, one of which was OpenMP-based.
 
 ## Platform Support
 

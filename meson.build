@@ -30,7 +30,6 @@ if host_machine.system() == 'windows'
 endif
 
 boost_pp_dep = dependency('boost-preprocessor')
-openmp_dep = dependency('openmp')
 
 inc_dir = include_directories('include')
 
@@ -39,9 +38,9 @@ inc_dir = include_directories('include')
 #-------------------------------------------------------------------------------
 
 # Everything that needs nothing beyond the standard library: `algorithms`,
-# `charconv`, `concepts`, `containers`, `filesystem`, `functional`, `iterator`,
-# `literals`, `math`, `memory`, `quantity`, `random`, `ranges`, `string`, and
-# `types`.
+# `charconv`, `concepts`, `containers`, `execution`, `filesystem`, `functional`,
+# `iterator`, `literals`, `math`, `memory`, `quantity`, `random`, `ranges`,
+# `string`, and `types`.
 thesauros_core_dep = declare_dependency(
   include_directories: inc_dir,
   compile_args: cpp_args,
@@ -57,11 +56,6 @@ thesauros_macros_dep = declare_dependency(
 # nothing else.
 thesauros_argparse_dep = declare_dependency(
   dependencies: [thesauros_core_dep, fmt_dep],
-)
-
-# `execution` uses OpenMP for its OpenMP-based thread pool.
-thesauros_execution_dep = declare_dependency(
-  dependencies: [thesauros_core_dep, openmp_dep],
 )
 
 if host_machine.system() == 'darwin' and use_iokit
@@ -103,7 +97,6 @@ thesauros_dep = declare_dependency(
     thesauros_core_dep,
     thesauros_argparse_dep,
     thesauros_macros_dep,
-    thesauros_execution_dep,
     thesauros_resources_dep,
     thesauros_format_dep,
   ],

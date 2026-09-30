@@ -7,36 +7,24 @@
 cmake_minimum_required(VERSION 3.20)
 project(thesauros LANGUAGES CXX)
 
-# Build options
+# Build options.
 option(THESAUROS_BUILD_TESTS "Build tests" OFF)
 option(THESAUROS_USE_IOKIT "Use macOS IOKit/CoreFoundation for CPU info" OFF)
 
 # On macOS, _Static_assert is used in system headers, which GCC does not support
-# in C++ mode
+# in C++ mode.
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND APPLE)
   add_compile_definitions(_Static_assert=static_assert)
 endif()
 
-# Ensure we build {fmt} as a static library and don’t pull in extra stuff
+# Ensure we build {fmt} as a static library and don’t pull in unnecessary
+# components.
 set(FMT_DOC OFF CACHE BOOL "" FORCE)
 set(FMT_TEST OFF CACHE BOOL "" FORCE)
 set(FMT_INSTALL OFF CACHE BOOL "" FORCE)
 set(FMT_SHARED OFF CACHE BOOL "Build fmt as a shared library" FORCE)
 
 include(FetchContent)
-
-# Fetch cmop for cmop_find_openmp() (used right below) and, when building tests, the target-option
-# functions.
-FetchContent_Declare(
-  cmop
-  GIT_REPOSITORY https://github.com/KurtBoehm/cmop.git
-  GIT_TAG main
-)
-FetchContent_MakeAvailable(cmop)
-
-# thesauros_execution needs OpenMP for its OpenMP-based thread pool, and the umbrella target below
-# needs it too, so it is required unconditionally rather than only when building tests.
-cmop_find_openmp()
 
 FetchContent_Declare(
   boost_preprocessor
@@ -57,7 +45,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(fmt)
 
-# Main interface library
+# The main interface library.
 add_library(${PROJECT_NAME} INTERFACE)
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
@@ -68,7 +56,7 @@ target_compile_definitions(
   INTERFACE "THES_USE_IOKIT=$<BOOL:${THESAUROS_USE_IOKIT}>"
 )
 
-# Meson: On Windows set WINVER/_WIN32_WINNT
+# Set Windows WINVER/_WIN32_WINNT on Windows.
 if(WIN32)
   target_compile_definitions(
     ${PROJECT_NAME}
@@ -83,22 +71,28 @@ target_include_directories(
     $<INSTALL_INTERFACE:include>
 )
 
-# Dependencies per group of sub-libraries, so that consumers only pay for what they include.
+# Dependencies per group of sub-libraries, so that consumers only pay for what
+# they include.
 # These mirror the `thesauros_*_dep` objects declared in meson.build.
 
-# Everything that needs nothing beyond the standard library: algorithms, charconv, concepts,
-# containers, filesystem, functional, iterator, literals, math, memory, quantity, random,
-# ranges, string and types.
+# Everything that needs nothing beyond the standard library: algorithms,
+# charconv, concepts, containers, execution, filesystem, functional, iterator,
+# literals, math, memory, quantity, random, ranges, string, and types.
 add_library(${PROJECT_NAME}_core INTERFACE)
 add_library(${PROJECT_NAME}::core ALIAS ${PROJECT_NAME}_core)
 target_link_libraries(${PROJECT_NAME}_core INTERFACE ${PROJECT_NAME})
 
-# argparse writes its help text and error messages with {fmt}, but needs nothing else.
+# argparse writes its help text and error messages with {fmt}, but needs nothing
+# else.
 add_library(${PROJECT_NAME}_argparse INTERFACE)
 add_library(${PROJECT_NAME}::argparse ALIAS ${PROJECT_NAME}_argparse)
-target_link_libraries(${PROJECT_NAME}_argparse INTERFACE ${PROJECT_NAME}_core fmt::fmt)
+target_link_libraries(
+  ${PROJECT_NAME}_argparse
+  INTERFACE ${PROJECT_NAME}_core fmt::fmt
+)
 
-# macropolis, reflection and everything using their macros: io, static-ranges, utility.
+# macropolis, reflection and everything using their macros: io, static-ranges,
+# utility.
 add_library(${PROJECT_NAME}_macros INTERFACE)
 add_library(${PROJECT_NAME}::macros ALIAS ${PROJECT_NAME}_macros)
 target_link_libraries(
@@ -106,21 +100,14 @@ target_link_libraries(
   INTERFACE ${PROJECT_NAME}_core Boost::preprocessor
 )
 
-# execution uses OpenMP for its OpenMP-based thread pool.
-add_library(${PROJECT_NAME}_execution INTERFACE)
-add_library(${PROJECT_NAME}::execution ALIAS ${PROJECT_NAME}_execution)
-target_link_libraries(
-  ${PROJECT_NAME}_execution
-  INTERFACE ${PROJECT_NAME}_core cmop::openmp
-)
-
-# resources needs IOKit, and the library built from it, only on macOS; the link is added below.
+# resources needs IOKit, and the library built from it, only on macOS; the link
+# is added below.
 add_library(${PROJECT_NAME}_resources INTERFACE)
 add_library(${PROJECT_NAME}::resources ALIAS ${PROJECT_NAME}_resources)
 target_link_libraries(${PROJECT_NAME}_resources INTERFACE ${PROJECT_NAME}_core)
 
-# format and test are the only sub-libraries reaching {fmt}; format also formats the reflection
-# and resource types, so it inherits both of those.
+# format and test are the only sub-libraries reaching {fmt}; format also formats
+# the reflection and resource types, so it inherits both of those.
 add_library(${PROJECT_NAME}_format INTERFACE)
 add_library(${PROJECT_NAME}::format ALIAS ${PROJECT_NAME}_format)
 target_link_libraries(
@@ -129,13 +116,9 @@ target_link_libraries(
 )
 
 # The umbrella target keeps its historical meaning: everything.
-target_link_libraries(
-  ${PROJECT_NAME}
-  INTERFACE
-    Boost::preprocessor fmt::fmt cmop::openmp
-)
+target_link_libraries(${PROJECT_NAME} INTERFACE Boost::preprocessor fmt::fmt)
 
-# Optional library on macOS when THESAUROS_USE_IOKIT is true
+# Optional library on macOS when THESAUROS_USE_IOKIT is true.
 if(APPLE AND THESAUROS_USE_IOKIT)
   add_library(${PROJECT_NAME}_macos STATIC src/resources/cpu-info-macos.cpp)
 
@@ -155,23 +138,31 @@ if(APPLE AND THESAUROS_USE_IOKIT)
     ${PROJECT_NAME}_macos
     PRIVATE
       ${COREFOUNDATION_FRAMEWORK} ${IOKIT_FRAMEWORK} Boost::preprocessor
-      fmt::fmt cmop::openmp
+      fmt::fmt
   )
 
-  target_link_libraries(${PROJECT_NAME}_resources INTERFACE ${PROJECT_NAME}_macos)
+  target_link_libraries(
+    ${PROJECT_NAME}_resources
+    INTERFACE ${PROJECT_NAME}_macos
+  )
   target_link_libraries(${PROJECT_NAME} INTERFACE ${PROJECT_NAME}_macos)
 endif()
 
 if(THESAUROS_BUILD_TESTS)
-  # cmop was already fetched above for cmop_find_openmp(); it also provides the target-option
-  # functions used below.
+  # Fetch cmop for the target-option functions.
+  FetchContent_Declare(
+    cmop
+    GIT_REPOSITORY https://github.com/KurtBoehm/cmop.git
+    GIT_TAG main
+  )
+  FetchContent_MakeAvailable(cmop)
+
   include(CTest)
 
   foreach(
     test_path
     IN
     ITEMS
-    "algorithms/sort-indices"
     "algorithms/swap-or-equal"
     "algorithms/tiling"
     "argparse/argparse"
@@ -249,7 +240,8 @@ if(THESAUROS_BUILD_TESTS)
     add_test(NAME ${PROJECT_NAME}.${test_target_name} COMMAND ${test_target})
   endforeach()
 
-  # Compiled against the include directory alone, mirroring the `core dependency` Meson test.
+  # Compiled against the include directory alone, mirroring the
+  # `core dependency` Meson test.
   add_executable(${PROJECT_NAME}_core_dep test/core-dep.cpp)
   target_compile_features(${PROJECT_NAME}_core_dep PRIVATE cxx_std_23)
   target_include_directories(
@@ -263,7 +255,8 @@ if(THESAUROS_BUILD_TESTS)
   cmop_add_warnings(${PROJECT_NAME}_core_dep)
   add_test(NAME ${PROJECT_NAME}.core_dep COMMAND ${PROJECT_NAME}_core_dep)
 
-  # The structural checks over the headers themselves, mirroring the Meson `check includes` test.
+  # The structural checks over the headers themselves, mirroring the Meson
+  # `check includes` test.
   find_package(Python3 COMPONENTS Interpreter)
   if(Python3_Interpreter_FOUND)
     add_test(

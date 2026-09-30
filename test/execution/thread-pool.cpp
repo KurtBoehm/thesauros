@@ -5,35 +5,31 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <algorithm>
-#include <chrono>
 #include <cstddef>
 #include <cstdio>
-#include <exception>
 #include <ranges>
-#include <ratio>
-#include <string_view>
 #include <thread>
 #include <vector>
 
 #include "thesauros/execution.hpp"
 #include "thesauros/format.hpp"
+#include "thesauros/math/integer-cast.hpp"
+#include "thesauros/ranges/as-sized.hpp"
 #include "thesauros/ranges/indices.hpp"
 #include "thesauros/resources.hpp"
 #include "thesauros/test.hpp"
 #include "thesauros/types/empty.hpp"
-#include "thesauros/types/type-name.hpp"
 
 // The distance between the counters written by different threads, which keeps them on separate
 // cache lines so that the benchmark measures the dispatch rather than false sharing.
 constexpr std::size_t stride = 16;
 
 constexpr std::size_t regions = 128;
-constexpr std::size_t bench_warmup = 1024;
-constexpr std::size_t bench_regions = 8192;
 
-int main() try {
-  const auto hardware = std::max(std::size_t{std::thread::hardware_concurrency()}, std::size_t{1});
-  const std::size_t max_threads = std::min(hardware, std::size_t{8});
+int main() {
+  const auto hardware =
+    std::max(*thes::safe_cast<std::size_t>(std::thread::hardware_concurrency()), 1UZ);
+  const std::size_t max_threads = std::min(hardware, 8UZ);
 
   //================================================================================================
   // Correctness
@@ -41,8 +37,8 @@ int main() try {
 
   // Every thread index runs exactly once per region, both when the threads spin and when they park
   // immediately.
-  for (const std::size_t spin : {std::size_t{0}, thes::FixedThreadPool::default_spin_count}) {
-    for (const std::size_t size : thes::views::indices(std::size_t{1}, max_threads + 1)) {
+  for (const std::size_t spin : {0UZ, thes::FixedThreadPool::default_spin_count}) {
+    for (const std::size_t size : thes::views::indices(1UZ, max_threads + 1)) {
       const thes::FixedThreadPool pool{size, thes::Empty{}, spin};
       THES_ALWAYS_ASSERT(pool.thread_num() == size);
 
@@ -73,57 +69,9 @@ int main() try {
     pool.execute(
       [&ids](std::size_t index) noexcept { ids[index * stride] = std::this_thread::get_id(); });
     THES_ALWAYS_ASSERT(ids[0] == std::this_thread::get_id());
-    for (const std::size_t index : thes::views::indices(std::size_t{1}, max_threads)) {
+    for (const std::size_t index : thes::views::indices(1UZ, max_threads)) {
       THES_ALWAYS_ASSERT(ids[index * stride] != std::this_thread::get_id());
     }
-  }
-
-  //================================================================================================
-  // The latency of an empty parallel region
-  //================================================================================================
-
-  fmt::print("Mean wall time of a parallel region doing nothing but one store per thread,\n"
-             "over {} regions after {} warm-up regions:\n\n",
-             bench_regions, bench_warmup);
-
-  std::vector<std::size_t> sizes{std::size_t{2}, max_threads};
-  std::ranges::sort(sizes);
-  const auto duplicates = std::ranges::unique(sizes);
-  sizes.erase(duplicates.begin(), duplicates.end());
-  std::erase_if(sizes, [max_threads](std::size_t size) { return size > max_threads; });
-
-  for (const std::size_t size : sizes) {
-    fmt::print("{} threads\n", size);
-
-    const auto bench = [size](std::string_view name, const auto& pool) {
-      std::vector<std::size_t> sink(size * stride, 0);
-      const auto region = [&sink](std::size_t index) noexcept { sink[index * stride] += 1; };
-
-      for ([[maybe_unused]] const std::size_t r : thes::views::indices(bench_warmup)) {
-        pool.execute(region);
-      }
-      const auto start = std::chrono::steady_clock::now();
-      for ([[maybe_unused]] const std::size_t r : thes::views::indices(bench_regions)) {
-        pool.execute(region);
-        // Without this, the regions of the sequential executor are merged into one loop.
-        __asm__ __volatile__("" ::: "memory"); // NOLINT
-      }
-      const auto elapsed = std::chrono::steady_clock::now() - start;
-
-      const auto nanos = std::chrono::duration<double, std::nano>{elapsed}.count();
-      fmt::print("  {:<22} {:9.1f} ns  ({} regions ran)\n", name,
-                 nanos / static_cast<double>(bench_regions), sink[0]);
-    };
-
-    bench("FixedThreadPool", thes::FixedThreadPool{size});
-    bench("FixedStdThreadPool", thes::FixedStdThreadPool{size});
-    try {
-      bench("FixedOpenMpThreadPool", thes::FixedOpenMpThreadPool{size});
-    } catch (const std::exception& ex) {
-      fmt::print("  {:<22} unavailable: {}\n", "FixedOpenMpThreadPool", ex.what());
-    }
-    bench("SequentialExecutor", thes::SequentialExecutor{});
-    fmt::print("\n");
   }
 
   //================================================================================================
@@ -131,8 +79,8 @@ int main() try {
   //================================================================================================
 
   {
-    const auto cpus = std::ranges::to<std::vector<thes::CpuInfo>>(thes::CpuInfo::physical());
-    const std::size_t size = std::min(cpus.size(), std::size_t{2});
+    const auto cpus = thes::ranges::as_sized(thes::CpuInfo::physical());
+    const std::size_t size = std::min(cpus.size(), 2UZ);
     if (size > 0) {
       const auto pool = thes::FixedThreadPool::from_cpu_infos(size, cpus | std::views::take(size));
       std::vector<std::size_t> counts(size * stride, 0);
@@ -143,8 +91,4 @@ int main() try {
       fmt::print("pinned to {} of the {} physical CPUs\n", size, cpus.size());
     }
   }
-} catch (const std::exception& ex) {
-  fmt::print(stderr, "Unhandled std::exception: type={}; what={}\n",
-             thes::demangle(typeid(ex).name()), ex.what());
-  return 1;
 }
