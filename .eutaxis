@@ -1,3 +1,26 @@
-ignore_parent_header: [src/resources]
+ignore_parent_header:
+  - src/resources
+  - test/algorithms
+  - test/argparse
+  - test/charconv
+  - test/concepts
+  - test/containers
+  - test/core-dep.cp
+  - test/execution
+  - test/filesystem
+  - test/format
+  - test/functional
+  - test/io
+  - test/iterator
+  - test/math
+  - test/memory
+  - test/quantity
+  - test/random
+  - test/ranges
+  - test/reflection
+  - test/static-ranges
+  - test/string
+  - test/types
+  - test/utility
 license: MPL-2.0
 skip_meson: true

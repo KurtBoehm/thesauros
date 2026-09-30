@@ -49,13 +49,15 @@ int main() {
     });
   };
 
+  fmt::print("pool       size iterations       s/it\n");
+
   for (std::size_t s = 0; s <= max_size; s = (s == 0) ? 1 : (2 * s)) {
     const auto res_std = work(s, thes::type_tag<thes::FixedStdThreadPool>);
     const auto res_omp = work(s, thes::type_tag<thes::FixedOpenMpThreadPool>);
     const auto res_opt = work(s, thes::type_tag<thes::FixedThreadPool>);
 
     const auto print = [&](std::string_view label, const thes::bench::Result& res) {
-      fmt::print("{} {:<10} {:<10} {:.4e}s\n", label, s, res.iterations,
+      fmt::print("{}  {:>10} {:>10} {:.4e}\n", label, s, res.iterations,
                  std::chrono::duration<double>{res.total_duration}.count() /
                    static_cast<double>(res.iterations));
     };
