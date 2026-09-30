@@ -10,6 +10,7 @@
 #include "thesauros/execution.hpp"
 #include "thesauros/format.hpp"
 #include "thesauros/math/integer-cast.hpp"
+#include "thesauros/ranges/as-sized.hpp"
 #include "thesauros/ranges/indices.hpp"
 #include "thesauros/resources/cpu-info.hpp"
 #include "thesauros/types/primitives.hpp"
@@ -21,7 +22,7 @@ int main() {
 
   static constexpr std::size_t max_size = 1UZ << 28UZ;
 
-  const auto cores = thes::CpuInfo::physical();
+  const auto cores = thes::ranges::as_sized(thes::CpuInfo::physical());
   const auto core_num = *thes::safe_cast<std::size_t>(std::ranges::distance(cores));
 
   thes::FixedArray<f64> a(max_size);

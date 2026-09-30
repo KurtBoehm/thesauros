@@ -87,8 +87,10 @@ struct FixedStdThreadPool {
       return FixedStdThreadPool{size, Empty{}};
     } else {
       return FixedStdThreadPool{
-        size, std::views::transform(std::forward<CpuInfos>(cpu_infos),
-                                    [](auto cpu) { return CpuSet::single_set(cpu.id); })};
+        size,
+        std::views::transform(std::forward<CpuInfos>(cpu_infos),
+                              [](auto cpu) { return CpuSet::single_set(cpu.id); }),
+      };
     }
   }
 

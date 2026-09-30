@@ -46,8 +46,10 @@ struct FixedOpenMpThreadPool {
       return FixedOpenMpThreadPool{size, Empty{}};
     } else {
       return FixedOpenMpThreadPool{
-        size, std::views::transform(std::forward<CpuInfos>(cpu_infos),
-                                    [](auto cpu) { return CpuSet::single_set(cpu.id); })};
+        size,
+        std::views::transform(std::forward<CpuInfos>(cpu_infos),
+                              [](auto cpu) { return CpuSet::single_set(cpu.id); }),
+      };
     }
   }
 

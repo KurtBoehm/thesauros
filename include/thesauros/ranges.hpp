@@ -2,6 +2,7 @@
 #define INCLUDE_THESAUROS_RANGES_HPP
 
 // IWYU pragma: begin_exports
+#include "ranges/as-sized.hpp"
 #include "ranges/cartesian-product.hpp"
 #include "ranges/concepts.hpp"
 #include "ranges/countdown.hpp"
