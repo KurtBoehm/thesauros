@@ -2,6 +2,7 @@
 #define INCLUDE_THESAUROS_EXECUTION_EXECUTION_POLICY_HPP
 
 // IWYU pragma: begin_exports
+#include "execution-policy/core.hpp"
 #include "execution-policy/linear.hpp"
 // IWYU pragma: end_exports
 

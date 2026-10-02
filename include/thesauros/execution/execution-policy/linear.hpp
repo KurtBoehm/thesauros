@@ -10,6 +10,7 @@
 #include <cstddef>
 
 #include "thesauros/concepts/nothrow.hpp"
+#include "thesauros/execution/execution-policy/core.hpp"
 #include "thesauros/utility/index-segmentation.hpp"
 
 namespace thes {
@@ -21,12 +22,16 @@ struct LinearExecutionPolicy {
 
   template<typename S, typename F>
   requires(NothrowInvocable<F&, std::size_t, S, S>)
-  void execute_segmented(S size, F&& f) const { // NOLINT(*-missing-std-forward)
-    UniformIndexSegmenter segmenter(size, executor_.thread_num());
-    executor_.execute([&f, &segmenter](std::size_t thread_idx) noexcept {
-      const auto begin = segmenter.segment_start(thread_idx);
-      const auto end = segmenter.segment_end(thread_idx);
-      f(thread_idx, begin, end);
+  void execute_segmented(S size, F&& f, ThreadExecutionMode auto /*mode*/) const {
+    UniformIndexSegmenter segmenter{
+      size,
+      std::min(executor_.thread_num(), *thes::safe_cast<std::size_t>(size)),
+    };
+    executor_.execute([&f, &segmenter, size](std::size_t thread_idx) noexcept {
+      if (std::cmp_greater_equal(thread_idx, size)) {
+        return;
+      }
+      f(thread_idx, segmenter.segment_start(thread_idx), segmenter.segment_end(thread_idx));
     });
   }
   [[nodiscard]] std::size_t thread_num() const {
