@@ -15,13 +15,14 @@
 #include <iterator>
 #include <optional>
 #include <ranges>
+#include <type_traits>
 #include <utility>
 
 #include "thesauros/containers/array/fixed.hpp"
 #include "thesauros/execution/execution-policy/core.hpp"
 #include "thesauros/types/empty.hpp"
 
-namespace thes {
+namespace thes::ranges {
 struct InclusiveScanFn {
   //================================================================================================
   // Sequential
@@ -120,10 +121,11 @@ private:
     }
 
     FixedArray<std::optional<T>> offsets(policy.thread_num());
+    const auto un = *thes::safe_cast<std::make_unsigned_t<std::iter_difference_t<I>>>(n);
 
     // Phase 1: Compute the total for each chunk.
     policy.execute_segmented(
-      n,
+      un,
       [&](std::size_t thread_idx, auto begin, auto end) noexcept {
         assert(end > begin);
         I it = first + begin;
@@ -139,7 +141,7 @@ private:
 
     // Phase 2: Perform the actual scan with the offsets from phase 1.
     policy.execute_segmented(
-      n,
+      un,
       [&](std::size_t thread_idx, auto begin, auto end) noexcept {
         if (begin == 0) {
           if constexpr (!std::same_as<Init, Empty>) {
@@ -171,6 +173,8 @@ private:
     return {first + n, out + n};
   }
 };
-} // namespace thes
+
+inline constexpr InclusiveScanFn inclusive_scan{};
+} // namespace thes::ranges
 
 #endif // INCLUDE_THESAUROS_ALGORITHMS_SCAN_HPP

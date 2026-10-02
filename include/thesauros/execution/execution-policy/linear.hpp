@@ -20,9 +20,9 @@ struct LinearExecutionPolicy {
 
   explicit LinearExecutionPolicy(const E& executor) : executor_{executor} {}
 
-  template<typename S, typename F>
+  template<typename S, typename F, ThreadExecutionMode Mode = OncePerThread>
   requires(NothrowInvocable<F&, std::size_t, S, S>)
-  void execute_segmented(S size, F&& f, ThreadExecutionMode auto /*mode*/) const {
+  void execute_segmented(S size, F&& f, Mode /*mode*/ = {}) const {
     UniformIndexSegmenter segmenter{
       size,
       std::min(executor_.thread_num(), *thes::safe_cast<std::size_t>(size)),

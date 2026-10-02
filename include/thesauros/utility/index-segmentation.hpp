@@ -19,17 +19,18 @@
 #include "thesauros/types/type-transformations.hpp"
 
 namespace thes {
+/** An index segmenter. */
 template<typename T>
 concept IndexSegmenter = requires(const T& seg, T::Size size, T::Segment s) {
-  // associated types
+  // Associated types
   typename T::Size;
   typename T::Segment;
 
-  // basic accessors
+  // Basic accessors
   { seg.size() } -> std::same_as<typename T::Size>;
   { seg.segment_num() } -> std::same_as<typename T::Segment>;
 
-  // segment boundaries
+  // Segment boundaries
   { seg.segment_start(s) } -> std::same_as<typename T::Size>;
   { seg.segment_end(s) } -> std::same_as<typename T::Size>;
   { seg.segment_range(s) } -> std::same_as<ranges::IotaRange<typename T::Size>>;
@@ -37,7 +38,9 @@ concept IndexSegmenter = requires(const T& seg, T::Size size, T::Segment s) {
 };
 
 /**
- * Uniformly partitions contiguous indices into segments.
+ * Partitions `[0, size)` uniformly into `segment_num` segments, with the first `size % segment_num`
+ * segments being larger by one than the later ones. This also means that, if `size < segment_num`,
+ * only the first `size` segments have size `1` and the remaining ones are empty.
  *
  * @tparam S   Index type.
  * @tparam Seg Segment index type.
@@ -48,36 +51,36 @@ struct UniformIndexSegmenter {
   using Segment = Seg;
   using Shared = Union<Size, Segment>;
 
-  /** Constructs a segmenter for [0, size) into segment_num segments. */
+  /** Constructs a segmenter for `[0, size)` into `segment_num` segments. */
   constexpr UniformIndexSegmenter(Size size, Segment segment_num) noexcept
       : size_{size}, segment_num_{segment_num}, div_{Size(size / segment_num)},
         mod_{Size(size % segment_num)} {}
 
-  /** First index of a segment. */
+  /** First index of a `segment`. */
   [[nodiscard]] constexpr Size segment_start(const Segment segment) const noexcept {
     assert(segment <= segment_num_);
     return Size(segment * div_ + std::min(Shared(mod_), Shared(segment)));
   }
 
-  /** One-past-last index of a segment. */
+  /** One-past-last index of a `segment`. */
   [[nodiscard]] constexpr Size segment_end(const Segment segment) const noexcept {
     return segment_start(Segment(segment + 1));
   }
 
-  /** [segment_start, segment_end) as an iota range. */
+  /** `[segment_start, segment_end)` as an index range. */
   [[nodiscard]] constexpr ranges::IotaRange<Size>
   segment_range(const Segment segment) const noexcept {
     return views::indices(segment_start(segment), segment_end(segment));
   }
 
-  /** Segment containing index. */
+  /** Segment containing `index`. */
   [[nodiscard]] constexpr Segment segment_of(Size index) const noexcept {
     const Size ref = Size(mod_ * (div_ + 1));
     if (index <= ref) {
-      // index / (div + 1)
+      // `index / (div_ + 1)`.
       return Segment(index / div_div1_);
     }
-    // mod + (index - ref) / div
+    // `mod_ + (index - ref) / div_`
     assert(div_div_.has_value());
     return Segment(mod_ + (index - ref) / *div_div_);
   }
