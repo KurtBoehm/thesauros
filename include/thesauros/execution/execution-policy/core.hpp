@@ -27,10 +27,15 @@ concept ThreadExecutionMode = std::same_as<T, OncePerThread>;
 template<typename T>
 concept ExecutionPolicy = requires(const T& expo) {
   {
-    expo.execute_segmented(0UZ, [](std::size_t, std::size_t, std::size_t) {}, once_per_thread)
+    expo.execute_segmented(
+      0UZ, [](std::size_t, std::size_t, std::size_t) noexcept {}, once_per_thread)
   } -> std::same_as<void>;
   {
-    expo.execute_segmented(0UZ, [](std::size_t, std::size_t, std::size_t) {})
+    expo.execute_segmented(0UZ, [](std::size_t, std::size_t, std::size_t) noexcept {})
+  } -> std::same_as<void>;
+
+  {
+    expo.execute_threaded([](std::size_t) noexcept {})
   } -> std::same_as<void>;
 
   { expo.thread_num() } -> std::same_as<std::size_t>;

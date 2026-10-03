@@ -20,6 +20,11 @@ struct LinearExecutionPolicy {
 
   explicit LinearExecutionPolicy(const E& executor) : executor_{executor} {}
 
+  template<typename F>
+  requires(NothrowInvocable<F&, std::size_t>)
+  void execute_threaded(F&& f) const {
+    executor_.execute(std::forward<F>(f));
+  }
   template<typename S, typename F, ThreadExecutionMode Mode = OncePerThread>
   requires(NothrowInvocable<F&, std::size_t, S, S>)
   void execute_segmented(S size, F&& f, Mode /*mode*/ = {}) const {
@@ -34,6 +39,7 @@ struct LinearExecutionPolicy {
       f(thread_idx, segmenter.segment_start(thread_idx), segmenter.segment_end(thread_idx));
     });
   }
+
   [[nodiscard]] std::size_t thread_num() const {
     return executor_.thread_num();
   }
