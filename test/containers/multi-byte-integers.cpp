@@ -134,7 +134,7 @@ void test_round_trip(auto... values) {
     elem_assert();
   }
 
-  auto sub = integers.sub_range(2, 4); // NOLINT(*-const-correctness)
+  auto sub = integers.sub_view(2, 4); // NOLINT(*-const-correctness)
   static_assert(std::ranges::random_access_range<decltype(sub)>);
 
   std::sort(sub.begin(), sub.end());
@@ -272,6 +272,39 @@ void test_resize() {
                                           wrap<ByteInt>(9), wrap<ByteInt>(9)}));
 
   mbi.resize(0);
+  THES_ALWAYS_ASSERT(mbi.empty());
+}
+
+/**
+ * Checks that `resize_for_overwrite` keeps the existing elements, does not reallocate within the
+ * capacity, and yields the expected content once the new elements are overwritten.
+ */
+template<typename ByteInt, std::size_t PaddingBytes = 13>
+void test_resize_for_overwrite() {
+  using UInt = ByteInt::Unsigned;
+  using Mbi = thes::MultiByteIntegers<ByteInt, PaddingBytes>;
+
+  Mbi mbi{UInt{1}, UInt{2}, UInt{3}};
+  mbi.reserve(16);
+  const std::size_t cap = mbi.capacity();
+
+  mbi.resize_for_overwrite(5);
+  THES_ALWAYS_ASSERT(mbi.size() == 5);
+  THES_ALWAYS_ASSERT(mbi.capacity() == cap);
+  mbi[3] = wrap<ByteInt>(4);
+  mbi[4] = wrap<ByteInt>(5);
+  THES_ALWAYS_ASSERT(test::range_eq(
+    mbi, std::vector<UInt>{UInt{1}, UInt{2}, UInt{3}, wrap<ByteInt>(4), wrap<ByteInt>(5)}));
+
+  mbi.resize_for_overwrite(2);
+  THES_ALWAYS_ASSERT(test::range_eq(mbi, std::vector<UInt>{UInt{1}, UInt{2}}));
+
+  // Growing beyond the capacity reallocates and keeps the existing elements.
+  mbi.resize_for_overwrite(cap + 1);
+  THES_ALWAYS_ASSERT(mbi.size() == cap + 1);
+  THES_ALWAYS_ASSERT(UInt{mbi[0]} == UInt{1} && UInt{mbi[1]} == UInt{2});
+
+  mbi.resize_for_overwrite(0);
   THES_ALWAYS_ASSERT(mbi.empty());
 }
 
@@ -642,13 +675,13 @@ void test_reverse_iterator_conversion() {
 
 /** Checks reverse iteration and mutation through a sub-range, propagating to the parent array. */
 template<typename ByteInt, std::size_t PaddingBytes = 13>
-void test_sub_range_reverse_iteration() {
+void test_sub_view_reverse_iteration() {
   using UInt = ByteInt::Unsigned;
   using Mbi = thes::MultiByteIntegers<ByteInt, PaddingBytes>;
 
   Mbi mbi{wrap<ByteInt>(1), wrap<ByteInt>(2), wrap<ByteInt>(3), wrap<ByteInt>(4), wrap<ByteInt>(5)};
 
-  auto sub = mbi.sub_range(1, 4); // NOLINT(*-const-correctness)
+  auto sub = mbi.sub_view(1, 4); // NOLINT(*-const-correctness)
   const std::vector<UInt> backward{wrap<ByteInt>(4), wrap<ByteInt>(3), wrap<ByteInt>(2)};
   THES_ALWAYS_ASSERT(
     std::ranges::equal(sub.rbegin(), sub.rend(), backward.begin(), backward.end()));
@@ -657,7 +690,7 @@ void test_sub_range_reverse_iteration() {
   THES_ALWAYS_ASSERT(mbi[3] == wrap<ByteInt>(40));
 
   const Mbi& cmbi = mbi;
-  const auto csub = cmbi.sub_range(1, 4);
+  const auto csub = cmbi.sub_view(1, 4);
   const std::vector<UInt> backward2{wrap<ByteInt>(40), wrap<ByteInt>(3), wrap<ByteInt>(2)};
   THES_ALWAYS_ASSERT(
     std::ranges::equal(csub.rbegin(), csub.rend(), backward2.begin(), backward2.end()));
@@ -697,23 +730,23 @@ void test_byte_span() {
   THES_ALWAYS_ASSERT(cmbi.byte_span().size() == expected_bytes);
 }
 
-/** Checks mutable `sub_range` sorting and const `full_sub_range` access. */
+/** Checks mutable `sub_view` sorting and const `full_sub_view` access. */
 template<typename ByteInt, std::size_t PaddingBytes = 13>
-void test_sub_range() {
+void test_sub_view() {
   using UInt = ByteInt::Unsigned;
   using Mbi = thes::MultiByteIntegers<ByteInt, PaddingBytes>;
   static_assert(std::ranges::random_access_range<Mbi>);
 
   Mbi mbi{UInt{5}, UInt{3}, UInt{1}, UInt{4}, UInt{2}};
 
-  auto sub = mbi.sub_range(1, 4); // NOLINT(*-const-correctness)
+  auto sub = mbi.sub_view(1, 4); // NOLINT(*-const-correctness)
   static_assert(std::ranges::random_access_range<decltype(sub)>);
   THES_ALWAYS_ASSERT(sub.size() == 3);
   std::sort(sub.begin(), sub.end());
   THES_ALWAYS_ASSERT(test::range_eq(mbi, std::vector<UInt>{5, 1, 3, 4, 2}));
 
   const Mbi& cmbi = mbi;
-  const auto full = cmbi.full_sub_range();
+  const auto full = cmbi.full_view();
   static_assert(std::ranges::random_access_range<decltype(full)>);
   THES_ALWAYS_ASSERT(full.size() == cmbi.size());
   THES_ALWAYS_ASSERT(std::ranges::equal(full, cmbi));
@@ -997,6 +1030,7 @@ void run_full_suite() {
   test_set_all<ByteInt>();
   test_reserve<ByteInt>();
   test_resize<ByteInt>();
+  test_resize_for_overwrite<ByteInt>();
   test_clear<ByteInt>();
   test_assign<ByteInt>();
   test_insert_value_overloads<ByteInt>();
@@ -1011,8 +1045,8 @@ void run_full_suite() {
   test_reverse_iterator_arithmetic<ByteInt>();
   test_reverse_iterator_conversion<ByteInt>();
   test_byte_span<ByteInt>();
-  test_sub_range<ByteInt>();
-  test_sub_range_reverse_iteration<ByteInt>();
+  test_sub_view<ByteInt>();
+  test_sub_view_reverse_iteration<ByteInt>();
   test_reverse_iterator_with_algorithms<ByteInt>();
   test_optional_variant<ByteInt>();
   test_int_ref_optional_accessors<ByteInt>();

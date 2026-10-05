@@ -110,7 +110,7 @@ private:
 
 /** A const or mutable, optionally value-optional, view of a range of packed `ByteInt` integers. */
 template<bool IsConst, typename ByteInt, std::size_t PaddingBytes, bool IsOptional>
-struct MultiByteSubRange;
+struct MultiByteView;
 
 /**
  * The CRTP base shared by `MultiByteSubRange` and `MultiByteIntegerArray`, implementing the shared
@@ -469,8 +469,8 @@ struct MultiByteIntegersBase {
     ForwardIter base_;
   };
 
-  using ConstSubRange = MultiByteSubRange<true, ByteInt, PaddingBytes, IsOptional>;
-  using MutableSubRange = MultiByteSubRange<false, ByteInt, PaddingBytes, IsOptional>;
+  using ConstView = MultiByteView<true, ByteInt, PaddingBytes, IsOptional>;
+  using MutableView = MultiByteView<false, ByteInt, PaddingBytes, IsOptional>;
 
   using iterator = BaseIterator<false>;
   using const_iterator = BaseIterator<true>;
@@ -594,15 +594,15 @@ struct MultiByteIntegersBase {
   //------------------------------------------------------------------------------------------------
 
   /** Returns a view of the half-open index range `[begin, end)`, mutable if `self` is. */
-  [[nodiscard]] auto sub_range(this auto&& self, Size begin, Size end) {
-    using Result = std::conditional_t<const_access<decltype(self)>, ConstSubRange, MutableSubRange>;
+  [[nodiscard]] auto sub_view(this auto&& self, Size begin, Size end) {
+    using Result = std::conditional_t<const_access<decltype(self)>, ConstView, MutableView>;
     assert(end >= begin);
     return Result{self.span().data() + byte_size(begin), end - begin};
   }
 
   /** Returns a view of the entire range, mutable if `self` is. */
-  [[nodiscard]] auto full_sub_range(this auto&& self) {
-    return self.sub_range(0, self.size());
+  [[nodiscard]] auto full_view(this auto&& self) {
+    return self.sub_view(0, self.size());
   }
 
 protected:
@@ -659,9 +659,8 @@ private:
  * by `detail::multi_byte::ViewStorage`.
  */
 template<bool IsConst, typename ByteInt, std::size_t PaddingBytes, bool IsOptional>
-struct MultiByteSubRange
-    : MultiByteIntegersBase<ByteInt, PaddingBytes, IsOptional,
-                            detail::multi_byte::ViewStorage<IsConst, ByteInt>> {
+struct MultiByteView : MultiByteIntegersBase<ByteInt, PaddingBytes, IsOptional,
+                                             detail::multi_byte::ViewStorage<IsConst, ByteInt>> {
   using Storage = detail::multi_byte::ViewStorage<IsConst, ByteInt>;
   using Base = MultiByteIntegersBase<ByteInt, PaddingBytes, IsOptional, Storage>;
 
@@ -669,7 +668,7 @@ struct MultiByteSubRange
   using CByte = Storage::CByte;
 
   /** Creates a view of `size` elements starting at `data`. */
-  MultiByteSubRange(CByte* data, Size size) : Base{Storage{data, size}} {}
+  MultiByteView(CByte* data, Size size) : Base{Storage{data, size}} {}
 };
 
 /**
@@ -789,16 +788,24 @@ struct MultiByteIntegerArray
   /** Resizes the array to `new_size` elements, copying `value` into any new ones. */
   void resize(Size new_size, Value value) {
     const Size old_size = storage().size();
+    resize_for_overwrite(new_size);
+    if (new_size > old_size) {
+      const Size byte_old = byte_size(old_size);
+      fill_prealloc(std::span{span().data() + byte_old, byte_size(new_size) - byte_old}, value);
+    }
+  }
+  /**
+   * Resizes the array to `new_size` elements, default-initializing the new ones (i.e. leaving them
+   * unspecified) like the sized constructor.
+   */
+  void resize_for_overwrite(Size new_size) {
+    const Size old_size = storage().size();
     if (new_size < old_size) {
       array().shrink(Storage::effective_allocation(new_size));
-      storage().size() = new_size;
     } else if (new_size > old_size) {
       array().expand(Storage::effective_allocation(new_size));
-      storage().size() = new_size;
-      const Size byte_old = byte_size(old_size);
-      std::byte* dst = span().data() + byte_old;
-      fill_prealloc(std::span{dst, byte_size(new_size) - byte_old}, value);
     }
+    storage().size() = new_size;
   }
 
   /** Removes all elements, without changing the capacity. */
