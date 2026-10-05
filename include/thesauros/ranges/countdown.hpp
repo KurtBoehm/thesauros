@@ -30,25 +30,25 @@ struct Countdown {
 
     S i;
 
-    S operator*() const {
+    constexpr S operator*() const {
       return i;
     }
-    Iterator& operator++() {
+    constexpr Iterator& operator++() {
       --i;
       return *this;
     }
-    Iterator operator++(int) {
+    constexpr Iterator operator++(int) {
       Iterator copy = *this;
       ++(*this);
       return copy;
     }
-    bool operator==(const Iterator& other) const = default;
+    constexpr bool operator==(const Iterator& other) const = default;
   };
 
-  [[nodiscard]] Iterator begin() const {
+  [[nodiscard]] constexpr Iterator begin() const {
     return {.i = n};
   }
-  [[nodiscard]] Iterator end() const {
+  [[nodiscard]] constexpr Iterator end() const {
     return {.i = 0};
   }
 };
@@ -60,7 +60,7 @@ namespace thes::views {
  * possible. See the documentation of `Countdown` for more details.
  */
 template<std::unsigned_integral S>
-[[nodiscard]] inline ranges::Countdown<S> countdown(S n) {
+[[nodiscard]] constexpr ranges::Countdown<S> countdown(S n) {
   return ranges::Countdown{.n = n};
 }
 } // namespace thes::views

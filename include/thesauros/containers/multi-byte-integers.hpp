@@ -584,6 +584,11 @@ struct MultiByteIntegersBase {
     return std::span{self.span().begin(), byte_size(self.size())};
   }
 
+  /** Fills all elements with zeros. */
+  void fill_zero() {
+    std::fill_n(span().data(), byte_size(size()), std::byte{0});
+  }
+
   //------------------------------------------------------------------------------------------------
   // Sub-ranges
   //------------------------------------------------------------------------------------------------

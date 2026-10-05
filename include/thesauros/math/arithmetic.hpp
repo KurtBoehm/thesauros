@@ -15,7 +15,9 @@
 #include <limits>
 #include <utility>
 
+#include "thesauros/macropolis/inlining.hpp"
 #include "thesauros/math/safe-integer.hpp"
+#include "thesauros/types/primitives.hpp"
 
 namespace thes {
 template<std::unsigned_integral T>
@@ -109,28 +111,50 @@ constexpr T combine_bits(Args... bits) {
   }(std::index_sequence_for<Args...>{});
 }
 
-// Computes floor(x^(1/n)) precisely. The complexity is Θ(log2(x)/n).
+/**
+ * Computes `floor(sqrt(x))`. At runtime, types of up to 64 bits use a floating-point square root,
+ * and bit-wise refinement in Θ(log2(x)) steps is used otherwise.
+ */
 template<std::unsigned_integral T>
 constexpr T isqrt_floor(T x) {
+  if !consteval {
+    constexpr auto digits = unsigned{std::numeric_limits<T>::digits};
+    if constexpr (digits <= 64) {
+      T root = [&] [[THES_ALWAYS_INLINE]] {
+        if constexpr (digits <= 24) {
+          return static_cast<T>(__builtin_sqrtf(static_cast<f32>(x)));
+        } else {
+          return static_cast<T>(__builtin_sqrt(static_cast<f64>(x)));
+        }
+      }();
+      // Above 2⁵², the converted root might be off by one.
+      if constexpr (digits > 52) {
+        static_assert(digits % 2 == 0);
+        constexpr T max_root = (T{1} << (digits / 2)) - 1;
+        root = std::min(root, max_root);
+        if (root * root > x) {
+          --root;
+        } else if (root < max_root && (root + 1) * (root + 1) <= x) {
+          ++root;
+        }
+      }
+      return root;
+    }
+  }
   if (x < 2) {
     return x;
   }
-  const unsigned bit_num = log2_floor(x) >> 1U;
-  T root = T{1} << bit_num;
-  T bit = root >> 1U;
-  for (T i = 0; i < std::numeric_limits<T>::digits; ++i) {
+  // Initial guess: Two to the power of half the floor of the binary logarithm, which is always more
+  // than half the actual square root.
+  T root = T{1} << (log2_floor(x) >> 1U);
+  for (T bit = root >> 1U; bit != 0; bit >>= 1U) {
     const T part = root | bit;
-    const T sq = part * part;
-    root = (x >= sq) ? part : root;
-    bit >>= 1U;
-    if (bit == 0) {
-      break;
-    }
+    root = (x >= part * part) ? part : root;
   }
   return root;
 }
 
-// Computes ceil(x^(1/n)) precisely. The complexity is Θ(log2(x)/n).
+/** Computes `ceil(sqrt(x))` exactly. The complexity is Θ(log2(x)/n). */
 template<std::unsigned_integral T>
 constexpr T isqrt_ceil(T x) {
   const T lb = isqrt_floor(x);
