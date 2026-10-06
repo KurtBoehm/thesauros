@@ -5,8 +5,8 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <cstdio>
+#include <cstdlib>
 #include <exception>
-#include <functional>
 #include <ranges>
 #include <vector>
 
@@ -27,7 +27,9 @@
 int main() try {
   using Type = int;
 
-  std::vector<Type> values{5, 8, 9, 4, 2, -10, 22};
+  const auto values = std::views::iota(0UZ, 1UZ << 25UZ) |
+                      std::views::transform([](std::size_t /*i*/) { return std::rand(); }) |
+                      std::ranges::to<std::vector<Type>>();
   std::vector<Type> scanned(values.size());
 
   std::vector<Type> scanned_ref{};
@@ -47,9 +49,7 @@ int main() try {
   const auto run_scan = [&](auto pool) {
     const thes::LinearExecutionPolicy expo{pool};
 
-    thes::transform_inclusive_scan(
-      expo, values.begin(), values.end(), scanned.begin(), std::plus<>{},
-      [](Type v) noexcept { return v; }, Type{0});
+    thes::ranges::inclusive_scan(expo, values, scanned.begin());
 
     THES_ALWAYS_ASSERT(scanned == scanned_ref);
   };

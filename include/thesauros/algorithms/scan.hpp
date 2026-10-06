@@ -180,7 +180,7 @@ private:
     const std::size_t min_grain = std::max(1UZ, min_chunk_bytes / sizeof(T));
     const std::size_t max_grain = std::max(min_grain, max_chunk_bytes / sizeof(T));
     const std::size_t grain = std::clamp(div_ceil(nz, 4 * thread_num), min_grain, max_grain);
-    const D graind = *safe_cast<D>(grain);
+    const D diff_grain = *safe_cast<D>(grain);
 
     const auto chunk_num = div_ceil(nz, grain);
     auto states = std::make_unique<State[]>(chunk_num);
@@ -192,7 +192,7 @@ private:
 
     auto process_chunk = [&](std::size_t c, Buffer& buffer) {
       const D begin = *safe_cast<D>(c * grain);
-      const D end = std::min<D>(begin + graind, n);
+      const D end = std::min<D>(begin + diff_grain, n);
       State& state = states[c];
 
       // Reduce the chunk; computed elements are buffered so that they are evaluated only once.
