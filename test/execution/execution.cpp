@@ -26,10 +26,12 @@
 
 int main() try {
   using Type = int;
+  static constexpr std::size_t size = 1UZ << 25UZ;
 
-  const auto values = std::views::iota(0UZ, 1UZ << 25UZ) |
-                      std::views::transform([](std::size_t /*i*/) { return std::rand(); }) |
-                      std::ranges::to<std::vector<Type>>();
+  const auto values =
+    std::views::iota(0UZ, size) |
+    std::views::transform([](std::size_t /*i*/) { return std::rand() / int{size}; }) |
+    std::ranges::to<std::vector<Type>>();
   std::vector<Type> scanned(values.size());
 
   std::vector<Type> scanned_ref{};
