@@ -49,7 +49,7 @@ inline constexpr ToArrayGenerator to_array{};
  */
 template<std::size_t N, typename V = void>
 constexpr auto generate_array(auto op) {
-  auto f = [&]<std::size_t I>(thes::IndexTag<I> i) {
+  auto f = [&]<std::size_t I>(IndexTag<I> i) {
     if constexpr (requires { op.template operator()<I>(); }) {
       return op.template operator()<I>();
     } else if constexpr (requires { op(i); }) {

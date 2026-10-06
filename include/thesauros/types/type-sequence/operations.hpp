@@ -412,15 +412,15 @@ using UniqueTypeSeq = UniqueTypeSeqTrait<Seq>::Type;
 //==================================================================================================
 
 template<typename... T>
-constexpr std::optional<std::size_t> find_if(thes::TypeSeq<T...> /*seq*/, auto predicate) {
+constexpr std::optional<std::size_t> find_if(TypeSeq<T...> /*seq*/, auto predicate) {
   std::optional<std::size_t> ret{};
-  auto f = [predicate, &ret]<typename C>(std::size_t i, thes::TypeTag<C> /*type*/) {
+  auto f = [predicate, &ret]<typename C>(std::size_t i, TypeTag<C> /*type*/) {
     if (predicate.template operator()<C>() && !ret.has_value()) {
       ret = i;
     }
   };
   [f]<std::size_t... I>(std::index_sequence<I...> /*seq*/) {
-    (..., f(I, thes::type_tag<T>));
+    (..., f(I, type_tag<T>));
   }(std::index_sequence_for<T...>{});
   return ret;
 }

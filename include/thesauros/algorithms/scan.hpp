@@ -121,7 +121,7 @@ private:
     }
 
     FixedArray<std::optional<T>> offsets(policy.thread_num());
-    const auto un = *thes::safe_cast<std::make_unsigned_t<std::iter_difference_t<I>>>(n);
+    const auto un = *safe_cast<std::make_unsigned_t<std::iter_difference_t<I>>>(n);
 
     // Phase 1: Compute the total for each chunk.
     policy.execute_segmented(

@@ -78,7 +78,7 @@ struct FixedOpenMpThreadPool {
 
 #pragma omp parallel for num_threads(thread_num_) default(none) shared(task) firstprivate(tnum)
     for (std::size_t t = 0; t < tnum; ++t) {
-      auto thread = thes::this_thread_native_handle(); // NOLINT(*-qualified-auto)
+      auto thread = this_thread_native_handle(); // NOLINT(*-qualified-auto)
       if (cpu_sets_.has_value()) {
         (void)set_affinity(thread, (*cpu_sets_)[t]); // NOLINT(*-unused-return-value)
       }

@@ -132,7 +132,7 @@ inline IterationCount next_iters(Duration last_dur, IterationCount last_iters, D
   // When the last run took more than 10% of `min_dur`, aim for `1.4 * min_dur`.
   const double multiplier = 1.4 * to_seconds(min_dur) / to_seconds(last_dur);
   const IterationCount max_next =
-    *thes::safe_cast<IterationCount>(std::llround(multiplier * static_cast<double>(last_iters)));
+    *safe_cast<IterationCount>(std::llround(multiplier * static_cast<double>(last_iters)));
 
   // Clamp the iteration count so that it increases by at least one and is at most `max_iterations`.
   if (max_next >= max_iterations) {

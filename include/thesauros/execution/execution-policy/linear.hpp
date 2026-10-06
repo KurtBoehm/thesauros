@@ -30,7 +30,7 @@ struct LinearExecutionPolicy {
   void execute_segmented(S size, F&& f, Mode /*mode*/ = {}) const {
     UniformIndexSegmenter segmenter{
       size,
-      std::min(executor_.thread_num(), *thes::safe_cast<std::size_t>(size)),
+      std::min(executor_.thread_num(), *safe_cast<std::size_t>(size)),
     };
     executor_.execute([&f, &segmenter, size](std::size_t thread_idx) noexcept {
       if (std::cmp_greater_equal(thread_idx, size)) {
