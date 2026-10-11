@@ -63,8 +63,12 @@ int main() try {
 
   {
     // This ensures that conversions due to implicit conversions are emitted in future.
+    thes::FixedThreadPool pool{4};
+    const thes::LinearExecutionPolicy expo{pool};
+
     std::vector<thes::u8> dst(4, 0);
     thes::ranges::inclusive_scan(thes::views::indices(thes::u8{4}), dst.begin());
+    thes::ranges::inclusive_scan(expo, thes::views::indices(thes::u8{4}), dst.begin());
     THES_ALWAYS_ASSERT((dst == std::vector<thes::u8>{0, 1, 3, 6}));
   }
 

@@ -136,7 +136,7 @@ private:
 
         T acc = *it;
         for (++it; it != last; ++it) {
-          acc = std::invoke(op, std::move(acc), *it);
+          acc = static_cast<T>(std::invoke(op, std::move(acc), *it));
         }
         offsets[thread_idx].emplace(std::move(acc));
       },
@@ -169,7 +169,7 @@ private:
           } else {
             T offset = **oit;
             for (++oit; oit != oend; ++oit) {
-              offset = std::invoke(op, std::move(offset), **oit);
+              offset = static_cast<T>(std::invoke(op, std::move(offset), **oit));
             }
             (*this)(first + begin_idf, first + end_idf, out + begin_odf, op, std::move(offset));
           }
