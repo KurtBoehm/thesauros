@@ -590,6 +590,14 @@ struct MultiByteIntegersBase {
     std::fill_n(span().data(), byte_size(size()), std::byte{0});
   }
 
+  /** Fills all elements with empty optionals. */
+  void fill_empty()
+  requires(IsOptional)
+  {
+    std::fill_n(span().data(), byte_size(size()),
+                std::byte{std::numeric_limits<unsigned char>::max()});
+  }
+
   //------------------------------------------------------------------------------------------------
   // Sub-ranges
   //------------------------------------------------------------------------------------------------

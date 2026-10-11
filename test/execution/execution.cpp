@@ -14,8 +14,10 @@
 #include "thesauros/execution.hpp"
 #include "thesauros/format.hpp"
 #include "thesauros/macropolis/platform.hpp"
+#include "thesauros/ranges/indices.hpp"
 #include "thesauros/resources.hpp"
 #include "thesauros/test.hpp"
+#include "thesauros/types/primitives.hpp"
 #include "thesauros/types/type-name.hpp"
 
 #if THES_LINUX || THES_WINDOWS
@@ -58,6 +60,13 @@ int main() try {
 
   run_scan(thes::FixedThreadPool{2});
   run_scan(thes::FixedThreadPool{4});
+
+  {
+    // This ensures that conversions due to implicit conversions are emitted in future.
+    std::vector<thes::u8> dst(4, 0);
+    thes::ranges::inclusive_scan(thes::views::indices(thes::u8{4}), dst.begin());
+    THES_ALWAYS_ASSERT((dst == std::vector<thes::u8>{0, 1, 3, 6}));
+  }
 
   const auto logical = std::ranges::to<std::vector<thes::CpuInfo>>(thes::CpuInfo::logical());
   fmt::print("{}× logical: {}\n", logical.size(), logical);

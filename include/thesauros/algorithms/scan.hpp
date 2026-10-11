@@ -34,7 +34,7 @@ struct InclusiveScanFn {
   constexpr std::ranges::in_out_result<I, O> operator()(I first, S last, O out, Op op,
                                                         T init) const {
     for (; first != last; ++first, (void)++out) {
-      init = std::invoke(op, std::move(init), *first);
+      init = static_cast<T>(std::invoke(op, std::move(init), *first));
       *out = init;
     }
     return {std::move(first), std::move(out)};
@@ -116,20 +116,23 @@ private:
   template<typename T, typename P, typename I, typename O, typename Op, typename Init = Empty>
   std::ranges::in_out_result<I, O> parallel(P& policy, I first, std::iter_difference_t<I> n, O out,
                                             Op& op, Init init = {}) const {
+    using InDiff = std::iter_difference_t<I>;
+    using OutDiff = std::iter_difference_t<O>;
+
     if (n == 0) {
       return {std::move(first), std::move(out)};
     }
 
     FixedArray<std::optional<T>> offsets(policy.thread_num());
-    const auto un = *safe_cast<std::make_unsigned_t<std::iter_difference_t<I>>>(n);
+    const auto un = *safe_cast<std::make_unsigned_t<InDiff>>(n);
 
     // Phase 1: Compute the total for each chunk.
     policy.execute_segmented(
       un,
       [&](std::size_t thread_idx, auto begin, auto end) noexcept {
         assert(end > begin);
-        I it = first + begin;
-        I last = first + end;
+        I it = first + *safe_cast<InDiff>(begin);
+        I last = first + *safe_cast<InDiff>(end);
 
         T acc = *it;
         for (++it; it != last; ++it) {
@@ -143,11 +146,15 @@ private:
     policy.execute_segmented(
       un,
       [&](std::size_t thread_idx, auto begin, auto end) noexcept {
+        const auto begin_idf = *safe_cast<InDiff>(begin);
+        const auto begin_odf = *safe_cast<OutDiff>(begin);
+        const auto end_idf = *safe_cast<InDiff>(end);
+
         if (begin == 0) {
           if constexpr (!std::same_as<Init, Empty>) {
-            (*this)(first + begin, first + end, out + begin, op, init);
+            (*this)(first + begin_idf, first + end_idf, out + begin_odf, op, init);
           } else {
-            (*this)(first + begin, first + end, out + begin, op);
+            (*this)(first + begin_idf, first + end_idf, out + begin_odf, op);
           }
         } else {
           auto oit = offsets.begin();
@@ -158,13 +165,13 @@ private:
             for (; oit != oend; ++oit) {
               offset = std::invoke(op, std::move(offset), **oit);
             }
-            (*this)(first + begin, first + end, out + begin, op, std::move(offset));
+            (*this)(first + begin_idf, first + end_idf, out + begin_odf, op, std::move(offset));
           } else {
             T offset = **oit;
             for (++oit; oit != oend; ++oit) {
               offset = std::invoke(op, std::move(offset), **oit);
             }
-            (*this)(first + begin, first + end, out + begin, op, std::move(offset));
+            (*this)(first + begin_idf, first + end_idf, out + begin_odf, op, std::move(offset));
           }
         }
       },
