@@ -373,6 +373,7 @@ struct MultiByteIntegersBase {
     using Ref = IterTypes<IsConst>::IterRef;
     using Diff = IterTypes<IsConst>::IterDiff;
     using Ptr = std::conditional_t<IsConst, const std::byte, std::byte>*;
+    static constexpr std::size_t element_bytes = MultiByteIntegersBase::element_bytes;
 
     friend IteratorFacade<IterTypes<IsConst>>;
 

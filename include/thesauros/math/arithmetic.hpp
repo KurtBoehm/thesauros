@@ -146,7 +146,7 @@ constexpr T isqrt_floor(T x) {
   }
   // Initial guess: Two to the power of half the floor of the binary logarithm, which is always more
   // than half the actual square root.
-  T root = T{1} << (log2_floor(x) >> 1U);
+  T root = static_cast<T>(T{1} << (log2_floor(x) >> 1U));
   for (T bit = root >> 1U; bit != 0; bit >>= 1U) {
     const T part = root | bit;
     root = (x >= part * part) ? part : root;

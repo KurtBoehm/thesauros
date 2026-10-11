@@ -14,6 +14,7 @@
 #include <iterator>
 #include <utility>
 
+#include "thesauros/concepts/type-traits.hpp"
 #include "thesauros/iterator/facade.hpp"
 #include "thesauros/iterator/state-facade.hpp"
 #include "thesauros/types/value-tag.hpp"
@@ -233,6 +234,8 @@ struct IotaTrait<IotaRange<T>> {
     return r.end_value();
   }
 };
+template<typename T>
+concept IotaInformable = CompleteType<IotaTrait<T>>;
 
 template<typename T>
 struct IotaInfo {
@@ -254,7 +257,7 @@ struct IotaInfo {
   }
 };
 
-template<typename Range>
+template<IotaInformable Range>
 constexpr IotaInfo<typename IotaTrait<Range>::Value> iota_info(const Range& range) {
   using Trait = IotaTrait<Range>;
   using Value = Trait::Value;
