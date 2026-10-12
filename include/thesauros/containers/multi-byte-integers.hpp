@@ -17,6 +17,7 @@
 #include <initializer_list>
 #include <limits>
 #include <memory>
+#include <new>
 #include <optional>
 #include <span>
 #include <type_traits>
@@ -70,12 +71,16 @@ struct ArrayStorage {
 
   /** Computes the byte allocation, padding included, needed to store `allocation` elements. */
   [[THES_ALWAYS_INLINE]] static Size effective_allocation(Size allocation) {
-    return (allocation * element_bytes) + (2 * padding_bytes);
+    if (allocation > (std::numeric_limits<Size>::max() - 2 * padding_bytes) / element_bytes) {
+      // The transformation below would overflow.
+      throw std::bad_alloc{};
+    }
+    return allocation * element_bytes + 2 * padding_bytes;
   }
 
 private:
   Data data_{};
-  Size size_{0};
+  Size size_ = 0;
 };
 
 /**
@@ -436,7 +441,7 @@ struct MultiByteIntegersBase {
       return Ret{d} * Ret{element_bytes};
     }
 
-    Ptr ptr_{nullptr};
+    Ptr ptr_ = nullptr;
   };
 
   /**
