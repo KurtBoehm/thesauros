@@ -4,11 +4,15 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.21)
 project(thesauros LANGUAGES CXX)
 
 # Build options.
 option(THESAUROS_BUILD_TESTS "Build tests" OFF)
+option(THESAUROS_INSTALL "Generate install and export rules"
+       ${PROJECT_IS_TOP_LEVEL}
+)
+option(THESAUROS_SYSTEM_BOOST "Use an installed Boost" OFF)
 
 # On macOS, _Static_assert is used in system headers, which GCC does not support
 # in C++ mode.
@@ -16,33 +20,63 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND APPLE)
   add_compile_definitions(_Static_assert=static_assert)
 endif()
 
-# Ensure we build {fmt} as a static library and don’t pull in unnecessary
-# components.
-set(FMT_DOC OFF CACHE BOOL "" FORCE)
-set(FMT_TEST OFF CACHE BOOL "" FORCE)
-set(FMT_INSTALL OFF CACHE BOOL "" FORCE)
-set(FMT_SHARED OFF CACHE BOOL "Build fmt as a shared library" FORCE)
-
 include(FetchContent)
+include(GNUInstallDirs)
 
-FetchContent_Declare(
-  boost_preprocessor
-  URL
-    https://github.com/boostorg/preprocessor/archive/refs/tags/boost-1.90.0.tar.gz
-  URL_HASH
-    SHA256=4a951411d94423e74a4f1df5b1aa5d51996dbfbf01bec35bc51c53af4707bda3
-  DOWNLOAD_EXTRACT_TIMESTAMP ON
-)
-FetchContent_MakeAvailable(boost_preprocessor)
+if(THESAUROS_SYSTEM_BOOST)
+  find_package(Boost CONFIG REQUIRED)
+  set(THESAUROS_BOOST_PP Boost::headers)
+  set(THESAUROS_BUNDLED_BOOST OFF)
+else()
+  # Only download the sources: the non-existent SOURCE_SUBDIR keeps FetchContent
+  # from adding Boost.Preprocessor’s own (non-exportable) CMake project.
+  FetchContent_Declare(
+    boost_preprocessor
+    URL
+      https://github.com/boostorg/preprocessor/archive/refs/tags/boost-1.90.0.tar.gz
+    URL_HASH
+      SHA256=4a951411d94423e74a4f1df5b1aa5d51996dbfbf01bec35bc51c53af4707bda3
+    DOWNLOAD_EXTRACT_TIMESTAMP ON
+    SOURCE_SUBDIR none
+  )
+  FetchContent_MakeAvailable(boost_preprocessor)
 
-FetchContent_Declare(
-  fmt
-  URL https://github.com/fmtlib/fmt/archive/12.1.0.tar.gz
-  URL_HASH
-    SHA256=ea7de4299689e12b6dddd392f9896f08fb0777ac7168897a244a6d6085043fea
-  DOWNLOAD_EXTRACT_TIMESTAMP ON
-)
-FetchContent_MakeAvailable(fmt)
+  add_library(${PROJECT_NAME}_boost_pp INTERFACE)
+  set_target_properties(
+    ${PROJECT_NAME}_boost_pp
+    PROPERTIES EXPORT_NAME boost_pp
+  )
+  target_include_directories(
+    ${PROJECT_NAME}_boost_pp
+    SYSTEM
+    INTERFACE
+      $<BUILD_INTERFACE:${boost_preprocessor_SOURCE_DIR}/include>
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/thesauros-vendor>
+  )
+
+  set(THESAUROS_BOOST_PP ${PROJECT_NAME}_boost_pp)
+  set(THESAUROS_BUNDLED_BOOST ON)
+endif()
+
+# fmt: Prefer an installed fmt; if fetched, let it install itself next to
+# Thesauros.
+find_package(fmt 12 CONFIG QUIET)
+if(NOT fmt_FOUND)
+  # Plain cache defaults instead of `FORCE` so a parent project’s choice takes
+  # precendence.
+  set(FMT_DOC OFF CACHE BOOL "")
+  set(FMT_TEST OFF CACHE BOOL "")
+  set(FMT_INSTALL ${THESAUROS_INSTALL} CACHE BOOL "")
+  set(FMT_SHARED OFF CACHE BOOL "Build fmt as a shared library")
+  FetchContent_Declare(
+    fmt
+    URL https://github.com/fmtlib/fmt/archive/12.1.0.tar.gz
+    URL_HASH
+      SHA256=ea7de4299689e12b6dddd392f9896f08fb0777ac7168897a244a6d6085043fea
+    DOWNLOAD_EXTRACT_TIMESTAMP ON
+  )
+  FetchContent_MakeAvailable(fmt)
+endif()
 
 # The main interface library.
 add_library(${PROJECT_NAME} INTERFACE)
@@ -92,7 +126,7 @@ add_library(${PROJECT_NAME}_macros INTERFACE)
 add_library(${PROJECT_NAME}::macros ALIAS ${PROJECT_NAME}_macros)
 target_link_libraries(
   ${PROJECT_NAME}_macros
-  INTERFACE ${PROJECT_NAME}_core Boost::preprocessor
+  INTERFACE ${PROJECT_NAME}_core ${THESAUROS_BOOST_PP}
 )
 
 # format and test are the only sub-libraries reaching {fmt}; format also formats
@@ -105,7 +139,49 @@ target_link_libraries(
 )
 
 # The umbrella target keeps its historical meaning: everything.
-target_link_libraries(${PROJECT_NAME} INTERFACE Boost::preprocessor fmt::fmt)
+target_link_libraries(${PROJECT_NAME} INTERFACE ${THESAUROS_BOOST_PP} fmt::fmt)
+
+foreach(component core argparse macros format)
+  set_target_properties(
+    ${PROJECT_NAME}_${component}
+    PROPERTIES EXPORT_NAME ${component}
+  )
+endforeach()
+
+if(THESAUROS_INSTALL)
+  set(_cfgdir ${CMAKE_INSTALL_LIBDIR}/cmake/thesauros)
+
+  install(
+    TARGETS thesauros thesauros_core thesauros_argparse thesauros_macros
+    thesauros_format
+    EXPORT thesaurosTargets
+  )
+  install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+  if(THESAUROS_BUNDLED_BOOST)
+    install(TARGETS ${PROJECT_NAME}_boost_pp EXPORT thesaurosTargets)
+    install(
+      DIRECTORY ${boost_preprocessor_SOURCE_DIR}/include/
+      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/thesauros-vendor
+    )
+  endif()
+
+  install(EXPORT thesaurosTargets NAMESPACE thesauros:: DESTINATION ${_cfgdir})
+  export(
+    EXPORT thesaurosTargets
+    NAMESPACE thesauros::
+    FILE ${PROJECT_BINARY_DIR}/thesaurosTargets.cmake
+  )
+
+  configure_file(
+    cmake/thesaurosConfig.cmake.in ${PROJECT_BINARY_DIR}/thesaurosConfig.cmake
+    @ONLY
+  )
+  install(
+    FILES ${PROJECT_BINARY_DIR}/thesaurosConfig.cmake
+    DESTINATION ${_cfgdir}
+  )
+endif()
 
 if(THESAUROS_BUILD_TESTS)
   # Fetch cmop for the target-option functions.
