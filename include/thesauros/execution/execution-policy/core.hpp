@@ -24,14 +24,39 @@ inline constexpr OncePerThread once_per_thread{};
 template<typename T>
 concept ThreadExecutionMode = std::same_as<T, OncePerThread>;
 
+/** Threads with no work to do should be skipped. */
+struct SkipUnemployedThreads {};
+inline constexpr SkipUnemployedThreads skip_unemployed_threads;
+/** Threads with no work to do should not be skipped, but called with an empty range. */
+struct KeepUnemployedThreads {};
+inline constexpr KeepUnemployedThreads keep_unemployed_threads;
+
+template<typename T>
+concept UnemployedThreadMode =
+  std::same_as<T, SkipUnemployedThreads> || std::same_as<T, KeepUnemployedThreads>;
+
 template<typename T>
 concept ExecutionPolicy = requires(const T& expo) {
   {
     expo.execute_segmented(
-      0UZ, [](std::size_t, std::size_t, std::size_t) noexcept {}, once_per_thread)
+      0UZ, [](std::size_t, std::size_t, std::size_t, std::size_t) noexcept {},
+      skip_unemployed_threads, once_per_thread)
   } -> std::same_as<void>;
   {
-    expo.execute_segmented(0UZ, [](std::size_t, std::size_t, std::size_t) noexcept {})
+    expo.execute_segmented(
+      0UZ, [](std::size_t, std::size_t, std::size_t, std::size_t) noexcept {},
+      keep_unemployed_threads, once_per_thread)
+  } -> std::same_as<void>;
+
+  {
+    expo.execute_segmented(
+      0UZ, [](std::size_t, std::size_t, std::size_t, std::size_t) noexcept {},
+      skip_unemployed_threads)
+  } -> std::same_as<void>;
+  {
+    expo.execute_segmented(
+      0UZ, [](std::size_t, std::size_t, std::size_t, std::size_t) noexcept {},
+      keep_unemployed_threads)
   } -> std::same_as<void>;
 
   {

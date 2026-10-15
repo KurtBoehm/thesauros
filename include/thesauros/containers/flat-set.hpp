@@ -15,6 +15,7 @@
 #include "thesauros/containers/set-algorithms.hpp"
 
 namespace thes {
+/** A container adaptor that models a sorted set based on an underlying random-access container. */
 template<typename V, typename Cmp = std::less<V>, typename Eq = std::equal_to<V>,
          typename C = DynamicArray<V>>
 struct FlatSet {
@@ -25,6 +26,8 @@ struct FlatSet {
   using const_iterator = Container::const_iterator;
 
   FlatSet() = default;
+  /** Constructs a flat set from an underlying container that is assumed to sorted already. */
+  FlatSet(C&& container) : data_{std::forward<C>(container)} {}
 
   [[nodiscard]] const_iterator begin() const {
     return data_.begin();
@@ -59,12 +62,12 @@ struct FlatSet {
   }
 
   [[nodiscard]] bool contains(const auto& value) const {
-    const auto it{lower_bound(value)};
+    const auto it = lower_bound(value);
     return it != end() && equal_(*it, value);
   }
 
   [[nodiscard]] const_iterator find(const auto& value) const {
-    const auto it{lower_bound(value)};
+    const auto it = lower_bound(value);
     if (it != end() && equal_(*it, value)) {
       return it;
     }
@@ -80,7 +83,7 @@ struct FlatSet {
   }
 
   bool erase(const auto& value) {
-    auto* const it{lower_bound(value)};
+    auto* const it = lower_bound(value);
     if (it != end() && equal_(*it, value)) {
       data_.erase(it);
       return true;
@@ -105,6 +108,10 @@ struct FlatSet {
 
   void clear() {
     data_.clear();
+  }
+
+  const Container& container() const {
+    return data_;
   }
 
 private:

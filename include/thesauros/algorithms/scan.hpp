@@ -129,7 +129,7 @@ private:
     // Phase 1: Compute the total for each chunk.
     policy.execute_segmented(
       un,
-      [&](std::size_t thread_idx, auto begin, auto end) noexcept {
+      [&](std::size_t thread_idx, std::size_t /*thread_num*/, auto begin, auto end) noexcept {
         assert(end > begin);
         I it = first + *safe_cast<InDiff>(begin);
         I last = first + *safe_cast<InDiff>(end);
@@ -140,12 +140,12 @@ private:
         }
         offsets[thread_idx].emplace(std::move(acc));
       },
-      once_per_thread);
+      skip_unemployed_threads, once_per_thread);
 
     // Phase 2: Perform the actual scan with the offsets from phase 1.
     policy.execute_segmented(
       un,
-      [&](std::size_t thread_idx, auto begin, auto end) noexcept {
+      [&](std::size_t thread_idx, std::size_t /*thread_num*/, auto begin, auto end) noexcept {
         const auto begin_idf = *safe_cast<InDiff>(begin);
         const auto begin_odf = *safe_cast<OutDiff>(begin);
         const auto end_idf = *safe_cast<InDiff>(end);
@@ -175,7 +175,7 @@ private:
           }
         }
       },
-      once_per_thread);
+      skip_unemployed_threads, once_per_thread);
 
     return {first + n, out + n};
   }

@@ -7,6 +7,7 @@
 #ifndef INCLUDE_THESAUROS_EXECUTION_EXECUTION_POLICY_LINEAR_HPP
 #define INCLUDE_THESAUROS_EXECUTION_EXECUTION_POLICY_LINEAR_HPP
 
+#include <concepts>
 #include <cstddef>
 
 #include "thesauros/concepts/nothrow.hpp"
@@ -25,18 +26,22 @@ struct LinearExecutionPolicy {
   void execute_threaded(F&& f) const {
     executor_.execute(std::forward<F>(f));
   }
-  template<typename S, typename F, ThreadExecutionMode Mode = OncePerThread>
-  requires(NothrowInvocable<F&, std::size_t, S, S>)
-  void execute_segmented(S size, F&& f, Mode /*mode*/ = {}) const {
+  template<typename S, typename F, UnemployedThreadMode UnMode,
+           ThreadExecutionMode Mode = OncePerThread>
+  requires(NothrowInvocable<F&, std::size_t, std::size_t, S, S>)
+  void execute_segmented(S size, F&& f, UnMode /*unmode*/, Mode /*mode*/ = {}) const {
     UniformIndexSegmenter segmenter{
       size,
       std::min(executor_.thread_num(), *safe_cast<std::size_t>(size)),
     };
     executor_.execute([&f, &segmenter, size](std::size_t thread_idx) noexcept {
-      if (std::cmp_greater_equal(thread_idx, size)) {
-        return;
+      if constexpr (std::same_as<UnMode, SkipUnemployedThreads>) {
+        if (std::cmp_greater_equal(thread_idx, size)) {
+          return;
+        }
       }
-      f(thread_idx, segmenter.segment_start(thread_idx), segmenter.segment_end(thread_idx));
+      f(thread_idx, segmenter.segment_num(), segmenter.segment_start(thread_idx),
+        segmenter.segment_end(thread_idx));
     });
   }
 
