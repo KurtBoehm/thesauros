@@ -58,12 +58,12 @@ else()
   set(THESAUROS_BUNDLED_BOOST ON)
 endif()
 
-# fmt: Prefer an installed fmt; if fetched, let it install itself next to
-# Thesauros.
-find_package(fmt 12 CONFIG QUIET)
-if(NOT fmt_FOUND)
+# fmt: Always use the bundled fmt (built with the current compiler and standard
+# library) unless a parent project already provides the target; let it install
+# itself next to Thesauros.
+if(NOT TARGET fmt::fmt)
   # Plain cache defaults instead of `FORCE` so a parent project’s choice takes
-  # precendence.
+  # precedence.
   set(FMT_DOC OFF CACHE BOOL "")
   set(FMT_TEST OFF CACHE BOOL "")
   set(FMT_INSTALL ${THESAUROS_INSTALL} CACHE BOOL "")

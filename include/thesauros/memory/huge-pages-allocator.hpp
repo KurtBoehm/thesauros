@@ -64,6 +64,8 @@ struct HugePagesAllocator {
     _aligned_free(p);
 #endif
   }
+
+  constexpr bool operator==(const HugePagesAllocator&) const = default;
 };
 } // namespace thes
 
