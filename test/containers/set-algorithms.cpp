@@ -31,11 +31,6 @@ struct EntryLess {
     return e1.key < e2.key;
   }
 };
-struct EntryEqual {
-  bool operator()(const Entry& e1, const Entry& e2) const {
-    return e1.key == e2.key;
-  }
-};
 
 //==================================================================================================
 // erase_if
@@ -110,7 +105,7 @@ THES_TEST_CASE("set_union honours custom comparators", "[containers][set-algorit
   std::vector<Entry> values{Entry{.key = 1, .tag = "a"}, Entry{.key = 3, .tag = "c"}};
   const std::vector<Entry> other{Entry{.key = 2, .tag = "B"}, Entry{.key = 3, .tag = "C"}};
 
-  thes::set_union(values, other, EntryLess{}, EntryEqual{});
+  thes::set_union(values, other, EntryLess{});
   const std::vector<Entry> expected{Entry{.key = 1, .tag = "a"}, Entry{.key = 2, .tag = "B"},
                                     // The existing entry wins, so its payload is left untouched.
                                     Entry{.key = 3, .tag = "c"}};
@@ -207,10 +202,8 @@ THES_TEST_CASE("exists_sorted reports membership", "[containers][set-algorithms]
   const std::vector<Entry> entries{Entry{.key = 1, .tag = "a"}, Entry{.key = 3, .tag = "c"}};
   const Entry present{.key = 3, .tag = "other"};
   const Entry absent{.key = 2, .tag = "b"};
-  THES_CHECK(
-    thes::exists_sorted(entries.begin(), entries.end(), present, EntryLess{}, EntryEqual{}));
-  THES_CHECK(
-    !thes::exists_sorted(entries.begin(), entries.end(), absent, EntryLess{}, EntryEqual{}));
+  THES_CHECK(thes::exists_sorted(entries.begin(), entries.end(), present, EntryLess{}));
+  THES_CHECK(!thes::exists_sorted(entries.begin(), entries.end(), absent, EntryLess{}));
 }
 } // namespace
 

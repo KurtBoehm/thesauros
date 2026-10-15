@@ -16,13 +16,12 @@
 #include "thesauros/containers/set-algorithms.hpp"
 
 namespace thes {
-template<typename K, typename V, typename KCmp = std::less<K>, typename KEq = std::equal_to<K>,
+template<typename K, typename V, typename KCmp = std::less<K>,
          typename C = DynamicArray<std::pair<K, V>>>
 struct FlatMap {
   using Key = K;
   using Mapped = V;
   using KeyCompare = KCmp;
-  using KeyEqual = KEq;
 
   using Value = std::pair<Key, Mapped>;
   using Container = C;
@@ -71,35 +70,41 @@ struct FlatMap {
   }
 
   [[nodiscard]] iterator lower_bound(const auto& key) {
-    return std::lower_bound(data_.begin(), data_.end(), key, PairCompare{compare_});
+    return std::ranges::lower_bound(data_.begin(), data_.end(), key, compare_,
+                                    [](const auto& p) -> const auto& { return p.first; });
   }
   [[nodiscard]] const_iterator lower_bound(const auto& key) const {
-    return std::lower_bound(data_.begin(), data_.end(), key, PairCompare{compare_});
+    return std::ranges::lower_bound(data_.begin(), data_.end(), key, compare_,
+                                    [](const auto& p) -> const auto& { return p.first; });
   }
 
   [[nodiscard]] bool contains(const auto& key) const {
-    const auto it{lower_bound(key)};
-    return it != end() && PairEqual{equal_}(*it, key);
+    const auto it = lower_bound(key);
+    // `lower_bound` ensures that `it->first ≥ key`; `it->first ≤ key` remains to be checked.
+    return it != end() && !compare_(key, it->first);
   }
 
   [[nodiscard]] iterator find(const auto& key) {
-    const auto it{lower_bound(key)};
-    if (it != end() && PairEqual{equal_}(*it, key)) {
+    const auto it = lower_bound(key);
+    // `lower_bound` ensures that `it->first ≥ key`; `it->first ≤ key` remains to be checked.
+    if (it != end() && !compare_(key, it->first)) {
       return it;
     }
     return end();
   }
   [[nodiscard]] const_iterator find(const auto& key) const {
-    const auto it{lower_bound(key)};
-    if (it != end() && PairEqual{equal_}(*it, key)) {
+    const auto it = lower_bound(key);
+    // `lower_bound` ensures that `it->first ≥ key`; `it->first ≤ key` remains to be checked.
+    if (it != end() && !compare_(key, it->first)) {
       return it;
     }
     return end();
   }
 
   bool insert(const Key& key, const Mapped& value) {
-    const auto it{lower_bound(key)};
-    if (it != end() && PairEqual{equal_}(*it, key)) {
+    const auto it = lower_bound(key);
+    // `lower_bound` ensures that `it->first ≥ key`; `it->first ≤ key` remains to be checked.
+    if (it != end() && !compare_(key, it->first)) {
       return false;
     }
     data_.insert(it, Value{key, value});
@@ -107,25 +112,28 @@ struct FlatMap {
   }
 
   Mapped& get_or_insert(const Key& key, Mapped&& value) {
-    const auto iter = lower_bound(key);
-    if (iter != end() && PairEqual{equal_}(*iter, key)) {
-      return iter->second;
+    const auto it = lower_bound(key);
+    // `lower_bound` ensures that `it->first ≥ key`; `it->first ≤ key` remains to be checked.
+    if (it != end() && !compare_(key, it->first)) {
+      return it->second;
     }
-    return data_.insert(iter, Value{key, std::forward<Mapped>(value)})->second;
+    return data_.insert(it, Value{key, std::forward<Mapped>(value)})->second;
   }
   template<typename Trans, typename Create>
   void transform_or_create(const Key& key, Trans&& transform, Create&& create) {
-    const auto iter = lower_bound(key);
-    if (iter != end() && PairEqual{equal_}(*iter, key)) {
-      std::forward<Trans>(transform)(iter->second);
+    const auto it = lower_bound(key);
+    // `lower_bound` ensures that `it->first ≥ key`; `it->first ≤ key` remains to be checked.
+    if (it != end() && !compare_(key, it->first)) {
+      std::forward<Trans>(transform)(it->second);
       return;
     }
-    data_.insert(iter, Value{key, std::forward<Create>(create)()});
+    data_.insert(it, Value{key, std::forward<Create>(create)()});
   }
 
   bool erase(const auto& key) {
-    const auto it{lower_bound(key)};
-    if (it != end() && PairEqual{equal_}(*it, key)) {
+    const auto it = lower_bound(key);
+    // `lower_bound` ensures that `it->first ≥ key`; `it->first ≤ key` remains to be checked.
+    if (it != end() && !compare_(key, it->first)) {
       data_.erase(it);
       return true;
     }
@@ -141,7 +149,8 @@ struct FlatMap {
 
   template<typename Other>
   void set_difference(const Other& other) {
-    thes::set_difference(data_, other);
+    thes::set_difference(data_, other, compare_,
+                         [](const auto& p) -> const auto& { return p.first; });
   }
 
   template<typename Pred>
@@ -151,7 +160,7 @@ struct FlatMap {
 
   template<typename Other>
   void set_union(const Other& other) {
-    thes::set_union(data_, other, PairCompare{compare_}, PairEqual{equal_});
+    thes::set_union(data_, other, compare_, [](const auto& p) -> const auto& { return p.first; });
   }
 
   void clear() {
@@ -159,30 +168,8 @@ struct FlatMap {
   }
 
 private:
-  template<typename Op>
-  struct PairOp {
-    [[no_unique_address]] Op op_{};
-
-    bool operator()(const Value& first, const Value& second) const {
-      return op_(first.first, second.first);
-    }
-    bool operator()(const Key& first, const Value& second) const {
-      return op_(first, second.first);
-    }
-    bool operator()(const Value& first, const Key& second) const {
-      return op_(first.first, second);
-    }
-    bool operator()(const Key& first, const Key& second) const {
-      return op_(first, second);
-    }
-  };
-
-  using PairCompare = PairOp<KeyCompare>;
-  using PairEqual = PairOp<KeyEqual>;
-
   Container data_{};
   [[no_unique_address]] KCmp compare_{};
-  [[no_unique_address]] KEq equal_{};
 };
 } // namespace thes
 
