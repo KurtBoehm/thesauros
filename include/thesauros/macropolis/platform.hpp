@@ -17,6 +17,11 @@
 // They are designed to be sufficient for GCC and Clang; compatibility with other compilers is, at
 // best, a nice-to-have.
 
+// This is necessary to include the definition of `__GLIBC__` if it is present.
+#if __has_include(<features.h>)
+#include <features.h> // IWYU pragma: keep
+#endif
+
 #ifdef __clang__
 #define THES_CLANG true
 #define THES_GCC false
@@ -32,6 +37,12 @@
 #define THES_GCC_COMPAT true
 #else
 #define THES_GCC_COMPAT false
+#endif
+
+#ifdef __GLIBC__
+#define THES_GLIBC true
+#else
+#define THES_GLIBC false
 #endif
 
 #ifdef __linux__
