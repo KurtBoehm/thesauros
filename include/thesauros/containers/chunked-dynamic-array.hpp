@@ -224,27 +224,7 @@ struct ChunkedDynamicArrayBase {
 
     // Case distinction: Do we need more memory?
     if (new_block_num > current_allocation) {
-      const Size new_allocation_size = grown_size(new_block_num);
-
-      elements_.expand(new_allocation_size * block_size_,
-                       [&](Value* old_begin, Value* /*old_end*/, Value* new_begin) {
-                         for (const auto i : views::indices(old_block_num)) {
-                           const auto offset = i * block_size_;
-
-                           auto b = old_begin + offset;
-                           auto e = b + sizes_[i];
-
-                           std::uninitialized_move(b, e, new_begin + offset);
-                           std::destroy(b, e);
-                         }
-                       });
-
-      Size* old_size_end = sizes_.data() + old_block_num;
-      sizes_.expand(new_allocation_size, [&](Size* old_begin, Size* /*old_end*/, Size* new_begin) {
-        std::uninitialized_move(old_begin, old_size_end, new_begin);
-        std::uninitialized_fill(new_begin + old_block_num, new_begin + new_block_num, Size{0});
-        std::destroy(old_begin, old_size_end);
-      });
+      allocate(grown_size(new_block_num), old_block_num, new_block_num);
     } else {
       Size* size_data = sizes_.data();
       std::uninitialized_fill(size_data + old_block_num, size_data + new_block_num, Size{0});
@@ -269,6 +249,15 @@ struct ChunkedDynamicArrayBase {
     --block_num_;
   }
 
+  void reserve_blocks(Size block_num) {
+    // There are enough blocks already → do nothing.
+    if (block_num <= sizes_.size()) {
+      return;
+    }
+    // Reserve the grown size, which is at least `block_num`. No new blocks are created.
+    allocate(grown_size(block_num), block_num_, block_num_);
+  }
+
   [[nodiscard]] Size block_num() const {
     return block_num_;
   }
@@ -285,6 +274,29 @@ private:
 
   [[nodiscard]] constexpr Size grown_size(Size new_size_lower_bound) const {
     return GrowthPolicy::new_allocation_size(block_num_, new_size_lower_bound);
+  }
+
+  void allocate(const Size new_allocation_size, const Size old_block_num,
+                const Size new_block_num) {
+    elements_.expand(new_allocation_size * block_size_,
+                     [&](Value* old_begin, Value* /*old_end*/, Value* new_begin) {
+                       for (const auto i : views::indices(old_block_num)) {
+                         const auto offset = i * block_size_;
+
+                         auto b = old_begin + offset;
+                         auto e = b + sizes_[i];
+
+                         std::uninitialized_move(b, e, new_begin + offset);
+                         std::destroy(b, e);
+                       }
+                     });
+
+    Size* old_size_end = sizes_.data() + old_block_num;
+    sizes_.expand(new_allocation_size, [&](Size* old_begin, Size* /*old_end*/, Size* new_begin) {
+      std::uninitialized_move(old_begin, old_size_end, new_begin);
+      std::uninitialized_fill(new_begin + old_block_num, new_begin + new_block_num, Size{0});
+      std::destroy(old_begin, old_size_end);
+    });
   }
 
   Size block_size_;
